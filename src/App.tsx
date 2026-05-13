@@ -10,6 +10,10 @@ import { ReliabilityReports } from './components/sections/ReliabilityReports';
 import { RoutesSection } from './components/sections/RoutesSection';
 import { findBikeComparisonByHash } from './data/comparisons';
 
+const scrollToPageTop = () => {
+  window.scrollTo({ left: 0, top: 0 });
+};
+
 function getCurrentHash() {
   return typeof window === 'undefined' ? '' : window.location.hash;
 }
@@ -43,6 +47,10 @@ function HomePage() {
 export function App() {
   const hash = useHashRoute();
   const comparison = findBikeComparisonByHash(hash);
+
+  useEffect(() => {
+    scrollToPageTop();
+  }, [hash]);
 
   return (
     <div className="app">

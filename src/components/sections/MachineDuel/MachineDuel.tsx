@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react';
 import { duelBikes } from '../../../data/bikes';
 import { defaultBikeComparison } from '../../../data/comparisons';
 import { machineDuelContent } from '../../../data/home';
@@ -8,6 +9,12 @@ import { VersusBadge } from '../../ui/VersusBadge';
 import './MachineDuel.scss';
 
 export function MachineDuel() {
+  const openDetailedComparison = (event: MouseEvent<HTMLButtonElement>) => {
+    event.currentTarget.blur();
+    window.scrollTo({ left: 0, top: 0 });
+    window.location.hash = defaultBikeComparison.routeHash;
+  };
+
   return (
     <section className="machine-duel fade-in" id="comparativas" aria-labelledby="machine-duel-title">
       <div className="machine-duel__inner">
@@ -26,7 +33,7 @@ export function MachineDuel() {
         </div>
 
         <div className="machine-duel__actions">
-          <Button variant="secondary" onClick={() => { window.location.hash = defaultBikeComparison.routeHash; }}>
+          <Button variant="secondary" onClick={openDetailedComparison}>
             {machineDuelContent.actionLabel}
           </Button>
         </div>
