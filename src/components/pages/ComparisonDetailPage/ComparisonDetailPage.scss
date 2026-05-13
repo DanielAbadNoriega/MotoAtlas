@@ -1,0 +1,795 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.comparison-detail {
+  background: $color-surface;
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+}
+
+.comparison-detail__hero {
+  @include container;
+
+  position: relative;
+  overflow: hidden;
+  padding-block: 4rem 6rem;
+  background-image:
+    linear-gradient(rgba($color-surface, 0.82), rgba($color-surface, 0.98)),
+    linear-gradient($color-surface-low 1px, transparent 1px),
+    linear-gradient(90deg, $color-surface-low 1px, transparent 1px);
+  background-size: auto, 40px 40px, 40px 40px;
+}
+
+.comparison-detail__back {
+  @include label-caps;
+
+  display: inline-block;
+  margin-bottom: 3rem;
+  color: $color-on-surface-variant;
+  transition: color $transition-base;
+
+  &:hover,
+  &:focus-visible {
+    color: $color-accent;
+  }
+}
+
+.comparison-detail__intro {
+  max-width: 58rem;
+  margin-inline: auto;
+  margin-bottom: 4rem;
+  text-align: center;
+
+  p {
+    @include label-caps;
+
+    margin-bottom: 1rem;
+    color: $color-accent;
+  }
+
+  h1 {
+    @include headline-xl;
+
+    margin-bottom: 1rem;
+    font-style: italic;
+    text-transform: uppercase;
+  }
+
+  span {
+    @include body-lg;
+
+    color: $color-on-surface-variant;
+  }
+}
+
+.comparison-detail__duel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7rem minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.25rem, 4vw, 3rem);
+}
+
+.comparison-detail__hero-bike {
+  min-width: 0;
+
+  img {
+    width: 100%;
+    height: clamp(18rem, 31vw, 25rem);
+    border: 1px solid rgba($color-outline-variant, 0.35);
+    border-radius: $radius-xl;
+    background: $color-surface-lowest;
+    object-fit: cover;
+    filter: grayscale(0.85);
+    transition:
+      filter $transition-slow,
+      transform $transition-slow;
+  }
+
+  &:hover img {
+    filter: grayscale(0);
+    transform: scale(1.015);
+  }
+
+  div {
+    margin-top: 1.5rem;
+  }
+
+  span {
+    @include label-caps;
+
+    display: block;
+    margin-bottom: 0.5rem;
+    color: $color-accent;
+  }
+
+  h2 {
+    @include headline-md;
+
+    text-transform: uppercase;
+  }
+}
+
+.comparison-detail__hero-bike--right {
+  text-align: right;
+}
+
+.comparison-detail__vs {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 6rem;
+  height: 6rem;
+  justify-self: center;
+  place-items: center;
+  border: 4px solid $color-surface;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, #ff4560 0 12%, transparent 28%),
+    linear-gradient(135deg, #ff103d 0%, $color-accent-container 48%, #990018 100%);
+  box-shadow:
+    0 0 18px rgba($color-accent-container, 0.7),
+    0 0 44px rgba(255, 50, 24, 0.48),
+    0 0 92px rgba(255, 122, 24, 0.24);
+  color: white;
+  font-family: $font-headline;
+  font-size: 2rem;
+  font-style: italic;
+  font-weight: 800;
+  isolation: isolate;
+  animation:
+    vs-dance 1500ms ease-in-out infinite,
+    vs-heat-shadow 2100ms ease-in-out infinite alternate;
+
+  &::before,
+  &::after {
+    position: absolute;
+    inset: -0.8rem;
+    z-index: -1;
+    border-radius: inherit;
+    content: '';
+    pointer-events: none;
+  }
+
+  &::before {
+    background:
+      radial-gradient(circle, rgba(255, 91, 31, 0.38), transparent 58%),
+      radial-gradient(circle at 58% 42%, rgba(255, 0, 57, 0.34), transparent 46%);
+    filter: blur(0.7rem);
+    animation: vs-ember-pulse 900ms ease-in-out infinite alternate;
+  }
+
+  &::after {
+    inset: -1.45rem;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(255, 104, 31, 0.22) 40deg,
+      transparent 86deg,
+      rgba(255, 0, 57, 0.26) 150deg,
+      transparent 230deg,
+      rgba(255, 153, 51, 0.16) 300deg,
+      transparent 360deg
+    );
+    filter: blur(1.1rem);
+    opacity: 0.9;
+    animation: vs-ember-rotate 2600ms linear infinite;
+  }
+
+  span {
+    text-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.24),
+      0 0 18px rgba(255, 255, 255, 0.35);
+  }
+}
+
+
+@keyframes vs-dance {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-1deg) scale(1);
+  }
+
+  28% {
+    transform: translate3d(1px, -2px, 0) rotate(1.5deg) scale(1.025);
+  }
+
+  58% {
+    transform: translate3d(-1px, 1px, 0) rotate(-0.75deg) scale(0.985);
+  }
+
+  78% {
+    transform: translate3d(1px, 0, 0) rotate(0.8deg) scale(1.015);
+  }
+}
+
+@keyframes vs-heat-shadow {
+  0% {
+    box-shadow:
+      0 0 16px rgba($color-accent-container, 0.64),
+      0 0 38px rgba(255, 50, 24, 0.42),
+      0 0 72px rgba(255, 122, 24, 0.18);
+  }
+
+  100% {
+    box-shadow:
+      0 0 24px rgba($color-accent-container, 0.84),
+      0 0 58px rgba(255, 50, 24, 0.58),
+      0 0 116px rgba(255, 122, 24, 0.34);
+  }
+}
+
+@keyframes vs-ember-pulse {
+  from {
+    opacity: 0.48;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 0.92;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes vs-ember-rotate {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.comparison-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 4rem;
+}
+
+.comparison-detail__vote {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.5fr);
+  align-items: center;
+  gap: 4rem;
+  padding: 6rem max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
+  border-block: 1px solid rgba($color-outline-variant, 0.1);
+  background: $color-surface-lowest;
+
+  h2 {
+    @include headline-lg;
+
+    margin-bottom: 1rem;
+    font-style: italic;
+    text-transform: uppercase;
+  }
+
+  p {
+    color: $color-on-surface-variant;
+    line-height: 1.6;
+  }
+
+  blockquote {
+    margin: 2rem 0 0;
+    padding: 1.5rem;
+    border: 1px solid rgba($color-outline-variant, 0.25);
+    border-radius: $radius-xl;
+    background: $color-surface-container;
+    color: $color-on-surface;
+    font-style: italic;
+
+    cite {
+      @include label-caps;
+
+      display: block;
+      margin-top: 1rem;
+      color: $color-on-surface-variant;
+      font-style: normal;
+    }
+  }
+}
+
+.comparison-detail__vote-results {
+  display: grid;
+  gap: 1rem;
+
+  > p {
+    @include label-caps;
+
+    color: $color-outline;
+  }
+}
+
+.comparison-detail__vote-bar {
+  display: flex;
+  min-height: 6rem;
+  overflow: hidden;
+  border: 1px solid rgba($color-outline-variant, 0.25);
+  border-radius: $radius-xl;
+  background: $color-surface-container;
+
+  span,
+  strong {
+    display: flex;
+    align-items: center;
+    padding-inline: 2rem;
+    font-family: $font-headline;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    text-transform: uppercase;
+  }
+
+  span {
+    background: $color-accent-container;
+    color: white;
+  }
+
+  strong {
+    flex: 1;
+    justify-content: flex-end;
+    color: $color-on-surface-variant;
+  }
+}
+
+.comparison-detail__verdicts,
+.comparison-detail__registry,
+.comparison-detail__scores,
+.comparison-detail__pros-cons,
+.comparison-detail__reports,
+.comparison-detail__videos {
+  @include container;
+  @include section-spacing;
+}
+
+.comparison-detail__verdicts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-gutter;
+
+  article {
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+    border: 1px solid rgba($color-outline-variant, 0.25);
+    border-radius: $radius-xl;
+    background: $color-surface-container;
+  }
+
+  .material-symbols-outlined {
+    margin-bottom: 1rem;
+    color: $color-accent;
+    font-size: 2.5rem;
+  }
+
+  strong {
+    @include label-caps;
+
+    position: absolute;
+    top: 1rem;
+    right: -2.5rem;
+    padding: 0.4rem 3rem;
+    background: $color-accent-container;
+    color: white;
+    transform: rotate(14deg);
+  }
+
+  h2 {
+    @include headline-md;
+
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  p {
+    color: $color-on-surface-variant;
+    line-height: 1.6;
+  }
+
+  footer {
+    @include label-caps;
+
+    margin-top: 1.5rem;
+  }
+}
+
+.comparison-detail__registry,
+.comparison-detail__scores,
+.comparison-detail__videos {
+  > h2 {
+    @include headline-lg;
+
+    margin-bottom: 3rem;
+    font-style: italic;
+    text-transform: uppercase;
+  }
+}
+
+.comparison-detail__spec-table {
+  overflow-x: auto;
+  border: 1px solid rgba($color-outline-variant, 0.25);
+  border-radius: $radius-xl;
+  background: $color-surface-container;
+
+  table {
+    width: 100%;
+    min-width: 48rem;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.16);
+    text-align: center;
+  }
+
+  th:first-child,
+  td:first-child {
+    @include label-caps;
+
+    text-align: left;
+    color: $color-outline;
+  }
+
+  th {
+    background: $color-surface-container-high;
+    font-family: $font-headline;
+    text-transform: uppercase;
+  }
+
+  td {
+    color: $color-on-surface;
+  }
+}
+
+.comparison-detail__scores {
+  background: $color-surface-low;
+}
+
+.comparison-detail__score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem 5rem;
+
+  article {
+    display: grid;
+    gap: 1rem;
+  }
+
+  header,
+  footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  header span,
+  footer span {
+    @include label-caps;
+  }
+
+  header strong {
+    color: $color-accent;
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  footer {
+    color: $color-on-surface-variant;
+  }
+}
+
+.comparison-detail__score-track {
+  position: relative;
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: $color-surface-container;
+
+  span,
+  strong {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    border-radius: inherit;
+  }
+
+  span {
+    background: rgba($color-on-surface-variant, 0.35);
+  }
+
+  strong {
+    background: $color-accent-container;
+  }
+}
+
+.comparison-detail__pros-cons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4rem;
+
+  > article + article {
+    border-left: 1px solid rgba($color-outline-variant, 0.18);
+    padding-left: 4rem;
+  }
+
+  h2 {
+    @include headline-md;
+
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+  }
+
+  article > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  h3 {
+    @include label-caps;
+
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.25);
+    padding-bottom: 0.75rem;
+    color: $color-on-surface-variant;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    line-height: 1.4;
+  }
+
+  .material-symbols-outlined {
+    font-size: 1.15rem;
+  }
+
+  section:first-child .material-symbols-outlined {
+    color: #4ade80;
+  }
+
+  section:last-child .material-symbols-outlined {
+    color: $color-error;
+  }
+}
+
+.comparison-detail__reports {
+  background: $color-surface-container;
+}
+
+.comparison-detail__section-heading {
+  margin-bottom: 3rem;
+
+  h2 {
+    @include headline-lg;
+
+    margin-bottom: 0.75rem;
+    font-style: italic;
+    text-transform: uppercase;
+  }
+
+  p {
+    color: $color-on-surface-variant;
+  }
+}
+
+.comparison-detail__report-grid,
+.comparison-detail__video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-gutter;
+}
+
+.comparison-detail__report {
+  padding: 1.5rem;
+  border-left: 4px solid $color-primary;
+  border-radius: $radius-xl;
+  background: $color-surface-low;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  header strong,
+  footer {
+    @include label-caps;
+
+    font-size: 0.625rem;
+  }
+
+  header strong {
+    padding: 0.35rem 0.5rem;
+    border-radius: $radius-md;
+    background: rgba($color-primary, 0.12);
+  }
+
+  h3 {
+    @include headline-md;
+
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    margin-bottom: 1rem;
+    color: $color-on-surface-variant;
+    line-height: 1.6;
+  }
+
+  footer {
+    color: $color-outline;
+  }
+}
+
+.comparison-detail__report--alta {
+  border-left-color: $color-error;
+
+  header strong,
+  .material-symbols-outlined {
+    color: $color-error;
+  }
+}
+
+.comparison-detail__report--media {
+  border-left-color: $color-accent;
+
+  header strong,
+  .material-symbols-outlined {
+    color: $color-accent;
+  }
+}
+
+.comparison-detail__video-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  article {
+    cursor: pointer;
+  }
+
+  article > div {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border-radius: $radius-lg;
+    background: $color-surface-lowest;
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    transition: transform $transition-slow;
+  }
+
+  article:hover img {
+    transform: scale(1.05);
+  }
+
+  .material-symbols-outlined {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.38);
+    color: white;
+    font-size: 3rem;
+    opacity: 0;
+    transition: opacity $transition-base;
+  }
+
+  article:hover .material-symbols-outlined {
+    opacity: 1;
+  }
+
+  strong {
+    @include label-caps;
+
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0.3rem 0.45rem;
+    border-radius: $radius-md;
+    background: rgba(0, 0, 0, 0.78);
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: $breakpoint-desktop) {
+  .comparison-detail__vote {
+    padding-inline: $margin-tablet;
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .comparison-detail__vote,
+  .comparison-detail__pros-cons {
+    grid-template-columns: 1fr;
+  }
+
+
+
+  .comparison-detail__verdicts,
+  .comparison-detail__report-grid,
+  .comparison-detail__video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .comparison-detail__pros-cons > article + article {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .comparison-detail__hero {
+    padding-block: 2.5rem 4rem;
+  }
+
+  .comparison-detail__duel {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-detail__hero-bike--right {
+    text-align: left;
+  }
+
+  .comparison-detail__vs {
+    grid-row: 2;
+    width: 5rem;
+    height: 5rem;
+    font-size: 1.6rem;
+  }
+
+  .comparison-detail__hero-bike img {
+    height: 16rem;
+  }
+
+  .comparison-detail__actions,
+  .comparison-detail__actions .button {
+    width: 100%;
+  }
+
+  .comparison-detail__vote {
+    padding: 4rem $margin-mobile;
+  }
+
+  .comparison-detail__vote-bar {
+    min-height: auto;
+    flex-direction: column;
+
+    span,
+    strong {
+      width: 100% !important;
+      justify-content: flex-start;
+      padding: 1rem;
+    }
+  }
+
+  .comparison-detail__verdicts,
+  .comparison-detail__score-grid,
+  .comparison-detail__pros-cons article > div,
+  .comparison-detail__report-grid,
+  .comparison-detail__video-grid {
+    grid-template-columns: 1fr;
+  }
+}

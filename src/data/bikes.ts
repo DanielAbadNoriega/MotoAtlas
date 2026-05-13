@@ -884,7 +884,7 @@ export function getBikeCardSpecs(bike: Bike): readonly BikeSpec[] {
   ];
 }
 
-function getBikeById(id: Bike['id']): Bike {
+export function getBikeById(id: Bike['id']): Bike {
   const bike = bikes.find((item) => item.id === id);
 
   if (!bike) {

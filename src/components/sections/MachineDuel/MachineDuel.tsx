@@ -1,4 +1,5 @@
 import { duelBikes } from '../../../data/bikes';
+import { defaultBikeComparison } from '../../../data/comparisons';
 import { machineDuelContent } from '../../../data/home';
 import { Button } from '../../ui/Button';
 import { ComparisonBikeCard } from '../../ui/ComparisonBikeCard';
@@ -25,7 +26,9 @@ export function MachineDuel() {
         </div>
 
         <div className="machine-duel__actions">
-          <Button variant="secondary">{machineDuelContent.actionLabel}</Button>
+          <Button variant="secondary" onClick={() => { window.location.hash = defaultBikeComparison.routeHash; }}>
+            {machineDuelContent.actionLabel}
+          </Button>
         </div>
       </div>
     </section>
