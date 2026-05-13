@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { ComparisonDetailPage } from './components/pages/ComparisonDetailPage';
+import { SearchPage } from './components/pages/SearchPage';
 import { FeaturedBikes } from './components/sections/FeaturedBikes';
 import { Hero } from './components/sections/Hero';
 import { LatestNews } from './components/sections/LatestNews';
@@ -47,15 +48,18 @@ function HomePage() {
 export function App() {
   const hash = useHashRoute();
   const comparison = findBikeComparisonByHash(hash);
+  const isSearchRoute = hash === '#/buscador' || hash === '#/catalogo';
 
   useEffect(() => {
-    scrollToPageTop();
+    if (hash.startsWith('#/')) {
+      scrollToPageTop();
+    }
   }, [hash]);
 
   return (
     <div className="app">
       <Navbar />
-      {comparison ? <ComparisonDetailPage comparison={comparison} /> : <HomePage />}
+      {comparison ? <ComparisonDetailPage comparison={comparison} /> : isSearchRoute ? <SearchPage /> : <HomePage />}
       <Footer />
     </div>
   );

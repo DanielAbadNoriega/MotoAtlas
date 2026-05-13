@@ -13,6 +13,7 @@ export const brand = {
 } satisfies BrandContent;
 
 export const navLinks = [
+  { label: 'Buscador', href: '#/buscador' },
   { label: 'Comparativas', href: '#comparativas' },
   { label: 'Noticias', href: '#noticias' },
   { label: 'Rutas', href: '#rutas' },

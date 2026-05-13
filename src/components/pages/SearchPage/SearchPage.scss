@@ -1,0 +1,730 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.search-page {
+  min-height: 100vh;
+  padding-bottom: 8rem;
+  background:
+    radial-gradient(circle at top right, rgba($color-accent, 0.14), transparent 34rem),
+    linear-gradient(180deg, rgba($color-surface-lowest, 0.55), rgba($color-surface, 0));
+
+  &__hero {
+    border-bottom: 1px solid rgba($color-outline-variant, 0.22);
+    background:
+      linear-gradient(90deg, transparent, rgba($color-accent, 0.08), transparent),
+      linear-gradient(180deg, rgba($color-surface-lowest, 0.96), rgba($color-surface-container, 0.45));
+    overflow: hidden;
+    padding-block: clamp(4rem, 10vw, 8rem);
+    position: relative;
+
+    &::before {
+      background-image:
+        linear-gradient(rgba($color-outline-variant, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba($color-outline-variant, 0.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+      content: '';
+      inset: 0;
+      opacity: 0.28;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    > div {
+      @include container;
+
+      isolation: isolate;
+      position: relative;
+      text-align: center;
+    }
+
+    > div > span {
+      @include label-caps;
+
+      color: $color-accent;
+    }
+
+    h1 {
+      @include headline-xl;
+
+      margin: 1rem auto 1.5rem;
+      max-width: 760px;
+    }
+
+    p {
+      @include body-lg;
+
+      color: $color-on-surface-variant;
+      margin: 0 auto;
+      max-width: 720px;
+    }
+  }
+
+  &__search-field {
+    @include glass-hud;
+
+    align-items: center;
+    border-radius: $radius-xl;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: auto 1fr;
+    margin: 2.5rem auto 0;
+    max-width: 760px;
+    padding: 1rem 1.25rem;
+
+    span {
+      color: $color-outline;
+    }
+
+    input {
+      background: transparent;
+      border: 0;
+      color: $color-on-surface;
+      font-size: clamp(1rem, 2vw, 1.125rem);
+      outline: 0;
+      width: 100%;
+
+      &::placeholder {
+        color: rgba($color-on-surface-variant, 0.72);
+      }
+    }
+
+    &:focus-within {
+      border-color: rgba($color-accent, 0.7);
+      box-shadow: 0 0 0 1px rgba($color-accent, 0.25);
+    }
+  }
+
+  &__mobile-filter-trigger {
+    @include container;
+
+    display: none;
+    padding-top: 1.5rem;
+
+    .button {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+  }
+
+  &__content {
+    @include container;
+
+    align-items: start;
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 300px minmax(0, 1fr);
+    padding-block: 3rem;
+  }
+
+  &__filters {
+    @include glass-hud;
+
+    align-self: start;
+    border-radius: $radius-xl;
+    padding: 1.5rem;
+    position: sticky;
+    top: 104px;
+  }
+
+  &__filters-header {
+    align-items: center;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr auto;
+    margin-bottom: 1.75rem;
+
+    h2 {
+      @include headline-md;
+
+      margin: 0;
+    }
+
+    button:not(.search-page__filters-close) {
+      @include label-caps;
+
+      background: transparent;
+      border: 0;
+      color: $color-accent;
+      padding: 0;
+
+      &:hover,
+      &:focus-visible {
+        color: white;
+      }
+    }
+  }
+
+  &__filters-close {
+    align-items: center;
+    background: rgba($color-surface-container-highest, 0.72);
+    border: 1px solid rgba($color-outline-variant, 0.4);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: none;
+    height: 42px;
+    justify-content: center;
+    width: 42px;
+  }
+
+  &__filter-group {
+    border-top: 1px solid rgba($color-outline-variant, 0.24);
+    padding-block: 1.25rem;
+
+    h3 {
+      @include label-caps;
+
+      color: $color-on-surface;
+      margin: 0 0 1rem;
+    }
+  }
+
+  &__check-list {
+    display: grid;
+    gap: 0.7rem;
+    max-height: 16rem;
+    overflow: auto;
+    padding-right: 0.35rem;
+
+    label {
+      align-items: center;
+      color: $color-on-surface-variant;
+      cursor: pointer;
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.92rem;
+      transition: color $transition-base;
+
+      &:hover {
+        color: $color-on-surface;
+      }
+    }
+
+    input {
+      accent-color: $color-accent;
+      height: 1rem;
+      width: 1rem;
+    }
+  }
+
+  &__pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  &__pill {
+    @include label-caps;
+
+    background: rgba($color-surface-container-high, 0.65);
+    border: 1px solid rgba($color-outline-variant, 0.35);
+    border-radius: $radius-sm;
+    color: $color-on-surface-variant;
+    padding: 0.55rem 0.75rem;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base;
+
+    &:hover,
+    &--active {
+      background: $color-accent;
+      border-color: $color-accent;
+      color: white;
+    }
+  }
+
+  &__range-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__numeric-filter,
+  &__range-grid label,
+  &__results-header label {
+    display: grid;
+    gap: 0.45rem;
+
+    > span {
+      @include label-caps;
+
+      color: $color-outline;
+      font-size: 0.66rem;
+    }
+
+    input,
+    select {
+      background: $color-surface-container;
+      border: 1px solid rgba($color-outline-variant, 0.4);
+      border-radius: $radius-md;
+      color: $color-on-surface;
+      min-height: 44px;
+      outline: 0;
+      padding: 0.75rem 0.9rem;
+      width: 100%;
+
+      &:focus {
+        border-color: rgba($color-accent, 0.7);
+        box-shadow: 0 0 0 1px rgba($color-accent, 0.2);
+      }
+    }
+  }
+
+  &__numeric-filter + &__numeric-filter {
+    margin-top: 0.85rem;
+  }
+
+  &__results {
+    min-width: 0;
+  }
+
+  &__results-header {
+    align-items: end;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.26);
+    display: flex;
+    gap: 1.5rem;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+
+    > div > span {
+      @include label-caps;
+
+      color: $color-accent;
+    }
+
+    h2 {
+      @include headline-lg;
+
+      margin: 0.35rem 0;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      margin: 0;
+    }
+
+    label {
+      min-width: 220px;
+    }
+  }
+
+  &__warning {
+    background: rgba($color-error, 0.12);
+    border: 1px solid rgba($color-error, 0.35);
+    border-radius: $radius-md;
+    color: $color-error;
+    margin: 0 0 1.5rem;
+    padding: 0.9rem 1rem;
+  }
+
+  &__grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__empty {
+    @include dashboard-card;
+
+    margin-top: 2rem;
+    padding: 2rem;
+    text-align: center;
+
+    h2 {
+      @include headline-md;
+
+      margin: 0 0 0.75rem;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      margin: 0 auto 1.5rem;
+      max-width: 32rem;
+    }
+  }
+
+  &__compare-tray {
+    @include glass-hud;
+
+    align-items: center;
+    border-radius: 18px;
+    bottom: 1.5rem;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: auto 1fr minmax(12rem, auto) auto;
+    left: 50%;
+    max-width: 860px;
+    padding: 1rem;
+    position: fixed;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    z-index: 70;
+
+    > div:nth-child(2) {
+      display: grid;
+      gap: 0.2rem;
+
+      strong {
+        @include label-caps;
+      }
+
+      span {
+        color: $color-on-surface-variant;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  &__compare-status {
+    @include label-caps;
+
+    align-items: center;
+    background: transparent;
+    border: 1px solid rgba($color-outline-variant, 0.55);
+    border-radius: $radius-md;
+    color: $color-on-surface-variant;
+    display: inline-flex;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.8rem 1rem;
+    text-align: center;
+
+    &--ready {
+      background: $color-accent;
+      border-color: $color-accent;
+      color: white;
+    }
+  }
+
+  &__compare-thumbs {
+    display: flex;
+    isolation: isolate;
+
+    button {
+      background: $color-surface-container;
+      border: 2px solid $color-surface;
+      border-radius: $radius-lg;
+      height: 52px;
+      margin-left: -0.75rem;
+      overflow: hidden;
+      padding: 0;
+      transition:
+        transform $transition-base,
+        border-color $transition-base;
+      width: 52px;
+
+      &:first-child {
+        margin-left: 0;
+      }
+
+      &:hover,
+      &:focus-visible {
+        border-color: $color-accent;
+        transform: translateY(-4px);
+      }
+    }
+
+    img {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+  }
+
+  &__compare-clear {
+    align-items: center;
+    background: transparent;
+    border: 1px solid rgba($color-outline-variant, 0.45);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: inline-flex;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
+
+    &:hover,
+    &:focus-visible {
+      background: $color-accent;
+      border-color: $color-accent;
+      color: white;
+    }
+  }
+}
+
+.search-result-card {
+  @include dashboard-card;
+
+  display: flex;
+  flex-direction: column;
+
+  &--selected {
+    border-color: rgba($color-accent, 0.85);
+    box-shadow: 0 0 0 1px rgba($color-accent, 0.26), 0 18px 48px rgba($color-accent-dark, 0.18);
+  }
+
+  &__media {
+    @include image-zoom;
+
+    aspect-ratio: 16 / 10;
+    background: $color-surface-container;
+    position: relative;
+
+    img {
+      filter: saturate(0.86) contrast(1.05);
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    &::after {
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba($color-surface-lowest, 0.72));
+      content: '';
+      inset: auto 0 0;
+      height: 45%;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    > strong {
+      @include headline-md;
+
+      background: rgba($color-surface-lowest, 0.74);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: $radius-md;
+      bottom: 1rem;
+      color: white;
+      padding: 0.5rem 0.75rem;
+      position: absolute;
+      right: 1rem;
+      z-index: 1;
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    left: 1rem;
+    position: absolute;
+    top: 1rem;
+    z-index: 1;
+
+    span {
+      @include label-caps;
+
+      background: rgba($color-surface-lowest, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: $radius-sm;
+      color: white;
+      padding: 0.45rem 0.55rem;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 1.35rem;
+  }
+
+  &__title-row {
+    align-items: start;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1.1rem;
+
+    span {
+      @include label-caps;
+
+      color: $color-outline;
+      font-size: 0.68rem;
+    }
+
+    h3 {
+      @include headline-md;
+
+      margin: 0.35rem 0 0;
+    }
+
+    p {
+      @include label-caps;
+
+      align-items: center;
+      background: $color-accent-soft;
+      border: 1px solid rgba($color-accent, 0.35);
+      border-radius: 999px;
+      color: $color-accent;
+      display: inline-flex;
+      height: 42px;
+      justify-content: center;
+      margin: 0;
+      min-width: 42px;
+    }
+  }
+
+  &__specs {
+    border-block: 1px solid rgba($color-outline-variant, 0.18);
+    display: grid;
+    gap: 0.9rem 0.75rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-block: 1rem;
+
+    div {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    span {
+      @include label-caps;
+
+      color: $color-outline;
+      font-size: 0.62rem;
+    }
+
+    strong {
+      color: $color-on-surface;
+      font-size: 0.92rem;
+    }
+  }
+
+  &__description {
+    color: $color-on-surface-variant;
+    line-height: 1.6;
+    margin: 1rem 0 1.35rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+
+    .button {
+      align-items: center;
+      display: inline-flex;
+      flex: 1;
+      gap: 0.55rem;
+      justify-content: center;
+      padding-inline: 1rem;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .search-page {
+    &__mobile-filter-trigger {
+      display: block;
+    }
+
+    &__content {
+      grid-template-columns: 1fr;
+      padding-block: 2rem;
+    }
+
+    &__filters {
+      border-radius: 0 20px 20px 0;
+      bottom: 0;
+      left: 0;
+      max-width: 390px;
+      overflow-y: auto;
+      position: fixed;
+      top: 0;
+      transform: translateX(-105%);
+      transition: transform $transition-base;
+      width: min(88vw, 390px);
+      z-index: 90;
+
+      &--open {
+        transform: translateX(0);
+      }
+    }
+
+    &__filters-header {
+      grid-template-columns: 1fr auto auto;
+    }
+
+    &__filters-close {
+      display: inline-flex;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .search-page {
+    padding-bottom: 11rem;
+
+    &__hero {
+      padding-block: 2rem 2.25rem;
+      text-align: left;
+
+      > div {
+        text-align: left;
+      }
+
+      h1 {
+        margin-block: 0.75rem;
+      }
+    }
+
+    &__search-field {
+      margin-top: 1.5rem;
+      padding: 0.9rem 1rem;
+    }
+
+    &__content {
+      gap: 1.5rem;
+      padding-block: 1.5rem;
+    }
+
+    &__results-header {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 1rem;
+
+      label {
+        min-width: 0;
+      }
+    }
+
+    &__grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__range-grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__compare-tray {
+      align-items: stretch;
+      bottom: 1rem;
+      gap: 0.75rem;
+      grid-template-columns: auto 1fr auto;
+
+      .search-page__compare-status {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  .search-result-card {
+    &__media {
+      aspect-ratio: 4 / 3;
+    }
+
+    &__body {
+      padding: 1rem;
+    }
+
+    &__specs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &__actions {
+      flex-direction: column;
+    }
+  }
+}

@@ -4,6 +4,10 @@ import { IconButton } from '../../ui/IconButton';
 import './Navbar.scss';
 
 export function Navbar() {
+  const openSearch = () => {
+    window.location.hash = '#/buscador';
+  };
+
   return (
     <header className="navbar">
       <div className="navbar__inner">
@@ -27,6 +31,7 @@ export function Navbar() {
             className="navbar__icon navbar__icon--search"
             icon="search"
             label={navActions.searchLabel}
+            onClick={openSearch}
           />
           <IconButton
             className="navbar__icon navbar__icon--menu"
