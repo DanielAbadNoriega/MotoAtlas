@@ -17,6 +17,11 @@ export function getCompareSearchHash(bike: Pick<Bike, 'id'>) {
   return `#/buscador?compare=${encodeURIComponent(bike.id)}`;
 }
 
+export function getComparatorHash(bikes: readonly Pick<Bike, 'id'>[]) {
+  const ids = sanitizeCompareQueue(bikes.map((bike) => bike.id));
+  return `#/comparador?bikes=${ids.map((id) => encodeURIComponent(id)).join(',')}`;
+}
+
 export function getBrowseSearchHash() {
   return '#/buscador?browse=1';
 }
@@ -89,6 +94,23 @@ export function saveCompareQueue(ids: readonly Bike['id'][]) {
   }
 
   window.localStorage.setItem(compareQueueStorageKey, JSON.stringify(sanitizeCompareQueue(ids)));
+}
+
+export function getComparatorIdsFromHash(hash: string) {
+  const queryStart = hash.indexOf('?');
+
+  if (queryStart === -1) {
+    return [];
+  }
+
+  const params = new URLSearchParams(hash.slice(queryStart + 1));
+  const ids = params
+    .getAll('bikes')
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return sanitizeCompareQueue(ids);
 }
 
 export function getIncomingCompareIdsFromHash(hash: string) {

@@ -3,6 +3,7 @@ import { bikes, getBikeDetailHash, getBikeDisplayName } from '../../../data/bike
 import {
   clearIncomingCompareHash,
   compareQueueMaxSize,
+  getComparatorHash,
   getIncomingCompareIdsFromHash,
   isBrowseSearchHash,
   loadCompareQueue,
@@ -388,9 +389,13 @@ function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: read
           {selectedBikes.length}/{compareQueueMaxSize} motos seleccionadas
         </span>
       </div>
-      <div className={selectedBikes.length >= 2 ? 'search-page__compare-status search-page__compare-status--ready' : 'search-page__compare-status'}>
-        {selectedBikes.length >= 2 ? `Listas para comparar (${selectedBikes.length})` : 'Elegí al menos 2 motos'}
-      </div>
+      {selectedBikes.length >= 2 ? (
+        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHash(selectedBikes)}>
+          Comparar ahora ({selectedBikes.length})
+        </a>
+      ) : (
+        <div className="search-page__compare-status">Elegí al menos 2 motos</div>
+      )}
       <button className="search-page__compare-clear" type="button" onClick={onClear} aria-label="Vaciar comparador">
         <span className="material-symbols-outlined" aria-hidden="true">
           close

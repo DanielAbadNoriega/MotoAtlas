@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
+import { ComparatorPage } from './components/pages/ComparatorPage';
 import { ComparisonDetailPage } from './components/pages/ComparisonDetailPage';
 import { SearchPage } from './components/pages/SearchPage';
 import { FeaturedBikes } from './components/sections/FeaturedBikes';
@@ -12,6 +13,8 @@ import { ReliabilityReports } from './components/sections/ReliabilityReports';
 import { RoutesSection } from './components/sections/RoutesSection';
 import { findBikeById } from './data/bikes';
 import { findBikeComparisonByHash } from './data/comparisons';
+import type { Bike } from './types/bike';
+import { getComparatorIdsFromHash } from './utils/compareQueue';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -28,6 +31,10 @@ function getBikeDetailIdFromHash(hash: string) {
 
 function isSearchHash(hash: string) {
   return /^#\/(buscador|catalogo)([/?#]|$)/.test(hash);
+}
+
+function isComparatorHash(hash: string) {
+  return /^#\/comparador([/?#]|$)/.test(hash);
 }
 
 function useHashRoute() {
@@ -62,6 +69,10 @@ export function App() {
   const bikeDetailId = getBikeDetailIdFromHash(hash);
   const detailBike = bikeDetailId ? findBikeById(bikeDetailId) : undefined;
   const isSearchRoute = isSearchHash(hash);
+  const isComparatorRoute = isComparatorHash(hash);
+  const comparatorBikes = getComparatorIdsFromHash(hash)
+    .map((id) => findBikeById(id))
+    .filter((bike): bike is Bike => Boolean(bike));
 
   useEffect(() => {
     if (hash.startsWith('#/')) {
@@ -74,6 +85,8 @@ export function App() {
       <Navbar />
       {comparison ? (
         <ComparisonDetailPage comparison={comparison} />
+      ) : isComparatorRoute ? (
+        <ComparatorPage bikes={comparatorBikes} />
       ) : bikeDetailId ? (
         <BikeDetailPage bike={detailBike} />
       ) : isSearchRoute ? (

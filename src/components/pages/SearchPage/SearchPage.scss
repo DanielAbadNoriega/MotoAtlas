@@ -397,6 +397,13 @@
       background: $color-accent;
       border-color: $color-accent;
       color: white;
+
+      &:hover,
+      &:focus-visible {
+        background: $color-accent-dark;
+        border-color: $color-accent-dark;
+        transform: translateY(-1px);
+      }
     }
   }
 
