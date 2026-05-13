@@ -869,12 +869,18 @@ export const bikes = [
   },
 ] satisfies readonly Bike[];
 
-export const featuredBikes = bikes.slice(0, 3);
+export const bikeCatalog: readonly Bike[] = bikes;
+
+export const featuredBikes = bikeCatalog.slice(0, 3);
 
 const formatNumber = (value: number) => new Intl.NumberFormat('es-ES').format(value);
 
 export function getBikeDisplayName(bike: Bike) {
   return `${bike.brand} ${bike.model}`;
+}
+
+export function getBikeDetailHash(bike: Pick<Bike, 'id'>) {
+  return `#/motos/${bike.id}`;
 }
 
 export function getBikeCardSpecs(bike: Bike): readonly BikeSpec[] {
@@ -884,8 +890,12 @@ export function getBikeCardSpecs(bike: Bike): readonly BikeSpec[] {
   ];
 }
 
+export function findBikeById(id: Bike['id']): Bike | undefined {
+  return bikeCatalog.find((item) => item.id === id);
+}
+
 export function getBikeById(id: Bike['id']): Bike {
-  const bike = bikes.find((item) => item.id === id);
+  const bike = findBikeById(id);
 
   if (!bike) {
     throw new Error(`No existe la moto mock con id "${id}".`);

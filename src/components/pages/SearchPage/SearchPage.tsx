@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { bikes, getBikeDisplayName } from '../../../data/bikes';
+import { bikes, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import type { Bike, BikeLicense, BikeSegment } from '../../../types/bike';
 import { Button } from '../../ui/Button';
 import './SearchPage.scss';
@@ -345,7 +345,9 @@ function BikeResultCard({
         <p className="search-result-card__description">{bike.description}</p>
 
         <div className="search-result-card__actions">
-          <Button variant="ghost">Ver ficha</Button>
+          <a className="button button--ghost" href={getBikeDetailHash(bike)}>
+            Ver ficha
+          </a>
           <Button variant={isSelected ? 'secondary' : 'primary'} onClick={() => onToggleCompare(bike)}>
             <span className="material-symbols-outlined" aria-hidden="true">
               {isSelected ? 'check_circle' : 'compare_arrows'}

@@ -1,7 +1,6 @@
 import { cardActions } from '../../../data/home';
-import { getBikeCardSpecs, getBikeDisplayName } from '../../../data/bikes';
+import { getBikeCardSpecs, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import type { Bike } from '../../../types/bike';
-import { Button } from '../Button';
 import './BikeCard.scss';
 
 type BikeCardProps = {
@@ -32,7 +31,14 @@ export function BikeCard({ bike }: BikeCardProps) {
           ))}
         </dl>
 
-        <Button fullWidth>{cardActions.compareLabel}</Button>
+        <div className="bike-card__actions">
+          <a className="button button--ghost" href={getBikeDetailHash(bike)}>
+            Ver ficha
+          </a>
+          <a className="button button--primary" href="#/buscador">
+            {cardActions.compareLabel}
+          </a>
+        </div>
       </div>
     </article>
   );

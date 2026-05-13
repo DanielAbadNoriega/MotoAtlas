@@ -1,0 +1,1 @@
+export { BikeDetailPage } from './BikeDetailPage';

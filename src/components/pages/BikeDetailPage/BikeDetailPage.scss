@@ -1,0 +1,710 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.bike-detail {
+  background:
+    radial-gradient(circle at 88% 8%, rgba($color-accent, 0.14), transparent 34rem),
+    linear-gradient(180deg, rgba($color-surface-lowest, 0.55), rgba($color-surface, 0));
+  min-height: 100vh;
+
+  &__hero {
+    min-height: min(860px, calc(100vh - 80px));
+    overflow: hidden;
+    position: relative;
+  }
+
+  &__hero-media {
+    inset: 0;
+    position: absolute;
+
+    img {
+      filter: saturate(0.82) contrast(1.1);
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    &::after {
+      background:
+        linear-gradient(180deg, rgba($color-surface-lowest, 0.35), rgba($color-surface, 0.94)),
+        linear-gradient(90deg, rgba($color-surface-lowest, 0.88), rgba($color-surface-lowest, 0.32), rgba($color-surface-lowest, 0.72));
+      content: '';
+      inset: 0;
+      position: absolute;
+    }
+  }
+
+  &__hero-content {
+    @include container;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    min-height: min(860px, calc(100vh - 80px));
+    padding-block: 3rem 5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__back {
+    @include label-caps;
+
+    color: $color-on-surface-variant;
+    margin-bottom: auto;
+    width: fit-content;
+
+    &:hover,
+    &:focus-visible {
+      color: $color-on-surface;
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.4rem;
+
+    span {
+      @include label-caps;
+
+      background: rgba($color-surface-lowest, 0.58);
+      border: 1px solid rgba($color-outline-variant, 0.42);
+      border-radius: $radius-sm;
+      color: $color-on-surface;
+      padding: 0.45rem 0.65rem;
+
+      &:first-child {
+        background: $color-accent-soft;
+        border-color: rgba($color-accent, 0.4);
+        color: $color-accent;
+      }
+    }
+  }
+
+  h1 {
+    font-family: $font-headline;
+    font-size: clamp(3rem, 9vw, 7rem);
+    font-weight: 300;
+    letter-spacing: -0.07em;
+    line-height: 0.95;
+    margin: 0 0 1.25rem;
+    max-width: 980px;
+    text-transform: uppercase;
+
+    strong {
+      display: block;
+      font-weight: 900;
+    }
+  }
+
+  &__hero-content > p {
+    @include body-lg;
+
+    color: $color-on-surface-variant;
+    margin: 0 0 2rem;
+    max-width: 760px;
+  }
+
+  &__hero-specs {
+    border-left: 2px solid $color-accent;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    margin-bottom: 2rem;
+    padding: 0.4rem 0 0.4rem 1.5rem;
+
+    div {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    span {
+      @include label-caps;
+
+      color: $color-on-surface-variant;
+    }
+
+    strong {
+      font-family: $font-headline;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    small {
+      color: $color-on-surface-variant;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .button {
+      align-items: center;
+      display: inline-flex;
+      justify-content: center;
+    }
+  }
+
+  &__quick-specs,
+  &__features,
+  &__fit,
+  &__specs,
+  &__related {
+    @include container;
+    @include section-spacing;
+  }
+
+  &__quick-specs {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    article {
+      @include dashboard-card;
+
+      display: grid;
+      gap: 1rem;
+      min-height: 150px;
+      padding: 1.5rem;
+    }
+
+    span:first-child {
+      @include label-caps;
+
+      color: $color-on-surface-variant;
+    }
+
+    strong {
+      @include headline-md;
+    }
+
+    .material-symbols-outlined {
+      color: rgba($color-accent, 0.65);
+      justify-self: end;
+    }
+  }
+
+  &__features {
+    align-items: start;
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.5fr);
+    padding-top: 0;
+
+    > div:first-child > span {
+      @include label-caps;
+
+      color: $color-accent;
+    }
+
+    h2 {
+      @include headline-lg;
+
+      margin: 0.6rem 0 0;
+    }
+  }
+
+  &__feature-list {
+    @include glass-hud;
+
+    border-radius: $radius-xl;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1.5rem;
+
+    span {
+      @include label-caps;
+
+      background: $color-surface-lowest;
+      border: 1px solid rgba($color-outline-variant, 0.42);
+      border-radius: $radius-sm;
+      color: $color-on-surface;
+      padding: 0.7rem 0.8rem;
+    }
+  }
+
+  &__riding {
+    background: $color-surface-lowest;
+    display: grid;
+    gap: 4rem;
+    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.5fr);
+    padding: clamp(4rem, 8vw, 6rem) max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
+  }
+
+  &__score-card {
+    @include glass-hud;
+
+    border-radius: 24px;
+    padding: 2rem;
+    text-align: center;
+
+    > span {
+      @include label-caps;
+
+      color: $color-accent;
+    }
+
+    h2 {
+      @include headline-lg;
+
+      margin: 0.7rem 0 1rem;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      line-height: 1.6;
+      margin: 0 0 2rem;
+    }
+
+    strong {
+      display: block;
+      font-family: $font-headline;
+      font-size: clamp(4rem, 8vw, 6rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    small {
+      @include label-caps;
+
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &__score-list {
+    align-content: center;
+    display: grid;
+    gap: 1.25rem 2rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__score-row {
+    display: grid;
+    gap: 0.65rem;
+
+    > div:first-child {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    span,
+    strong {
+      @include label-caps;
+    }
+
+    span {
+      color: $color-on-surface;
+    }
+
+    strong {
+      color: $color-accent;
+    }
+
+    > div:last-child {
+      background: $color-surface-container-high;
+      border-radius: 999px;
+      height: 7px;
+      overflow: hidden;
+
+      span {
+        background: $color-accent;
+        display: block;
+        height: 100%;
+      }
+    }
+  }
+
+  &__fit {
+    h2 {
+      @include headline-lg;
+
+      font-style: italic;
+      margin: 0 0 3rem;
+      text-align: center;
+    }
+  }
+
+  &__fit-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    article {
+      border: 1px solid rgba($color-outline-variant, 0.25);
+      padding: 2rem;
+      transition:
+        border-color $transition-base,
+        transform $transition-base;
+
+      &:hover {
+        border-color: rgba($color-accent, 0.65);
+        transform: translateY(-4px);
+      }
+    }
+
+    .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 2.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    h3 {
+      @include headline-md;
+
+      margin: 0 0 0.9rem;
+    }
+
+    p,
+    li {
+      color: $color-on-surface-variant;
+      line-height: 1.6;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.1rem;
+    }
+  }
+
+  &__reliability {
+    background: $color-surface-container;
+    display: grid;
+    gap: 4rem;
+    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.4fr);
+    padding: clamp(4rem, 8vw, 6rem) max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
+
+    h2 {
+      @include headline-lg;
+
+      margin: 0 0 1rem;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+
+  &__reliability-index {
+    align-items: center;
+    background: $color-surface;
+    border: 1px solid rgba($color-accent, 0.26);
+    border-radius: $radius-xl;
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 2rem;
+    padding: 1.25rem;
+
+    strong {
+      align-items: center;
+      border: 4px solid $color-accent;
+      border-radius: 999px;
+      color: $color-accent;
+      display: inline-flex;
+      font-family: $font-headline;
+      font-size: 2rem;
+      font-weight: 900;
+      height: 76px;
+      justify-content: center;
+      min-width: 76px;
+    }
+
+    span {
+      @include label-caps;
+
+      color: $color-on-surface;
+      line-height: 1.5;
+    }
+  }
+
+  &__issues {
+    display: grid;
+    gap: 1rem;
+
+    article {
+      background: $color-surface;
+      border-left: 4px solid $color-accent;
+      border-radius: $radius-md;
+      padding: 1.25rem;
+    }
+
+    span {
+      @include label-caps;
+
+      color: $color-accent;
+    }
+
+    p {
+      margin-top: 0.5rem;
+    }
+  }
+
+  &__specs {
+    h2 {
+      @include headline-lg;
+
+      margin: 0 0 2.5rem;
+    }
+  }
+
+  &__spec-groups {
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    h3 {
+      @include label-caps;
+
+      border-bottom: 1px solid rgba($color-outline-variant, 0.28);
+      color: $color-accent;
+      margin: 0 0 1rem;
+      padding-bottom: 0.9rem;
+    }
+
+    dl {
+      margin: 0;
+    }
+
+    div {
+      align-items: baseline;
+      border-bottom: 1px solid rgba($color-outline-variant, 0.14);
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      padding-block: 0.85rem;
+    }
+
+    dt {
+      color: $color-on-surface-variant;
+    }
+
+    dd {
+      font-family: $font-mono;
+      font-weight: 700;
+      margin: 0;
+      text-align: right;
+    }
+  }
+
+  &__related {
+    background: $color-surface-lowest;
+    max-width: none;
+    width: 100%;
+
+    > div:first-child {
+      @include container;
+
+      text-align: center;
+    }
+
+    h2 {
+      @include headline-lg;
+
+      margin: 0 0 0.8rem;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      margin: 0 0 2.5rem;
+    }
+  }
+
+  &__related-list {
+    @include container;
+
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    article {
+      @include dashboard-card;
+
+      padding: 1.25rem;
+    }
+
+    img {
+      aspect-ratio: 16 / 10;
+      border-radius: $radius-lg;
+      filter: grayscale(1);
+      object-fit: cover;
+      transition: filter $transition-base;
+      width: 100%;
+    }
+
+    article:hover img {
+      filter: grayscale(0);
+    }
+
+    span {
+      @include label-caps;
+
+      color: $color-accent;
+      display: block;
+      margin-top: 1rem;
+    }
+
+    h3 {
+      @include headline-md;
+
+      margin: 0.45rem 0 1rem;
+    }
+
+    dl {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 0 0 1.25rem;
+    }
+
+    div {
+      background: $color-surface-container;
+      padding: 0.8rem;
+    }
+
+    dt {
+      @include label-caps;
+
+      color: $color-outline;
+      font-size: 0.62rem;
+    }
+
+    dd {
+      @include label-caps;
+
+      margin: 0.35rem 0 0;
+    }
+
+    a {
+      @include label-caps;
+
+      border: 1px solid $color-accent;
+      border-radius: $radius-md;
+      color: $color-accent;
+      display: block;
+      padding: 0.9rem 1rem;
+      text-align: center;
+
+      &:hover,
+      &:focus-visible {
+        background: $color-accent;
+        color: white;
+      }
+    }
+  }
+
+  &__not-found {
+    @include container;
+    @include section-spacing;
+
+    min-height: 60vh;
+    text-align: center;
+
+    span {
+      @include label-caps;
+
+      color: $color-accent;
+    }
+
+    h1 {
+      @include headline-xl;
+
+      margin: 1rem 0;
+      text-transform: none;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      margin-bottom: 2rem;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-desktop) {
+  .bike-detail {
+    &__riding,
+    &__reliability {
+      padding-inline: $margin-tablet;
+    }
+
+    &__fit-grid,
+    &__quick-specs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .bike-detail {
+    &__features,
+    &__riding,
+    &__reliability {
+      grid-template-columns: 1fr;
+    }
+
+    &__score-list,
+    &__spec-groups,
+    &__related-list {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .bike-detail {
+    &__hero,
+    &__hero-content {
+      min-height: calc(100vh - 64px);
+    }
+
+    &__hero-content {
+      padding-block: 1.5rem 3rem;
+    }
+
+    &__hero-specs {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &__actions,
+    &__actions .button {
+      width: 100%;
+    }
+
+    &__quick-specs,
+    &__fit-grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__riding,
+    &__reliability {
+      padding-inline: $margin-mobile;
+    }
+
+    &__score-list {
+      grid-template-columns: 1fr;
+    }
+
+    &__spec-groups div {
+      align-items: start;
+      flex-direction: column;
+    }
+
+    &__spec-groups dd {
+      text-align: left;
+    }
+  }
+}

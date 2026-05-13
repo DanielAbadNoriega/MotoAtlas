@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
+import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparisonDetailPage } from './components/pages/ComparisonDetailPage';
 import { SearchPage } from './components/pages/SearchPage';
 import { FeaturedBikes } from './components/sections/FeaturedBikes';
@@ -9,6 +10,7 @@ import { LatestNews } from './components/sections/LatestNews';
 import { MachineDuel } from './components/sections/MachineDuel';
 import { ReliabilityReports } from './components/sections/ReliabilityReports';
 import { RoutesSection } from './components/sections/RoutesSection';
+import { findBikeById } from './data/bikes';
 import { findBikeComparisonByHash } from './data/comparisons';
 
 const scrollToPageTop = () => {
@@ -17,6 +19,11 @@ const scrollToPageTop = () => {
 
 function getCurrentHash() {
   return typeof window === 'undefined' ? '' : window.location.hash;
+}
+
+function getBikeDetailIdFromHash(hash: string) {
+  const match = hash.match(/^#\/motos\/([^/?#]+)/);
+  return match ? decodeURIComponent(match[1]) : undefined;
 }
 
 function useHashRoute() {
@@ -48,6 +55,8 @@ function HomePage() {
 export function App() {
   const hash = useHashRoute();
   const comparison = findBikeComparisonByHash(hash);
+  const bikeDetailId = getBikeDetailIdFromHash(hash);
+  const detailBike = bikeDetailId ? findBikeById(bikeDetailId) : undefined;
   const isSearchRoute = hash === '#/buscador' || hash === '#/catalogo';
 
   useEffect(() => {
@@ -59,7 +68,15 @@ export function App() {
   return (
     <div className="app">
       <Navbar />
-      {comparison ? <ComparisonDetailPage comparison={comparison} /> : isSearchRoute ? <SearchPage /> : <HomePage />}
+      {comparison ? (
+        <ComparisonDetailPage comparison={comparison} />
+      ) : bikeDetailId ? (
+        <BikeDetailPage bike={detailBike} />
+      ) : isSearchRoute ? (
+        <SearchPage />
+      ) : (
+        <HomePage />
+      )}
       <Footer />
     </div>
   );

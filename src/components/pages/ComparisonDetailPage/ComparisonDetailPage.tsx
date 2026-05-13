@@ -1,5 +1,5 @@
 import { defaultBikeComparison } from '../../../data/comparisons';
-import { getBikeById, getBikeDisplayName } from '../../../data/bikes';
+import { getBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import type { Bike } from '../../../types/bike';
 import type { BikeComparison, ComparisonScore } from '../../../types/comparison';
 import { Button } from '../../ui/Button';
@@ -87,8 +87,15 @@ export function ComparisonDetailPage({ comparison = defaultBikeComparison }: Com
 
         <div className="comparison-detail__actions">
           <Button>Votar ganadora</Button>
-          <Button variant="ghost">Ver ficha técnica</Button>
-          <Button variant="secondary">Añadir otra moto</Button>
+          <a className="button button--ghost" href={getBikeDetailHash(leftBike)}>
+            Ficha {leftBike.brand}
+          </a>
+          <a className="button button--ghost" href={getBikeDetailHash(rightBike)}>
+            Ficha {rightBike.brand}
+          </a>
+          <a className="button button--secondary" href="#/buscador">
+            Añadir otra moto
+          </a>
         </div>
       </section>
 
