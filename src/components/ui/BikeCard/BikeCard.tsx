@@ -1,4 +1,5 @@
 import { cardActions } from '../../../data/home';
+import { getBikeCardSpecs, getBikeDisplayName } from '../../../data/bikes';
 import type { Bike } from '../../../types/bike';
 import { Button } from '../Button';
 import './BikeCard.scss';
@@ -8,20 +9,22 @@ type BikeCardProps = {
 };
 
 export function BikeCard({ bike }: BikeCardProps) {
+  const specs = getBikeCardSpecs(bike);
+
   return (
     <article className="bike-card">
       <div className="bike-card__media">
-        <img src={bike.image} alt={bike.alt} loading="lazy" />
+        <img src={bike.imageUrl} alt={bike.description} loading="lazy" />
       </div>
 
       <div className="bike-card__body">
         <div className="bike-card__header">
-          <h3>{bike.name}</h3>
-          <span>{bike.category}</span>
+          <h3>{getBikeDisplayName(bike)}</h3>
+          <span>{bike.segment}</span>
         </div>
 
         <dl className="bike-card__specs">
-          {bike.specs.map((spec) => (
+          {specs.map((spec) => (
             <div className="bike-card__spec" key={spec.label}>
               <dt>{spec.label}</dt>
               <dd>{spec.value}</dd>
