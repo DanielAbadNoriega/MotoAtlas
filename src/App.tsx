@@ -26,6 +26,10 @@ function getBikeDetailIdFromHash(hash: string) {
   return match ? decodeURIComponent(match[1]) : undefined;
 }
 
+function isSearchHash(hash: string) {
+  return /^#\/(buscador|catalogo)([/?#]|$)/.test(hash);
+}
+
 function useHashRoute() {
   const [hash, setHash] = useState(getCurrentHash);
 
@@ -57,7 +61,7 @@ export function App() {
   const comparison = findBikeComparisonByHash(hash);
   const bikeDetailId = getBikeDetailIdFromHash(hash);
   const detailBike = bikeDetailId ? findBikeById(bikeDetailId) : undefined;
-  const isSearchRoute = hash === '#/buscador' || hash === '#/catalogo';
+  const isSearchRoute = isSearchHash(hash);
 
   useEffect(() => {
     if (hash.startsWith('#/')) {
@@ -73,7 +77,7 @@ export function App() {
       ) : bikeDetailId ? (
         <BikeDetailPage bike={detailBike} />
       ) : isSearchRoute ? (
-        <SearchPage />
+        <SearchPage routeHash={hash} />
       ) : (
         <HomePage />
       )}

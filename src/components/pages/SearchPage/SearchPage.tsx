@@ -1,5 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { bikes, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import {
+  clearIncomingCompareHash,
+  compareQueueMaxSize,
+  getIncomingCompareIdsFromHash,
+  isBrowseSearchHash,
+  loadCompareQueue,
+  mergeCompareQueue,
+  saveCompareQueue,
+} from '../../../utils/compareQueue';
 import type { Bike, BikeLicense, BikeSegment } from '../../../types/bike';
 import { Button } from '../../ui/Button';
 import './SearchPage.scss';
@@ -57,7 +66,6 @@ const sortLabels: Record<SortOption, string> = {
 
 const sortOptions = Object.entries(sortLabels) as [SortOption, string][];
 const bikeCatalog: readonly Bike[] = bikes;
-const maxCompareSelection = 3;
 const numberFormatter = new Intl.NumberFormat('es-ES');
 const currencyFormatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
@@ -377,7 +385,7 @@ function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: read
       <div>
         <strong>Comparador</strong>
         <span>
-          {selectedBikes.length}/{maxCompareSelection} motos seleccionadas
+          {selectedBikes.length}/{compareQueueMaxSize} motos seleccionadas
         </span>
       </div>
       <div className={selectedBikes.length >= 2 ? 'search-page__compare-status search-page__compare-status--ready' : 'search-page__compare-status'}>
@@ -392,11 +400,18 @@ function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: read
   );
 }
 
-export function SearchPage() {
+type SearchPageProps = {
+  routeHash: string;
+};
+
+export function SearchPage({ routeHash }: SearchPageProps) {
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
-  const [selectedBikeIds, setSelectedBikeIds] = useState<Bike['id'][]>([]);
+  const [selectedBikeIds, setSelectedBikeIds] = useState<Bike['id'][]>(() =>
+    isBrowseSearchHash(routeHash) ? [] : loadCompareQueue(),
+  );
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [selectionWarning, setSelectionWarning] = useState('');
+  const isInitialQueueSync = useRef(true);
 
   const brandOptions = useMemo(() => [...new Set(bikeCatalog.map((bike) => bike.brand))].sort(), []);
   const segmentOptions = useMemo(() => [...new Set(bikeCatalog.map((bike) => bike.segment))].sort(), []);
@@ -404,6 +419,40 @@ export function SearchPage() {
   const updateFilters = (next: Partial<SearchFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
   };
+
+  useEffect(() => {
+    if (isInitialQueueSync.current) {
+      isInitialQueueSync.current = false;
+
+      if (isBrowseSearchHash(routeHash) && selectedBikeIds.length === 0) {
+        return;
+      }
+    }
+
+    saveCompareQueue(selectedBikeIds);
+  }, [routeHash, selectedBikeIds]);
+
+  useEffect(() => {
+    const incomingIds = getIncomingCompareIdsFromHash(routeHash);
+
+    if (incomingIds.length === 0) {
+      return;
+    }
+
+    setSelectedBikeIds((current) => {
+      const { queue, rejectedIds } = mergeCompareQueue(current, incomingIds);
+
+      setSelectionWarning(
+        rejectedIds.length > 0
+          ? `La cola ya tiene ${compareQueueMaxSize} motos. Quitá una antes de añadir otra.`
+          : '',
+      );
+
+      return queue;
+    });
+
+    clearIncomingCompareHash(routeHash);
+  }, [routeHash]);
 
   const filteredBikes = useMemo(() => {
     const text = normalizeText(filters.text);
@@ -442,8 +491,8 @@ export function SearchPage() {
         return current.filter((id) => id !== bike.id);
       }
 
-      if (current.length >= maxCompareSelection) {
-        setSelectionWarning(`Solo podés seleccionar hasta ${maxCompareSelection} motos para comparar.`);
+      if (current.length >= compareQueueMaxSize) {
+        setSelectionWarning(`Solo podés seleccionar hasta ${compareQueueMaxSize} motos para comparar.`);
         return current;
       }
 

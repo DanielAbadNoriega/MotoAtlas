@@ -1,4 +1,5 @@
 import { bikeCatalog, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import './BikeDetailPage.scss';
 
@@ -217,10 +218,10 @@ export function BikeDetailPage({ bike }: BikeDetailPageProps) {
           </div>
 
           <div className="bike-detail__actions">
-            <a className="button button--primary" href="#/buscador">
+            <a className="button button--primary" href={getCompareSearchHash(bike)}>
               Comparar en buscador
             </a>
-            <a className="button button--ghost" href="#/buscador">
+            <a className="button button--ghost" href={getBrowseSearchHash()}>
               Ver más motos
             </a>
           </div>

@@ -1,5 +1,6 @@
 import { cardActions } from '../../../data/home';
 import { getBikeCardSpecs, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import './BikeCard.scss';
 
@@ -35,7 +36,7 @@ export function BikeCard({ bike }: BikeCardProps) {
           <a className="button button--ghost" href={getBikeDetailHash(bike)}>
             Ver ficha
           </a>
-          <a className="button button--primary" href="#/buscador">
+          <a className="button button--primary" href={getCompareSearchHash(bike)}>
             {cardActions.compareLabel}
           </a>
         </div>
