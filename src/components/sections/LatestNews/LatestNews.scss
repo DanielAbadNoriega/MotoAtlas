@@ -1,0 +1,29 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.latest-news {
+  @include container;
+  @include section-spacing;
+
+  .section-title {
+    margin-bottom: 3rem;
+  }
+
+  .latest-news__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+    gap: $space-gutter;
+  }
+
+  .latest-news__list {
+    display: grid;
+    align-content: start;
+    gap: $space-gutter;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    .latest-news__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

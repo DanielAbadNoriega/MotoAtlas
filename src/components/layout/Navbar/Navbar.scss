@@ -1,0 +1,90 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.navbar {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  width: 100%;
+  border-bottom: 1px solid rgba($color-outline-variant, 0.25);
+  background: rgba($color-surface, 0.9);
+  backdrop-filter: blur(20px);
+
+  .navbar__inner {
+    @include container;
+
+    display: flex;
+    height: 80px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .navbar__brand {
+    font-family: $font-headline;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    text-transform: uppercase;
+  }
+
+  .navbar__links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    a {
+      @include label-caps;
+
+      color: $color-on-surface-variant;
+      transition: color $transition-base;
+
+      &:hover,
+      &:focus-visible {
+        color: $color-on-surface;
+      }
+    }
+  }
+
+  .navbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .navbar__signin {
+    min-height: 38px;
+    padding: 0.55rem 1rem;
+  }
+
+  .navbar__icon {
+    display: inline-grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border: 0;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface;
+    transition:
+      background $transition-base,
+      color $transition-base;
+
+    &:hover {
+      background: $color-surface-container-high;
+      color: $color-accent;
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    .navbar__links {
+      display: none;
+    }
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    .navbar__signin {
+      display: none;
+    }
+  }
+}

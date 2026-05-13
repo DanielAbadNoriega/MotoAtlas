@@ -1,0 +1,131 @@
+@use './variables' as *;
+@use './mixins' as *;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: $color-surface;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background:
+    linear-gradient(rgba($color-surface, 0.96), rgba($color-surface, 0.96)),
+    linear-gradient(45deg, #1a1a1b 25%, transparent 25%),
+    linear-gradient(-45deg, #1a1a1b 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1a1a1b 75%),
+    linear-gradient(-45deg, transparent 75%, #1a1a1b 75%);
+  background-position:
+    0 0,
+    0 0,
+    0 2px,
+    2px -2px,
+    -2px 0;
+  background-size:
+    auto,
+    4px 4px,
+    4px 4px,
+    4px 4px,
+    4px 4px;
+  color: $color-on-surface;
+  font-family: $font-body;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::selection {
+  background: $color-accent;
+  color: white;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+#root,
+.app {
+  min-height: 100vh;
+}
+
+.material-symbols-outlined {
+  direction: ltr;
+  display: inline-block;
+  font-family: 'Material Symbols Outlined';
+  font-feature-settings: 'liga';
+  font-size: 24px;
+  font-style: normal;
+  font-weight: normal;
+  letter-spacing: normal;
+  line-height: 1;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.section-kicker {
+  @include label-caps;
+
+  display: block;
+  margin-bottom: 0.75rem;
+  color: $color-accent;
+}
+
+.section-title {
+  @include headline-lg;
+
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.section-copy {
+  @include body-lg;
+
+  color: $color-on-surface-variant;
+}
+
+.fade-in {
+  animation: fade-in 700ms ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}

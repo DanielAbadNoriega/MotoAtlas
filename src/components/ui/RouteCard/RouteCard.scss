@@ -1,0 +1,65 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.route-card {
+  cursor: pointer;
+
+  .route-card__media {
+    @include image-zoom;
+
+    position: relative;
+    height: 16rem;
+    margin-bottom: 1rem;
+    border-radius: $radius-lg;
+    background: $color-surface-lowest;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(1);
+    }
+
+    span {
+      @include glass-hud;
+      @include label-caps;
+
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.625rem;
+    }
+  }
+
+  &:hover .route-card__media img {
+    filter: grayscale(0);
+  }
+
+  h3 {
+    @include headline-md;
+
+    margin: 0 0 0.25rem;
+  }
+
+  p {
+    @include label-caps;
+
+    margin: 0;
+    color: $color-on-surface-variant;
+  }
+
+  .route-card__progress {
+    height: 4px;
+    margin-top: 1rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: $color-surface-container-high;
+
+    span {
+      display: block;
+      height: 100%;
+      background: $color-accent;
+    }
+  }
+}

@@ -1,0 +1,73 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.footer {
+  @include section-spacing;
+
+  border-top: 1px solid rgba($color-outline-variant, 0.25);
+  background: $color-surface-lowest;
+
+  .footer__inner {
+    @include container;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .footer__brand-block strong {
+    @include headline-md;
+
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    @include label-caps;
+
+    max-width: 26rem;
+    margin: 0;
+    color: $color-on-surface-variant;
+  }
+
+  .footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+
+    a {
+      @include label-caps;
+
+      color: $color-on-surface-variant;
+      transition: color $transition-base;
+
+      &:hover {
+        color: $color-primary;
+      }
+    }
+  }
+
+  .footer__social {
+    display: flex;
+    gap: 1rem;
+
+    button {
+      border: 0;
+      background: transparent;
+      color: $color-on-surface-variant;
+      transition: color $transition-base;
+
+      &:hover {
+        color: $color-accent;
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    .footer__inner {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+}

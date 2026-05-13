@@ -1,0 +1,38 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.routes-section {
+  @include container;
+  @include section-spacing;
+
+  .routes-section__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .routes-section__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $space-gutter;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    .routes-section__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    .routes-section__header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .routes-section__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

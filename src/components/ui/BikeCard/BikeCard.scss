@@ -1,0 +1,75 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.bike-card {
+  @include dashboard-card;
+
+  .bike-card__media {
+    @include image-zoom;
+
+    aspect-ratio: 16 / 9;
+    background: $color-surface-lowest;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .bike-card__body {
+    padding: 1.5rem;
+  }
+
+  .bike-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h3 {
+      @include headline-md;
+
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    span {
+      @include label-caps;
+
+      border: 1px solid $color-accent;
+      color: $color-accent;
+      font-size: 0.625rem;
+      padding: 0.4rem 0.5rem;
+      white-space: nowrap;
+    }
+  }
+
+  .bike-card__specs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0 0 1.5rem;
+  }
+
+  .bike-card__spec {
+    background: $color-surface-container-high;
+    padding: 0.85rem;
+
+    dt {
+      @include label-caps;
+
+      margin-bottom: 0.45rem;
+      color: rgba($color-on-surface-variant, 0.6);
+      font-size: 0.625rem;
+    }
+
+    dd {
+      @include label-caps;
+
+      margin: 0;
+      color: $color-on-surface;
+    }
+  }
+}

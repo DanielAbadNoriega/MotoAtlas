@@ -1,0 +1,43 @@
+$color-surface: #141313;
+$color-surface-dim: #141313;
+$color-surface-bright: #3a3939;
+$color-surface-lowest: #0e0e0e;
+$color-surface-low: #1c1b1b;
+$color-surface-container: #201f1f;
+$color-surface-container-high: #2b2a2a;
+$color-surface-container-highest: #353434;
+$color-on-surface: #e5e2e1;
+$color-on-surface-variant: #c7c6ca;
+$color-outline: #909094;
+$color-outline-variant: #46474a;
+$color-primary: #c8c6c7;
+$color-accent: #e31837;
+$color-accent-container: #d6042f;
+$color-accent-dark: #92001d;
+$color-accent-soft: rgba(227, 24, 55, 0.12);
+$color-error: #ffb4ab;
+
+$font-headline: 'Hanken Grotesk', system-ui, sans-serif;
+$font-body: 'Inter', system-ui, sans-serif;
+$font-mono: 'JetBrains Mono', monospace;
+
+$max-width: 1440px;
+$space-base: 8px;
+$space-gutter: 24px;
+$space-section: 120px;
+$margin-desktop: 80px;
+$margin-tablet: 40px;
+$margin-mobile: 20px;
+
+$radius-sm: 2px;
+$radius-md: 4px;
+$radius-lg: 8px;
+$radius-xl: 12px;
+
+$transition-fast: 160ms ease;
+$transition-base: 240ms ease;
+$transition-slow: 500ms ease;
+
+$breakpoint-mobile: 640px;
+$breakpoint-tablet: 900px;
+$breakpoint-desktop: 1200px;
