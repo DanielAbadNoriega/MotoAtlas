@@ -1,6 +1,6 @@
-import type { Report } from '../types/report';
+import type { Report, ReportCopy } from '../types/report';
 
-export const reports: Report[] = [
+export const reports = [
   {
     id: 'yamaha-mt-07-2021-23',
     model: 'MT-07 (2021-23)',
@@ -25,4 +25,10 @@ export const reports: Report[] = [
     strengths: ['Chasis ágil'],
     reportsCount: 89,
   },
-];
+] satisfies readonly Report[];
+
+
+export const reportCopy = {
+  countLocale: 'es-ES',
+  countSuffix: 'reportes',
+} satisfies ReportCopy;

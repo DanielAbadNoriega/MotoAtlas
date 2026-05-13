@@ -5,7 +5,7 @@ import cbr1000rr from '../assets/comparison/cbr1000rr(Comparison Bike A).png';
 import kawasakiZx10rr from '../assets/comparison/kawasaki-zx-10rr(Comparison Bike B).png';
 import type { Bike, ComparisonBike } from '../types/bike';
 
-export const featuredBikes: Bike[] = [
+export const featuredBikes = [
   {
     id: 'bmw-s1000rr',
     name: 'BMW S1000RR',
@@ -39,9 +39,9 @@ export const featuredBikes: Bike[] = [
       { label: 'POTENCIA', value: '200 HP' },
     ],
   },
-];
+] satisfies readonly Bike[];
 
-export const duelBikes: ComparisonBike[] = [
+export const duelBikes = [
   {
     id: 'honda-cbr1000rr-r',
     name: 'Honda CBR1000RR-R',
@@ -68,4 +68,4 @@ export const duelBikes: ComparisonBike[] = [
       { label: 'Electrónica', value: 'KCMF Suite' },
     ],
   },
-];
+] satisfies readonly [ComparisonBike, ComparisonBike];

@@ -1,0 +1,25 @@
+@use '../../../styles/variables' as *;
+
+.icon-button {
+  display: inline-grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: $radius-md;
+  background: transparent;
+  color: inherit;
+  transition:
+    background $transition-base,
+    color $transition-base,
+    transform $transition-fast;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 3px;
+  }
+}

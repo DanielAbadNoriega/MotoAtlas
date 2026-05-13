@@ -1,0 +1,78 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.comparison-bike-card {
+  background: $color-surface-container;
+  padding: 2rem;
+
+  img {
+    width: 100%;
+    height: 12rem;
+    margin-bottom: 1.5rem;
+    border-radius: $radius-md;
+    object-fit: cover;
+    filter: grayscale(1);
+    transition:
+      filter $transition-slow,
+      transform $transition-slow;
+  }
+
+  &:hover img {
+    filter: grayscale(0.2);
+    transform: scale(1.02);
+  }
+
+  h3 {
+    @include headline-md;
+
+    margin: 0 0 0.5rem;
+  }
+
+  > p {
+    @include label-caps;
+
+    margin: 0 0 1.5rem;
+    color: $color-on-surface-variant;
+  }
+
+  dl {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+  }
+
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.25);
+    padding-bottom: 0.75rem;
+  }
+
+  dt,
+  dd {
+    @include label-caps;
+
+    margin: 0;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    padding: 1.5rem;
+
+    img {
+      height: 10rem;
+    }
+  }
+}
+
+.comparison-bike-card--red {
+  border-left: 4px solid $color-accent;
+
+  > p {
+    color: $color-accent;
+  }
+}
+
+.comparison-bike-card--neutral {
+  border-right: 4px solid $color-outline;
+}

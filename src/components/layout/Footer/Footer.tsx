@@ -1,35 +1,28 @@
+import { brand, footerContent } from '../../../data/site';
+import { IconButton } from '../../ui/IconButton';
 import './Footer.scss';
-
-const footerLinks = ['Privacidad', 'Términos', 'Especificaciones técnicas', 'Soporte'];
 
 export function Footer() {
   return (
-    <footer className="footer" id="comunidad">
+    <footer className="footer" id="comunidad" aria-label={footerContent.ariaLabel}>
       <div className="footer__inner">
         <div className="footer__brand-block">
-          <strong>MotoAtlas</strong>
-          <p>© 2026 MotoAtlas. Registro de ingeniería de alto rendimiento.</p>
+          <strong>{brand.name}</strong>
+          <p>{footerContent.copyright}</p>
         </div>
 
-        <nav className="footer__links" aria-label="Enlaces secundarios">
-          {footerLinks.map((link) => (
-            <a href="#top" key={link}>
-              {link}
+        <nav className="footer__links" aria-label={footerContent.secondaryNavLabel}>
+          {footerContent.links.map((link) => (
+            <a href={link.href} key={link.label}>
+              {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="footer__social" aria-label="Acciones sociales">
-          <button aria-label="Cambiar idioma">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              language
-            </span>
-          </button>
-          <button aria-label="Compartir MotoAtlas">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              share
-            </span>
-          </button>
+        <div className="footer__social" aria-label={footerContent.socialLabel}>
+          {footerContent.socialActions.map((action) => (
+            <IconButton icon={action.icon} label={action.label} key={action.icon} />
+          ))}
         </div>
       </div>
     </footer>

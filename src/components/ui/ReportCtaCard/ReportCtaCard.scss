@@ -1,0 +1,26 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.report-cta-card {
+  @include dashboard-card;
+
+  display: flex;
+  min-height: 210px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: $color-accent-soft;
+  border-color: rgba($color-accent, 0.35);
+  text-align: center;
+
+  p {
+    @include label-caps;
+
+    margin: 0 0 1rem;
+  }
+
+  .button {
+    width: 100%;
+  }
+}

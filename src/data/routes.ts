@@ -1,9 +1,9 @@
 import alpes from '../assets/routes/alpes(Route 1).png';
 import costaBrava from '../assets/routes/costa-brava(Route 2).png';
 import transPirenaica from '../assets/routes/trans-pirenaica(route-3).png';
-import type { Route } from '../types/route';
+import type { Route, RouteCopy } from '../types/route';
 
-export const routes: Route[] = [
+export const routes = [
   {
     id: 'paso-alpes',
     title: 'Paso de los Alpes',
@@ -34,4 +34,9 @@ export const routes: Route[] = [
     image: transPirenaica,
     alt: 'Ruta de larga distancia con carretera abierta y horizonte amplio.',
   },
-];
+] satisfies readonly Route[];
+
+
+export const routeCopy = {
+  difficultyLabel: 'Dificultad',
+} satisfies RouteCopy;

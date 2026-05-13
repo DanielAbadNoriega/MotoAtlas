@@ -1,0 +1,1 @@
+export { ComparisonBikeCard } from './ComparisonBikeCard';

@@ -1,16 +1,19 @@
-import type { Route } from '../../../types/route';
+import type { Route, RouteCopy } from '../../../types/route';
 import './RouteCard.scss';
 
 type RouteCardProps = {
+  copy: RouteCopy;
   route: Route;
 };
 
-export function RouteCard({ route }: RouteCardProps) {
+export function RouteCard({ copy, route }: RouteCardProps) {
   return (
     <article className="route-card">
       <div className="route-card__media">
         <img src={route.image} alt={route.alt} loading="lazy" />
-        <span>Dificultad: {route.difficulty}</span>
+        <span>
+          {copy.difficultyLabel}: {route.difficulty}
+        </span>
       </div>
 
       <h3>{route.title}</h3>

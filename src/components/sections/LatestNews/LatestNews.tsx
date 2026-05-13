@@ -1,15 +1,16 @@
+import { homeSections } from '../../../data/home';
 import { news } from '../../../data/news';
 import { NewsCard } from '../../ui/NewsCard';
+import { SectionHeader } from '../../ui/SectionHeader';
 import './LatestNews.scss';
 
 export function LatestNews() {
-  const [featuredNews, ...secondaryNews] = news;
+  const featuredNews = news.find((item) => item.featured) ?? news[0];
+  const secondaryNews = news.filter((item) => item.id !== featuredNews.id);
 
   return (
     <section className="latest-news fade-in" id="noticias" aria-labelledby="latest-news-title">
-      <h2 className="section-title" id="latest-news-title">
-        Últimas noticias
-      </h2>
+      <SectionHeader content={homeSections.latestNews} titleId="latest-news-title" />
 
       <div className="latest-news__grid">
         <NewsCard item={featuredNews} variant="featured" />

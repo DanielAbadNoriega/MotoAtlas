@@ -1,3 +1,4 @@
+import { cardActions } from '../../../data/home';
 import type { Bike } from '../../../types/bike';
 import { Button } from '../Button';
 import './BikeCard.scss';
@@ -28,7 +29,7 @@ export function BikeCard({ bike }: BikeCardProps) {
           ))}
         </dl>
 
-        <Button fullWidth>Comparar</Button>
+        <Button fullWidth>{cardActions.compareLabel}</Button>
       </div>
     </article>
   );

@@ -1,5 +1,4 @@
 @use './variables' as *;
-@use './mixins' as *;
 
 * {
   box-sizing: border-box;
@@ -37,7 +36,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-body::selection {
+::selection {
   background: $color-accent;
   color: white;
 }
@@ -81,27 +80,6 @@ img {
   word-wrap: normal;
   -webkit-font-smoothing: antialiased;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-.section-kicker {
-  @include label-caps;
-
-  display: block;
-  margin-bottom: 0.75rem;
-  color: $color-accent;
-}
-
-.section-title {
-  @include headline-lg;
-
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.section-copy {
-  @include body-lg;
-
-  color: $color-on-surface-variant;
 }
 
 .fade-in {

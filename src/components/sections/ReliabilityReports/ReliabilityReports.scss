@@ -10,58 +10,22 @@
     @include container;
   }
 
-  .reliability-reports__header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 3rem;
-
-    > .material-symbols-outlined {
-      color: $color-accent;
-      font-size: 2.5rem;
-    }
-  }
-
   .reliability-reports__grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: $space-gutter;
   }
 
-  .reliability-reports__cta {
-    @include dashboard-card;
-
-    display: flex;
-    min-height: 210px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    background: $color-accent-soft;
-    border-color: rgba($color-accent, 0.35);
-    text-align: center;
-
-    p {
-      @include label-caps;
-
-      margin: 0 0 1rem;
-    }
-  }
-
-  @media (max-width: $breakpoint-desktop) {
+  @media (max-width: $breakpoint-tablet) {
     .reliability-reports__grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media (max-width: $breakpoint-mobile) {
-    .reliability-reports__header {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-
     .reliability-reports__grid {
       grid-template-columns: 1fr;
+      gap: 1rem;
     }
   }
 }

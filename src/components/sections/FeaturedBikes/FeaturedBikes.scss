@@ -5,14 +5,6 @@
   @include container;
   @include section-spacing;
 
-  .featured-bikes__header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-  }
-
   .featured-bikes__grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -26,11 +18,6 @@
   }
 
   @media (max-width: $breakpoint-mobile) {
-    .featured-bikes__header {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-
     .featured-bikes__grid {
       grid-template-columns: 1fr;
     }

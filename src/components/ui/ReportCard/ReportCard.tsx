@@ -1,11 +1,12 @@
-import type { Report } from '../../../types/report';
+import type { Report, ReportCopy } from '../../../types/report';
 import './ReportCard.scss';
 
 type ReportCardProps = {
+  copy: ReportCopy;
   report: Report;
 };
 
-export function ReportCard({ report }: ReportCardProps) {
+export function ReportCard({ copy, report }: ReportCardProps) {
   return (
     <article className="report-card">
       <div className="report-card__topline">
@@ -34,7 +35,9 @@ export function ReportCard({ report }: ReportCardProps) {
       </div>
 
       <div className="report-card__footer">
-        <span>{report.reportsCount.toLocaleString('es-ES')} reportes</span>
+        <span>
+          {report.reportsCount.toLocaleString(copy.countLocale)} {copy.countSuffix}
+        </span>
         <span className="material-symbols-outlined" aria-hidden="true">
           arrow_forward
         </span>

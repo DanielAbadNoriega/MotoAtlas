@@ -4,6 +4,7 @@
 .hero {
   position: relative;
   display: grid;
+  height: 870px;
   min-height: min(870px, calc(100vh - 80px));
   place-items: center;
   overflow: hidden;
@@ -47,9 +48,8 @@
   .hero__search {
     @include glass-hud;
 
-    display: grid;
+    display: flex;
     max-width: 42rem;
-    grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 0.5rem;
     margin-inline: auto;
@@ -68,6 +68,13 @@
     clip: rect(0, 0, 0, 0);
     overflow: hidden;
     white-space: nowrap;
+  }
+
+  .hero__search-field {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
   }
 
   .material-symbols-outlined {
@@ -90,14 +97,29 @@
   }
 
   @media (max-width: $breakpoint-mobile) {
-    min-height: 720px;
+    height: 600px;
+    min-height: 600px;
+
+    h1 {
+      margin-bottom: 1.5rem;
+    }
 
     .hero__search {
-      grid-template-columns: auto 1fr;
+      align-items: stretch;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.375rem;
+    }
+
+    .hero__search-field {
+      padding-inline: 0.5rem;
+    }
+
+    input {
+      padding-block: 0.9rem;
     }
 
     .hero__search-button {
-      grid-column: 1 / -1;
       width: 100%;
     }
   }

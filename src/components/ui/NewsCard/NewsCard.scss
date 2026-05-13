@@ -82,6 +82,14 @@
       -webkit-line-clamp: 2;
     }
   }
+
+  @media (max-width: $breakpoint-mobile) {
+    min-height: 400px;
+
+    .news-card__content {
+      padding: 1.5rem;
+    }
+  }
 }
 
 .news-card--compact {
@@ -102,6 +110,10 @@
   }
 
   p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     font-size: 0.9rem;
   }
 
@@ -112,6 +124,14 @@
       width: 7rem;
       height: 6rem;
       flex-basis: 7rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    p {
+      font-size: 0.75rem;
     }
   }
 }

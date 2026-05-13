@@ -18,11 +18,11 @@
   padding-block: $space-section;
 
   @media (max-width: $breakpoint-tablet) {
-    padding-block: 88px;
+    padding-block: $space-section-tablet;
   }
 
   @media (max-width: $breakpoint-mobile) {
-    padding-block: 72px;
+    padding-block: $space-section-mobile;
   }
 }
 
@@ -37,7 +37,7 @@
 
 @mixin headline-xl {
   font-family: $font-headline;
-  font-size: clamp(3rem, 7vw, 4rem);
+  font-size: clamp(2.25rem, 7vw, 4rem);
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -45,7 +45,7 @@
 
 @mixin headline-lg {
   font-family: $font-headline;
-  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.2;
@@ -53,14 +53,14 @@
 
 @mixin headline-md {
   font-family: $font-headline;
-  font-size: 1.5rem;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
   font-weight: 700;
   line-height: 1.3;
 }
 
 @mixin body-lg {
   font-family: $font-body;
-  font-size: 1.125rem;
+  font-size: clamp(1rem, 2vw, 1.125rem);
   line-height: 1.6;
 }
 

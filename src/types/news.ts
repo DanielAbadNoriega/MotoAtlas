@@ -1,4 +1,4 @@
-export type News = {
+export type News = Readonly<{
   id: string;
   title: string;
   category: string;
@@ -6,4 +6,4 @@ export type News = {
   image: string;
   alt: string;
   featured?: boolean;
-};
+}>;

@@ -1,20 +1,13 @@
 import { featuredBikes } from '../../../data/bikes';
+import { homeSections } from '../../../data/home';
 import { BikeCard } from '../../ui/BikeCard';
-import { Button } from '../../ui/Button';
+import { SectionHeader } from '../../ui/SectionHeader';
 import './FeaturedBikes.scss';
 
 export function FeaturedBikes() {
   return (
     <section className="featured-bikes fade-in" aria-labelledby="featured-bikes-title">
-      <div className="featured-bikes__header">
-        <div>
-          <span className="section-kicker">Catálogo 2024</span>
-          <h2 className="section-title" id="featured-bikes-title">
-            Máquinas destacadas
-          </h2>
-        </div>
-        <Button variant="ghost">Ver todo</Button>
-      </div>
+      <SectionHeader content={homeSections.featuredBikes} titleId="featured-bikes-title" />
 
       <div className="featured-bikes__grid">
         {featuredBikes.map((bike) => (

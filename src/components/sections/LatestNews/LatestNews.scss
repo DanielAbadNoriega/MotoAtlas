@@ -5,10 +5,6 @@
   @include container;
   @include section-spacing;
 
-  .section-title {
-    margin-bottom: 3rem;
-  }
-
   .latest-news__grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
@@ -21,7 +17,7 @@
     gap: $space-gutter;
   }
 
-  @media (max-width: $breakpoint-tablet) {
+  @media (max-width: $breakpoint-mobile) {
     .latest-news__grid {
       grid-template-columns: 1fr;
     }

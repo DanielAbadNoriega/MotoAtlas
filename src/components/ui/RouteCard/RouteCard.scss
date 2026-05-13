@@ -62,4 +62,10 @@
       background: $color-accent;
     }
   }
+
+  @media (max-width: $breakpoint-mobile) {
+    .route-card__media {
+      height: 14rem;
+    }
+  }
 }

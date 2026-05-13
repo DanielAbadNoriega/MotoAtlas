@@ -25,6 +25,8 @@ $max-width: 1440px;
 $space-base: 8px;
 $space-gutter: 24px;
 $space-section: 120px;
+$space-section-tablet: 88px;
+$space-section-mobile: 60px;
 $margin-desktop: 80px;
 $margin-tablet: 40px;
 $margin-mobile: 20px;
@@ -38,6 +40,6 @@ $transition-fast: 160ms ease;
 $transition-base: 240ms ease;
 $transition-slow: 500ms ease;
 
-$breakpoint-mobile: 640px;
-$breakpoint-tablet: 900px;
+$breakpoint-mobile: 767px;
+$breakpoint-tablet: 1023px;
 $breakpoint-desktop: 1200px;

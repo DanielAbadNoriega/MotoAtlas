@@ -72,4 +72,14 @@
       color: $color-on-surface;
     }
   }
+
+  @media (max-width: $breakpoint-mobile) {
+    .bike-card__body {
+      padding: 1.25rem;
+    }
+
+    .bike-card__header {
+      margin-bottom: 1rem;
+    }
+  }
 }

@@ -3,7 +3,7 @@ import newsTwo from '../assets/news/news-moto(News 2).png';
 import newsThree from '../assets/news/news-moto(News 3).png';
 import type { News } from '../types/news';
 
-export const news: News[] = [
+export const news = [
   {
     id: 'superbikes-electricas',
     title: 'El futuro de las superbikes eléctricas: ¿adiós a la combustión?',
@@ -22,6 +22,7 @@ export const news: News[] = [
       'Descubrimos cuánta carga aerodinámica generan realmente los alerones en motos de serie.',
     image: newsTwo,
     alt: 'Detalle de alerón aerodinámico en fibra de carbono.',
+    featured: false,
   },
   {
     id: 'ajuste-rebote',
@@ -30,5 +31,6 @@ export const news: News[] = [
     excerpt: 'Aprende a configurar tu moto para circuito sin gastar un euro en el taller.',
     image: newsThree,
     alt: 'Motorista inclinado en curva de carretera de montaña.',
+    featured: false,
   },
-];
+] satisfies readonly [News, ...News[]];

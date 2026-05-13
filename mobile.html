@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>MotoAtlas | La Enciclopedia del Motero Técnico</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#92001d",
+                        "surface": "#141313",
+                        "error-container": "#93000a",
+                        "on-background": "#e5e2e1",
+                        "surface-tint": "#c8c6c7",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-container-low": "#1c1b1b",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-primary-fixed-variant": "#474647",
+                        "surface-container-high": "#2b2a2a",
+                        "error": "#ffb4ab",
+                        "surface-variant": "#353434",
+                        "outline-variant": "#46474a",
+                        "on-surface-variant": "#c7c6ca",
+                        "on-tertiary-fixed": "#1a1c1d",
+                        "on-primary": "#303031",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-container": "#181a1b",
+                        "inverse-surface": "#e5e2e1",
+                        "tertiary": "#c6c6c7",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "background": "#141313",
+                        "on-tertiary": "#2f3132",
+                        "secondary-container": "#d6042f",
+                        "on-error": "#690005",
+                        "inverse-primary": "#5f5e5f",
+                        "on-secondary": "#680011",
+                        "on-tertiary-container": "#818284",
+                        "surface-dim": "#141313",
+                        "tertiary-fixed": "#e2e2e3",
+                        "surface-container-highest": "#353434",
+                        "secondary-fixed-dim": "#ffb3b1",
+                        "on-secondary-container": "#ffe7e5",
+                        "on-secondary-fixed": "#410007",
+                        "primary-fixed": "#e5e2e3",
+                        "primary-container": "#1a1a1b",
+                        "primary": "#c8c6c7",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed-dim": "#c8c6c7",
+                        "surface-bright": "#3a3939",
+                        "surface-container": "#201f1f",
+                        "secondary-fixed": "#ffdad8",
+                        "secondary": "#ffb3b1",
+                        "outline": "#909094",
+                        "on-primary-fixed": "#1b1b1c",
+                        "on-primary-container": "#848283",
+                        "on-surface": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "margin-desktop": "80px",
+                        "section-gap": "120px",
+                        "section-gap-mobile": "60px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-lg": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-xl-mobile": ["36px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-xl": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .carbon-pattern {
+            background-color: #141313;
+            background-image: linear-gradient(45deg, #1a1a1b 25%, transparent 25%), linear-gradient(-45deg, #1a1a1b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a1a1b 75%), linear-gradient(-45deg, transparent 75%, #1a1a1b 75%);
+            background-size: 4px 4px;
+            background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
+        }
+
+        .glass-hud {
+            background: rgba(20, 19, 19, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-surface text-on-surface font-body-md selection:bg-secondary-container selection:text-on-secondary-container">
+    <!-- TopAppBar -->
+    <nav class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/20">
+        <div
+            class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 md:h-20 max-w-[1440px] mx-auto">
+            <div
+                class="font-headline-md text-xl md:text-headline-md font-extrabold tracking-tighter text-on-surface uppercase">
+                MotoAtlas </div>
+            <div class="hidden md:flex gap-8 items-center">
+                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors"
+                    href="#">Comparison</a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors"
+                    href="#">News</a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors"
+                    href="#">Routes</a>
+                <a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors"
+                    href="#">Community</a>
+            </div>
+            <div class="flex items-center gap-2 md:gap-4">
+                <button
+                    class="hidden md:block font-label-caps text-label-caps text-on-surface px-4 py-2 hover:bg-surface-variant/50 transition-all rounded">Sign
+                    In</button>
+                <span class="material-symbols-outlined text-on-surface cursor-pointer p-2"
+                    data-icon="search">search</span>
+                <span class="material-symbols-outlined text-on-surface cursor-pointer p-2 md:hidden"
+                    data-icon="menu">menu</span>
+                <span class="hidden md:block material-symbols-outlined text-on-surface cursor-pointer"
+                    data-icon="account_circle">account_circle</span>
+            </div>
+        </div>
+    </nav>
+    <!-- Hero Section -->
+    <section class="relative h-[600px] md:h-[870px] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img alt="Hero Motorcycle" class="w-full h-full object-cover grayscale-[0.5] contrast-[1.1]"
+                data-alt="A high-performance superbike accelerating on a professional race track during sunset."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB35Kkb_qHjcuGTffvB70W_p_37k-uqvCzRD3MZ6Ms8IFS0t9GmOTUg4rGEV1OUjYlCqK3Armnz0CvD5ouBN_W6LIGRR7b_E3Ls74M2QEr8NLQXHAimpA4fw8EHk2gPoCCvCirKy9B6-VZwSWEFiZ7Df4kcoobI2stFTEaAVZwvUtwtyaLR-0qPlY5XWoHE0v7oup-9LkS7umnlW-OA4iLrecoHUIIHQcrYhHx-ngHR_ptHmrU4_xcW06JzC_dE4mWd4vT8riarVZTI" />
+            <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+        </div>
+        <div class="relative z-10 w-full max-w-[1440px] px-margin-mobile md:px-margin-desktop text-center">
+            <h1
+                class="font-headline-xl text-headline-xl-mobile md:text-headline-xl text-white mb-6 md:mb-8 max-w-4xl mx-auto">
+                La Enciclopedia del Motero Técnico </h1>
+            <div
+                class="max-w-2xl mx-auto glass-hud p-1.5 md:p-2 rounded-lg flex flex-col md:flex-row items-stretch md:items-center shadow-2xl gap-2 md:gap-0">
+                <div class="flex items-center flex-1 px-2 md:px-0">
+                    <span class="material-symbols-outlined px-2 md:px-4 text-on-surface-variant"
+                        data-icon="search">search</span>
+                    <input
+                        class="bg-transparent border-none focus:ring-0 w-full text-white font-label-caps text-label-caps placeholder:text-on-surface-variant/50 py-3 md:py-0"
+                        placeholder="Busca modelos, marcas..." type="text" />
+                </div>
+                <button
+                    class="bg-secondary-container text-white font-label-caps text-label-caps px-8 py-4 rounded hover:bg-on-secondary-fixed-variant transition-all active:scale-95">
+                    BUSCAR </button>
+            </div>
+        </div>
+    </section>
+    <!-- Motorcycle Grid -->
+    <section
+        class="py-section-gap-mobile md:py-section-gap max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-4">
+            <div>
+                <span class="font-label-caps text-label-caps text-secondary-container mb-2 block">CATÁLOGO
+                    2024</span>
+                <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg uppercase">Máquinas
+                    Destacadas</h2>
+            </div>
+            <button
+                class="w-full md:w-auto font-label-caps text-label-caps border border-outline-variant px-6 py-3 hover:bg-surface-variant transition-all">VER
+                TODO</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+            <!-- Card 1 -->
+            <div
+                class="bg-surface-container-low border border-outline-variant/20 group hover:border-secondary-container/50 transition-all">
+                <div class="aspect-video overflow-hidden">
+                    <img alt="BMW S1000RR"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTM_0s2kPuS1JkaewMUaJyOWzlnIowXqIBhj9RT9x5jwvpkGhwtPWCZ2Dx1JX7MLmbSCZqlJ4GEKNR3LdzBFB9uOgBCRSvgU5zy8EALRumPpe7iFD71WHKUe_BAqMMMPP0kZ37wQD-BQvJUfa4llMayidI2x1z9fvUDu1jXk6-WtFDn713ya7QfjxvIqnh4vCSKuW6OzK6f_xNIapbw8pVKll6JY5kdwvjQqIsUki6ufa7asOuiliicQo5kkQ4F5u7qXZOB0k8EusQ" />
+                </div>
+                <div class="p-5 md:p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-headline-md text-lg md:text-headline-md uppercase">BMW S1000RR</h3>
+                        <span
+                            class="font-label-caps text-[10px] border border-secondary-container text-secondary-container px-2 py-1">SUPERBIKE</span>
+                    </div>
+                    <div
+                        class="grid grid-cols-2 gap-4 mb-6 font-label-caps text-label-caps text-on-surface-variant">
+                        <div class="bg-surface-container-high p-3">
+                            <p class="text-[10px] opacity-50 mb-1">CILINDRADA</p>
+                            <p class="text-on-surface">999 CC</p>
+                        </div>
+                        <div class="bg-surface-container-high p-3">
+                            <p class="text-[10px] opacity-50 mb-1">POTENCIA</p>
+                            <p class="text-on-surface">205 HP</p>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full py-4 bg-secondary-container text-white font-label-caps text-label-caps hover:bg-on-secondary-fixed-variant transition-all">COMPARAR</button>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div
+                class="bg-surface-container-low border border-outline-variant/20 group hover:border-secondary-container/50 transition-all">
+                <div class="aspect-video overflow-hidden">
+                    <img alt="Ducati Panigale"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7oKMEvuF1r5Cnxw6wZI0SzQ6HUtQbTxXc9CtdN6UXkkPhBNvQMb5zv9A3vamdimUP0CBvmKcqY7hqY34_p8iLoBnMukGBO_H5Yqq9TPIl0n-AkzIq6zWqDPl2kDa1CLm6G-u5h6XHLB0rVOWGVl8KtVnSjh79WtPc6j6Wd5fb5SI7gYD-ZADa5ZNMpekhcyqufd4WNEUWllBpFShAyPSuQmkQO67stVT1GU0RIDAJlXlfMNKPsAyrBqJ8VtGnASK8n_Vs_Fp28RSG" />
+                </div>
+                <div class="p-5 md:p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-headline-md text-lg md:text-headline-md uppercase">Panigale V4</h3>
+                        <span
+                            class="font-label-caps text-[10px] border border-secondary-container text-secondary-container px-2 py-1">EXÓTICA</span>
+                    </div>
+                    <div
+                        class="grid grid-cols-2 gap-4 mb-6 font-label-caps text-label-caps text-on-surface-variant">
+                        <div class="bg-surface-container-high p-3">
+                            <p class="text-[10px] opacity-50 mb-1">CILINDRADA</p>
+                            <p class="text-on-surface">1,103 CC</p>
+                        </div>
+                        <div class="bg-surface-container-high p-3">
+                            <p class="text-[10px] opacity-50 mb-1">POTENCIA</p>
+                            <p class="text-on-surface">210 HP</p>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full py-4 bg-secondary-container text-white font-label-caps text-label-caps hover:bg-on-secondary-fixed-variant transition-all">COMPARAR</button>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div
+                class="bg-surface-container-low border border-outline-variant/20 group hover:border-secondary-container/50 transition-all">
+                <div class="aspect-video overflow-hidden">
+                    <img alt="Yamaha R1"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp6ZmDinWPe4D8ciBzKCFByh_XqxdZ8LNX3lh9YnfW2Gkefc2JxwJMKNfJLcurONSs7maf-ZKiYH17xAICH43UrGXwMWGBFMTC41iupzpRCYDYMDZiwrPhayCqQj743GETo_qiEXAAVzSB5vMFy-FkaR8U7dzAXIk_CqQb-qSQsS1zdC2ihw7DWdlXbgqe8SLIxwkz-WfO7iMSEJNc2opJiM52ehoWB6eEWdd6TXUMgGDwJrAQpQlk9Mf5B_6fsWM0KnZ6IGW6iNqP" />
+                </div>
+                <div class="p-5 md:p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="font-headline-md text-lg md:text-headline-md uppercase">Yamaha YZF-R1</h3>
+                        <span
+                            class="font-label-caps text-[10px] border border-secondary-container text-secondary-container px-2 py-1">CIRCUITO</span>
+                    </div>
+                    <div
+                        class="grid grid-cols-2 gap-4 mb-6 font-label-caps text-label-caps text-on-surface-variant">
+                        <div class="bg-surface-container-high p-3">
+                            <p class="text-[10px] opacity-50 mb-1">CILINDRADA</p>
+                            <p class="text-on-surface">998 CC</p>
+                        </div>
+                        <div class="bg-surface-container-high p-3">
+                            <p class="text-[10px] opacity-50 mb-1">POTENCIA</p>
+                            <p class="text-on-surface">200 HP</p>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full py-4 bg-secondary-container text-white font-label-caps text-label-caps hover:bg-on-secondary-fixed-variant transition-all">COMPARAR</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Duelo de Máquinas (Comparison) -->
+    <section class="bg-surface-container-lowest py-section-gap-mobile md:py-section-gap overflow-hidden">
+        <div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+            <div class="text-center mb-10 md:mb-16">
+                <h2 class="font-headline-xl text-headline-xl-mobile md:text-headline-xl uppercase mb-4">Duelo
+                    de Máquinas</h2>
+                <p class="font-body-lg text-base md:text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                    Compara especificaciones técnicas puras cara a cara.</p>
+            </div>
+            <div class="flex flex-col lg:grid lg:grid-cols-3 gap-6 md:gap-base items-center">
+                <!-- Bike A -->
+                <div class="w-full bg-surface-container p-6 md:p-8 border-l-4 border-secondary-container">
+                    <img alt="Comparison Bike A"
+                        class="w-full h-40 md:h-48 object-cover mb-6 rounded grayscale"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlt6wfK2jQLPa0gl009_tm81OdRc6Tj4Ii898K05tNAEg-XTeGFHmfxtr2ELj_uoJ2akJMTSUE9msR8-bICRGx7ouche3HKQS3LFjBMeT9Jz7x9irBEXNgjrT-8TAISqiJpEj7ZbyM1hoBEa_0KqTMgsuVh-A9kcsQ6EVnZnt0vGi2h5Qoc4DvXmg1wuL09izj7sQQI2Mjbmb_nDi3uxiWsmCicL_DYREG-ujNGhQddXeKDkwD47bDOcTW1DMoN1DCxDlHEkqNhFCJ" />
+                    <h4 class="font-headline-md text-lg md:text-headline-md mb-2">Honda CBR1000RR-R</h4>
+                    <p class="font-label-caps text-label-caps text-secondary-container mb-6">Fireblade SP</p>
+                    <ul class="space-y-4 font-label-caps text-label-caps">
+                        <li class="flex justify-between py-2 border-b border-outline-variant/10"><span>Peso
+                                Lleno</span> <span>201 kg</span></li>
+                        <li class="flex justify-between py-2 border-b border-outline-variant/10">
+                            <span>Torque</span> <span>113 Nm</span></li>
+                        <li class="flex justify-between py-2 border-b border-outline-variant/10">
+                            <span>Electrónica</span> <span>Bosch 6-axis</span></li>
+                    </ul>
+                </div>
+                <!-- VS Indicator -->
+                <div class="flex flex-col items-center py-4">
+                    <div
+                        class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-secondary-container flex items-center justify-center font-headline-md text-secondary-container bg-surface rotate-45">
+                        <span class="-rotate-45 text-sm md:text-base">VS</span>
+                    </div>
+                </div>
+                <!-- Bike B -->
+                <div class="w-full bg-surface-container p-6 md:p-8 border-r-4 border-outline">
+                    <img alt="Comparison Bike B"
+                        class="w-full h-40 md:h-48 object-cover mb-6 rounded grayscale"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-Bp2g0BL40zXXtM-rKhDWr9Df7DXqu55xrd8zrYUXDzSrN7zrCJOZ_VPML0khnve2CIcX8eMZaN5Mb7J7oOXcthXlul8cehzjpdbFCsR3f7yBTGhj9zjFBoLFCeDDJQa_unE4O76sCxbR-O-R1bBEBxeASp1q9E-IoVwO738hun89__wF9l4RtKBROG7t1fasC-ScTE9rQ7jZBM1KfHBrD94_4hdQQDifwr5k3QPWAbfyrggHuT2JUnfJf1dMbOIBFIhlSjd6Mo0S" />
+                    <h4 class="font-headline-md text-lg md:text-headline-md mb-2">Kawasaki ZX-10RR</h4>
+                    <p class="font-label-caps text-label-caps text-on-surface-variant mb-6">Ninja Performance
+                    </p>
+                    <ul class="space-y-4 font-label-caps text-label-caps">
+                        <li class="flex justify-between py-2 border-b border-outline-variant/10"><span>Peso
+                                Lleno</span> <span>207 kg</span></li>
+                        <li class="flex justify-between py-2 border-b border-outline-variant/10">
+                            <span>Torque</span> <span>111.8 Nm</span></li>
+                        <li class="flex justify-between py-2 border-b border-outline-variant/10">
+                            <span>Electrónica</span> <span>KCMF Suite</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-10 text-center">
+                <button
+                    class="w-full md:w-auto bg-transparent border border-secondary-container text-secondary-container font-label-caps text-label-caps px-12 py-5 hover:bg-secondary-container hover:text-white transition-all">INICIAR
+                    COMPARATIVA DETALLADA</button>
+            </div>
+        </div>
+    </section>
+    <!-- Latest News -->
+    <section
+        class="py-section-gap-mobile md:py-section-gap max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+        <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg mb-8 md:mb-12 uppercase">
+            Últimas Noticias</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+            <div class="relative group cursor-pointer overflow-hidden rounded">
+                <img alt="News 1"
+                    class="w-full h-[400px] md:h-[500px] object-cover grayscale transition-all group-hover:grayscale-0 group-hover:scale-105"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbo9WGIeSECG9vzw8IUQu9owg4x2vW5oBvrO-jxjhJ_4nZPG0yEdrm3M_bDRDWSDK_8THMq-6W3nFYt0IRYcFja8VHoWsg6CzgyPMvvEyqDbwbjli557lq-OPeWbSVYQJZ7pkO5JE_IpxIZQPcsBtxz2LamrP3g55btrBxuL0TV-gdnu7CnVFnYXA1AAzj43AVLGCr2nB5x8NAA00oDn2gg-n4BfYKLW6ajO_7ycSL9yhXFQTTYw9zaHVImhlgRzta2UL6W0HhVhW4" />
+                <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+                <div class="absolute bottom-0 p-6 md:p-8">
+                    <span
+                        class="bg-secondary-container px-3 py-1 font-label-caps text-[10px] mb-4 inline-block">TECNOLOGÍA</span>
+                    <h3 class="font-headline-md text-lg md:text-headline-md mb-2">El futuro de las superbikes
+                        eléctricas</h3>
+                    <p class="text-on-surface-variant font-body-md text-sm line-clamp-2">Analizamos los nuevos
+                        motores de flujo axial que prometen revolucionar el par motor.</p>
+                </div>
+            </div>
+            <div class="space-y-6 md:space-y-gutter">
+                <div class="flex gap-4 md:gap-6 items-start group cursor-pointer">
+                    <div class="w-28 h-24 md:w-40 md:h-32 shrink-0 overflow-hidden rounded">
+                        <img alt="News 2" class="w-full h-full object-cover grayscale group-hover:grayscale-0"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpwWOlbKpwg5j-xQpEYJ9_qJuHkJlh9Iox-ZCg-pvEObByimsAm9XGVEtlxSxDbzPstt0MWdqeUK0rMfz3Bgj04VWLUv3p3Ke40rbu6bHllKDhqZu_3fmuTt0pL2UrLM7hWmvgt98VzGsXpYPkX3s7jLrIlxgkDTldR4LJnKEfvD1wea-oWkB1GHsMZ-XfYMAdtr6kQAPkbOJsFQg4WaaNvwDAbYpoiYCGZEoWSbGcz2VWA1In-lF_U4vpkyWJhjdbfdPdE-2ZFqjE" />
+                    </div>
+                    <div>
+                        <span class="text-secondary-container font-label-caps text-[10px]">AERODINÁMICA</span>
+                        <h4 class="font-headline-md text-base md:text-[20px] mb-1 leading-tight">Winglets:
+                            ¿Marketing o necesidad real?</h4>
+                        <p class="text-on-surface-variant font-body-md text-xs md:text-sm line-clamp-2">
+                            Descubrimos cuánta carga aerodinámica generan realmente.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 md:gap-6 items-start group cursor-pointer">
+                    <div class="w-28 h-24 md:w-40 md:h-32 shrink-0 overflow-hidden rounded">
+                        <img alt="News 3" class="w-full h-full object-cover grayscale group-hover:grayscale-0"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxtGU-HMVwdB1qIvkjVRuu1rBibb9_e9VXW8ns-X3Au2FSPALdv8A2MaPuouwfBzLEz6VTclqDIct585ANRnwWJo2INgVF2cP-rYNZWEzHAWdQb-IwMz2Mi6Y_qByHVfo1v7HycPxyMkT-D6r6hn_YUM5twc4VLRvabFfefDsw67qtlvGbUF-l9TlhnM9kVKL5C7Q5VnDYDGIeq4k3qYhUTmGpOuuxogC8XicWIObMSfTRd8gx9YNF5HWhPZCRfOnJH1rv_-FY4UFV" />
+                    </div>
+                    <div>
+                        <span class="text-secondary-container font-label-caps text-[10px]">REPASO</span>
+                        <h4 class="font-headline-md text-base md:text-[20px] mb-1 leading-tight">Guía de
+                            suspensiones: Ajuste de rebote</h4>
+                        <p class="text-on-surface-variant font-body-md text-xs md:text-sm line-clamp-2">
+                            Aprende a configurar tu moto para circuito sin gastar un euro.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Reliability Reports -->
+    <section class="bg-surface-container-low py-section-gap-mobile md:py-section-gap">
+        <div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+            <div class="flex items-center gap-3 mb-8 md:mb-12">
+                <span class="material-symbols-outlined text-secondary-container text-3xl md:text-4xl"
+                    data-icon="fact_check">fact_check</span>
+                <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg uppercase">Informe de
+                    Fiabilidad</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-gutter">
+                <!-- Report Card -->
+                <div class="bg-surface p-5 md:p-6 border border-outline-variant/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-label-caps text-[10px] text-on-surface-variant">MT-07
+                            (2021-23)</span>
+                        <span class="text-secondary-container font-bold">8.4</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-error"
+                                data-icon="warning">warning</span>
+                            <span class="text-[10px] md:text-xs font-label-caps">Oxidación en
+                                colectores</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-on-surface-variant"
+                                data-icon="check_circle">check_circle</span>
+                            <span class="text-[10px] md:text-xs font-label-caps">Motor indestructible</span>
+                        </div>
+                    </div>
+                    <div
+                        class="mt-6 pt-4 border-t border-outline-variant/10 flex items-center justify-between">
+                        <span class="text-[10px] font-label-caps text-on-surface-variant uppercase">124
+                            REPORTES</span>
+                        <span class="material-symbols-outlined text-sm"
+                            data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <!-- More models -->
+                <div class="bg-surface p-5 md:p-6 border border-outline-variant/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-label-caps text-[10px] text-on-surface-variant">GS 1250
+                            (2019+)</span>
+                        <span class="text-secondary-container font-bold">9.1</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-error"
+                                data-icon="warning">warning</span>
+                            <span class="text-[10px] md:text-xs font-label-caps">Fugas Cardan
+                                (Retirada)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-on-surface-variant"
+                                data-icon="check_circle">check_circle</span>
+                            <span class="text-[10px] md:text-xs font-label-caps">Confort premium</span>
+                        </div>
+                    </div>
+                    <div
+                        class="mt-6 pt-4 border-t border-outline-variant/10 flex items-center justify-between">
+                        <span class="text-[10px] font-label-caps text-on-surface-variant uppercase">342
+                            REPORTES</span>
+                        <span class="material-symbols-outlined text-sm"
+                            data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <div class="bg-surface p-5 md:p-6 border border-outline-variant/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-label-caps text-[10px] text-on-surface-variant">Monster 821</span>
+                        <span class="text-secondary-container font-bold">7.2</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-error"
+                                data-icon="warning">warning</span>
+                            <span class="text-[10px] md:text-xs font-label-caps">Calor excesivo asiento</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm text-on-surface-variant"
+                                data-icon="check_circle">check_circle</span>
+                            <span class="text-[10px] md:text-xs font-label-caps">Chasis ágil</span>
+                        </div>
+                    </div>
+                    <div
+                        class="mt-6 pt-4 border-t border-outline-variant/10 flex items-center justify-between">
+                        <span class="text-[10px] font-label-caps text-on-surface-variant uppercase">89
+                            REPORTES</span>
+                        <span class="material-symbols-outlined text-sm"
+                            data-icon="arrow_forward">arrow_forward</span>
+                    </div>
+                </div>
+                <div
+                    class="bg-secondary-container/10 p-5 md:p-6 border border-secondary-container/30 flex flex-col justify-center items-center text-center">
+                    <p class="font-label-caps text-[10px] md:text-xs mb-4">¿TIENES PROBLEMAS TÉCNICOS?</p>
+                    <button
+                        class="bg-secondary-container text-white px-4 py-2 font-label-caps text-[10px] w-full">ENVIAR
+                        REPORTE</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Routes Section -->
+    <section
+        class="py-section-gap-mobile md:py-section-gap max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-4">
+            <div>
+                <span
+                    class="font-label-caps text-label-caps text-secondary-container mb-2 block">EXPLORA</span>
+                <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg uppercase">Rutas que
+                    Inspiran</h2>
+            </div>
+            <button
+                class="w-full md:w-auto font-label-caps text-label-caps border border-outline-variant px-6 py-3 hover:bg-surface-variant transition-all">MAPA
+                COMPLETO</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-gutter">
+            <div class="group cursor-pointer">
+                <div class="relative h-56 md:h-64 overflow-hidden mb-4 rounded">
+                    <img alt="Route 1"
+                        class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrHlK9BBnFafrH40xZlLljqDnHoyOsho6VFbvlYjMveIfTQYefBMm8CwbcDM7TReBn5NGDnOOTV8phnhsBGuf8Y_Aiym2phejpH1faCAwnBoLgcC7jB7AEwHWoEXH48p5O-b2c84iWIaaa0TmtNcCN1IPF5YG27PYQcTv5UphryeDjicstFZbrihhJeSEw3TR16Z9m9ukGO6wUXZGVkmqhNElmDh3cKjPt55hftCMoODEij2BmEjayIIuuHLZ_4qKHecfdJfdwwd3M" />
+                    <div
+                        class="absolute top-4 left-4 bg-surface/80 backdrop-blur-sm px-3 py-1 font-label-caps text-[10px]">
+                        DIFICULTAD: ALTA</div>
+                </div>
+                <h3 class="font-headline-md text-lg md:text-headline-md mb-1">Paso de los Alpes</h3>
+                <p class="text-on-surface-variant font-label-caps text-[10px] md:text-xs">FRANCIA/ITALIA • 420
+                    KM</p>
+                <div class="mt-4 flex gap-2 overflow-hidden">
+                    <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+                        <div class="w-3/4 h-full bg-secondary-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="group cursor-pointer">
+                <div class="relative h-56 md:h-64 overflow-hidden mb-4 rounded">
+                    <img alt="Route 2"
+                        class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHs2keyUi7AStXv9gry6b5KqU4v9ArICJiDB3kOZktHFq0AmWsU5Tz1V3iOaUrj-G_A0NgmUPcQgEX47_q1zb2JtLfF-zLMTebrjULA7AQRsHecUljLJmVtutpAHtTEPGcuX9Y_WmTvAzMM2zvy6cC4ZKrFARltEmbww7mTr4gWQ2adUGcxfVRFfJyZ9eh8qFw3cZ_e8KLRt68fJaQOM1fAwQE00R5ab1-wAhKRXwpYxggQJF_QZfMoKnAj4-3BrZgdwhg_YoHVTos" />
+                    <div
+                        class="absolute top-4 left-4 bg-surface/80 backdrop-blur-sm px-3 py-1 font-label-caps text-[10px]">
+                        DIFICULTAD: MEDIA</div>
+                </div>
+                <h3 class="font-headline-md text-lg md:text-headline-md mb-1">Costa Brava Curve</h3>
+                <p class="text-on-surface-variant font-label-caps text-[10px] md:text-xs">ESPAÑA • 150 KM</p>
+                <div class="mt-4 flex gap-2 overflow-hidden">
+                    <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+                        <div class="w-1/2 h-full bg-secondary-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="group cursor-pointer">
+                <div class="relative h-56 md:h-64 overflow-hidden mb-4 rounded">
+                    <img alt="Route 3"
+                        class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdtqu3RBJT-do9A4Ka6e6x1_41OuwQwsTNqqlEday1zDZO9SlPJsytytxjiGIdapS-4W1Se0HP0pKnFql4fJAyZ3nnEPMf82s_isNxTPoAVGOC2Iobxx4E_9wd2cDAro-34Rd0GNVBdhvxqyJwhP_4rBmutN56tEU989S41UyGONiMG36GLYDWF3JQGUayVhdn1htE702_ThXpU1KKpgpH9j1McYrl2bBhPYWIYEkdrHsVisVnm_JOhQsz5mS3nUcIa66V9oVgMYKD" />
+                    <div
+                        class="absolute top-4 left-4 bg-surface/80 backdrop-blur-sm px-3 py-1 font-label-caps text-[10px]">
+                        DIFICULTAD: BAJA</div>
+                </div>
+                <h3 class="font-headline-md text-lg md:text-headline-md mb-1">Trans-Pyrenees</h3>
+                <p class="text-on-surface-variant font-label-caps text-[10px] md:text-xs">ESPAÑA/ANDORRA • 800
+                    KM</p>
+                <div class="mt-4 flex gap-2 overflow-hidden">
+                    <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+                        <div class="w-full h-full bg-secondary-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer
+        class="bg-surface-container-lowest border-t border-outline-variant/10 w-full py-16 md:py-section-gap">
+        <div
+            class="flex flex-col md:flex-row justify-between items-start md:items-center px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto gap-10">
+            <div>
+                <div class="font-headline-md text-xl md:text-headline-md font-bold text-on-surface mb-3">
+                    MotoAtlas</div>
+                <p class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant">© 2024
+                    MotoAtlas. High-Performance Engineering Registry.</p>
+            </div>
+            <div class="grid grid-cols-2 md:flex md:flex-wrap gap-x-8 gap-y-4">
+                <a class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+                    href="#">Privacy Policy</a>
+                <a class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+                    href="#">Terms of Service</a>
+                <a class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+                    href="#">Technical Specs</a>
+                <a class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant hover:text-primary transition-colors"
+                    href="#">Support</a>
+            </div>
+            <div class="flex gap-6">
+                <span
+                    class="material-symbols-outlined text-on-surface-variant hover:text-secondary-container cursor-pointer transition-colors"
+                    data-icon="language">language</span>
+                <span
+                    class="material-symbols-outlined text-on-surface-variant hover:text-secondary-container cursor-pointer transition-colors"
+                    data-icon="share">share</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
