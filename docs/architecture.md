@@ -261,6 +261,41 @@ Importante:
 
 La cola no valida contra `bikeCatalog`, porque Supabase puede devolver IDs que no existen en el fallback local.
 
+
+### Comparador dinámico visual Stitch
+
+Archivo principal: `src/components/pages/ComparatorPage/ComparatorPage.tsx`.
+
+La ruta `#/comparador?bikes=id1,id2,id3` usa las motos cargadas por `motorcycleService` desde Supabase y, si falla, desde `bikes.ts` como fallback. El diseño visual reutiliza las clases de `ComparisonDetailPage.scss`: NO se rehizo la estética de Stitch.
+
+Lógica reusable:
+
+- `src/features/compare/compareUtils.ts`
+
+Responsabilidades:
+
+- parsear ids de `#/comparador?bikes=...`
+- limitar a 3 motos e informar ids ignorados
+- resolver ids contra catálogo dinámico
+- construir view model de comparación:
+  - hero/title
+  - vote summary
+  - highlights y best value
+  - technical registry
+  - performance bars
+  - pros/cons
+  - common issues
+  - video analysis
+  - final verdict
+- generar hashes para añadir/quitar motos y sincronizar URL
+
+Reglas:
+
+- Soporta 2 o 3 motos.
+- Si llegan más de 3, se ignoran extras y se muestra aviso.
+- Quitar o añadir motos modifica `window.location.hash`; la ruta es la fuente de verdad.
+- Los tests mockean datos con fixtures, nunca Supabase real.
+
 ## 9. Testing actual
 
 Configuración:
@@ -276,6 +311,7 @@ Tests actuales:
 
 - `src/utils/motorcycleSearch.test.ts`
 - `src/utils/compareQueue.test.ts`
+- `src/features/compare/compareUtils.test.ts`
 - `src/services/motorcycleService.test.ts`
 - `src/App.test.tsx`
 - `scripts/importMotorcycles.test.ts`

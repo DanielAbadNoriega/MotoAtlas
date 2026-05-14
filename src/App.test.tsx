@@ -89,9 +89,20 @@ describe('App navigation with mocked motorcycleService', () => {
     await user.click(within(apriliaCard as HTMLElement).getByRole('button', { name: /^Comparar$/i }));
     await user.click(screen.getByRole('link', { name: /Comparar ahora \(2\)/i }));
 
-    expect(await screen.findByRole('heading', { name: /Comparativa de selección/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /BMW F 900 GS/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: /BMW F 900 GS/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('heading', { name: /Aprilia Tuareg 660/i }).length).toBeGreaterThan(0);
+  });
+
+
+
+  it('renders comparator directly from query params', async () => {
+    window.location.hash = '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660';
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Technical Registry/i })).toBeInTheDocument();
   });
 
   it('does not render more than 3 motorcycles from a comparator route', async () => {
@@ -100,10 +111,11 @@ describe('App navigation with mocked motorcycleService', () => {
 
     await renderApp();
 
-    expect(await screen.findByRole('heading', { name: /Comparativa de selección/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /BMW F 900 GS/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Yamaha MT-09/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Comparativa de 3 motos/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: /BMW F 900 GS/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('heading', { name: /Aprilia Tuareg 660/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('heading', { name: /Yamaha MT-09/i }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('heading', { name: /Honda NT1100/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/Se ignoraron 1 moto/i);
   });
 });

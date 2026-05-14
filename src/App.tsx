@@ -15,7 +15,7 @@ import { bikeCatalog } from './data/bikes';
 import { findBikeComparisonByHash } from './data/comparisons';
 import { getMotorcycles } from './services/motorcycleService';
 import type { Bike } from './types/bike';
-import { getComparatorIdsFromHash } from './utils/compareQueue';
+import { resolveCompareSelectionFromHash } from './features/compare/compareUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -73,9 +73,7 @@ export function App() {
   const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
   const isSearchRoute = isSearchHash(hash);
   const isComparatorRoute = isComparatorHash(hash);
-  const comparatorBikes = getComparatorIdsFromHash(hash)
-    .map((id) => findMotorcycleById(id))
-    .filter((bike): bike is Bike => Boolean(bike));
+  const comparatorSelection = resolveCompareSelectionFromHash(hash, motorcycles);
 
   useEffect(() => {
     let isMounted = true;
@@ -103,7 +101,12 @@ export function App() {
       {comparison ? (
         <ComparisonDetailPage comparison={comparison} motorcycles={motorcycles} />
       ) : isComparatorRoute ? (
-        <ComparatorPage bikes={comparatorBikes} />
+        <ComparatorPage
+          bikes={comparatorSelection.bikes}
+          ignoredBikeCount={comparatorSelection.ignoredIds.length}
+          missingBikeCount={comparatorSelection.missingIds.length}
+          motorcycles={motorcycles}
+        />
       ) : bikeDetailId ? (
         <BikeDetailPage bike={detailBike} motorcycles={motorcycles} />
       ) : isSearchRoute ? (
