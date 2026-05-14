@@ -69,9 +69,16 @@ src/
     site.ts
   services/
     motorcycleService.ts
+    motorcycleReviewService.ts
   shared/
     images/
       getMotorcycleImage.ts
+    reviews/
+      reviewUtils.ts
+    routing/
+      routeUtils.ts
+    seo/
+      seoUtils.ts
   styles/
   test/
     fixtures/bikes.ts
@@ -84,6 +91,12 @@ src/
     motorcycleSearch.ts
 supabase/
   schema.sql
+scripts/
+  fetchMotorcyclesFromApi.ts
+  importMotorcycles.ts
+  repairMotorcycleData.ts
+  syncMotorcycleImages.ts
+  generateSeoFiles.ts
 ```
 
 ## 4. Modelo de datos
@@ -150,7 +163,20 @@ El schema vive en `supabase/schema.sql`.
 
 La tabla principal es `public.motorcycles`.
 
-RLS está activo y solo existe policy pública de lectura para `anon`. No hay login ni escrituras desde frontend todavía.
+Segmentos soportados: `trail`, `adventure`, `touring`, `sport-touring`, `naked`, `sport`, `supersport`, `hypernaked`, `enduro`, `dual-sport`, `scrambler`, `custom`, `cruiser`, `retro`, `neo-retro`, `scooter`.
+
+Campos añadidos al núcleo:
+
+- A2: `is_a2_compatible`, `is_a2_limited_version`, `limited_power_hp`, `original_power_hp`.
+- Protección editorial: `image_locked`, `description_locked`.
+- Procedencia/calidad: `specs_source`, `price_source`, `image_source`, `scores_source`, `pros_cons_source`, `reliability_source`.
+
+La tabla secundaria `public.motorcycle_reviews` permite reviews sin login todavía. Las nuevas reviews entran como `pending`; solo `approved` es legible por `anon`.
+
+RLS está activo:
+
+- `motorcycles`: lectura pública para `anon`.
+- `motorcycle_reviews`: lectura pública solo de aprobadas e inserción pública solo con `status = 'pending'`.
 
 Variables necesarias en `.env.local`:
 
@@ -204,6 +230,10 @@ Reglas:
 - El JSON se valida antes de insertar: campos top-level, `useScores`, `features`, `pros`, `cons` y `reliabilityReports`.
 - Los campos técnicos críticos (`displacementCc`, `powerHp`, `torqueNm`, `wetWeightKg`, `seatHeightMm`, `fuelTankLiters`) deben ser números mayores que 0.
 - `priceEur` puede ser `0` solo como placeholder explícito y se reporta como aviso.
+- Si `priceEur = 0`, `price_source` se fuerza a `placeholder`.
+- Si la imagen cae al helper de fallback, `image_source` se fuerza a `placeholder`.
+- Si una moto existente en Supabase tiene `image_locked = true`, el importador conserva `image_url`.
+- Si tiene `description_locked = true`, conserva `description`.
 - El payload se transforma a snake_case para `public.motorcycles`.
 - El `upsert` usa `id` como `onConflict` para evitar duplicados.
 - Los tests del importador mockean Supabase; no conectan a la base real.
@@ -237,18 +267,70 @@ data/import/motorcycles.repair-report.json
 
 No sobrescribe `motorcycles.json`. Hay que revisar el reporte y copiar manualmente los cambios fiables.
 
+#### Catálogo ampliado
+
+`data/import/motorcycleSeedList.json` es la lista editorial de modelos que puede alimentar `fetch:motos`. Actualmente contiene 80 motos reales recientes de los segmentos prioritarios:
+
+- trail / adventure
+- naked / sport / sport-touring / touring
+- enduro / dual-sport
+- cruiser / scrambler / neo-retro
+
+El script `fetch:motos` deduplica seeds por marca, modelo y año antes de consultar la API externa. Nunca sobrescribe `motorcycles.json`; escribe un generado revisable.
+
+#### Imágenes locales
+
+El pipeline estable de imágenes usa:
+
+```txt
+public/images/motorcycles/{brand-model-year}.webp
+```
+
+Ejemplo:
+
+```txt
+public/images/motorcycles/bmw-f-900-gs-2024.webp
+```
+
+Comandos:
+
+```bash
+npm run sync:images:check
+npm run sync:images
+```
+
+`syncMotorcycleImages.ts`:
+
+1. Lee las motos del JSON de importación.
+2. Busca el `.webp` local esperado.
+3. Si existe, prepara `image_url = /images/motorcycles/...` e `image_source = manual`.
+4. Si no existe, prepara el fallback técnico e `image_source = placeholder`.
+5. Si Supabase tiene `image_locked = true`, no sobrescribe `image_url`.
+6. En tests se mockea Supabase; nunca se conecta a la base real.
+
 ## 6. Routing
 
-La app usa hash routing simple en `src/App.tsx`.
+La app mantiene hash routing para desarrollo y compatibilidad, pero también entiende rutas limpias SEO.
 
 Rutas actuales:
 
 - `#/buscador` — buscador/catálogo.
 - `#/buscador?compare=<bikeId>` — abre buscador y añade una moto al comparador.
 - `#/buscador?browse=1` — abre buscador limpio para navegar, sin añadir motos.
-- `#/motos/:id` — ficha detalle de moto.
-- `#/comparador?bikes=id1,id2,id3` — comparador dinámico.
-- `#/comparativas/bmw-f-900-gs-vs-aprilia-tuareg-660` — comparativa editorial fija.
+- `#/motos/:id|slug` — ficha detalle de moto.
+- `/motos/:slug` — ficha detalle SEO-friendly.
+- `#/comparador?bikes=id1,id2,id3` — comparador dinámico legacy compatible.
+- `#/comparador/:slug-vs-slug?bikes=id1,id2,id3` — comparador dinámico SEO con IDs explícitos.
+- `/comparador/:slug-vs-slug` — comparador SEO-friendly resolviendo motos por slug.
+- `#/comparativas/...` — ruta legacy: se resuelve al comparador dinámico, no al flujo editorial antiguo.
+
+Helpers centrales:
+
+```txt
+src/shared/routing/routeUtils.ts
+```
+
+Regla: no construir slugs o hashes del comparador a mano dentro de componentes. Usa `getBikeSeoSlug`, `getComparatorHashFromBikes` y helpers relacionados.
 
 ## 7. Páginas
 
@@ -286,6 +368,7 @@ Responsabilidades:
 - ficha técnica completa de una moto
 - CTA `Comparar en buscador`
 - CTA `Ver más motos`
+- reviews aprobadas y formulario de nueva review pendiente
 - rivales del mismo segmento
 - estado `Moto no encontrada`
 
@@ -293,6 +376,7 @@ Regla importante:
 
 - `Comparar en buscador` usa `#/buscador?compare=<id>`.
 - `Ver más motos` usa `#/buscador?browse=1` y NO debe añadir nada al comparador.
+- Las reviews nuevas se envían con `status = pending`; la UI solo lista reviews aprobadas.
 
 ### ComparatorPage / ComparePage
 
@@ -312,7 +396,7 @@ Exporta alias `ComparePage` desde `src/components/pages/ComparatorPage/index.ts`
 
 Archivo: `src/components/pages/ComparisonDetailPage/ComparisonDetailPage.tsx`
 
-Es una comparativa editorial fija, no el comparador dinámico. Actualmente compara BMW F 900 GS vs Aprilia Tuareg 660.
+Queda como referencia visual/legacy de Stitch. La navegación pública de `#/comparativas/...` ya debe acabar en `ComparatorPage` para conservar votación, añadir/quitar motos, URL sync y datos dinámicos.
 
 ## 8. Comparador y cola
 
@@ -365,10 +449,75 @@ Reglas:
 - Soporta 2 o 3 motos para comparar; con 1 moto muestra un estado específico para añadir otra.
 - Si llegan más de 3, se ignoran extras y se muestra aviso discreto.
 - Quitar o añadir motos modifica `window.location.hash`; la ruta es la fuente de verdad.
+- La cola actual también se guarda en `localStorage` para que `Añadir otra moto` preserve la selección al volver al buscador.
 - Si faltan `pros`, `cons`, `commonIssues`, `useScores`, `imageUrl` o `reliabilityScore`, muestra fallbacks limpios: `Sin datos disponibles`, imagen placeholder, score 0 o `N/D`.
 - Los tests mockean datos con fixtures, nunca Supabase real.
 
-## 9. Testing actual
+## 9. SEO técnico
+
+Helpers centrales:
+
+```txt
+src/shared/seo/seoUtils.ts
+```
+
+Responsabilidades:
+
+- `title`
+- `meta description`
+- Open Graph
+- canonical
+- JSON-LD para moto, reviews y aggregate rating
+- sitemap
+- robots.txt
+
+Script:
+
+```bash
+npm run seo:sitemap
+```
+
+Genera:
+
+```txt
+public/sitemap.xml
+public/robots.txt
+```
+
+Reglas:
+
+- No duplicar lógica SEO dentro de páginas.
+- Las fichas usan datos de `Bike`.
+- El comparador genera title/description desde las motos seleccionadas.
+- Las rutas legacy siguen funcionando, pero las rutas limpias son la forma preparada para SEO.
+
+## 10. Reviews
+
+Servicio:
+
+```txt
+src/services/motorcycleReviewService.ts
+```
+
+Funciones:
+
+- `createReview`
+- `getApprovedReviewsByMotorcycleId`
+
+Tabla:
+
+```txt
+public.motorcycle_reviews
+```
+
+Reglas:
+
+- No hay login todavía.
+- Inserción pública solo con `status = pending`.
+- Lectura pública solo de `status = approved`.
+- El promedio y contador se calculan con `src/shared/reviews/reviewUtils.ts`.
+
+## 11. Testing actual
 
 Configuración:
 
@@ -387,11 +536,16 @@ Tests actuales:
 - `src/services/motorcycleService.test.ts`
 - `src/App.test.tsx`
 - `scripts/importMotorcycles.test.ts`
+- `scripts/syncMotorcycleImages.test.ts`
+- `scripts/generateSeoFiles.test.ts`
 - `src/components/pages/SearchPage/SearchPage.test.tsx`
 - `src/components/pages/BikeDetailPage/BikeDetailPage.test.tsx`
 - `src/components/pages/ComparatorPage/ComparatorPage.test.tsx`
+- `src/shared/routing/routeUtils.test.ts`
+- `src/shared/seo/seoUtils.test.ts`
+- `src/shared/reviews/reviewUtils.test.ts`
 
-## 10. Cómo añadir una funcionalidad nueva
+## 12. Cómo añadir una funcionalidad nueva
 
 Checklist obligatorio:
 
@@ -410,7 +564,7 @@ npm run typecheck
 
 8. Actualizar esta documentación si cambia arquitectura, rutas, datos o flujo.
 
-## 11. Qué NO hacer sin decisión explícita
+## 13. Qué NO hacer sin decisión explícita
 
 - No añadir login todavía.
 - No depender de Supabase real en tests.

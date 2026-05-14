@@ -52,6 +52,21 @@ function mergeApiResultWithSeed(seed: MotorcycleSeed, apiResult: unknown) {
   };
 }
 
+export function dedupeMotorcycleSeeds(seeds: readonly MotorcycleSeed[]) {
+  const seen = new Set<string>();
+
+  return seeds.filter((seed) => {
+    const key = `${seed.make.trim().toLowerCase()}|${seed.model.trim().toLowerCase()}|${seed.year}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function fetchMotorcyclesFromApi({
   env = process.env,
   existingMotorcycles,
@@ -75,14 +90,16 @@ export async function fetchMotorcyclesFromApi({
     };
   }
 
-  const seeds = seedList ?? (await readJsonFile<readonly MotorcycleSeed[]>(seedFileUrl));
+  const rawSeeds = seedList ?? (await readJsonFile<readonly MotorcycleSeed[]>(seedFileUrl));
+  const seeds = dedupeMotorcycleSeeds(rawSeeds);
   const existing = existingMotorcycles ?? (await readExistingMotorcycles());
   const client = createApiNinjasMotorcycleClient({ apiKey, fetchImpl });
   const generatedMotorcycles: Bike[] = [];
   const warnings: string[] = [];
   let fetchedCount = 0;
 
-  logger.log(`📦 Motos seed leídas: ${seeds.length}`);
+  logger.log(`📦 Motos seed leídas: ${rawSeeds.length}`);
+  logger.log(`🧹 Seeds únicos: ${seeds.length}`);
 
   for (const seed of seeds) {
     logger.log(`🔎 Buscando ${seed.make} ${seed.model} ${seed.year}`);

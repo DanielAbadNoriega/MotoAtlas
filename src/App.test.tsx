@@ -1,7 +1,8 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
+import { bikeCatalog } from './data/bikes';
 import { getMotorcycles } from './services/motorcycleService';
 import { bikeFixtures } from './test/fixtures/bikes';
 
@@ -19,6 +20,7 @@ async function renderApp() {
 
 describe('App navigation with mocked motorcycleService', () => {
   beforeEach(() => {
+    window.history.pushState(null, '', '/');
     window.location.hash = '';
     getMotorcyclesMock.mockReset();
     getMotorcyclesMock.mockResolvedValue({ motorcycles: bikeFixtures, source: 'supabase' });
@@ -66,11 +68,14 @@ describe('App navigation with mocked motorcycleService', () => {
 
   it('navigates from the home duel button to the detailed comparison', async () => {
     const user = userEvent.setup();
+    getMotorcyclesMock.mockResolvedValue({ motorcycles: bikeCatalog, source: 'supabase' });
     await renderApp();
 
     await user.click(screen.getByRole('button', { name: /Iniciar comparativa detallada/i }));
 
-    expect(await screen.findByRole('heading', { name: /BMW F900GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /Elige tu ganadora/i })).toBeInTheDocument();
+    expect(window.location.hash).toContain('#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660?bikes=');
   });
 
   it('navigates from selected search motorcycles to the comparator page', async () => {
@@ -105,6 +110,14 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(screen.getByRole('heading', { name: /Technical Registry/i })).toBeInTheDocument();
   });
 
+  it('renders comparator from a clean SEO path', async () => {
+    window.history.pushState(null, '', '/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660');
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
+  });
+
   it('does not render more than 3 motorcycles from a comparator route', async () => {
     window.location.hash =
       '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09,test-honda-nt1100';
@@ -117,5 +130,20 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(screen.getAllByRole('heading', { name: /Yamaha MT-09/i }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('heading', { name: /Honda NT1100/i })).not.toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent(/Se ignoraron 1 moto/i);
+  });
+
+  it('shows a glass scroll-to-top action when scrolling down', async () => {
+    const user = userEvent.setup();
+    const scrollToMock = vi.fn();
+    Object.defineProperty(window, 'scrollTo', { configurable: true, value: scrollToMock });
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 520 });
+
+    await renderApp();
+    fireEvent.scroll(window);
+
+    const button = await screen.findByRole('button', { name: /Volver arriba/i });
+    await user.click(button);
+
+    expect(scrollToMock).toHaveBeenCalledWith({ behavior: 'smooth', left: 0, top: 0 });
   });
 });

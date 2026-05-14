@@ -10,7 +10,9 @@ import {
 import type {
   ImportLogger,
   ImportMotorcyclesResult,
+  MotorcycleUpsertPayload,
   MotorcycleValidationItem,
+  SupabaseImportExistingMotorcycle,
   SupabaseMotorcycleClient,
 } from '../src/features/import/motorcycleImportTypes';
 import { validateMotorcycleImport } from '../src/features/import/validateMotorcycleImport';
@@ -77,6 +79,61 @@ function logWarnings(logger: ImportLogger, warnings: ImportMotorcyclesResult['wa
   warnings.forEach((warning) => logger.warn(`- ${warning.field}: ${warning.message}`));
 }
 
+function mergeLockedEditorialFields(
+  payload: readonly MotorcycleUpsertPayload[],
+  existingMotorcycles: readonly SupabaseImportExistingMotorcycle[],
+  logger: ImportLogger,
+) {
+  const existingById = new Map(existingMotorcycles.map((motorcycle) => [motorcycle.id, motorcycle]));
+
+  return payload.map((motorcycle) => {
+    const existingMotorcycle = existingById.get(motorcycle.id);
+
+    if (!existingMotorcycle) {
+      return motorcycle;
+    }
+
+    const nextMotorcycle = { ...motorcycle };
+
+    if (existingMotorcycle.image_locked) {
+      nextMotorcycle.image_url = existingMotorcycle.image_url;
+      nextMotorcycle.image_locked = true;
+      nextMotorcycle.image_source = existingMotorcycle.image_source ?? nextMotorcycle.image_source;
+      logger.log(`🔒 image_url protegido: ${motorcycle.id}`);
+    }
+
+    if (existingMotorcycle.description_locked) {
+      nextMotorcycle.description = existingMotorcycle.description;
+      nextMotorcycle.description_locked = true;
+      logger.log(`🔒 description protegida: ${motorcycle.id}`);
+    }
+
+    return nextMotorcycle;
+  });
+}
+
+async function fetchExistingMotorcyclesForImport(
+  client: SupabaseMotorcycleClient,
+  payload: readonly MotorcycleUpsertPayload[],
+) {
+  const ids = [...new Set(payload.map((motorcycle) => motorcycle.id))];
+
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await client
+    .from('motorcycles')
+    .select('id,image_url,image_source,description,image_locked,description_locked')
+    .in('id', ids);
+
+  if (error) {
+    throw new Error(`No se pudieron leer motos existentes para proteger contenido editorial: ${error.message}`);
+  }
+
+  return data ?? [];
+}
+
 export async function importMotorcycles({
   allowPartial = false,
   dryRun = false,
@@ -138,7 +195,9 @@ export async function importMotorcycles({
   }
 
   const client = supabase ?? createSupabaseImportClient(env);
-  const { data, error } = await client.from('motorcycles').upsert(payload, { onConflict: 'id' }).select('id');
+  const existingMotorcycles = await fetchExistingMotorcyclesForImport(client, payload);
+  const protectedPayload = mergeLockedEditorialFields(payload, existingMotorcycles, logger);
+  const { data, error } = await client.from('motorcycles').upsert(protectedPayload, { onConflict: 'id' }).select('id');
 
   if (error) {
     logger.error(`❌ Error importando motos: ${error.message}`);

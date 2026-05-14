@@ -1,14 +1,43 @@
-import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
+import { createReview, getApprovedReviewsByMotorcycleId } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import type { Bike } from '../../../types/bike';
 import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../../shared/images/getMotorcycleImage';
 import { BikeDetailPage } from './BikeDetailPage';
 
+vi.mock('../../../services/motorcycleReviewService', () => ({
+  createReview: vi.fn(),
+  getApprovedReviewsByMotorcycleId: vi.fn(),
+}));
+
 const realMotorcycles = realMotorcycleSeed as readonly Bike[];
+const getApprovedReviewsMock = vi.mocked(getApprovedReviewsByMotorcycleId);
+const createReviewMock = vi.mocked(createReview);
 
 describe('BikeDetailPage', () => {
+  beforeEach(() => {
+    getApprovedReviewsMock.mockReset();
+    createReviewMock.mockReset();
+    getApprovedReviewsMock.mockResolvedValue([]);
+    createReviewMock.mockResolvedValue({
+      id: 'review-new',
+      motorcycleId: bikeFixtures[0].id,
+      userName: 'Dani',
+      rating: 5,
+      ownershipMonths: null,
+      kilometers: null,
+      comment: 'Muy buena.',
+      pros: [],
+      cons: [],
+      status: 'pending',
+      createdAt: '2026-05-14T10:00:00.000Z',
+      updatedAt: '2026-05-14T10:00:00.000Z',
+    });
+  });
+
   it('renders name, brand, year and main specs from fixtures', () => {
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
@@ -83,5 +112,57 @@ describe('BikeDetailPage', () => {
 
     expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
     expect(container.querySelector(`img[src="${MOTORCYCLE_IMAGE_FALLBACK_URL}"]`)).toBeInTheDocument();
+  });
+
+  it('renders approved reviews and aggregate rating', async () => {
+    getApprovedReviewsMock.mockResolvedValue([
+      {
+        id: 'review-1',
+        motorcycleId: bikeFixtures[0].id,
+        userName: 'Laura',
+        rating: 5,
+        ownershipMonths: 10,
+        kilometers: 12000,
+        comment: 'Muy equilibrada para viajar.',
+        pros: [],
+        cons: [],
+        status: 'approved',
+        createdAt: '2026-05-14T10:00:00.000Z',
+        updatedAt: '2026-05-14T10:00:00.000Z',
+      },
+      {
+        id: 'review-2',
+        motorcycleId: bikeFixtures[0].id,
+        userName: 'Marc',
+        rating: 4,
+        ownershipMonths: null,
+        kilometers: null,
+        comment: 'Cara, pero completa.',
+        pros: [],
+        cons: [],
+        status: 'approved',
+        createdAt: '2026-05-14T10:00:00.000Z',
+        updatedAt: '2026-05-14T10:00:00.000Z',
+      },
+    ]);
+
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(await screen.findByText('4.5/5 · 2 reviews')).toBeInTheDocument();
+    expect(screen.getByText('Muy equilibrada para viajar.')).toBeInTheDocument();
+  });
+
+  it('submits a basic pending review', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.type(screen.getByLabelText(/Nombre/i), 'Dani');
+    await user.selectOptions(screen.getByLabelText(/Rating/i), '4');
+    await user.type(screen.getByLabelText(/Opinión/i), 'La moto va muy fina en carretera.');
+    await user.click(screen.getByRole('button', { name: /Enviar review/i }));
+
+    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
+    expect(createReviewMock).toHaveBeenCalledWith(expect.objectContaining({ motorcycleId: bikeFixtures[0].id, rating: 4 }));
+    expect(screen.getByRole('status')).toHaveTextContent(/pendiente de moderación/i);
   });
 });

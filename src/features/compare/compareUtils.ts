@@ -1,6 +1,7 @@
 import type { Bike } from '../../types/bike';
 import { compareQueueMaxSize, getComparatorHashSelection, sanitizeCompareQueue } from '../../utils/compareQueue';
 import { MOTORCYCLE_IMAGE_FALLBACK_URL, getMotorcycleImage } from '../../shared/images/getMotorcycleImage';
+import { getBikeA2Badge, getDataSourceLabel, isLowConfidenceSource, segmentLabels } from '../../shared/motorcycles/motorcycleTaxonomy';
 
 export type CompareUseScoreKey = keyof Bike['useScores'];
 
@@ -67,6 +68,7 @@ export type CompareIssue = Readonly<{
 export type CompareVideoAnalysis = Readonly<{
   id: string;
   alt: string;
+  bike: Bike;
   duration: string;
   imageUrl: string;
   title: string;
@@ -114,12 +116,6 @@ const currencyFormatter = new Intl.NumberFormat('es-ES', {
   maximumFractionDigits: 0,
   style: 'currency',
 });
-
-const segmentLabels: Record<Bike['segment'], string> = {
-  naked: 'Naked',
-  'sport-touring': 'Sport Touring',
-  trail: 'Trail',
-};
 
 const engineTypeLabels: Record<Bike['engineType'], string> = {
   'boxer-twin': 'boxer-twin',
@@ -181,6 +177,20 @@ export function getBikeBrandLabel(bike: Bike) {
 export function getBikeSegmentLabel(bike: Bike) {
   const segment = getRuntimeValue<Bike['segment']>(bike, 'segment');
   return segment ? (segmentLabels[segment] ?? segment) : NOT_AVAILABLE_LABEL;
+}
+
+export function getBikeA2Label(bike: Bike) {
+  return getBikeA2Badge(bike).label;
+}
+
+export function getBikeDataSourceBadges(bike: Bike) {
+  return [
+    { id: 'price', label: `Precio ${getDataSourceLabel(bike.priceSource)}`, source: bike.priceSource },
+    { id: 'image', label: `Imagen ${getDataSourceLabel(bike.imageSource)}`, source: bike.imageSource },
+    { id: 'scores', label: `Scores ${getDataSourceLabel(bike.scoresSource)}`, source: bike.scoresSource },
+    { id: 'pros-cons', label: `Pros/cons ${getDataSourceLabel(bike.prosConsSource)}`, source: bike.prosConsSource },
+    { id: 'reliability', label: `Fiabilidad ${getDataSourceLabel(bike.reliabilitySource)}`, source: bike.reliabilitySource },
+  ].filter((badge) => isLowConfidenceSource(badge.source));
 }
 
 export function getBikeDescription(bike: Bike) {
@@ -267,6 +277,7 @@ export const compareSpecRows = [
     getNumber: getPrice,
     lowerIsBetter: true,
   },
+  { id: 'a2', label: 'A2 Compatibility', getValue: getBikeA2Label },
   { id: 'license', label: 'License', getValue: (bike) => `Carnet ${getText(getRuntimeValue(bike, 'license'), NOT_AVAILABLE_LABEL)}` },
   { id: 'segment', label: 'Segment', getValue: getBikeSegmentLabel },
 ] satisfies readonly CompareSpecRow[];
@@ -485,6 +496,7 @@ function buildVideos(bikes: readonly Bike[]) {
     return {
       id: `${bike.id}-analysis`,
       alt: getBikeDescription(bike),
+      bike,
       duration: hasScore ? `${Math.max(10, Math.round(overallScore + getBikePros(bike).length + getBikeCons(bike).length))}:00` : NOT_AVAILABLE_LABEL,
       imageUrl: getBikeImageUrl(bike),
       title: `${getSafeBikeDisplayName(bike)}: análisis técnico y uso real`,

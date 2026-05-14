@@ -71,7 +71,7 @@ describe('ComparePage', () => {
 
     await user.click(screen.getByRole('button', { name: /Quitar Aprilia Tuareg 660 de la comparativa/i }));
 
-    expect(window.location.hash).toBe('#/comparador?bikes=test-bmw-f-900-gs,test-yamaha-mt-09');
+    expect(window.location.hash).toBe('#/comparador/bmw-f-900-gs-vs-yamaha-mt-09?bikes=test-bmw-f-900-gs,test-yamaha-mt-09');
   });
 
   it('adds a motorcycle and syncs the URL', async () => {
@@ -80,16 +80,26 @@ describe('ComparePage', () => {
 
     await user.click(screen.getByRole('button', { name: /Añadir Yamaha MT-09/i }));
 
-    expect(window.location.hash).toBe('#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09');
+    expect(window.location.hash).toBe(
+      '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660-vs-yamaha-mt-09?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09',
+    );
   });
 
   it('registers a vote action', async () => {
     const user = userEvent.setup();
     render(<ComparePage bikes={bikeFixtures.slice(0, 2)} motorcycles={bikeFixtures} />);
 
-    await user.click(screen.getByRole('button', { name: /Votar ganadora/i }));
+    await user.click(screen.getByRole('button', { name: 'Aprilia Tuareg 660' }));
+    await user.click(screen.getByRole('button', { name: /Votar Aprilia/i }));
 
-    expect(screen.getByRole('status')).toHaveTextContent(/Voto registrado/i);
+    expect(screen.getByRole('status')).toHaveTextContent(/Voto registrado para Aprilia Tuareg 660/i);
+  });
+
+  it('shows A2 compatibility in the technical registry and hero badges', () => {
+    render(<ComparePage bikes={bikeFixtures.slice(0, 2)} motorcycles={bikeFixtures} />);
+
+    expect(screen.getAllByText(/A2 LIMITABLE/i).length).toBeGreaterThan(0);
+    expect(screen.getByText('A2 Compatibility')).toBeInTheDocument();
   });
 
   it('renders best value badges in highlights', () => {
@@ -137,7 +147,9 @@ describe('ComparePage', () => {
 
     await user.click(screen.getByRole('button', { name: /Añadir Aprilia Tuareg 660 a la comparativa/i }));
 
-    expect(window.location.hash).toBe('#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660');
+    expect(window.location.hash).toBe(
+      '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
+    );
   });
 
   it('renders clean fallbacks when a motorcycle has no pros, cons or common issues', () => {
@@ -153,7 +165,7 @@ describe('ComparePage', () => {
     render(<ComparePage bikes={[noDataBike, bikeFixtures[1]]} motorcycles={[noDataBike, ...bikeFixtures]} />);
 
     expect(screen.getAllByRole('img').some((image) => image.getAttribute('src') === MOTORCYCLE_IMAGE_FALLBACK_URL)).toBe(true);
-    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
+    expect(screen.getAllByText('TECHNICAL IMAGE PENDING').length).toBeGreaterThan(0);
   });
 
   it('uses score 0 when a motorcycle has no use scores', () => {
@@ -196,7 +208,7 @@ describe('ComparePage', () => {
 
     render(<ComparePage bikes={[noImageBike, bikeFixtures[1]]} motorcycles={[noImageBike, ...bikeFixtures.slice(1)]} />);
 
-    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
+    expect(screen.getAllByText('TECHNICAL IMAGE PENDING').length).toBeGreaterThan(0);
     expect(screen.getAllByRole('img').some((image) => image.getAttribute('alt') === 'Imagen técnica pendiente de BMW F 900 GS')).toBe(true);
   });
 });

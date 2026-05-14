@@ -1,13 +1,26 @@
 import { describe, expect, it, vi } from 'vitest';
 import seedMotorcycles from '../data/import/motorcycles.json';
 import type { Bike } from '../src/types/bike';
-import { fetchMotorcyclesFromApi } from './fetchMotorcyclesFromApi';
+import { dedupeMotorcycleSeeds, fetchMotorcyclesFromApi } from './fetchMotorcyclesFromApi';
 
 function createLogger() {
   return { error: vi.fn(), log: vi.fn(), warn: vi.fn() };
 }
 
 describe('fetchMotorcyclesFromApi script', () => {
+  it('deduplica seeds para escalar el catálogo sin consultas repetidas', () => {
+    expect(
+      dedupeMotorcycleSeeds([
+        { make: 'BMW', model: 'F 900 GS', year: 2024 },
+        { make: 'bmw', model: 'f 900 gs', year: 2024 },
+        { make: 'BMW', model: 'R 1300 GS', year: 2024 },
+      ]),
+    ).toEqual([
+      { make: 'BMW', model: 'F 900 GS', year: 2024 },
+      { make: 'BMW', model: 'R 1300 GS', year: 2024 },
+    ]);
+  });
+
   it('sale sin error crítico ni conexión externa si no hay API_NINJAS_KEY', async () => {
     const fetchImpl = vi.fn();
     const logger = createLogger();

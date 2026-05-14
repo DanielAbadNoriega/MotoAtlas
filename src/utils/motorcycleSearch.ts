@@ -1,5 +1,6 @@
 import { compareQueueMaxSize } from './compareQueue';
 import type { Bike, BikeLicense, BikeSegment } from '../types/bike';
+import { getBikeA2Status, isBikeA2Compatible } from '../shared/motorcycles/motorcycleTaxonomy';
 
 export type SortOption =
   | 'price-asc'
@@ -94,7 +95,10 @@ export function filterMotorcycles(motorcycles: readonly Bike[], filters: SearchF
       (!text || haystack.includes(text)) &&
       (filters.brands.length === 0 || filters.brands.includes(bike.brand)) &&
       (filters.segments.length === 0 || filters.segments.includes(bike.segment)) &&
-      (filters.licenses.length === 0 || filters.licenses.includes(bike.license)) &&
+      (filters.licenses.length === 0 ||
+        filters.licenses.some((license) =>
+          license === 'A2' ? isBikeA2Compatible(bike) : getBikeA2Status(bike) === 'A',
+        )) &&
       (minPrice === undefined || bike.priceEur >= minPrice) &&
       (maxPrice === undefined || bike.priceEur <= maxPrice) &&
       (minPower === undefined || bike.powerHp >= minPower) &&

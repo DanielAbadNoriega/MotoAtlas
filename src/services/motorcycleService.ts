@@ -1,11 +1,13 @@
 import { bikeCatalog } from '../data/bikes';
-import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores } from '../types/bike';
+import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../types/bike';
+import { getMotorcycleImage } from '../shared/images/getMotorcycleImage';
+import { getBikeA2Status } from '../shared/motorcycles/motorcycleTaxonomy';
 
-type MotorcycleDataSource = 'supabase' | 'fallback';
+type MotorcycleCatalogSource = 'supabase' | 'fallback';
 
 export type MotorcycleServiceResult = Readonly<{
   motorcycles: readonly Bike[];
-  source: MotorcycleDataSource;
+  source: MotorcycleCatalogSource;
   error?: Error;
 }>;
 
@@ -16,6 +18,10 @@ type MotorcycleRow = Readonly<{
   year: number;
   segment: BikeSegment;
   license: BikeLicense;
+  is_a2_compatible?: boolean;
+  is_a2_limited_version?: boolean;
+  limited_power_hp?: number | null;
+  original_power_hp?: number | null;
   engine_type: BikeEngineType;
   displacement_cc: number;
   power_hp: number;
@@ -25,7 +31,15 @@ type MotorcycleRow = Readonly<{
   fuel_tank_liters: number;
   price_eur: number;
   image_url: string;
+  image_locked?: boolean;
   description: string;
+  description_locked?: boolean;
+  specs_source?: MotorcycleDataSource;
+  price_source?: MotorcycleDataSource;
+  image_source?: MotorcycleDataSource;
+  scores_source?: MotorcycleDataSource;
+  pros_cons_source?: MotorcycleDataSource;
+  reliability_source?: MotorcycleDataSource;
   use_scores: Partial<BikeUseScores> | null;
   abs_cornering: boolean;
   traction_control: boolean;
@@ -85,13 +99,17 @@ function mapMotorcycleRow(row: MotorcycleRow): Bike {
     tubelessWheels: Boolean(row.tubeless_wheels),
   };
 
-  return {
+  const bike: Bike = {
     id: row.id,
     brand: row.brand,
     model: row.model,
     year: toNumber(row.year),
     segment: row.segment,
     license: row.license,
+    isA2Compatible: Boolean(row.is_a2_compatible),
+    isA2LimitedVersion: Boolean(row.is_a2_limited_version),
+    limitedPowerHp: row.limited_power_hp ?? null,
+    originalPowerHp: row.original_power_hp ?? null,
     engineType: row.engine_type,
     displacementCc: toNumber(row.displacement_cc),
     powerHp: toNumber(row.power_hp),
@@ -101,7 +119,17 @@ function mapMotorcycleRow(row: MotorcycleRow): Bike {
     fuelTankLiters: toNumber(row.fuel_tank_liters),
     priceEur: toNumber(row.price_eur),
     imageUrl: row.image_url,
+    imageLocked: Boolean(row.image_locked),
     description: row.description,
+    descriptionLocked: Boolean(row.description_locked),
+    specsSource: row.specs_source ?? 'manual',
+    priceSource: toNumber(row.price_eur) === 0 ? 'placeholder' : row.price_source ?? 'manual',
+    imageSource: getMotorcycleImage({ brand: row.brand, model: row.model, imageUrl: row.image_url }).isFallback
+      ? 'placeholder'
+      : row.image_source ?? 'manual',
+    scoresSource: row.scores_source ?? 'estimated',
+    prosConsSource: row.pros_cons_source ?? 'estimated',
+    reliabilitySource: row.reliability_source ?? 'estimated',
     useScores: normalizeUseScores(row.use_scores),
     features,
     pros: normalizeTextArray(row.pros),
@@ -111,6 +139,14 @@ function mapMotorcycleRow(row: MotorcycleRow): Bike {
       reportCount: toNumber(row.report_count),
       reliabilityScore: toNumber(row.reliability_score),
     },
+  };
+
+  const a2Status = getBikeA2Status(bike);
+
+  return {
+    ...bike,
+    isA2Compatible: Boolean(row.is_a2_compatible) || a2Status !== 'A',
+    isA2LimitedVersion: Boolean(row.is_a2_limited_version) || a2Status === 'A2_LIMITABLE',
   };
 }
 

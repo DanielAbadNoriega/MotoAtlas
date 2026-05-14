@@ -1,6 +1,10 @@
+import { type FormEvent, useEffect, useState } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
+import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './BikeDetailPage.scss';
 
@@ -28,12 +32,6 @@ const currencyFormatter = new Intl.NumberFormat('es-ES', {
   maximumFractionDigits: 0,
   style: 'currency',
 });
-
-const segmentLabels: Record<Bike['segment'], string> = {
-  naked: 'Naked',
-  'sport-touring': 'Sport Touring',
-  trail: 'Trail',
-};
 
 const engineTypeLabels: Record<Bike['engineType'], string> = {
   'boxer-twin': 'Bicilíndrico bóxer',
@@ -66,8 +64,21 @@ const featureLabels: Record<FeatureKey, string> = {
 };
 
 const segmentProfile: Record<Bike['segment'], string> = {
+  adventure: 'Para quien quiere una maxitrail o trail viajera con margen para rutas largas y pistas sencillas.',
+  cruiser: 'Para rodar con calma, mucho par y una posición baja pensada para carretera tranquila.',
+  custom: 'Para quien prioriza estilo, personalización y conducción relajada por encima de prestaciones puras.',
+  'dual-sport': 'Para quien necesita una moto ligera y útil tanto en asfalto roto como en pistas.',
+  enduro: 'Para uso campero exigente, peso contenido y prioridad absoluta fuera del asfalto.',
+  hypernaked: 'Para pilotos con experiencia que buscan una naked extrema, directa y muy prestacional.',
   naked: 'Para pilotos que priorizan agilidad, respuesta directa y una moto viva en ciudad y carreteras de curvas.',
+  'neo-retro': 'Para quien busca estética clásica con tecnología moderna y uso diario razonable.',
+  retro: 'Para quien valora sencillez, estética clásica y una conducción más emocional que cronometrada.',
+  scooter: 'Para desplazamientos urbanos y periurbanos con practicidad, protección y bajo esfuerzo.',
+  scrambler: 'Para un uso mixto ligero, estética clásica y pistas fáciles sin pretensiones de enduro.',
+  sport: 'Para conducción dinámica y carreteras de curvas con ergonomía más exigente.',
   'sport-touring': 'Para viajar rápido con protección, estabilidad y prestaciones sin renunciar al ritmo deportivo.',
+  supersport: 'Para uso deportivo intenso, circuito ocasional y una ergonomía claramente prestacional.',
+  touring: 'Para viajar largo, cómodo y con carga, priorizando protección y estabilidad.',
   trail: 'Para quien quiere una moto polivalente: viajar, cargar equipaje y salir del asfalto con margen real.',
 };
 
@@ -114,6 +125,8 @@ function getReliabilityLevel(score: number) {
 }
 
 function getSpecGroups(bike: Bike): readonly DetailSpecGroup[] {
+  const a2Badge = getBikeA2Badge(bike);
+
   return [
     {
       title: 'Motor & transmisión',
@@ -136,7 +149,7 @@ function getSpecGroups(bike: Bike): readonly DetailSpecGroup[] {
     {
       title: 'Mercado & registro',
       items: [
-        { label: 'Carnet', value: `Carnet ${bike.license}` },
+        { label: 'Carnet', value: a2Badge.label },
         { label: 'Año', value: String(bike.year) },
         { label: 'Precio estimado', value: currencyFormatter.format(bike.priceEur) },
         { label: 'Reportes comunidad', value: numberFormatter.format(bike.reliabilityReports.reportCount) },
@@ -161,6 +174,33 @@ function NotFoundDetail() {
 }
 
 export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
+  const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
+  const [reviewStatus, setReviewStatus] = useState('');
+  const [reviewError, setReviewError] = useState('');
+
+  useEffect(() => {
+    if (!bike) {
+      return;
+    }
+
+    let isMounted = true;
+    getApprovedReviewsByMotorcycleId(bike.id)
+      .then((approvedReviews) => {
+        if (isMounted) {
+          setReviews(approvedReviews);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReviews([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [bike?.id]);
+
   if (!bike) {
     return <NotFoundDetail />;
   }
@@ -168,8 +208,44 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
   const bikeName = getBikeDisplayName(bike);
   const overallScore = getOverallScore(bike);
   const bestUse = getBestUse(bike);
+  const a2Badge = getBikeA2Badge(bike);
+  const reviewAggregate = getReviewAggregate(reviews);
   const enabledFeatures = getFeatureEntries(bike).filter(([, isEnabled]) => isEnabled);
   const relatedBikes = motorcycles.filter((item) => item.segment === bike.segment && item.id !== bike.id).slice(0, 3);
+  const submitReview = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setReviewError('');
+    setReviewStatus('');
+
+    const form = event.currentTarget;
+    const formData = new FormData(event.currentTarget);
+    const rating = Number(formData.get('rating'));
+    const ownershipMonthsValue = String(formData.get('ownershipMonths') ?? '').trim();
+    const kilometersValue = String(formData.get('kilometers') ?? '').trim();
+
+    try {
+      await createReview({
+        motorcycleId: bike.id,
+        userName: String(formData.get('userName') ?? ''),
+        rating,
+        ownershipMonths: ownershipMonthsValue ? Number(ownershipMonthsValue) : null,
+        kilometers: kilometersValue ? Number(kilometersValue) : null,
+        comment: String(formData.get('comment') ?? ''),
+        pros: String(formData.get('pros') ?? '')
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean),
+        cons: String(formData.get('cons') ?? '')
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean),
+      });
+      form.reset();
+      setReviewStatus('Review enviada. Queda pendiente de moderación.');
+    } catch (error) {
+      setReviewError(error instanceof Error ? error.message : 'No se pudo enviar la review.');
+    }
+  };
 
   return (
     <main className="bike-detail" aria-labelledby="bike-detail-title">
@@ -185,7 +261,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
 
           <div className="bike-detail__badges">
             <span>{segmentLabels[bike.segment]}</span>
-            <span>Carnet {bike.license}</span>
+            <span>{a2Badge.label}</span>
             <span>{bike.year}</span>
           </div>
 
@@ -300,7 +376,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
       </section>
 
       <section className="bike-detail__fit" aria-labelledby="bike-detail-fit-title">
-        <h2 id="bike-detail-fit-title">¿Es esta moto para vos?</h2>
+        <h2 id="bike-detail-fit-title">¿Es esta moto para ti?</h2>
         <div className="bike-detail__fit-grid">
           <article>
             <span className="material-symbols-outlined" aria-hidden="true">
@@ -382,6 +458,75 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
               </dl>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
+        <div className="bike-detail__reviews-summary">
+          <span>Opiniones verificadas</span>
+          <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
+          <strong>{formatReviewAggregate(reviewAggregate)}</strong>
+          <p>Las nuevas opiniones entran en moderación como pendientes. Sin login todavía.</p>
+        </div>
+
+        <div className="bike-detail__review-grid">
+          <div className="bike-detail__approved-reviews" aria-live="polite">
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <article key={review.id}>
+                  <header>
+                    <strong>{review.userName}</strong>
+                    <span>{review.rating}/5</span>
+                  </header>
+                  <p>{review.comment}</p>
+                </article>
+              ))
+            ) : (
+              <p>Sin reviews aprobadas todavía.</p>
+            )}
+          </div>
+
+          <form className="bike-detail__review-form" onSubmit={submitReview}>
+            <label htmlFor="review-user-name">
+              Nombre
+              <input id="review-user-name" name="userName" required type="text" />
+            </label>
+            <label htmlFor="review-rating">
+              Rating
+              <select id="review-rating" name="rating" required defaultValue="5">
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <option key={rating} value={rating}>
+                    {rating}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label htmlFor="review-ownership-months">
+              Meses con la moto
+              <input id="review-ownership-months" name="ownershipMonths" min="0" type="number" />
+            </label>
+            <label htmlFor="review-kilometers">
+              Kilómetros
+              <input id="review-kilometers" name="kilometers" min="0" type="number" />
+            </label>
+            <label htmlFor="review-comment">
+              Opinión
+              <textarea id="review-comment" name="comment" required rows={4} />
+            </label>
+            <label htmlFor="review-pros">
+              Pros separados por coma
+              <input id="review-pros" name="pros" type="text" />
+            </label>
+            <label htmlFor="review-cons">
+              Contras separados por coma
+              <input id="review-cons" name="cons" type="text" />
+            </label>
+            <button className="button button--primary" type="submit">
+              Enviar review
+            </button>
+            {reviewStatus ? <p role="status">{reviewStatus}</p> : null}
+            {reviewError ? <p role="alert">{reviewError}</p> : null}
+          </form>
         </div>
       </section>
 

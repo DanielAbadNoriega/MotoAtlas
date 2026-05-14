@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { getBikeDetailHash } from '../../../data/bikes';
 import {
   buildCompareViewModel,
@@ -6,14 +6,16 @@ import {
   getBikeBrandLabel,
   getBikeCons,
   getBikePros,
+  getBikeA2Label,
+  getBikeDataSourceBadges,
   getBikeSegmentLabel,
   getSafeBikeDisplayName,
-  getCompareHashAfterAdding,
-  getCompareHashAfterRemoving,
   getFirstAddableBike,
   scoreWidth,
 } from '../../../features/compare/compareUtils';
 import { getBrowseSearchHash } from '../../../utils/compareQueue';
+import { saveCompareQueue } from '../../../utils/compareQueue';
+import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import type { Bike } from '../../../types/bike';
 import { Button } from '../../ui/Button';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
@@ -32,6 +34,14 @@ function navigateToHash(hash: string) {
   if (typeof window !== 'undefined') {
     window.location.hash = hash;
   }
+}
+
+function getCompareHashForIds(ids: readonly Bike['id'][], motorcycles: readonly Bike[]) {
+  const bikes = ids
+    .map((id) => motorcycles.find((motorcycle) => motorcycle.id === id))
+    .filter((motorcycle): motorcycle is Bike => Boolean(motorcycle));
+
+  return bikes.length === ids.length ? getComparatorHashFromBikes(bikes) : `#/comparador?bikes=${ids.join(',')}`;
 }
 
 function EmptyComparator() {
@@ -64,7 +74,7 @@ function OneBikeComparator({ bike, motorcycles }: { bike: Bike; motorcycles: rea
           <button
             className="button button--primary"
             type="button"
-            onClick={() => navigateToHash(getCompareHashAfterAdding([bike.id], addableBike.id))}
+            onClick={() => navigateToHash(getCompareHashForIds([bike.id, addableBike.id], motorcycles))}
             aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
           >
             Añadir {getSafeBikeDisplayName(addableBike)}
@@ -109,6 +119,14 @@ function DataList({ icon, items }: { icon: 'cancel' | 'check_circle'; items: rea
 
 export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount = 0, motorcycles = [] }: ComparatorPageProps) {
   const [voteMessage, setVoteMessage] = useState('');
+  const [selectedVoteBikeId, setSelectedVoteBikeId] = useState<Bike['id'] | undefined>();
+  const queueIds = bikes.map((bike) => bike.id);
+
+  useEffect(() => {
+    if (queueIds.length > 0) {
+      saveCompareQueue(queueIds);
+    }
+  }, [queueIds.join('|')]);
 
   if (bikes.length === 0) {
     return <EmptyComparator />;
@@ -122,6 +140,8 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
   const currentIds = comparison.bikes.map((bike) => bike.id);
   const addableBike = getFirstAddableBike(comparison.bikes, motorcycles);
   const hasThreeBikes = comparison.bikes.length === 3;
+  const selectedVoteBike =
+    comparison.bikes.find((bike) => bike.id === selectedVoteBikeId) ?? comparison.finalVerdict.winnerBike;
 
   return (
     <main className="comparison-detail" aria-labelledby="comparison-detail-title">
@@ -165,14 +185,19 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
                 <MotorcycleImage motorcycle={entry.bike} />
                 <div>
                   <span>
-                    {getBikeBrandLabel(entry.bike)} · {getBikeSegmentLabel(entry.bike)}
+                    {getBikeBrandLabel(entry.bike)} · {getBikeSegmentLabel(entry.bike)} · {getBikeA2Label(entry.bike)}
                   </span>
                   <h2>{entry.displayName}</h2>
+                  <div className="comparison-detail__data-badges" aria-label={`Calidad de datos de ${entry.displayName}`}>
+                    {getBikeDataSourceBadges(entry.bike).map((badge) => (
+                      <small key={badge.id}>{badge.label}</small>
+                    ))}
+                  </div>
                   <div className="comparison-detail__hero-bike-actions">
                     <a href={getBikeDetailHash(entry.bike)} aria-label={`Ver ficha de ${entry.displayName}`}>Ver ficha</a>
                     <button
                       type="button"
-                      onClick={() => navigateToHash(getCompareHashAfterRemoving(currentIds, entry.bike.id))}
+                      onClick={() => navigateToHash(getCompareHashForIds(currentIds.filter((id) => id !== entry.bike.id), motorcycles))}
                       aria-label={`Quitar ${entry.displayName} de la comparativa`}
                     >
                       Quitar
@@ -191,8 +216,25 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
         </div>
 
         <div className="comparison-detail__actions">
-          <Button onClick={() => setVoteMessage(`Voto registrado para ${getSafeBikeDisplayName(comparison.finalVerdict.winnerBike)}.`)}>
-            Votar ganadora
+          <div className="comparison-detail__vote-choice" role="group" aria-label="Elige tu ganadora">
+            {comparison.bikes.map((bike) => {
+              const isSelected = selectedVoteBike.id === bike.id;
+
+              return (
+                <button
+                  aria-pressed={isSelected}
+                  className={isSelected ? 'comparison-detail__vote-option comparison-detail__vote-option--active' : 'comparison-detail__vote-option'}
+                  key={bike.id}
+                  type="button"
+                  onClick={() => setSelectedVoteBikeId(bike.id)}
+                >
+                  {getSafeBikeDisplayName(bike)}
+                </button>
+              );
+            })}
+          </div>
+          <Button onClick={() => setVoteMessage(`Voto registrado para ${getSafeBikeDisplayName(selectedVoteBike)}.`)}>
+            Votar {getBikeBrandLabel(selectedVoteBike)}
           </Button>
           {comparison.bikes.map((bike) => (
             <a className="button button--ghost" href={getBikeDetailHash(bike)} key={bike.id} aria-label={`Ver ficha de ${getSafeBikeDisplayName(bike)}`}>
@@ -200,7 +242,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
             </a>
           ))}
           {addableBike ? (
-            <Button variant="secondary" onClick={() => navigateToHash(getCompareHashAfterAdding(currentIds, addableBike.id))} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
+            <Button variant="secondary" onClick={() => navigateToHash(getCompareHashForIds([...currentIds, addableBike.id], motorcycles))} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
               Añadir {getSafeBikeDisplayName(addableBike)}
             </Button>
           ) : (
@@ -376,7 +418,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
           {comparison.videos.map((video) => (
             <article key={video.id}>
               <div>
-                <img src={video.imageUrl} alt={video.alt} loading="lazy" />
+                <MotorcycleImage motorcycle={video.bike} alt={video.alt} loading="lazy" />
                 <span className="material-symbols-outlined" aria-hidden="true">
                   play_circle
                 </span>

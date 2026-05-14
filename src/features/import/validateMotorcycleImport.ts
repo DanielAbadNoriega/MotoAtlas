@@ -1,4 +1,5 @@
-import type { Bike, BikeEngineType, BikeLicense, BikeSegment, BikeUseScores } from '../../types/bike';
+import type { Bike, BikeEngineType, BikeUseScores } from '../../types/bike';
+import { BIKE_LICENSES, BIKE_SEGMENTS, MOTORCYCLE_DATA_SOURCES } from '../../shared/motorcycles/motorcycleTaxonomy';
 import { buildMotorcyclePayload } from './importUtils';
 import { normalizeMotorcycle, type NormalizeMotorcycleOptions } from './normalizeMotorcycle';
 import type {
@@ -9,8 +10,8 @@ import type {
   MotorcycleValidationItem,
 } from './motorcycleImportTypes';
 
-const segmentValues = ['trail', 'naked', 'sport-touring'] as const satisfies readonly BikeSegment[];
-const licenseValues = ['A2', 'A'] as const satisfies readonly BikeLicense[];
+const segmentValues = BIKE_SEGMENTS;
+const licenseValues = BIKE_LICENSES;
 const engineTypeValues = [
   'single-cylinder',
   'parallel-twin',
@@ -20,6 +21,7 @@ const engineTypeValues = [
   'l-twin',
   'boxer-twin',
 ] as const satisfies readonly BikeEngineType[];
+const dataSourceValues = MOTORCYCLE_DATA_SOURCES;
 const useScoreKeys = ['city', 'touring', 'offroad', 'passenger', 'beginner', 'sport', 'funFactor'] as const;
 
 const rawFieldKeys = {
@@ -31,9 +33,19 @@ const rawFieldKeys = {
   id: ['id'],
   image_url: ['image_url', 'imageUrl'],
   license: ['license'],
+  is_a2_compatible: ['is_a2_compatible', 'isA2Compatible'],
+  is_a2_limited_version: ['is_a2_limited_version', 'isA2LimitedVersion'],
+  limited_power_hp: ['limited_power_hp', 'limitedPowerHp'],
+  original_power_hp: ['original_power_hp', 'originalPowerHp'],
   model: ['model'],
   power_hp: ['power_hp', 'powerHp', 'power'],
   price_eur: ['price_eur', 'priceEur'],
+  specs_source: ['specs_source', 'specsSource'],
+  price_source: ['price_source', 'priceSource'],
+  image_source: ['image_source', 'imageSource'],
+  scores_source: ['scores_source', 'scoresSource'],
+  pros_cons_source: ['pros_cons_source', 'prosConsSource'],
+  reliability_source: ['reliability_source', 'reliabilitySource'],
   seat_height_mm: ['seat_height_mm', 'seatHeightMm', 'seat_height'],
   segment: ['segment', 'type'],
   torque_nm: ['torque_nm', 'torqueNm', 'torque'],
@@ -172,6 +184,34 @@ function validateEnum<T extends string>(
   }
 }
 
+function validateOptionalPositiveNullableNumber(
+  errors: MotorcycleValidationError[],
+  value: unknown,
+  snakeField: keyof typeof rawFieldKeys,
+) {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  if (!isFiniteNumber(value) || value <= 0) {
+    pushError(errors, snakeField, `${snakeField} debe ser numérico mayor que 0 o null.`, value);
+  }
+}
+
+function validateDataSource(
+  errors: MotorcycleValidationError[],
+  input: unknown,
+  value: unknown,
+  snakeField: keyof typeof rawFieldKeys,
+) {
+  const receivedValue = readRawValue(input, snakeField);
+  const valueToValidate = receivedValue ?? value;
+
+  if (!dataSourceValues.includes(valueToValidate as (typeof dataSourceValues)[number])) {
+    pushError(errors, snakeField, `${snakeField} debe tener una procedencia válida.`, receivedValue);
+  }
+}
+
 function validateUseScores(errors: MotorcycleValidationError[], input: unknown, useScores: DeepPartialBike['useScores']) {
   if (typeof useScores !== 'object' || useScores === null) {
     pushError(errors, 'use_scores', 'use_scores es obligatorio y debe ser un objeto.', readRawValue(input, 'use_scores'));
@@ -210,6 +250,14 @@ function validateNormalizedMotorcycle(input: unknown, motorcycle: DeepPartialBik
   validateText(errors, input, motorcycle, 'imageUrl', 'image_url');
   validateText(errors, input, motorcycle, 'description', 'description');
   validateUseScores(errors, input, motorcycle.useScores);
+  validateOptionalPositiveNullableNumber(errors, motorcycle.limitedPowerHp, 'limited_power_hp');
+  validateOptionalPositiveNullableNumber(errors, motorcycle.originalPowerHp, 'original_power_hp');
+  validateDataSource(errors, input, motorcycle.specsSource, 'specs_source');
+  validateDataSource(errors, input, motorcycle.priceSource, 'price_source');
+  validateDataSource(errors, input, motorcycle.imageSource, 'image_source');
+  validateDataSource(errors, input, motorcycle.scoresSource, 'scores_source');
+  validateDataSource(errors, input, motorcycle.prosConsSource, 'pros_cons_source');
+  validateDataSource(errors, input, motorcycle.reliabilitySource, 'reliability_source');
 
   return errors;
 }
@@ -219,6 +267,7 @@ function toCompleteBike(motorcycle: DeepPartialBike): Bike {
     brand: motorcycle.brand!,
     cons: motorcycle.cons ?? [],
     description: motorcycle.description!,
+    descriptionLocked: motorcycle.descriptionLocked ?? false,
     displacementCc: motorcycle.displacementCc!,
     engineType: motorcycle.engineType!,
     features: {
@@ -232,19 +281,30 @@ function toCompleteBike(motorcycle: DeepPartialBike): Bike {
     },
     fuelTankLiters: motorcycle.fuelTankLiters!,
     id: motorcycle.id!,
+    imageSource: motorcycle.imageSource ?? 'manual',
     imageUrl: motorcycle.imageUrl!,
+    imageLocked: motorcycle.imageLocked ?? false,
+    isA2Compatible: motorcycle.isA2Compatible ?? false,
+    isA2LimitedVersion: motorcycle.isA2LimitedVersion ?? false,
     license: motorcycle.license!,
+    limitedPowerHp: motorcycle.limitedPowerHp ?? null,
     model: motorcycle.model!,
+    originalPowerHp: motorcycle.originalPowerHp ?? null,
     powerHp: motorcycle.powerHp!,
     priceEur: motorcycle.priceEur!,
+    priceSource: motorcycle.priceSource ?? 'manual',
     pros: motorcycle.pros ?? [],
+    prosConsSource: motorcycle.prosConsSource ?? 'estimated',
     reliabilityReports: {
       commonIssues: motorcycle.reliabilityReports?.commonIssues ?? [],
       reliabilityScore: motorcycle.reliabilityReports?.reliabilityScore ?? 0,
       reportCount: motorcycle.reliabilityReports?.reportCount ?? 0,
     },
+    reliabilitySource: motorcycle.reliabilitySource ?? 'estimated',
+    scoresSource: motorcycle.scoresSource ?? 'estimated',
     seatHeightMm: motorcycle.seatHeightMm!,
     segment: motorcycle.segment!,
+    specsSource: motorcycle.specsSource ?? 'manual',
     torqueNm: motorcycle.torqueNm!,
     useScores: motorcycle.useScores as BikeUseScores,
     wetWeightKg: motorcycle.wetWeightKg!,

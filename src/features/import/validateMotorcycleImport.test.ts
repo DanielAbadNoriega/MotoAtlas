@@ -117,6 +117,7 @@ describe('validateMotorcycleImport', () => {
     const result = validateMotorcycleImport([{ ...completeMotorcycle, priceEur: 0 }]);
 
     expect(result.valid).toBe(true);
+    expect(result.payload[0].price_source).toBe('placeholder');
     expect(result.validItems[0].warnings).toContainEqual(
       expect.objectContaining({
         field: 'price_eur',
@@ -138,5 +139,18 @@ describe('validateMotorcycleImport', () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((error) => error.includes('use_scores.funFactor es obligatorio y debe ser numérico.'))).toBe(true);
+  });
+
+  it('rechaza procedencias de datos inválidas', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, specsSource: 'scraped' }]);
+
+    expect(result.valid).toBe(false);
+    expect(result.invalidItems[0].errors).toContainEqual(
+      expect.objectContaining({
+        field: 'specs_source',
+        message: 'specs_source debe tener una procedencia válida.',
+        receivedValue: 'scraped',
+      }),
+    );
   });
 });

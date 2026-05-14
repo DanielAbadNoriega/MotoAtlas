@@ -52,7 +52,10 @@ describe('normalizeMotorcycle', () => {
       model: 'Z900',
       powerHp: 125,
       priceEur: 0,
+      priceSource: 'placeholder',
       segment: 'naked',
+      imageSource: 'placeholder',
+      scoresSource: 'estimated',
       useScores: expect.objectContaining({ city: 8, sport: 8 }),
       year: 2024,
     });
@@ -95,5 +98,32 @@ describe('normalizeMotorcycle', () => {
     );
 
     expect(result.motorcycle.displacementCc).toBe(1084);
+  });
+
+  it('infiere compatibilidad A2 limitable y fuentes de datos controladas', () => {
+    const input = {
+      ...existingMotorcycle,
+      imageUrl: '',
+      powerHp: 80,
+      priceEur: 0,
+    } as Record<string, unknown>;
+    delete input.isA2Compatible;
+    delete input.isA2LimitedVersion;
+    delete input.limitedPowerHp;
+    delete input.originalPowerHp;
+
+    const result = normalizeMotorcycle(
+      input,
+      { allowPlaceholders: true },
+    );
+
+    expect(result.motorcycle).toMatchObject({
+      imageSource: 'placeholder',
+      isA2Compatible: true,
+      isA2LimitedVersion: true,
+      limitedPowerHp: 47.6,
+      originalPowerHp: 80,
+      priceSource: 'placeholder',
+    });
   });
 });

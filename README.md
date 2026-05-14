@@ -53,6 +53,14 @@ npm run import:motos
 
 El script valida campos obligatorios, genera payload snake_case compatible con `public.motorcycles` y hace `upsert` usando `id` para evitar duplicados.
 
+El seed también guarda metadatos editoriales:
+
+- `imageLocked` / `descriptionLocked`: protegen imagen y descripción manual ante futuras importaciones.
+- `isA2Compatible`, `isA2LimitedVersion`, `limitedPowerHp`, `originalPowerHp`: distinguen A2 real, A2 limitable y solo A.
+- `specsSource`, `priceSource`, `imageSource`, `scoresSource`, `prosConsSource`, `reliabilitySource`: procedencia `api`, `manual`, `estimated`, `user` o `placeholder`.
+
+Reglas clave: si `priceEur = 0`, `priceSource` debe ser `placeholder`; si la imagen cae al fallback, `imageSource` debe ser `placeholder`.
+
 ### Reparación y enriquecimiento de JSON
 
 `data/import/motorcycles.json` es la fuente editable. Si el validador detecta specs técnicas inválidas, usa:
@@ -89,6 +97,18 @@ Si necesitas subir solo las válidas de forma consciente:
 npm run import:motos -- --allow-partial
 ```
 
+### Catálogo real y enriquecimiento opcional
+
+`data/import/motorcycleSeedList.json` contiene la lista editorial de modelos a enriquecer. Ahora cubre 80 motos reales recientes de segmentos trail, adventure, naked, sport-touring, sport, touring, enduro, dual-sport, cruiser, scrambler y neo-retro.
+
+Para generar un JSON enriquecido sin sobrescribir la fuente manual:
+
+```bash
+npm run fetch:motos
+```
+
+Si no existe `API_NINJAS_KEY`, el script sale con un mensaje claro y no rompe el flujo.
+
 ### Fallback de imágenes
 
 Las motos sin imagen real usan:
@@ -98,6 +118,71 @@ public/images/placeholders/motorcycle-technical-pending.jpg
 ```
 
 La lógica está centralizada en `src/shared/images/getMotorcycleImage.ts` y se renderiza con overlay `TECHNICAL IMAGE PENDING`.
+
+Las imágenes locales estables van en:
+
+```txt
+public/images/motorcycles/brand-model-year.webp
+```
+
+Ejemplo:
+
+```txt
+public/images/motorcycles/bmw-f-900-gs-2024.webp
+```
+
+Para comprobar qué imagen local o placeholder se aplicaría:
+
+```bash
+npm run sync:images:check
+```
+
+Para sincronizar `image_url` e `image_source` en Supabase:
+
+```bash
+npm run sync:images
+```
+
+Regla crítica: si `image_locked = true`, el script NO sobrescribe la imagen manual.
+
+### SEO inicial
+
+La app soporta rutas limpias además del hash routing de desarrollo:
+
+- `/motos/[slug]`
+- `/comparador/[slug-vs-slug]`
+
+El comparador conserva compatibilidad con `#/comparador?bikes=id1,id2,id3` y con rutas legacy de `#/comparativas/...`, pero redirige la experiencia al comparador dinámico.
+
+Para regenerar archivos públicos básicos:
+
+```bash
+npm run seo:sitemap
+```
+
+Genera:
+
+- `public/sitemap.xml`
+- `public/robots.txt`
+
+Los meta tags, canonical, Open Graph y JSON-LD viven centralizados en `src/shared/seo/seoUtils.ts`.
+
+### Reviews sin login
+
+Las reviews entran como `pending` por defecto y solo se muestran cuando están `approved`.
+
+Servicio:
+
+```txt
+src/services/motorcycleReviewService.ts
+```
+
+La ficha de moto muestra:
+
+- promedio de rating
+- número de reviews aprobadas
+- listado de reviews aprobadas
+- formulario básico de envío
 
 Seguridad: no uses `VITE_SUPABASE_ANON_KEY` para importar. La service role key va solo en `.env.import` local; `.env.import` y `.env.local` están ignorados por Git.
 
@@ -132,6 +217,7 @@ npm run test:coverage
 ### Qué cubren actualmente
 
 - Filtrado de motos por texto, marca, modelo, segmento, carnet, precio, potencia mínima y peso máximo.
+- Compatibilidad A2 real/limitable, badges A2/A2 LIMITABLE/A y procedencia de datos.
 - Ordenación por precio, potencia, peso y año.
 - Selección de motos para comparar, quitar motos y vaciar la cola.
 - Límite máximo de 3 motos en buscador, cola y hash del comparador.
@@ -139,6 +225,9 @@ npm run test:coverage
 - Fallback a `src/data/bikes.ts` si Supabase falla o no hay variables de entorno.
 - Integración de App mockeando `motorcycleService` sin Supabase real.
 - Comparador dinámico con diseño Stitch: 1/2/3 motos, añadir/quitar, URL sync, best value, technical table, performance bars, fallbacks visuales y empty states.
+- Rutas limpias, slugs, meta tags, JSON-LD, sitemap y robots.
+- Sincronización de imágenes locales sin Supabase real y sin sobrescribir `image_locked`.
+- Reviews básicas: creación pendiente, lectura de aprobadas, agregados de rating y validación sin Supabase real.
 - Componentes principales:
   - `BikeResultCard`
   - `AdvancedFilters`
@@ -150,12 +239,12 @@ Los tests no dependen de Supabase real: usan fixtures locales y mocks de `fetch`
 
 ### Cómo añadir nuevos tests
 
-1. Usá fixtures de `src/test/fixtures/bikes.ts` o agregá datos mínimos ahí.
-2. Priorizá queries accesibles:
+1. Usa fixtures de `src/test/fixtures/bikes.ts` o añade datos mínimos ahí.
+2. Prioriza queries accesibles:
    - `getByRole`
    - `getByText`
    - `getByLabelText`
-3. Evitá assertar clases CSS salvo que estés testeando una variante visual imprescindible.
-4. Para lógica pura, preferí tests unitarios en `src/utils/*.test.ts`.
-5. Para componentes, renderizá el componente con React Testing Library y simulá usuario con `@testing-library/user-event`.
-6. Para Supabase, no pegues a red real: mockeá `fetch` o el servicio.
+3. Evita assertar clases CSS salvo que estés probando una variante visual imprescindible.
+4. Para lógica pura, prefiere tests unitarios en `src/utils/*.test.ts` o `src/shared/**/*.test.ts`.
+5. Para componentes, renderiza el componente con React Testing Library y simula usuario con `@testing-library/user-event`.
+6. Para Supabase, no conectes a red real: mockea `fetch` o el servicio.

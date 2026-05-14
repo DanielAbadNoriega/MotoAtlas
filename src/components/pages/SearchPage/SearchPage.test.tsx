@@ -67,6 +67,17 @@ describe('SearchPage', () => {
     expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
   });
 
+  it('filters by real A2 compatibility and shows A2 limitable badges', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
+
+    expect(screen.getAllByText('A2 LIMITABLE').length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: /Tuareg 660/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
+  });
+
   it('sorts by price', async () => {
     const user = userEvent.setup();
     renderSearchPage();
@@ -112,7 +123,7 @@ describe('SearchPage', () => {
     await user.click(screen.getAllByRole('button', { name: /^Comparar$/i })[0]);
 
     expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
-    expect(screen.getByText(/Solo podés seleccionar hasta 3 motos/i)).toBeInTheDocument();
+    expect(screen.getByText(/Solo puedes seleccionar hasta 3 motos/i)).toBeInTheDocument();
   });
 
   it('renders the 20 current JSON motorcycles', () => {
@@ -151,6 +162,17 @@ describe('SearchPage', () => {
 
     expect(screen.getByRole('heading', { name: /5 resultados encontrados/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Tracer 9 GT/i })).toBeInTheDocument();
+  });
+
+  it('filters real motorcycles by A2 compatibility', async () => {
+    const user = userEvent.setup();
+    renderRealSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
+
+    expect(screen.getAllByText('A2 LIMITABLE').length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: /Ténéré 700/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /R 1300 GS/i })).not.toBeInTheDocument();
   });
 });
 
@@ -278,7 +300,7 @@ describe('CompareDrawer', () => {
     expect(screen.getByText('2/3 motos seleccionadas')).toBeInTheDocument();
     expect(compareLink).toHaveAttribute(
       'href',
-      '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
+      '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
     );
   });
 
@@ -288,7 +310,7 @@ describe('CompareDrawer', () => {
     expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Comparar ahora \(3\)/i })).toHaveAttribute(
       'href',
-      '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09',
+      '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660-vs-yamaha-mt-09?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09',
     );
   });
 
@@ -299,7 +321,7 @@ describe('CompareDrawer', () => {
 
     render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 1)} onClear={onClear} onRemove={onRemove} />);
 
-    expect(screen.getByText(/Elegí al menos 2 motos/i)).toBeInTheDocument();
+    expect(screen.getByText(/Elige al menos 2 motos/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Quitar BMW F 900 GS/i }));
     await user.click(screen.getByRole('button', { name: /Vaciar comparador/i }));

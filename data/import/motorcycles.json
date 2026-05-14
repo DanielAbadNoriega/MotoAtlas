@@ -51,7 +51,19 @@
       "funFactor": 8
     },
     "wetWeightKg": 219,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "manual",
+    "imageSource": "manual",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "BMW",
@@ -94,7 +106,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 237.2,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Yamaha",
@@ -148,7 +172,19 @@
       "funFactor": 8.5
     },
     "wetWeightKg": 205,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 73.4,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "manual",
+    "imageSource": "manual",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Aprilia",
@@ -202,7 +238,19 @@
       "funFactor": 9
     },
     "wetWeightKg": 204,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 80,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "manual",
+    "imageSource": "manual",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Honda",
@@ -256,7 +304,19 @@
       "funFactor": 7.5
     },
     "wetWeightKg": 208,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 91.8,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "manual",
+    "imageSource": "manual",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Honda",
@@ -310,7 +370,19 @@
       "funFactor": 7.5
     },
     "wetWeightKg": 243,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "manual",
+    "imageSource": "manual",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "CFMoto",
@@ -353,7 +425,19 @@
       "funFactor": 8
     },
     "wetWeightKg": 231,
-    "year": 2025
+    "year": 2025,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 89.9,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Suzuki",
@@ -396,7 +480,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 277,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 84.3,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Ducati",
@@ -439,7 +535,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 223,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "KTM",
@@ -482,7 +590,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 230,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Yamaha",
@@ -525,7 +645,19 @@
       "funFactor": 8
     },
     "wetWeightKg": 184.2,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 74,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Honda",
@@ -568,7 +700,19 @@
       "funFactor": 8
     },
     "wetWeightKg": 190,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 72,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Kawasaki",
@@ -611,7 +755,19 @@
       "funFactor": 8
     },
     "wetWeightKg": 212.1,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Suzuki",
@@ -654,7 +810,19 @@
       "funFactor": 8
     },
     "wetWeightKg": 202,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Triumph",
@@ -697,7 +865,19 @@
       "funFactor": 8
     },
     "wetWeightKg": 189,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Yamaha",
@@ -740,7 +920,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 223.2,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "BMW",
@@ -783,7 +975,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 219,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Kawasaki",
@@ -826,7 +1030,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 217,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 69,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Ducati",
@@ -869,7 +1085,19 @@
       "funFactor": 7
     },
     "wetWeightKg": 230,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": true,
+    "isA2LimitedVersion": true,
+    "limitedPowerHp": 47.6,
+    "originalPowerHp": 93,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   },
   {
     "brand": "Honda",
@@ -912,6 +1140,18 @@
       "funFactor": 7
     },
     "wetWeightKg": 238.1,
-    "year": 2024
+    "year": 2024,
+    "isA2Compatible": false,
+    "isA2LimitedVersion": false,
+    "limitedPowerHp": null,
+    "originalPowerHp": null,
+    "imageLocked": false,
+    "descriptionLocked": false,
+    "specsSource": "api",
+    "priceSource": "placeholder",
+    "imageSource": "placeholder",
+    "scoresSource": "estimated",
+    "prosConsSource": "estimated",
+    "reliabilitySource": "estimated"
   }
 ]

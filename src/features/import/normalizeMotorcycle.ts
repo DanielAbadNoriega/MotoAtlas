@@ -1,6 +1,12 @@
-import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores } from '../../types/bike';
+import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../types/bike';
 import type { ApiNinjasMotorcycle, DeepPartialBike, MotorcycleNormalizationResult, MotorcycleNormalizationWarning } from './motorcycleImportTypes';
-import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../shared/images/getMotorcycleImage';
+import { MOTORCYCLE_IMAGE_FALLBACK_URL, getMotorcycleImage } from '../../shared/images/getMotorcycleImage';
+import {
+  BIKE_LICENSES,
+  BIKE_SEGMENTS,
+  MOTORCYCLE_DATA_SOURCES,
+  inferA2StatusFromBike,
+} from '../../shared/motorcycles/motorcycleTaxonomy';
 
 export const PLACEHOLDER_IMAGE_URL = MOTORCYCLE_IMAGE_FALLBACK_URL;
 
@@ -23,8 +29,7 @@ export const DEFAULT_RELIABILITY_REPORTS: Bike['reliabilityReports'] = {
   reportCount: 0,
 };
 
-export const SEGMENT_DEFAULT_USE_SCORES: Record<BikeSegment, BikeUseScores> = {
-  naked: {
+const nakedDefaultUseScores: BikeUseScores = {
     beginner: 6,
     city: 8,
     funFactor: 8,
@@ -32,8 +37,9 @@ export const SEGMENT_DEFAULT_USE_SCORES: Record<BikeSegment, BikeUseScores> = {
     passenger: 4,
     sport: 8,
     touring: 5,
-  },
-  'sport-touring': {
+};
+
+const sportTouringDefaultUseScores: BikeUseScores = {
     beginner: 4,
     city: 6,
     funFactor: 7,
@@ -41,8 +47,9 @@ export const SEGMENT_DEFAULT_USE_SCORES: Record<BikeSegment, BikeUseScores> = {
     passenger: 8,
     sport: 7,
     touring: 9,
-  },
-  trail: {
+};
+
+const trailDefaultUseScores: BikeUseScores = {
     beginner: 5,
     city: 6,
     funFactor: 7,
@@ -50,11 +57,29 @@ export const SEGMENT_DEFAULT_USE_SCORES: Record<BikeSegment, BikeUseScores> = {
     passenger: 6,
     sport: 6,
     touring: 7,
-  },
 };
 
-const segmentValues = ['trail', 'naked', 'sport-touring'] as const satisfies readonly BikeSegment[];
-const licenseValues = ['A2', 'A'] as const satisfies readonly BikeLicense[];
+export const SEGMENT_DEFAULT_USE_SCORES: Record<BikeSegment, BikeUseScores> = {
+  adventure: trailDefaultUseScores,
+  cruiser: sportTouringDefaultUseScores,
+  custom: sportTouringDefaultUseScores,
+  'dual-sport': trailDefaultUseScores,
+  enduro: trailDefaultUseScores,
+  hypernaked: nakedDefaultUseScores,
+  naked: nakedDefaultUseScores,
+  'neo-retro': nakedDefaultUseScores,
+  retro: nakedDefaultUseScores,
+  scooter: { ...nakedDefaultUseScores, beginner: 8, city: 9, funFactor: 6, offroad: 0, sport: 4, touring: 5 },
+  scrambler: { ...trailDefaultUseScores, offroad: 5, touring: 6 },
+  sport: { ...nakedDefaultUseScores, sport: 9, beginner: 3 },
+  'sport-touring': sportTouringDefaultUseScores,
+  supersport: { ...nakedDefaultUseScores, city: 4, sport: 10, beginner: 2, passenger: 3 },
+  touring: { ...sportTouringDefaultUseScores, touring: 10, passenger: 9, sport: 5 },
+  trail: trailDefaultUseScores,
+};
+
+const segmentValues = BIKE_SEGMENTS;
+const licenseValues = BIKE_LICENSES;
 const engineTypeValues = [
   'single-cylinder',
   'parallel-twin',
@@ -64,6 +89,7 @@ const engineTypeValues = [
   'l-twin',
   'boxer-twin',
 ] as const satisfies readonly BikeEngineType[];
+const dataSourceValues = MOTORCYCLE_DATA_SOURCES;
 
 const useScoreKeys = ['city', 'touring', 'offroad', 'passenger', 'beginner', 'sport', 'funFactor'] as const;
 const featureKeys = [
@@ -161,6 +187,17 @@ function numberFrom(record: Record<string, unknown>, keys: readonly string[], fa
   return normalizeNumber(readFirst(record, keys)) ?? normalizeNumber(fallback);
 }
 
+function nullableNumberFrom(record: Record<string, unknown>, keys: readonly string[], fallback?: unknown) {
+  const rawValue = readFirst(record, keys);
+
+  if (rawValue === null) {
+    return null;
+  }
+
+  const normalizedValue = normalizeNumber(rawValue) ?? normalizeNumber(fallback);
+  return normalizedValue ?? null;
+}
+
 function booleanFrom(record: Record<string, unknown>, keys: readonly string[], fallback?: unknown) {
   return normalizeBoolean(readFirst(record, keys)) ?? normalizeBoolean(fallback);
 }
@@ -193,6 +230,42 @@ export function slugifyMotorcycleId(brand: string, model: string, year: number) 
 function inferSegment(rawText: string): BikeSegment {
   const text = rawText.toLowerCase();
 
+  if (text.includes('scooter')) {
+    return 'scooter';
+  }
+
+  if (text.includes('supersport') || text.includes('rr') || text.includes('r1') || text.includes('zx-6r')) {
+    return 'supersport';
+  }
+
+  if (text.includes('sport') && !text.includes('sport touring') && !text.includes('sport-touring')) {
+    return 'sport';
+  }
+
+  if (text.includes('scrambler')) {
+    return 'scrambler';
+  }
+
+  if (text.includes('cruiser')) {
+    return 'cruiser';
+  }
+
+  if (text.includes('custom')) {
+    return 'custom';
+  }
+
+  if (text.includes('retro') || text.includes('classic')) {
+    return text.includes('neo') ? 'neo-retro' : 'retro';
+  }
+
+  if (text.includes('enduro')) {
+    return 'enduro';
+  }
+
+  if (text.includes('dual sport') || text.includes('dual-sport')) {
+    return 'dual-sport';
+  }
+
   if (
     text.includes('mt-') ||
     text.includes('hornet') ||
@@ -202,7 +275,7 @@ function inferSegment(rawText: string): BikeSegment {
     text.includes('naked') ||
     text.includes('roadster')
   ) {
-    return 'naked';
+    return text.includes('super duke') ? 'hypernaked' : 'naked';
   }
 
   if (
@@ -215,6 +288,10 @@ function inferSegment(rawText: string): BikeSegment {
     text.includes('sport-touring')
   ) {
     return 'sport-touring';
+  }
+
+  if (text.includes('adventure')) {
+    return 'adventure';
   }
 
   return 'trail';
@@ -405,6 +482,32 @@ export function normalizeMotorcycle(input: unknown, options: NormalizeMotorcycle
     'description',
     'Descripción ausente: se usa placeholder controlado.',
   );
+  const imageLocked = booleanFrom(input, ['imageLocked', 'image_locked'], existing?.imageLocked) ?? false;
+  const descriptionLocked = booleanFrom(input, ['descriptionLocked', 'description_locked'], existing?.descriptionLocked) ?? false;
+
+  const inferredA2Status = inferA2StatusFromBike({ license: license ?? 'A', powerHp });
+  const isA2Compatible =
+    booleanFrom(input, ['isA2Compatible', 'is_a2_compatible'], existing?.isA2Compatible) ?? inferredA2Status !== 'A';
+  const isA2LimitedVersion =
+    booleanFrom(input, ['isA2LimitedVersion', 'is_a2_limited_version'], existing?.isA2LimitedVersion) ??
+    inferredA2Status === 'A2_LIMITABLE';
+  const limitedPowerHp = nullableNumberFrom(input, ['limitedPowerHp', 'limited_power_hp'], existing?.limitedPowerHp);
+  const originalPowerHp = nullableNumberFrom(input, ['originalPowerHp', 'original_power_hp'], existing?.originalPowerHp);
+
+  const specsSource = enumFrom(input, ['specsSource', 'specs_source'], dataSourceValues, existing?.specsSource) ?? 'api';
+  const priceSource =
+    priceEur === 0
+      ? 'placeholder'
+      : enumFrom(input, ['priceSource', 'price_source'], dataSourceValues, existing?.priceSource) ?? 'manual';
+  const imageSource =
+    getMotorcycleImage({ brand, model, imageUrl }).isFallback
+      ? 'placeholder'
+      : enumFrom(input, ['imageSource', 'image_source'], dataSourceValues, existing?.imageSource) ?? 'manual';
+  const scoresSource = enumFrom(input, ['scoresSource', 'scores_source'], dataSourceValues, existing?.scoresSource) ?? 'estimated';
+  const prosConsSource =
+    enumFrom(input, ['prosConsSource', 'pros_cons_source'], dataSourceValues, existing?.prosConsSource) ?? 'estimated';
+  const reliabilitySource =
+    enumFrom(input, ['reliabilitySource', 'reliability_source'], dataSourceValues, existing?.reliabilitySource) ?? 'estimated';
 
   const inferredSegment = segment ?? 'trail';
   const useScores = withPlaceholder(
@@ -425,6 +528,7 @@ export function normalizeMotorcycle(input: unknown, options: NormalizeMotorcycle
     brand,
     cons,
     description,
+    descriptionLocked,
     displacementCc: withRequiredNumberWarning(
       displacementCc,
       allowPlaceholders,
@@ -442,9 +546,15 @@ export function normalizeMotorcycle(input: unknown, options: NormalizeMotorcycle
       'Depósito ausente o inválido: no se aplica placeholder numérico.',
     ),
     id,
+    imageLocked,
+    imageSource: imageSource as MotorcycleDataSource,
     imageUrl,
+    isA2Compatible,
+    isA2LimitedVersion,
     license,
+    limitedPowerHp: isA2LimitedVersion ? limitedPowerHp ?? 47.6 : limitedPowerHp,
     model,
+    originalPowerHp: isA2LimitedVersion ? originalPowerHp ?? powerHp ?? null : originalPowerHp,
     powerHp: withRequiredNumberWarning(
       powerHp,
       allowPlaceholders,
@@ -453,8 +563,12 @@ export function normalizeMotorcycle(input: unknown, options: NormalizeMotorcycle
       'Potencia ausente o inválida: no se aplica placeholder numérico.',
     ),
     priceEur,
+    priceSource: priceSource as MotorcycleDataSource,
     pros,
+    prosConsSource: prosConsSource as MotorcycleDataSource,
     reliabilityReports,
+    reliabilitySource: reliabilitySource as MotorcycleDataSource,
+    scoresSource: scoresSource as MotorcycleDataSource,
     seatHeightMm: withRequiredNumberWarning(
       seatHeightMm,
       allowPlaceholders,
@@ -463,6 +577,7 @@ export function normalizeMotorcycle(input: unknown, options: NormalizeMotorcycle
       'Altura de asiento ausente o inválida: no se aplica placeholder numérico.',
     ),
     segment,
+    specsSource: specsSource as MotorcycleDataSource,
     torqueNm: withRequiredNumberWarning(
       torqueNm,
       allowPlaceholders,

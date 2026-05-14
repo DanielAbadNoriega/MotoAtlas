@@ -1,0 +1,55 @@
+import { describe, expect, it } from 'vitest';
+import { bikeFixtures } from '../../test/fixtures/bikes';
+import { applySeoMetadata, buildBikeJsonLd, buildBikeSeoMetadata, buildCompareSeoMetadata, buildRobotsTxt, buildSitemapXml, getSitemapUrls } from './seoUtils';
+
+describe('seoUtils', () => {
+  it('genera meta de ficha de moto con JSON-LD Motorcycle y AggregateRating', () => {
+    const metadata = buildBikeSeoMetadata(bikeFixtures[0], [
+      {
+        id: 'review-1',
+        motorcycleId: bikeFixtures[0].id,
+        userName: 'Dani',
+        rating: 5,
+        ownershipMonths: null,
+        kilometers: null,
+        comment: 'Muy buena.',
+        pros: [],
+        cons: [],
+        status: 'approved',
+        createdAt: '2026-05-14T10:00:00.000Z',
+        updatedAt: '2026-05-14T10:00:00.000Z',
+      },
+    ]);
+    const jsonLd = metadata.jsonLd as ReturnType<typeof buildBikeJsonLd>;
+
+    expect(metadata.title).toContain('BMW F 900 GS 2024');
+    expect(metadata.canonicalUrl).toContain('/motos/bmw-f-900-gs');
+    expect(jsonLd).toMatchObject({ '@type': 'Motorcycle', aggregateRating: { ratingValue: 5, reviewCount: 1 } });
+  });
+
+  it('genera meta de comparador SEO-friendly', () => {
+    const metadata = buildCompareSeoMetadata(bikeFixtures.slice(0, 2));
+
+    expect(metadata.title).toContain('BMW F 900 GS vs Aprilia Tuareg 660');
+    expect(metadata.canonicalUrl).toContain('/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660');
+  });
+
+  it('aplica meta tags, canonical y JSON-LD al documento', () => {
+    applySeoMetadata(buildCompareSeoMetadata(bikeFixtures.slice(0, 2)));
+
+    expect(document.title).toContain('BMW F 900 GS vs Aprilia Tuareg 660');
+    expect(document.head.querySelector('meta[name="description"]')).toHaveAttribute('content', expect.stringContaining('Comparativa técnica'));
+    expect(document.head.querySelector('meta[property="og:title"]')).toHaveAttribute('content', expect.stringContaining('BMW F 900 GS'));
+    expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute('href', expect.stringContaining('/comparador/'));
+    expect(document.head.querySelector('script[type="application/ld+json"]')).toHaveTextContent('ItemList');
+  });
+
+  it('genera sitemap y robots básicos', () => {
+    const urls = getSitemapUrls(bikeFixtures.slice(0, 2));
+    const sitemap = buildSitemapXml(urls);
+
+    expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/motos/bmw-f-900-gs']));
+    expect(sitemap).toContain('<urlset');
+    expect(buildRobotsTxt()).toContain('Sitemap: https://motoatlas.com/sitemap.xml');
+  });
+});

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Bike } from '../../types/bike';
 import { slugifyMotorcycleId } from './normalizeMotorcycle';
+import { getMotorcycleImage } from '../../shared/images/getMotorcycleImage';
 import type { MotorcycleSeed, MotorcycleUpsertPayload, SupabaseMotorcycleClient } from './motorcycleImportTypes';
 
 export const importPaths = {
@@ -27,6 +28,8 @@ export async function writeJsonFile(fileUrl: URL, value: unknown) {
 }
 
 export function buildMotorcyclePayload(motorcycle: Bike): MotorcycleUpsertPayload {
+  const imageSource = getMotorcycleImage(motorcycle).isFallback ? 'placeholder' : motorcycle.imageSource ?? 'manual';
+
   return {
     abs_cornering: motorcycle.features.absCornering,
     brand: motorcycle.brand,
@@ -39,24 +42,36 @@ export function buildMotorcyclePayload(motorcycle: Bike): MotorcycleUpsertPayloa
     fuel_tank_liters: motorcycle.fuelTankLiters,
     heated_grips: motorcycle.features.heatedGrips,
     id: motorcycle.id,
+    image_locked: motorcycle.imageLocked ?? false,
     image_url: motorcycle.imageUrl,
+    image_source: imageSource,
+    is_a2_compatible: motorcycle.isA2Compatible ?? false,
+    is_a2_limited_version: motorcycle.isA2LimitedVersion ?? false,
     license: motorcycle.license,
+    limited_power_hp: motorcycle.limitedPowerHp ?? null,
     model: motorcycle.model,
+    original_power_hp: motorcycle.originalPowerHp ?? null,
     power_hp: motorcycle.powerHp,
     price_eur: motorcycle.priceEur,
+    price_source: motorcycle.priceEur === 0 ? 'placeholder' : motorcycle.priceSource ?? 'manual',
     pros: motorcycle.pros,
+    pros_cons_source: motorcycle.prosConsSource ?? 'estimated',
     quickshifter: motorcycle.features.quickshifter,
     reliability_score: motorcycle.reliabilityReports.reliabilityScore,
+    reliability_source: motorcycle.reliabilitySource ?? 'estimated',
     report_count: motorcycle.reliabilityReports.reportCount,
     riding_modes: motorcycle.features.ridingModes,
+    scores_source: motorcycle.scoresSource ?? 'estimated',
     seat_height_mm: motorcycle.seatHeightMm,
     segment: motorcycle.segment,
     torque_nm: motorcycle.torqueNm,
     traction_control: motorcycle.features.tractionControl,
     tubeless_wheels: motorcycle.features.tubelessWheels,
+    specs_source: motorcycle.specsSource ?? 'manual',
     use_scores: motorcycle.useScores,
     wet_weight_kg: motorcycle.wetWeightKg,
     year: motorcycle.year,
+    description_locked: motorcycle.descriptionLocked ?? false,
   };
 }
 

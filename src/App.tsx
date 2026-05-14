@@ -3,7 +3,6 @@ import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
-import { ComparisonDetailPage } from './components/pages/ComparisonDetailPage';
 import { SearchPage } from './components/pages/SearchPage';
 import { FeaturedBikes } from './components/sections/FeaturedBikes';
 import { Hero } from './components/sections/Hero';
@@ -11,44 +10,39 @@ import { LatestNews } from './components/sections/LatestNews';
 import { MachineDuel } from './components/sections/MachineDuel';
 import { ReliabilityReports } from './components/sections/ReliabilityReports';
 import { RoutesSection } from './components/sections/RoutesSection';
+import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
 import { bikeCatalog } from './data/bikes';
 import { findBikeComparisonByHash } from './data/comparisons';
 import { getMotorcycles } from './services/motorcycleService';
 import type { Bike } from './types/bike';
-import { resolveCompareSelectionFromHash } from './features/compare/compareUtils';
+import {
+  getBikeDetailIdFromRoute,
+  getComparatorSelectionFromRoute,
+  getCurrentAppRoute,
+  isComparatorRoute,
+  isSearchRoute,
+} from './shared/routing/routeUtils';
+import { applySeoMetadata, buildBikeSeoMetadata, buildCompareSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
 };
 
-function getCurrentHash() {
-  return typeof window === 'undefined' ? '' : window.location.hash;
-}
-
-function getBikeDetailIdFromHash(hash: string) {
-  const match = hash.match(/^#\/motos\/([^/?#]+)/);
-  return match ? decodeURIComponent(match[1]) : undefined;
-}
-
-function isSearchHash(hash: string) {
-  return /^#\/(buscador|catalogo)([/?#]|$)/.test(hash);
-}
-
-function isComparatorHash(hash: string) {
-  return /^#\/comparador([/?#]|$)/.test(hash);
-}
-
-function useHashRoute() {
-  const [hash, setHash] = useState(getCurrentHash);
+function useAppRoute() {
+  const [route, setRoute] = useState(getCurrentAppRoute);
 
   useEffect(() => {
-    const handleHashChange = () => setHash(getCurrentHash());
+    const handleRouteChange = () => setRoute(getCurrentAppRoute());
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleRouteChange);
+    window.addEventListener('popstate', handleRouteChange);
+    return () => {
+      window.removeEventListener('hashchange', handleRouteChange);
+      window.removeEventListener('popstate', handleRouteChange);
+    };
   }, []);
 
-  return hash;
+  return route;
 }
 
 function HomePage() {
@@ -65,15 +59,21 @@ function HomePage() {
 }
 
 export function App() {
-  const hash = useHashRoute();
+  const route = useAppRoute();
   const [motorcycles, setMotorcycles] = useState<readonly Bike[]>(bikeCatalog);
-  const comparison = findBikeComparisonByHash(hash);
-  const bikeDetailId = getBikeDetailIdFromHash(hash);
+  const legacyComparison = findBikeComparisonByHash(route);
+  const legacyComparisonIds = legacyComparison?.bikes.map((bike) => bike.bikeId) ?? [];
+  const bikeDetailId = getBikeDetailIdFromRoute(route, motorcycles);
   const findMotorcycleById = (id: Bike['id']) => motorcycles.find((bike) => bike.id === id);
   const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
-  const isSearchRoute = isSearchHash(hash);
-  const isComparatorRoute = isComparatorHash(hash);
-  const comparatorSelection = resolveCompareSelectionFromHash(hash, motorcycles);
+  const isSearchPage = isSearchRoute(route);
+  const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
+  const routeComparatorSelection = getComparatorSelectionFromRoute(route, motorcycles);
+  const comparatorIds = legacyComparisonIds.length > 0 ? legacyComparisonIds : routeComparatorSelection.ids;
+  const comparatorBikes = comparatorIds
+    .map((id) => findMotorcycleById(id))
+    .filter((bike): bike is Bike => Boolean(bike));
+  const missingComparatorIds = comparatorIds.filter((id) => !findMotorcycleById(id));
 
   useEffect(() => {
     let isMounted = true;
@@ -90,30 +90,47 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (hash.startsWith('#/')) {
+    if (route.startsWith('#/') || route.startsWith('/')) {
       scrollToPageTop();
     }
-  }, [hash]);
+  }, [route]);
+
+  useEffect(() => {
+    if (detailBike) {
+      applySeoMetadata(buildBikeSeoMetadata(detailBike));
+      return;
+    }
+
+    if (isComparatorPage && comparatorBikes.length >= 2) {
+      applySeoMetadata(buildCompareSeoMetadata(comparatorBikes));
+      return;
+    }
+
+    applySeoMetadata({
+      canonicalUrl: 'https://motoatlas.com/',
+      description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
+      title: 'MotoAtlas | Catálogo técnico de motos',
+    });
+  }, [comparatorBikes, detailBike, isComparatorPage]);
 
   return (
     <div className="app">
       <Navbar />
-      {comparison ? (
-        <ComparisonDetailPage comparison={comparison} motorcycles={motorcycles} />
-      ) : isComparatorRoute ? (
+      {isComparatorPage ? (
         <ComparatorPage
-          bikes={comparatorSelection.bikes}
-          ignoredBikeCount={comparatorSelection.ignoredIds.length}
-          missingBikeCount={comparatorSelection.missingIds.length}
+          bikes={comparatorBikes}
+          ignoredBikeCount={routeComparatorSelection.ignoredIds.length}
+          missingBikeCount={missingComparatorIds.length}
           motorcycles={motorcycles}
         />
       ) : bikeDetailId ? (
         <BikeDetailPage bike={detailBike} motorcycles={motorcycles} />
-      ) : isSearchRoute ? (
-        <SearchPage motorcycles={motorcycles} routeHash={hash} />
+      ) : isSearchPage ? (
+        <SearchPage motorcycles={motorcycles} routeHash={route} />
       ) : (
         <HomePage />
       )}
+      <ScrollToTopButton />
       <Footer />
     </div>
   );

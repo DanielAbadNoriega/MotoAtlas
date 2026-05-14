@@ -1,4 +1,4 @@
-import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores } from '../../types/bike';
+import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../types/bike';
 
 export type ImportLogger = Pick<Console, 'error' | 'log' | 'warn'>;
 
@@ -48,6 +48,10 @@ export type MotorcycleUpsertPayload = Readonly<{
   year: number;
   segment: BikeSegment;
   license: BikeLicense;
+  is_a2_compatible: boolean;
+  is_a2_limited_version: boolean;
+  limited_power_hp: number | null;
+  original_power_hp: number | null;
   engine_type: BikeEngineType;
   displacement_cc: number;
   power_hp: number;
@@ -57,7 +61,15 @@ export type MotorcycleUpsertPayload = Readonly<{
   fuel_tank_liters: number;
   price_eur: number;
   image_url: string;
+  image_locked: boolean;
   description: string;
+  description_locked: boolean;
+  specs_source: MotorcycleDataSource;
+  price_source: MotorcycleDataSource;
+  image_source: MotorcycleDataSource;
+  scores_source: MotorcycleDataSource;
+  pros_cons_source: MotorcycleDataSource;
+  reliability_source: MotorcycleDataSource;
   use_scores: BikeUseScores;
   abs_cornering: boolean;
   traction_control: boolean;
@@ -99,8 +111,22 @@ export type MotorcycleImportValidationResult = Readonly<{
   validItems: readonly MotorcycleValidationItem[];
 }>;
 
+export type SupabaseImportExistingMotorcycle = Readonly<{
+  description: string;
+  description_locked: boolean;
+  id: string;
+  image_locked: boolean;
+  image_source?: MotorcycleDataSource;
+  image_url: string;
+}>;
+
 export type SupabaseUpsertResponse = Readonly<{
   data: readonly Pick<Bike, 'id'>[] | null;
+  error: { message: string } | null;
+}>;
+
+export type SupabaseSelectResponse = Readonly<{
+  data: readonly SupabaseImportExistingMotorcycle[] | null;
   error: { message: string } | null;
 }>;
 
@@ -110,6 +136,9 @@ export type SupabaseMotorcycleTable = Readonly<{
     options: { onConflict: 'id' },
   ) => Readonly<{
     select: (columns: 'id') => Promise<SupabaseUpsertResponse>;
+  }>;
+  select: (columns: string) => Readonly<{
+    in: (column: 'id', values: readonly string[]) => Promise<SupabaseSelectResponse>;
   }>;
 }>;
 

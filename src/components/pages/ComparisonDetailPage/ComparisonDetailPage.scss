@@ -255,6 +255,39 @@
   margin-top: 4rem;
 }
 
+.comparison-detail__vote-choice {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.comparison-detail__vote-option {
+  @include label-caps;
+
+  border: 1px solid rgba($color-outline-variant, 0.36);
+  border-radius: $radius-md;
+  background: rgba($color-surface-container, 0.72);
+  color: $color-on-surface-variant;
+  cursor: pointer;
+  padding: 0.75rem 0.95rem;
+  transition:
+    background $transition-base,
+    border-color $transition-base,
+    color $transition-base,
+    transform $transition-base;
+
+  &:hover,
+  &:focus-visible,
+  &--active {
+    border-color: $color-accent;
+    background: rgba($color-accent, 0.14);
+    color: $color-accent;
+    transform: translateY(-1px);
+  }
+}
+
 .comparison-detail__vote {
   display: grid;
   grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.5fr);
@@ -459,8 +492,16 @@
   gap: 2.5rem 5rem;
 
   article {
+    @include glass-hud;
+
     display: grid;
     gap: 1rem;
+    border-radius: $radius-xl;
+    padding: clamp(1.25rem, 2vw, 1.75rem);
+    background:
+      linear-gradient(135deg, rgba($color-surface-container-high, 0.74), rgba($color-surface-lowest, 0.42)),
+      rgba($color-surface-container, 0.48);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
   }
 
   header,
@@ -682,6 +723,11 @@
     transition: transform $transition-slow;
   }
 
+  .motorcycle-image {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+  }
+
   article:hover img {
     transform: scale(1.05);
   }
@@ -837,6 +883,24 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1rem !important;
+}
+
+.comparison-detail__data-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.8rem;
+
+  small {
+    @include label-caps;
+
+    border: 1px solid rgba($color-accent, 0.3);
+    border-radius: $radius-sm;
+    background: rgba($color-accent, 0.08);
+    color: rgba($color-on-surface, 0.82);
+    font-size: 0.58rem;
+    padding: 0.35rem 0.45rem;
+  }
 }
 
 .comparison-detail__hero-bike--right .comparison-detail__hero-bike-actions {

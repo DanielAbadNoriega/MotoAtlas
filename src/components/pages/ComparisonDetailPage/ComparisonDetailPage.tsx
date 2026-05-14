@@ -3,6 +3,7 @@ import { getBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../dat
 import type { Bike } from '../../../types/bike';
 import type { BikeComparison, ComparisonScore } from '../../../types/comparison';
 import { Button } from '../../ui/Button';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './ComparisonDetailPage.scss';
 
 type ComparisonDetailPageProps = {
@@ -70,7 +71,7 @@ export function ComparisonDetailPage({ comparison = defaultBikeComparison, motor
 
         <div className="comparison-detail__duel">
           <article className="comparison-detail__hero-bike comparison-detail__hero-bike--left">
-            <img src={leftBike.imageUrl} alt={leftBike.description} />
+            <MotorcycleImage motorcycle={leftBike} />
             <div>
               <span>{leftHeroBike.tagline}</span>
               <h2>{leftBikeName}</h2>
@@ -82,7 +83,7 @@ export function ComparisonDetailPage({ comparison = defaultBikeComparison, motor
           </div>
 
           <article className="comparison-detail__hero-bike comparison-detail__hero-bike--right">
-            <img src={rightBike.imageUrl} alt={rightBike.description} />
+            <MotorcycleImage motorcycle={rightBike} />
             <div>
               <span>{rightHeroBike.tagline}</span>
               <h2>{rightBikeName}</h2>

@@ -14,7 +14,10 @@
     "import:motos": "tsx scripts/importMotorcycles.ts",
     "fetch:motos": "tsx scripts/fetchMotorcyclesFromApi.ts",
     "import:motos:check": "tsx scripts/importMotorcycles.ts --dry-run",
-    "repair:motos": "tsx scripts/repairMotorcycleData.ts"
+    "repair:motos": "tsx scripts/repairMotorcycleData.ts",
+    "sync:images": "tsx scripts/syncMotorcycleImages.ts",
+    "sync:images:check": "tsx scripts/syncMotorcycleImages.ts --dry-run",
+    "seo:sitemap": "tsx scripts/generateSeoFiles.ts"
   },
   "dependencies": {
     "react": "^19.2.6",

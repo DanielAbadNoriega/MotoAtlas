@@ -3,7 +3,6 @@ import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   clearIncomingCompareHash,
   compareQueueMaxSize,
-  getComparatorHash,
   getIncomingCompareIdsFromHash,
   isBrowseSearchHash,
   loadCompareQueue,
@@ -21,13 +20,9 @@ import {
 } from '../../../utils/motorcycleSearch';
 import { Button } from '../../ui/Button';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import './SearchPage.scss';
-
-const segmentLabels: Record<BikeSegment, string> = {
-  naked: 'Naked',
-  'sport-touring': 'Sport Touring',
-  trail: 'Trail',
-};
 
 const sortLabels: Record<SortOption, string> = {
   'price-asc': 'Precio: menor a mayor',
@@ -71,6 +66,8 @@ function SearchField({ filters, onChange }: { filters: SearchFilters; onChange: 
       </span>
       <input
         aria-label="Buscar por marca o modelo"
+        id="motorcycle-search-text"
+        name="motorcycle-search-text"
         placeholder="Busca por marca o modelo..."
         type="search"
         value={filters.text}
@@ -120,6 +117,7 @@ export function AdvancedFilters({
             <label key={brand}>
               <input
                 checked={filters.brands.includes(brand)}
+                name="brands"
                 type="checkbox"
                 onChange={() => onChange({ brands: toggleArrayValue(filters.brands, brand) })}
               />
@@ -167,8 +165,10 @@ export function AdvancedFilters({
           <label>
             <span>Desde</span>
             <input
+              id="min-price"
               inputMode="numeric"
               min="0"
+              name="minPrice"
               placeholder="0"
               type="number"
               value={filters.minPrice}
@@ -178,8 +178,10 @@ export function AdvancedFilters({
           <label>
             <span>Hasta</span>
             <input
+              id="max-price"
               inputMode="numeric"
               min="0"
+              name="maxPrice"
               placeholder="25000"
               type="number"
               value={filters.maxPrice}
@@ -194,8 +196,10 @@ export function AdvancedFilters({
         <label className="search-page__numeric-filter">
           <span>Potencia mínima</span>
           <input
+            id="min-power"
             inputMode="numeric"
             min="0"
+            name="minPower"
             placeholder="Ej: 90"
             type="number"
             value={filters.minPower}
@@ -205,8 +209,10 @@ export function AdvancedFilters({
         <label className="search-page__numeric-filter">
           <span>Peso máximo</span>
           <input
+            id="max-weight"
             inputMode="numeric"
             min="0"
+            name="maxWeight"
             placeholder="Ej: 220"
             type="number"
             value={filters.maxWeight}
@@ -228,6 +234,7 @@ export function BikeResultCard({
   onToggleCompare: (bike: Bike) => void;
 }) {
   const bestUse = getBestUseScore(bike);
+  const a2Badge = getBikeA2Badge(bike);
 
   return (
     <article className={isSelected ? 'search-result-card search-result-card--selected' : 'search-result-card'}>
@@ -235,7 +242,7 @@ export function BikeResultCard({
         <MotorcycleImage motorcycle={bike} loading="lazy" />
         <div className="search-result-card__badges">
           <span>{segmentLabels[bike.segment]}</span>
-          <span>Carnet {bike.license}</span>
+          <span>{a2Badge.label}</span>
         </div>
         <strong>{currencyFormatter.format(bike.priceEur)}</strong>
       </div>
@@ -319,11 +326,11 @@ export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBi
         </span>
       </div>
       {selectedBikes.length >= 2 ? (
-        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHash(selectedBikes)}>
+        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHashFromBikes(selectedBikes)}>
           Comparar ahora ({selectedBikes.length})
         </a>
       ) : (
-        <div className="search-page__compare-status">Elegí al menos 2 motos</div>
+        <div className="search-page__compare-status">Elige al menos 2 motos</div>
       )}
       <button className="search-page__compare-clear" type="button" onClick={onClear} aria-label="Vaciar comparador">
         <span className="material-symbols-outlined" aria-hidden="true">
@@ -379,7 +386,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
 
       setSelectionWarning(
         rejectedIds.length > 0
-          ? `La cola ya tiene ${compareQueueMaxSize} motos. Quitá una antes de añadir otra.`
+          ? `La cola ya tiene ${compareQueueMaxSize} motos. Quita una antes de añadir otra.`
           : '',
       );
 
@@ -402,7 +409,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
       const nextSelection = getNextCompareSelection(current, bike.id);
 
       if (nextSelection.isLimitReached) {
-        setSelectionWarning(`Solo podés seleccionar hasta ${compareQueueMaxSize} motos para comparar.`);
+        setSelectionWarning(`Solo puedes seleccionar hasta ${compareQueueMaxSize} motos para comparar.`);
       }
 
       return nextSelection.selectedIds;
@@ -455,7 +462,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
             </div>
             <label>
               <span>Ordenar por</span>
-              <select value={filters.sort} onChange={(event) => updateFilters({ sort: event.target.value as SortOption })}>
+              <select id="search-sort" name="sort" value={filters.sort} onChange={(event) => updateFilters({ sort: event.target.value as SortOption })}>
                 {sortOptions.map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -481,7 +488,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
           {filteredBikes.length === 0 ? (
             <div className="search-page__empty">
               <h2>No hay motos con esos filtros</h2>
-              <p>Aflojá algún criterio. Si filtrás como inspector de la NASA, el catálogo se queda seco.</p>
+              <p>Relaja algún criterio. Si filtras como inspector de la NASA, el catálogo se queda seco.</p>
               <Button onClick={() => setFilters(initialSearchFilters)}>Resetear filtros</Button>
             </div>
           ) : null}
