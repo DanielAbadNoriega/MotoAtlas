@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { bikes, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   clearIncomingCompareHash,
   compareQueueMaxSize,
@@ -66,7 +66,6 @@ const sortLabels: Record<SortOption, string> = {
 };
 
 const sortOptions = Object.entries(sortLabels) as [SortOption, string][];
-const bikeCatalog: readonly Bike[] = bikes;
 const numberFormatter = new Intl.NumberFormat('es-ES');
 const currencyFormatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
@@ -406,10 +405,11 @@ function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: read
 }
 
 type SearchPageProps = {
+  motorcycles: readonly Bike[];
   routeHash: string;
 };
 
-export function SearchPage({ routeHash }: SearchPageProps) {
+export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
   const [selectedBikeIds, setSelectedBikeIds] = useState<Bike['id'][]>(() =>
     isBrowseSearchHash(routeHash) ? [] : loadCompareQueue(),
@@ -418,8 +418,8 @@ export function SearchPage({ routeHash }: SearchPageProps) {
   const [selectionWarning, setSelectionWarning] = useState('');
   const isInitialQueueSync = useRef(true);
 
-  const brandOptions = useMemo(() => [...new Set(bikeCatalog.map((bike) => bike.brand))].sort(), []);
-  const segmentOptions = useMemo(() => [...new Set(bikeCatalog.map((bike) => bike.segment))].sort(), []);
+  const brandOptions = useMemo(() => [...new Set(motorcycles.map((bike) => bike.brand))].sort(), [motorcycles]);
+  const segmentOptions = useMemo(() => [...new Set(motorcycles.map((bike) => bike.segment))].sort(), [motorcycles]);
 
   const updateFilters = (next: Partial<SearchFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
@@ -466,7 +466,7 @@ export function SearchPage({ routeHash }: SearchPageProps) {
     const minPower = toOptionalNumber(filters.minPower);
     const maxWeight = toOptionalNumber(filters.maxWeight);
 
-    const results = bikeCatalog.filter((bike) => {
+    const results = motorcycles.filter((bike) => {
       const haystack = normalizeText(`${bike.brand} ${bike.model}`);
 
       return (
@@ -482,11 +482,11 @@ export function SearchPage({ routeHash }: SearchPageProps) {
     });
 
     return sortBikes(results, filters.sort);
-  }, [filters]);
+  }, [filters, motorcycles]);
 
   const selectedBikes = useMemo(
-    () => selectedBikeIds.map((id) => bikeCatalog.find((bike) => bike.id === id)).filter((bike): bike is Bike => bike !== undefined),
-    [selectedBikeIds],
+    () => selectedBikeIds.map((id) => motorcycles.find((bike) => bike.id === id)).filter((bike): bike is Bike => bike !== undefined),
+    [motorcycles, selectedBikeIds],
   );
 
   const toggleCompareSelection = (bike: Bike) => {

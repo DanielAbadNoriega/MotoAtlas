@@ -11,8 +11,9 @@ import { LatestNews } from './components/sections/LatestNews';
 import { MachineDuel } from './components/sections/MachineDuel';
 import { ReliabilityReports } from './components/sections/ReliabilityReports';
 import { RoutesSection } from './components/sections/RoutesSection';
-import { findBikeById } from './data/bikes';
+import { bikeCatalog } from './data/bikes';
 import { findBikeComparisonByHash } from './data/comparisons';
+import { getMotorcycles } from './services/motorcycleService';
 import type { Bike } from './types/bike';
 import { getComparatorIdsFromHash } from './utils/compareQueue';
 
@@ -65,14 +66,30 @@ function HomePage() {
 
 export function App() {
   const hash = useHashRoute();
+  const [motorcycles, setMotorcycles] = useState<readonly Bike[]>(bikeCatalog);
   const comparison = findBikeComparisonByHash(hash);
   const bikeDetailId = getBikeDetailIdFromHash(hash);
-  const detailBike = bikeDetailId ? findBikeById(bikeDetailId) : undefined;
+  const findMotorcycleById = (id: Bike['id']) => motorcycles.find((bike) => bike.id === id);
+  const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
   const isSearchRoute = isSearchHash(hash);
   const isComparatorRoute = isComparatorHash(hash);
   const comparatorBikes = getComparatorIdsFromHash(hash)
-    .map((id) => findBikeById(id))
+    .map((id) => findMotorcycleById(id))
     .filter((bike): bike is Bike => Boolean(bike));
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getMotorcycles().then((result) => {
+      if (isMounted) {
+        setMotorcycles(result.motorcycles);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (hash.startsWith('#/')) {
@@ -84,13 +101,13 @@ export function App() {
     <div className="app">
       <Navbar />
       {comparison ? (
-        <ComparisonDetailPage comparison={comparison} />
+        <ComparisonDetailPage comparison={comparison} motorcycles={motorcycles} />
       ) : isComparatorRoute ? (
         <ComparatorPage bikes={comparatorBikes} />
       ) : bikeDetailId ? (
-        <BikeDetailPage bike={detailBike} />
+        <BikeDetailPage bike={detailBike} motorcycles={motorcycles} />
       ) : isSearchRoute ? (
-        <SearchPage routeHash={hash} />
+        <SearchPage motorcycles={motorcycles} routeHash={hash} />
       ) : (
         <HomePage />
       )}

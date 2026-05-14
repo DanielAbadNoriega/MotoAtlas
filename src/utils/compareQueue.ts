@@ -1,4 +1,3 @@
-import { bikeCatalog } from '../data/bikes';
 import type { Bike } from '../types/bike';
 
 export const compareQueueMaxSize = 3;
@@ -7,10 +6,6 @@ const compareQueueStorageKey = 'motoatlas.compareQueue.v1';
 
 function isBrowser() {
   return typeof window !== 'undefined';
-}
-
-function isBikeId(value: string): value is Bike['id'] {
-  return bikeCatalog.some((bike) => bike.id === value);
 }
 
 export function getCompareSearchHash(bike: Pick<Bike, 'id'>) {
@@ -41,7 +36,7 @@ export function sanitizeCompareQueue(ids: readonly string[]): Bike['id'][] {
   const queue: Bike['id'][] = [];
 
   ids.forEach((id) => {
-    if (!isBikeId(id) || queue.includes(id) || queue.length >= compareQueueMaxSize) {
+    if (!id || queue.includes(id) || queue.length >= compareQueueMaxSize) {
       return;
     }
 
@@ -56,7 +51,7 @@ export function mergeCompareQueue(currentIds: readonly Bike['id'][], incomingIds
   const rejectedIds: string[] = [];
 
   incomingIds.forEach((id) => {
-    if (!isBikeId(id) || queue.includes(id)) {
+    if (!id || queue.includes(id)) {
       return;
     }
 

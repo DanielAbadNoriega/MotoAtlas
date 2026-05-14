@@ -1,10 +1,11 @@
-import { bikeCatalog, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import './BikeDetailPage.scss';
 
 type BikeDetailPageProps = {
   bike?: Bike;
+  motorcycles: readonly Bike[];
 };
 
 type UseScoreKey = keyof Bike['useScores'];
@@ -158,7 +159,7 @@ function NotFoundDetail() {
   );
 }
 
-export function BikeDetailPage({ bike }: BikeDetailPageProps) {
+export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
   if (!bike) {
     return <NotFoundDetail />;
   }
@@ -167,7 +168,7 @@ export function BikeDetailPage({ bike }: BikeDetailPageProps) {
   const overallScore = getOverallScore(bike);
   const bestUse = getBestUse(bike);
   const enabledFeatures = getFeatureEntries(bike).filter(([, isEnabled]) => isEnabled);
-  const relatedBikes = bikeCatalog.filter((item) => item.segment === bike.segment && item.id !== bike.id).slice(0, 3);
+  const relatedBikes = motorcycles.filter((item) => item.segment === bike.segment && item.id !== bike.id).slice(0, 3);
 
   return (
     <main className="bike-detail" aria-labelledby="bike-detail-title">
