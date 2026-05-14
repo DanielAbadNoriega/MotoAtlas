@@ -2,6 +2,31 @@
 
 MotoAtlas es una interfaz React + TypeScript + Vite para explorar motos, ver fichas técnicas y comparar modelos. La fuente principal de datos puede ser Supabase y `src/data/bikes.ts` queda como fallback temporal.
 
+
+## Documentación técnica
+
+La documentación exhaustiva de arquitectura y reglas de desarrollo vive en:
+
+- [`docs/architecture.md`](docs/architecture.md)
+
+Esa guía explica estructura, rutas, datos, Supabase, comparador, testing y el checklist obligatorio para añadir funcionalidades.
+
+## Regla obligatoria para nuevas funcionalidades
+
+A partir de ahora, toda nueva funcionalidad debe incluir sus tests correspondientes:
+
+- botón con acción → test de la acción
+- navegación nueva → test del destino
+- lógica de filtrado, selección o comparación → unit test
+- página nueva → test de render + interacción principal
+
+Una tarea no se considera terminada si no pasan:
+
+```bash
+npm run test
+npm run typecheck
+```
+
 ## Testing
 
 La base de testing usa:
