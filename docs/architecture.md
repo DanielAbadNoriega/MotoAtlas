@@ -135,6 +135,37 @@ VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu-anon-key
 ```
 
+
+### Importación inicial de motos
+
+Archivos:
+
+- `data/import/motorcycles.json` — seed JSON inicial en formato dominio `Bike` camelCase.
+- `scripts/importMotorcycles.ts` — importador Node/tsx.
+- `.env.import.example` — plantilla segura para variables admin.
+
+Comando:
+
+```bash
+npm run import:motos
+```
+
+Variables del importador:
+
+```env
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
+```
+
+Reglas:
+
+- El importador usa `SUPABASE_SERVICE_ROLE_KEY`, nunca `VITE_SUPABASE_ANON_KEY`.
+- `.env.import` y `.env.local` deben permanecer fuera de Git.
+- El JSON se valida antes de insertar: campos top-level, `useScores`, `features`, `pros`, `cons` y `reliabilityReports`.
+- El payload se transforma a snake_case para `public.motorcycles`.
+- El `upsert` usa `id` como `onConflict` para evitar duplicados.
+- Los tests del importador mockean Supabase; no conectan a la base real.
+
 ## 6. Routing
 
 La app usa hash routing simple en `src/App.tsx`.
@@ -247,6 +278,7 @@ Tests actuales:
 - `src/utils/compareQueue.test.ts`
 - `src/services/motorcycleService.test.ts`
 - `src/App.test.tsx`
+- `scripts/importMotorcycles.test.ts`
 - `src/components/pages/SearchPage/SearchPage.test.tsx`
 - `src/components/pages/BikeDetailPage/BikeDetailPage.test.tsx`
 - `src/components/pages/ComparatorPage/ComparatorPage.test.tsx`

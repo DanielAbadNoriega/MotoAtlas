@@ -27,6 +27,34 @@ npm run test
 npm run typecheck
 ```
 
+
+## Importación inicial a Supabase
+
+El seed inicial vive en `data/import/motorcycles.json`.
+
+1. Copiá el ejemplo de entorno:
+
+```bash
+cp .env.import.example .env.import
+```
+
+2. Rellená solo variables server/admin:
+
+```env
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
+```
+
+3. Ejecutá el importador:
+
+```bash
+npm run import:motos
+```
+
+El script valida campos obligatorios, genera payload snake_case compatible con `public.motorcycles` y hace `upsert` usando `id` para evitar duplicados.
+
+Seguridad: no uses `VITE_SUPABASE_ANON_KEY` para importar. La service role key va solo en `.env.import` local; `.env.import` y `.env.local` están ignorados por Git.
+
 ## Testing
 
 La base de testing usa:

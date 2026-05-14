@@ -1,0 +1,217 @@
+[
+  {
+    "id": "bmw-f-900-gs-2024",
+    "brand": "BMW",
+    "model": "F 900 GS",
+    "year": 2024,
+    "segment": "trail",
+    "license": "A",
+    "engineType": "parallel-twin",
+    "displacementCc": 895,
+    "powerHp": 105,
+    "torqueNm": 93,
+    "wetWeightKg": 219,
+    "seatHeightMm": 870,
+    "fuelTankLiters": 14.5,
+    "priceEur": 13950,
+    "imageUrl": "https://images.unsplash.com/photo-1558981403-c5f91cbba527?q=80&w=1200",
+    "description": "Trail media-alta con mucho par, electrónica moderna y enfoque mixto entre viaje rápido y pista sencilla.",
+    "useScores": {
+      "city": 6.5,
+      "touring": 8.5,
+      "offroad": 8,
+      "passenger": 7.5,
+      "beginner": 4.5,
+      "sport": 7.5,
+      "funFactor": 8
+    },
+    "features": {
+      "absCornering": true,
+      "tractionControl": true,
+      "ridingModes": true,
+      "cruiseControl": false,
+      "quickshifter": true,
+      "heatedGrips": false,
+      "tubelessWheels": false
+    },
+    "pros": ["Motor elástico y con mucho par", "Buen equilibrio carretera/pista", "Ergonomía trail seria"],
+    "cons": ["Precio final sube con paquetes", "Depósito más pequeño que rivales viajeras", "Altura intimidante para novatos"],
+    "reliabilityReports": {
+      "commonIssues": ["Calor percibido en conducción lenta", "Coste alto de recambios y extras"],
+      "reportCount": 124,
+      "reliabilityScore": 8.2
+    }
+  },
+  {
+    "id": "yamaha-tenere-700-2024",
+    "brand": "Yamaha",
+    "model": "Ténéré 700",
+    "year": 2024,
+    "segment": "trail",
+    "license": "A2",
+    "engineType": "parallel-twin",
+    "displacementCc": 689,
+    "powerHp": 73.4,
+    "torqueNm": 68,
+    "wetWeightKg": 208,
+    "seatHeightMm": 875,
+    "fuelTankLiters": 16,
+    "priceEur": 10799,
+    "imageUrl": "https://images.unsplash.com/photo-1558980394-4c7c9299fe96?q=80&w=1200",
+    "description": "Trail sencilla, robusta y muy popular para aventura real, con menos electrónica y más foco en fiabilidad.",
+    "useScores": {
+      "city": 6,
+      "touring": 7,
+      "offroad": 9,
+      "passenger": 5.5,
+      "beginner": 5.5,
+      "sport": 6.5,
+      "funFactor": 8.5
+    },
+    "features": {
+      "absCornering": false,
+      "tractionControl": false,
+      "ridingModes": false,
+      "cruiseControl": false,
+      "quickshifter": false,
+      "heatedGrips": false,
+      "tubelessWheels": false
+    },
+    "pros": ["Motor CP2 probado", "Simplicidad mecánica", "Gran mercado de accesorios"],
+    "cons": ["Altura elevada", "Electrónica básica", "Confort limitado de serie"],
+    "reliabilityReports": {
+      "commonIssues": ["Asiento duro", "Protección de viento mejorable"],
+      "reportCount": 312,
+      "reliabilityScore": 9.1
+    }
+  },
+  {
+    "id": "aprilia-tuareg-660-2024",
+    "brand": "Aprilia",
+    "model": "Tuareg 660",
+    "year": 2024,
+    "segment": "trail",
+    "license": "A2",
+    "engineType": "parallel-twin",
+    "displacementCc": 659,
+    "powerHp": 80,
+    "torqueNm": 70,
+    "wetWeightKg": 204,
+    "seatHeightMm": 860,
+    "fuelTankLiters": 18,
+    "priceEur": 11999,
+    "imageUrl": "https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?q=80&w=1200",
+    "description": "Trail ligera y muy campera, con electrónica completa y un carácter más rally que turístico.",
+    "useScores": {
+      "city": 7,
+      "touring": 7,
+      "offroad": 9.5,
+      "passenger": 6,
+      "beginner": 6,
+      "sport": 7.5,
+      "funFactor": 9
+    },
+    "features": {
+      "absCornering": false,
+      "tractionControl": true,
+      "ridingModes": true,
+      "cruiseControl": true,
+      "quickshifter": false,
+      "heatedGrips": false,
+      "tubelessWheels": true
+    },
+    "pros": ["Ligereza y reparto de pesos", "Suspensiones muy capaces", "Electrónica generosa para el segmento"],
+    "cons": ["Asiento firme en tiradas largas", "Protección aerodinámica limitada", "Red de talleres menor que japonesas"],
+    "reliabilityReports": {
+      "commonIssues": ["Cúpula insuficiente para pilotos altos", "Ajustes de mapa sensibles en bajas vueltas"],
+      "reportCount": 89,
+      "reliabilityScore": 7.8
+    }
+  },
+  {
+    "id": "honda-xl750-transalp-2024",
+    "brand": "Honda",
+    "model": "XL750 Transalp",
+    "year": 2024,
+    "segment": "trail",
+    "license": "A2",
+    "engineType": "parallel-twin",
+    "displacementCc": 755,
+    "powerHp": 91.8,
+    "torqueNm": 75,
+    "wetWeightKg": 208,
+    "seatHeightMm": 850,
+    "fuelTankLiters": 16.9,
+    "priceEur": 10900,
+    "imageUrl": "https://images.unsplash.com/photo-1558979158-65a1eaa08691?q=80&w=1200",
+    "description": "Trail polivalente de media cilindrada, cómoda para carretera y suficientemente capaz en pistas fáciles.",
+    "useScores": {
+      "city": 7.5,
+      "touring": 8,
+      "offroad": 7,
+      "passenger": 7,
+      "beginner": 6.5,
+      "sport": 7,
+      "funFactor": 7.5
+    },
+    "features": {
+      "absCornering": false,
+      "tractionControl": true,
+      "ridingModes": true,
+      "cruiseControl": false,
+      "quickshifter": false,
+      "heatedGrips": false,
+      "tubelessWheels": false
+    },
+    "pros": ["Motor suave y lleno", "Altura accesible para una trail", "Coste de uso razonable"],
+    "cons": ["Suspensiones justas para offroad duro", "Equipamiento turístico mejorable", "Sin control de crucero"],
+    "reliabilityReports": {
+      "commonIssues": ["Cúpula corta", "Horquilla blanda con carga"],
+      "reportCount": 176,
+      "reliabilityScore": 8.8
+    }
+  },
+  {
+    "id": "honda-africa-twin-1100-2024",
+    "brand": "Honda",
+    "model": "Africa Twin 1100",
+    "year": 2024,
+    "segment": "trail",
+    "license": "A",
+    "engineType": "parallel-twin",
+    "displacementCc": 1084,
+    "powerHp": 102,
+    "torqueNm": 112,
+    "wetWeightKg": 243,
+    "seatHeightMm": 850,
+    "fuelTankLiters": 18.8,
+    "priceEur": 16500,
+    "imageUrl": "https://images.unsplash.com/photo-1544654803-b69110bb2183?q=80&w=1200",
+    "description": "Trail viajera de gran cilindrada, cómoda, fiable y con electrónica madura para viajes largos y pistas.",
+    "useScores": {
+      "city": 5.5,
+      "touring": 9,
+      "offroad": 8,
+      "passenger": 8,
+      "beginner": 3.5,
+      "sport": 6.5,
+      "funFactor": 7.5
+    },
+    "features": {
+      "absCornering": true,
+      "tractionControl": true,
+      "ridingModes": true,
+      "cruiseControl": true,
+      "quickshifter": false,
+      "heatedGrips": true,
+      "tubelessWheels": true
+    },
+    "pros": ["Confort viajero", "Motor con mucho par abajo", "Fiabilidad Honda"],
+    "cons": ["Peso alto fuera de asfalto", "Volumen notable en ciudad", "Precio elevado equipada"],
+    "reliabilityReports": {
+      "commonIssues": ["Peso en maniobras", "Mantenimiento caro con mucho kilometraje"],
+      "reportCount": 268,
+      "reliabilityScore": 8.7
+    }
+  }
+]
