@@ -57,11 +57,13 @@ npm run test:coverage
 
 ### Qué cubren actualmente
 
-- Filtrado de motos por texto, marca, segmento y carnet.
+- Filtrado de motos por texto, marca, modelo, segmento, carnet, precio, potencia mínima y peso máximo.
 - Ordenación por precio, potencia, peso y año.
-- Selección de motos para comparar.
-- Límite máximo de 3 motos en el comparador.
+- Selección de motos para comparar, quitar motos y vaciar la cola.
+- Límite máximo de 3 motos en buscador, cola y hash del comparador.
+- Navegación principal: buscador, comparador desde selección y acciones principales de la home.
 - Fallback a `src/data/bikes.ts` si Supabase falla o no hay variables de entorno.
+- Integración de App mockeando `motorcycleService` sin Supabase real.
 - Componentes principales:
   - `BikeResultCard`
   - `AdvancedFilters`
