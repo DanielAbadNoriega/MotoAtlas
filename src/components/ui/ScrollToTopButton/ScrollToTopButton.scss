@@ -1,0 +1,31 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.scroll-to-top {
+  @include glass-hud;
+
+  align-items: center;
+  backdrop-filter: blur(18px);
+  border-radius: 999px;
+  bottom: clamp(1.25rem, 3vw, 2rem);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.36);
+  color: $color-on-surface;
+  display: inline-flex;
+  height: 3.15rem;
+  justify-content: center;
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  transition:
+    border-color $transition-base,
+    color $transition-base,
+    transform $transition-base;
+  width: 3.15rem;
+  z-index: 80;
+
+  &:hover,
+  &:focus-visible {
+    border-color: rgba($color-accent, 0.72);
+    color: $color-accent;
+    transform: translateY(-3px);
+  }
+}

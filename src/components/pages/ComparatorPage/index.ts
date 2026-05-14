@@ -1,1 +1,1 @@
-export { ComparatorPage } from './ComparatorPage';
+export { ComparatorPage, ComparatorPage as ComparePage } from './ComparatorPage';

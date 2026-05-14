@@ -1,6 +1,24 @@
-export type BikeSegment = 'trail' | 'naked' | 'sport-touring';
+export type BikeSegment =
+  | 'trail'
+  | 'adventure'
+  | 'touring'
+  | 'sport-touring'
+  | 'naked'
+  | 'sport'
+  | 'supersport'
+  | 'hypernaked'
+  | 'enduro'
+  | 'dual-sport'
+  | 'scrambler'
+  | 'custom'
+  | 'cruiser'
+  | 'retro'
+  | 'neo-retro'
+  | 'scooter';
 
 export type BikeLicense = 'A2' | 'A';
+
+export type MotorcycleDataSource = 'api' | 'manual' | 'estimated' | 'user' | 'placeholder';
 
 export type BikeEngineType =
   | 'single-cylinder'
@@ -44,6 +62,10 @@ export type Bike = Readonly<{
   year: number;
   segment: BikeSegment;
   license: BikeLicense;
+  isA2Compatible?: boolean;
+  isA2LimitedVersion?: boolean;
+  limitedPowerHp?: number | null;
+  originalPowerHp?: number | null;
   engineType: BikeEngineType;
   displacementCc: number;
   powerHp: number;
@@ -53,7 +75,15 @@ export type Bike = Readonly<{
   fuelTankLiters: number;
   priceEur: number;
   imageUrl: string;
+  imageLocked?: boolean;
   description: string;
+  descriptionLocked?: boolean;
+  specsSource?: MotorcycleDataSource;
+  priceSource?: MotorcycleDataSource;
+  imageSource?: MotorcycleDataSource;
+  scoresSource?: MotorcycleDataSource;
+  prosConsSource?: MotorcycleDataSource;
+  reliabilitySource?: MotorcycleDataSource;
   useScores: BikeUseScores;
   features: BikeFeatures;
   pros: readonly string[];

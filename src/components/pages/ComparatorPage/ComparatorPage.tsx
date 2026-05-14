@@ -1,114 +1,56 @@
-import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { Fragment, useEffect, useState } from 'react';
+import { getBikeDetailHash } from '../../../data/bikes';
+import {
+  buildCompareViewModel,
+  getBestBikeForSpec,
+  getBikeBrandLabel,
+  getBikeCons,
+  getBikePros,
+  getBikeA2Label,
+  getBikeDataSourceBadges,
+  getBikeSegmentLabel,
+  getSafeBikeDisplayName,
+  getFirstAddableBike,
+  scoreWidth,
+} from '../../../features/compare/compareUtils';
 import { getBrowseSearchHash } from '../../../utils/compareQueue';
+import { saveCompareQueue } from '../../../utils/compareQueue';
+import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import type { Bike } from '../../../types/bike';
-import './ComparatorPage.scss';
+import { Button } from '../../ui/Button';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import '../ComparisonDetailPage/ComparisonDetailPage.scss';
 
 type ComparatorPageProps = {
   bikes: readonly Bike[];
+  ignoredBikeCount?: number;
+  missingBikeCount?: number;
+  motorcycles?: readonly Bike[];
 };
-
-type UseScoreKey = keyof Bike['useScores'];
-
-type SpecRow = Readonly<{
-  label: string;
-  getValue: (bike: Bike) => string;
-  lowerIsBetter?: boolean;
-  getNumber?: (bike: Bike) => number;
-}>;
 
 const numberFormatter = new Intl.NumberFormat('es-ES');
-const currencyFormatter = new Intl.NumberFormat('es-ES', {
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-  style: 'currency',
-});
 
-const segmentLabels: Record<Bike['segment'], string> = {
-  naked: 'Naked',
-  'sport-touring': 'Sport Touring',
-  trail: 'Trail',
-};
-
-const useScoreLabels: Record<UseScoreKey, string> = {
-  beginner: 'Principiante',
-  city: 'Ciudad',
-  funFactor: 'Diversión',
-  offroad: 'Off-road',
-  passenger: 'Pasajero',
-  sport: 'Sport',
-  touring: 'Touring',
-};
-
-const specRows = [
-  {
-    label: 'Precio estimado',
-    getValue: (bike) => currencyFormatter.format(bike.priceEur),
-    getNumber: (bike) => bike.priceEur,
-    lowerIsBetter: true,
-  },
-  {
-    label: 'Potencia',
-    getValue: (bike) => `${numberFormatter.format(bike.powerHp)} CV`,
-    getNumber: (bike) => bike.powerHp,
-  },
-  {
-    label: 'Par máximo',
-    getValue: (bike) => `${numberFormatter.format(bike.torqueNm)} Nm`,
-    getNumber: (bike) => bike.torqueNm,
-  },
-  {
-    label: 'Peso lleno',
-    getValue: (bike) => `${numberFormatter.format(bike.wetWeightKg)} kg`,
-    getNumber: (bike) => bike.wetWeightKg,
-    lowerIsBetter: true,
-  },
-  {
-    label: 'Altura asiento',
-    getValue: (bike) => `${numberFormatter.format(bike.seatHeightMm)} mm`,
-    getNumber: (bike) => bike.seatHeightMm,
-    lowerIsBetter: true,
-  },
-  { label: 'Cilindrada', getValue: (bike) => `${numberFormatter.format(bike.displacementCc)} cc` },
-  { label: 'Depósito', getValue: (bike) => `${numberFormatter.format(bike.fuelTankLiters)} L` },
-  { label: 'Carnet', getValue: (bike) => `Carnet ${bike.license}` },
-  { label: 'Segmento', getValue: (bike) => segmentLabels[bike.segment] },
-] satisfies readonly SpecRow[];
-
-const scoreKeys: readonly UseScoreKey[] = ['city', 'touring', 'offroad', 'passenger', 'beginner', 'sport', 'funFactor'];
-
-function getOverallScore(bike: Bike) {
-  const scores = Object.values(bike.useScores);
-  return scores.reduce((total, score) => total + score, 0) / scores.length;
-}
-
-function getBestByScore(bikes: readonly Bike[], key: UseScoreKey) {
-  return [...bikes].sort((first, second) => second.useScores[key] - first.useScores[key])[0];
-}
-
-function getBestForSpec(row: SpecRow, bikes: readonly Bike[]) {
-  if (!row.getNumber) {
-    return undefined;
+function navigateToHash(hash: string) {
+  if (typeof window !== 'undefined') {
+    window.location.hash = hash;
   }
-
-  return [...bikes].sort((first, second) => {
-    const firstValue = row.getNumber?.(first) ?? 0;
-    const secondValue = row.getNumber?.(second) ?? 0;
-
-    return row.lowerIsBetter ? firstValue - secondValue : secondValue - firstValue;
-  })[0];
 }
 
-function scoreWidth(score: number) {
-  return `${Math.max(0, Math.min(score, 10)) * 10}%`;
+function getCompareHashForIds(ids: readonly Bike['id'][], motorcycles: readonly Bike[]) {
+  const bikes = ids
+    .map((id) => motorcycles.find((motorcycle) => motorcycle.id === id))
+    .filter((motorcycle): motorcycle is Bike => Boolean(motorcycle));
+
+  return bikes.length === ids.length ? getComparatorHashFromBikes(bikes) : `#/comparador?bikes=${ids.join(',')}`;
 }
 
 function EmptyComparator() {
   return (
-    <main className="comparator-page comparator-page--empty">
-      <section className="comparator-page__empty">
+    <main className="comparison-detail comparison-detail--empty">
+      <section className="comparison-detail__empty">
         <span>Comparador</span>
-        <h1>Seleccioná al menos 2 motos</h1>
-        <p>El comparador necesita una cola real. Andá al buscador y elegí entre 2 y 3 motos.</p>
+        <h1>Selecciona al menos 2 motos</h1>
+        <p>El comparador necesita una cola real. Ve al buscador y elige entre 2 y 3 motos.</p>
         <a className="button button--primary" href={getBrowseSearchHash()}>
           Ir al buscador
         </a>
@@ -117,86 +59,272 @@ function EmptyComparator() {
   );
 }
 
-export function ComparatorPage({ bikes }: ComparatorPageProps) {
-  if (bikes.length < 2) {
+
+function OneBikeComparator({ bike, motorcycles }: { bike: Bike; motorcycles: readonly Bike[] }) {
+  const addableBike = getFirstAddableBike([bike], motorcycles);
+  const displayName = getSafeBikeDisplayName(bike);
+
+  return (
+    <main className="comparison-detail comparison-detail--empty">
+      <section className="comparison-detail__empty">
+        <span>Comparador</span>
+        <h1>Añade otra moto para comparar</h1>
+        <p>{displayName} ya está en la cola. Añade una segunda moto para activar el comparador dinámico.</p>
+        {addableBike ? (
+          <button
+            className="button button--primary"
+            type="button"
+            onClick={() => navigateToHash(getCompareHashForIds([bike.id, addableBike.id], motorcycles))}
+            aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
+          >
+            Añadir {getSafeBikeDisplayName(addableBike)}
+          </button>
+        ) : (
+          <a className="button button--primary" href={getBrowseSearchHash()}>
+            Ir al buscador
+          </a>
+        )}
+      </section>
+    </main>
+  );
+}
+
+function DataList({ icon, items }: { icon: 'cancel' | 'check_circle'; items: readonly string[] }) {
+  if (items.length === 0) {
+    return (
+      <ul>
+        <li>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            info
+          </span>
+          Sin datos disponibles
+        </li>
+      </ul>
+    );
+  }
+
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item}>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            {icon}
+          </span>
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount = 0, motorcycles = [] }: ComparatorPageProps) {
+  const [voteMessage, setVoteMessage] = useState('');
+  const [selectedVoteBikeId, setSelectedVoteBikeId] = useState<Bike['id'] | undefined>();
+  const queueIds = bikes.map((bike) => bike.id);
+
+  useEffect(() => {
+    if (queueIds.length > 0) {
+      saveCompareQueue(queueIds);
+    }
+  }, [queueIds.join('|')]);
+
+  if (bikes.length === 0) {
     return <EmptyComparator />;
   }
 
-  const sortedByOverall = [...bikes].sort((first, second) => getOverallScore(second) - getOverallScore(first));
-  const overallWinner = sortedByOverall[0];
+  if (bikes.length === 1) {
+    return <OneBikeComparator bike={bikes[0]} motorcycles={motorcycles} />;
+  }
+
+  const comparison = buildCompareViewModel(bikes);
+  const currentIds = comparison.bikes.map((bike) => bike.id);
+  const addableBike = getFirstAddableBike(comparison.bikes, motorcycles);
+  const hasThreeBikes = comparison.bikes.length === 3;
+  const selectedVoteBike =
+    comparison.bikes.find((bike) => bike.id === selectedVoteBikeId) ?? comparison.finalVerdict.winnerBike;
 
   return (
-    <main className="comparator-page" aria-labelledby="comparator-page-title">
-      <section className="comparator-page__hero">
-        <a className="comparator-page__back" href={getBrowseSearchHash()}>
+    <main className="comparison-detail" aria-labelledby="comparison-detail-title">
+      <section className="comparison-detail__hero">
+        <a className="comparison-detail__back" href={getBrowseSearchHash()}>
           ← Volver al buscador
         </a>
-        <span>Technical comparison</span>
-        <h1 id="comparator-page-title">Comparativa de selección</h1>
-        <p>
-          {bikes.length} motos en la mesa. Acá no hay magia: datos técnicos, uso real y reportes para decidir con criterio.
-        </p>
+
+        <div className="comparison-detail__intro">
+          <p>Technical registry</p>
+          <h1 id="comparison-detail-title">{comparison.title}</h1>
+          <span>
+            {comparison.bikes.length} motos seleccionadas desde datos dinámicos. Misma estética, ahora con una cola real.
+          </span>
+        </div>
+
+        {ignoredBikeCount > 0 ? (
+          <p className="comparison-detail__notice" role="alert">
+            Se ignoraron {ignoredBikeCount} moto(s) extra: el comparador admite un máximo de 3.
+          </p>
+        ) : null}
+        {missingBikeCount > 0 ? (
+          <p className="comparison-detail__notice" role="alert">
+            {missingBikeCount} moto(s) de la URL no existen en el catálogo cargado.
+          </p>
+        ) : null}
+
+        <div className={hasThreeBikes ? 'comparison-detail__duel comparison-detail__duel--three' : 'comparison-detail__duel'}>
+          {comparison.entries.map((entry, index) => (
+            <Fragment key={entry.bike.id}>
+              <article
+                className={[
+                  'comparison-detail__hero-bike',
+                  index === 0 ? 'comparison-detail__hero-bike--left' : '',
+                  index === comparison.entries.length - 1 ? 'comparison-detail__hero-bike--right' : '',
+                  hasThreeBikes && index === 1 ? 'comparison-detail__hero-bike--center' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                <MotorcycleImage motorcycle={entry.bike} />
+                <div>
+                  <span>
+                    {getBikeBrandLabel(entry.bike)} · {getBikeSegmentLabel(entry.bike)} · {getBikeA2Label(entry.bike)}
+                  </span>
+                  <h2>{entry.displayName}</h2>
+                  <div className="comparison-detail__data-badges" aria-label={`Calidad de datos de ${entry.displayName}`}>
+                    {getBikeDataSourceBadges(entry.bike).map((badge) => (
+                      <small key={badge.id}>{badge.label}</small>
+                    ))}
+                  </div>
+                  <div className="comparison-detail__hero-bike-actions">
+                    <a href={getBikeDetailHash(entry.bike)} aria-label={`Ver ficha de ${entry.displayName}`}>Ver ficha</a>
+                    <button
+                      type="button"
+                      onClick={() => navigateToHash(getCompareHashForIds(currentIds.filter((id) => id !== entry.bike.id), motorcycles))}
+                      aria-label={`Quitar ${entry.displayName} de la comparativa`}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              {index < comparison.entries.length - 1 ? (
+                <div className="comparison-detail__vs" aria-hidden="true">
+                  <span>VS</span>
+                </div>
+              ) : null}
+            </Fragment>
+          ))}
+        </div>
+
+        <div className="comparison-detail__actions">
+          <div className="comparison-detail__vote-choice" role="group" aria-label="Elige tu ganadora">
+            {comparison.bikes.map((bike) => {
+              const isSelected = selectedVoteBike.id === bike.id;
+
+              return (
+                <button
+                  aria-pressed={isSelected}
+                  className={isSelected ? 'comparison-detail__vote-option comparison-detail__vote-option--active' : 'comparison-detail__vote-option'}
+                  key={bike.id}
+                  type="button"
+                  onClick={() => setSelectedVoteBikeId(bike.id)}
+                >
+                  {getSafeBikeDisplayName(bike)}
+                </button>
+              );
+            })}
+          </div>
+          <Button onClick={() => setVoteMessage(`Voto registrado para ${getSafeBikeDisplayName(selectedVoteBike)}.`)}>
+            Votar {getBikeBrandLabel(selectedVoteBike)}
+          </Button>
+          {comparison.bikes.map((bike) => (
+            <a className="button button--ghost" href={getBikeDetailHash(bike)} key={bike.id} aria-label={`Ver ficha de ${getSafeBikeDisplayName(bike)}`}>
+              Ficha {getBikeBrandLabel(bike)}
+            </a>
+          ))}
+          {addableBike ? (
+            <Button variant="secondary" onClick={() => navigateToHash(getCompareHashForIds([...currentIds, addableBike.id], motorcycles))} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
+              Añadir {getSafeBikeDisplayName(addableBike)}
+            </Button>
+          ) : (
+            <a className="button button--secondary" href={getBrowseSearchHash()}>
+              Añadir otra moto
+            </a>
+          )}
+        </div>
+        {voteMessage ? <p className="comparison-detail__status" role="status">{voteMessage}</p> : null}
       </section>
 
-      <section className="comparator-page__lineup" aria-label="Motos comparadas">
-        {bikes.map((bike, index) => (
-          <article key={bike.id}>
-            <div className="comparator-page__lineup-media">
-              <img src={bike.imageUrl} alt={bike.description} />
-              <span>#{index + 1}</span>
-            </div>
-            <div>
-              <span>{segmentLabels[bike.segment]}</span>
-              <h2>{getBikeDisplayName(bike)}</h2>
-              <p>{bike.description}</p>
-              <strong>{getOverallScore(bike).toFixed(1)} overall</strong>
-              <a href={getBikeDetailHash(bike)}>Ver ficha completa</a>
-            </div>
+      <section className="comparison-detail__vote" aria-labelledby="comparison-vote-title">
+        <div>
+          <h2 id="comparison-vote-title">¿Cuál elegirías?</h2>
+          <p>
+            Lectura dinámica basada en {numberFormatter.format(comparison.voteSummary.totalVotes)} señales mock de comunidad y
+            puntuaciones de uso real.
+          </p>
+          <blockquote>
+            “{comparison.voteSummary.topComment}”
+            <cite>{comparison.voteSummary.topCommentAuthor}</cite>
+          </blockquote>
+        </div>
+
+        <div className="comparison-detail__vote-results">
+          <div className="comparison-detail__vote-bar" aria-label="Resultado de votos dinámico">
+            {comparison.voteSummary.segments.map((segment, index) => {
+              const Tag = index === 0 ? 'span' : 'strong';
+
+              return (
+                <Tag
+                  key={segment.bike.id}
+                  style={{ flex: `0 0 ${segment.percent}%`, width: `${segment.percent}%` }}
+                >
+                  {segment.percent}% · {segment.displayName}
+                </Tag>
+              );
+            })}
+          </div>
+          <p>
+            Total de votos: {numberFormatter.format(comparison.voteSummary.totalVotes)} · Margen de error:{' '}
+            {comparison.voteSummary.marginOfErrorPercent}%
+          </p>
+        </div>
+      </section>
+
+      <section className="comparison-detail__verdicts" aria-label="Highlights dinámicos">
+        {comparison.highlights.map((highlight) => (
+          <article key={highlight.id}>
+            <span className="material-symbols-outlined" aria-hidden="true">
+              {highlight.icon}
+            </span>
+            <strong>{highlight.badgeLabel}</strong>
+            <h2>{highlight.title}</h2>
+            <p>{highlight.description}</p>
+            <footer>{getSafeBikeDisplayName(highlight.winnerBike)}</footer>
           </article>
         ))}
       </section>
 
-      <section className="comparator-page__verdict" aria-labelledby="comparator-verdict-title">
-        <div>
-          <span>Veredicto rápido</span>
-          <h2 id="comparator-verdict-title">La más equilibrada ahora mismo</h2>
-          <p>
-            Por media de uso real, la referencia es <strong>{getBikeDisplayName(overallWinner)}</strong>. No significa que sea la
-            mejor para todo: significa que gana en el balance global de esta cola.
-          </p>
-        </div>
-        <ol>
-          {sortedByOverall.map((bike) => (
-            <li key={bike.id}>
-              <span>{getBikeDisplayName(bike)}</span>
-              <strong>{getOverallScore(bike).toFixed(1)}</strong>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="comparator-page__table" aria-labelledby="comparator-table-title">
-        <h2 id="comparator-table-title">Registro técnico</h2>
-        <div>
+      <section className="comparison-detail__registry" aria-labelledby="comparison-registry-title">
+        <h2 id="comparison-registry-title">Technical Registry</h2>
+        <div className="comparison-detail__spec-table">
           <table>
             <thead>
               <tr>
-                <th>Dato</th>
-                {bikes.map((bike) => (
-                  <th key={bike.id}>{getBikeDisplayName(bike)}</th>
+                <th>Specification</th>
+                {comparison.bikes.map((bike) => (
+                  <th key={bike.id}>{getSafeBikeDisplayName(bike)}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {specRows.map((row) => {
-                const bestBike = getBestForSpec(row, bikes);
+              {comparison.specRows.map((spec) => {
+                const winner = getBestBikeForSpec(spec, comparison.bikes);
 
                 return (
-                  <tr key={row.label}>
-                    <td>{row.label}</td>
-                    {bikes.map((bike) => (
-                      <td className={bestBike?.id === bike.id ? 'comparator-page__winner-cell' : ''} key={bike.id}>
-                        {row.getValue(bike)}
+                  <tr key={spec.id}>
+                    <td>{spec.label}</td>
+                    {comparison.bikes.map((bike) => (
+                      <td className={winner?.id === bike.id ? 'comparison-detail__winner-cell' : ''} key={bike.id}>
+                        {spec.getValue(bike)}
                       </td>
                     ))}
                   </tr>
@@ -207,37 +335,115 @@ export function ComparatorPage({ bikes }: ComparatorPageProps) {
         </div>
       </section>
 
-      <section className="comparator-page__scores" aria-labelledby="comparator-scores-title">
-        <div>
-          <span>Uso real</span>
-          <h2 id="comparator-scores-title">Dónde gana cada una</h2>
-        </div>
-
-        <div className="comparator-page__score-grid">
-          {scoreKeys.map((key) => {
-            const bestBike = getBestByScore(bikes, key);
-
-            return (
-              <article key={key}>
-                <header>
-                  <h3>{useScoreLabels[key]}</h3>
-                  <span>Gana {getBikeDisplayName(bestBike)}</span>
-                </header>
-                {bikes.map((bike) => (
-                  <div className="comparator-page__score-row" key={bike.id}>
-                    <div>
-                      <span>{getBikeDisplayName(bike)}</span>
-                      <strong>{bike.useScores[key].toFixed(1)}</strong>
-                    </div>
-                    <div aria-hidden="true">
-                      <span style={{ width: scoreWidth(bike.useScores[key]) }} />
+      <section className="comparison-detail__scores" aria-labelledby="comparison-scores-title">
+        <h2 id="comparison-scores-title">Rendimiento por categoría</h2>
+        <div className="comparison-detail__score-grid">
+          {comparison.performanceRows.map((row) => (
+            <article key={row.id}>
+              <header>
+                <span>{row.label}</span>
+                <strong>Gana {getSafeBikeDisplayName(row.winnerBike)}</strong>
+              </header>
+              <div className="comparison-detail__score-rows">
+                {row.scores.map((score) => (
+                  <div className="comparison-detail__score-row" key={score.bike.id}>
+                    <footer>
+                      <span>{score.displayName}</span>
+                      <span>{score.value.toFixed(1)}/10</span>
+                    </footer>
+                    <div
+                      className="comparison-detail__score-track"
+                      role="progressbar"
+                      aria-label={`${row.label} ${score.displayName}`}
+                      aria-valuemin={0}
+                      aria-valuemax={10}
+                      aria-valuenow={score.value}
+                    >
+                      <strong style={{ width: scoreWidth(score.value) }} />
                     </div>
                   </div>
                 ))}
-              </article>
-            );
-          })}
+              </div>
+            </article>
+          ))}
         </div>
+      </section>
+
+      <section
+        className={hasThreeBikes ? 'comparison-detail__pros-cons comparison-detail__pros-cons--three' : 'comparison-detail__pros-cons'}
+        aria-label="Puntos fuertes y puntos a mejorar"
+      >
+        {comparison.bikes.map((bike) => (
+          <article key={bike.id}>
+            <h2>{getSafeBikeDisplayName(bike)}</h2>
+            <div>
+              <section>
+                <h3>Puntos fuertes</h3>
+                <DataList icon="check_circle" items={getBikePros(bike)} />
+              </section>
+              <section>
+                <h3>A mejorar</h3>
+                <DataList icon="cancel" items={getBikeCons(bike)} />
+              </section>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <section className="comparison-detail__reports" aria-labelledby="comparison-reports-title">
+        <div className="comparison-detail__section-heading">
+          <h2 id="comparison-reports-title">Lo que los catálogos no cuentan</h2>
+          <p>Common issues generados desde los reportes de fiabilidad de cada moto.</p>
+        </div>
+        <div className="comparison-detail__report-grid">
+          {comparison.reports.map((report) => (
+            <article className={`comparison-detail__report comparison-detail__report--${report.severity.toLowerCase()}`} key={report.id}>
+              <header>
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  {report.icon}
+                </span>
+                <strong>{report.severity} severidad</strong>
+              </header>
+              <h3>{report.title}</h3>
+              <p>{report.description}</p>
+              <footer>{numberFormatter.format(report.reportCount)} reportes confirmados</footer>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="comparison-detail__videos" aria-labelledby="comparison-videos-title">
+        <h2 id="comparison-videos-title">Análisis en vídeo</h2>
+        <div className="comparison-detail__video-grid">
+          {comparison.videos.map((video) => (
+            <article key={video.id}>
+              <div>
+                <MotorcycleImage motorcycle={video.bike} alt={video.alt} loading="lazy" />
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  play_circle
+                </span>
+                <strong>{video.duration}</strong>
+              </div>
+              <h3>{video.title}</h3>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="comparison-detail__final-verdict" aria-labelledby="comparison-final-title">
+        <div>
+          <span>Final verdict</span>
+          <h2 id="comparison-final-title">{comparison.finalVerdict.title}</h2>
+          <p>{comparison.finalVerdict.description}</p>
+        </div>
+        <ol>
+          {comparison.finalVerdict.ranking.map((entry) => (
+            <li key={entry.bike.id}>
+              <span>{entry.displayName}</span>
+              <strong>{entry.overallScore.toFixed(1)}</strong>
+            </li>
+          ))}
+        </ol>
       </section>
     </main>
   );

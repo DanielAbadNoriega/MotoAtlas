@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { bikes, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   clearIncomingCompareHash,
   compareQueueMaxSize,
-  getComparatorHash,
   getIncomingCompareIdsFromHash,
   isBrowseSearchHash,
   loadCompareQueue,
@@ -11,48 +10,19 @@ import {
   saveCompareQueue,
 } from '../../../utils/compareQueue';
 import type { Bike, BikeLicense, BikeSegment } from '../../../types/bike';
+import {
+  filterMotorcycles,
+  getNextCompareSelection,
+  initialSearchFilters,
+  toggleArrayValue,
+  type SearchFilters,
+  type SortOption,
+} from '../../../utils/motorcycleSearch';
 import { Button } from '../../ui/Button';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import './SearchPage.scss';
-
-type SortOption =
-  | 'price-asc'
-  | 'price-desc'
-  | 'power-desc'
-  | 'power-asc'
-  | 'weight-asc'
-  | 'weight-desc'
-  | 'year-desc'
-  | 'year-asc';
-
-type SearchFilters = {
-  text: string;
-  brands: string[];
-  segments: BikeSegment[];
-  licenses: BikeLicense[];
-  minPrice: string;
-  maxPrice: string;
-  minPower: string;
-  maxWeight: string;
-  sort: SortOption;
-};
-
-const initialFilters: SearchFilters = {
-  text: '',
-  brands: [],
-  segments: [],
-  licenses: [],
-  minPrice: '',
-  maxPrice: '',
-  minPower: '',
-  maxWeight: '',
-  sort: 'price-asc',
-};
-
-const segmentLabels: Record<BikeSegment, string> = {
-  naked: 'Naked',
-  'sport-touring': 'Sport Touring',
-  trail: 'Trail',
-};
 
 const sortLabels: Record<SortOption, string> = {
   'price-asc': 'Precio: menor a mayor',
@@ -66,58 +36,12 @@ const sortLabels: Record<SortOption, string> = {
 };
 
 const sortOptions = Object.entries(sortLabels) as [SortOption, string][];
-const bikeCatalog: readonly Bike[] = bikes;
 const numberFormatter = new Intl.NumberFormat('es-ES');
 const currencyFormatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
   maximumFractionDigits: 0,
   style: 'currency',
 });
-
-function normalizeText(value: string) {
-  return value
-    .trim()
-    .toLocaleLowerCase('es-ES')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-}
-
-function toOptionalNumber(value: string) {
-  if (!value) {
-    return undefined;
-  }
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function toggleArrayValue<T extends string>(values: readonly T[], value: T) {
-  return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
-}
-
-function sortBikes(results: readonly Bike[], sort: SortOption) {
-  return [...results].sort((first, second) => {
-    switch (sort) {
-      case 'price-desc':
-        return second.priceEur - first.priceEur;
-      case 'power-desc':
-        return second.powerHp - first.powerHp;
-      case 'power-asc':
-        return first.powerHp - second.powerHp;
-      case 'weight-desc':
-        return second.wetWeightKg - first.wetWeightKg;
-      case 'weight-asc':
-        return first.wetWeightKg - second.wetWeightKg;
-      case 'year-desc':
-        return second.year - first.year;
-      case 'year-asc':
-        return first.year - second.year;
-      case 'price-asc':
-      default:
-        return first.priceEur - second.priceEur;
-    }
-  });
-}
 
 function getBestUseScore(bike: Bike) {
   const [key, value] = Object.entries(bike.useScores).sort((a, b) => b[1] - a[1])[0];
@@ -142,6 +66,8 @@ function SearchField({ filters, onChange }: { filters: SearchFilters; onChange: 
       </span>
       <input
         aria-label="Buscar por marca o modelo"
+        id="motorcycle-search-text"
+        name="motorcycle-search-text"
         placeholder="Busca por marca o modelo..."
         type="search"
         value={filters.text}
@@ -151,7 +77,7 @@ function SearchField({ filters, onChange }: { filters: SearchFilters; onChange: 
   );
 }
 
-function FilterPanel({
+export function AdvancedFilters({
   brandOptions,
   filters,
   isOpen,
@@ -191,6 +117,7 @@ function FilterPanel({
             <label key={brand}>
               <input
                 checked={filters.brands.includes(brand)}
+                name="brands"
                 type="checkbox"
                 onChange={() => onChange({ brands: toggleArrayValue(filters.brands, brand) })}
               />
@@ -238,8 +165,10 @@ function FilterPanel({
           <label>
             <span>Desde</span>
             <input
+              id="min-price"
               inputMode="numeric"
               min="0"
+              name="minPrice"
               placeholder="0"
               type="number"
               value={filters.minPrice}
@@ -249,8 +178,10 @@ function FilterPanel({
           <label>
             <span>Hasta</span>
             <input
+              id="max-price"
               inputMode="numeric"
               min="0"
+              name="maxPrice"
               placeholder="25000"
               type="number"
               value={filters.maxPrice}
@@ -265,8 +196,10 @@ function FilterPanel({
         <label className="search-page__numeric-filter">
           <span>Potencia mínima</span>
           <input
+            id="min-power"
             inputMode="numeric"
             min="0"
+            name="minPower"
             placeholder="Ej: 90"
             type="number"
             value={filters.minPower}
@@ -276,8 +209,10 @@ function FilterPanel({
         <label className="search-page__numeric-filter">
           <span>Peso máximo</span>
           <input
+            id="max-weight"
             inputMode="numeric"
             min="0"
+            name="maxWeight"
             placeholder="Ej: 220"
             type="number"
             value={filters.maxWeight}
@@ -289,7 +224,7 @@ function FilterPanel({
   );
 }
 
-function BikeResultCard({
+export function BikeResultCard({
   bike,
   isSelected,
   onToggleCompare,
@@ -299,14 +234,15 @@ function BikeResultCard({
   onToggleCompare: (bike: Bike) => void;
 }) {
   const bestUse = getBestUseScore(bike);
+  const a2Badge = getBikeA2Badge(bike);
 
   return (
     <article className={isSelected ? 'search-result-card search-result-card--selected' : 'search-result-card'}>
       <div className="search-result-card__media">
-        <img src={bike.imageUrl} alt={bike.description} loading="lazy" />
+        <MotorcycleImage motorcycle={bike} loading="lazy" />
         <div className="search-result-card__badges">
           <span>{segmentLabels[bike.segment]}</span>
-          <span>Carnet {bike.license}</span>
+          <span>{a2Badge.label}</span>
         </div>
         <strong>{currencyFormatter.format(bike.priceEur)}</strong>
       </div>
@@ -369,7 +305,7 @@ function BikeResultCard({
   );
 }
 
-function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: readonly Bike[]; onClear: () => void; onRemove: (bikeId: Bike['id']) => void }) {
+export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBikes: readonly Bike[]; onClear: () => void; onRemove: (bikeId: Bike['id']) => void }) {
   if (selectedBikes.length === 0) {
     return null;
   }
@@ -379,7 +315,7 @@ function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: read
       <div className="search-page__compare-thumbs">
         {selectedBikes.map((bike) => (
           <button key={bike.id} type="button" onClick={() => onRemove(bike.id)} aria-label={`Quitar ${getBikeDisplayName(bike)}`}>
-            <img src={bike.imageUrl} alt="" />
+            <MotorcycleImage motorcycle={bike} decorative />
           </button>
         ))}
       </div>
@@ -390,11 +326,11 @@ function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: read
         </span>
       </div>
       {selectedBikes.length >= 2 ? (
-        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHash(selectedBikes)}>
+        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHashFromBikes(selectedBikes)}>
           Comparar ahora ({selectedBikes.length})
         </a>
       ) : (
-        <div className="search-page__compare-status">Elegí al menos 2 motos</div>
+        <div className="search-page__compare-status">Elige al menos 2 motos</div>
       )}
       <button className="search-page__compare-clear" type="button" onClick={onClear} aria-label="Vaciar comparador">
         <span className="material-symbols-outlined" aria-hidden="true">
@@ -406,11 +342,12 @@ function CompareTray({ selectedBikes, onClear, onRemove }: { selectedBikes: read
 }
 
 type SearchPageProps = {
+  motorcycles: readonly Bike[];
   routeHash: string;
 };
 
-export function SearchPage({ routeHash }: SearchPageProps) {
-  const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
+  const [filters, setFilters] = useState<SearchFilters>(initialSearchFilters);
   const [selectedBikeIds, setSelectedBikeIds] = useState<Bike['id'][]>(() =>
     isBrowseSearchHash(routeHash) ? [] : loadCompareQueue(),
   );
@@ -418,8 +355,8 @@ export function SearchPage({ routeHash }: SearchPageProps) {
   const [selectionWarning, setSelectionWarning] = useState('');
   const isInitialQueueSync = useRef(true);
 
-  const brandOptions = useMemo(() => [...new Set(bikeCatalog.map((bike) => bike.brand))].sort(), []);
-  const segmentOptions = useMemo(() => [...new Set(bikeCatalog.map((bike) => bike.segment))].sort(), []);
+  const brandOptions = useMemo(() => [...new Set(motorcycles.map((bike) => bike.brand))].sort(), [motorcycles]);
+  const segmentOptions = useMemo(() => [...new Set(motorcycles.map((bike) => bike.segment))].sort(), [motorcycles]);
 
   const updateFilters = (next: Partial<SearchFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
@@ -449,7 +386,7 @@ export function SearchPage({ routeHash }: SearchPageProps) {
 
       setSelectionWarning(
         rejectedIds.length > 0
-          ? `La cola ya tiene ${compareQueueMaxSize} motos. Quitá una antes de añadir otra.`
+          ? `La cola ya tiene ${compareQueueMaxSize} motos. Quita una antes de añadir otra.`
           : '',
       );
 
@@ -459,49 +396,23 @@ export function SearchPage({ routeHash }: SearchPageProps) {
     clearIncomingCompareHash(routeHash);
   }, [routeHash]);
 
-  const filteredBikes = useMemo(() => {
-    const text = normalizeText(filters.text);
-    const minPrice = toOptionalNumber(filters.minPrice);
-    const maxPrice = toOptionalNumber(filters.maxPrice);
-    const minPower = toOptionalNumber(filters.minPower);
-    const maxWeight = toOptionalNumber(filters.maxWeight);
-
-    const results = bikeCatalog.filter((bike) => {
-      const haystack = normalizeText(`${bike.brand} ${bike.model}`);
-
-      return (
-        (!text || haystack.includes(text)) &&
-        (filters.brands.length === 0 || filters.brands.includes(bike.brand)) &&
-        (filters.segments.length === 0 || filters.segments.includes(bike.segment)) &&
-        (filters.licenses.length === 0 || filters.licenses.includes(bike.license)) &&
-        (minPrice === undefined || bike.priceEur >= minPrice) &&
-        (maxPrice === undefined || bike.priceEur <= maxPrice) &&
-        (minPower === undefined || bike.powerHp >= minPower) &&
-        (maxWeight === undefined || bike.wetWeightKg <= maxWeight)
-      );
-    });
-
-    return sortBikes(results, filters.sort);
-  }, [filters]);
+  const filteredBikes = useMemo(() => filterMotorcycles(motorcycles, filters), [filters, motorcycles]);
 
   const selectedBikes = useMemo(
-    () => selectedBikeIds.map((id) => bikeCatalog.find((bike) => bike.id === id)).filter((bike): bike is Bike => bike !== undefined),
-    [selectedBikeIds],
+    () => selectedBikeIds.map((id) => motorcycles.find((bike) => bike.id === id)).filter((bike): bike is Bike => bike !== undefined),
+    [motorcycles, selectedBikeIds],
   );
 
   const toggleCompareSelection = (bike: Bike) => {
     setSelectionWarning('');
     setSelectedBikeIds((current) => {
-      if (current.includes(bike.id)) {
-        return current.filter((id) => id !== bike.id);
+      const nextSelection = getNextCompareSelection(current, bike.id);
+
+      if (nextSelection.isLimitReached) {
+        setSelectionWarning(`Solo puedes seleccionar hasta ${compareQueueMaxSize} motos para comparar.`);
       }
 
-      if (current.length >= compareQueueMaxSize) {
-        setSelectionWarning(`Solo podés seleccionar hasta ${compareQueueMaxSize} motos para comparar.`);
-        return current;
-      }
-
-      return [...current, bike.id];
+      return nextSelection.selectedIds;
     });
   };
 
@@ -529,14 +440,14 @@ export function SearchPage({ routeHash }: SearchPageProps) {
       </div>
 
       <section className="search-page__content">
-        <FilterPanel
+        <AdvancedFilters
           brandOptions={brandOptions}
           filters={filters}
           isOpen={isFilterPanelOpen}
           onChange={updateFilters}
           onClose={() => setIsFilterPanelOpen(false)}
           onReset={() => {
-            setFilters(initialFilters);
+            setFilters(initialSearchFilters);
             setSelectionWarning('');
           }}
           segmentOptions={segmentOptions}
@@ -547,11 +458,11 @@ export function SearchPage({ routeHash }: SearchPageProps) {
             <div>
               <span>Catálogo</span>
               <h2>{numberFormatter.format(filteredBikes.length)} resultados encontrados</h2>
-              <p>Mostrando motos desde el catálogo mock local. Sin backend, sin humo.</p>
+              <p>Mostrando motos desde Supabase o fallback local si la conexión falla.</p>
             </div>
             <label>
               <span>Ordenar por</span>
-              <select value={filters.sort} onChange={(event) => updateFilters({ sort: event.target.value as SortOption })}>
+              <select id="search-sort" name="sort" value={filters.sort} onChange={(event) => updateFilters({ sort: event.target.value as SortOption })}>
                 {sortOptions.map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
@@ -577,14 +488,14 @@ export function SearchPage({ routeHash }: SearchPageProps) {
           {filteredBikes.length === 0 ? (
             <div className="search-page__empty">
               <h2>No hay motos con esos filtros</h2>
-              <p>Aflojá algún criterio. Si filtrás como inspector de la NASA, el catálogo se queda seco.</p>
-              <Button onClick={() => setFilters(initialFilters)}>Resetear filtros</Button>
+              <p>Relaja algún criterio. Si filtras como inspector de la NASA, el catálogo se queda seco.</p>
+              <Button onClick={() => setFilters(initialSearchFilters)}>Resetear filtros</Button>
             </div>
           ) : null}
         </div>
       </section>
 
-      <CompareTray
+      <CompareDrawer
         selectedBikes={selectedBikes}
         onClear={() => {
           setSelectedBikeIds([]);

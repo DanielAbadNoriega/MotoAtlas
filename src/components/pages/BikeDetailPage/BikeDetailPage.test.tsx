@@ -1,0 +1,168 @@
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
+import { createReview, getApprovedReviewsByMotorcycleId } from '../../../services/motorcycleReviewService';
+import { bikeFixtures } from '../../../test/fixtures/bikes';
+import type { Bike } from '../../../types/bike';
+import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../../shared/images/getMotorcycleImage';
+import { BikeDetailPage } from './BikeDetailPage';
+
+vi.mock('../../../services/motorcycleReviewService', () => ({
+  createReview: vi.fn(),
+  getApprovedReviewsByMotorcycleId: vi.fn(),
+}));
+
+const realMotorcycles = realMotorcycleSeed as readonly Bike[];
+const getApprovedReviewsMock = vi.mocked(getApprovedReviewsByMotorcycleId);
+const createReviewMock = vi.mocked(createReview);
+
+describe('BikeDetailPage', () => {
+  beforeEach(() => {
+    getApprovedReviewsMock.mockReset();
+    createReviewMock.mockReset();
+    getApprovedReviewsMock.mockResolvedValue([]);
+    createReviewMock.mockResolvedValue({
+      id: 'review-new',
+      motorcycleId: bikeFixtures[0].id,
+      userName: 'Dani',
+      rating: 5,
+      ownershipMonths: null,
+      kilometers: null,
+      comment: 'Muy buena.',
+      pros: [],
+      cons: [],
+      status: 'pending',
+      createdAt: '2026-05-14T10:00:00.000Z',
+      updatedAt: '2026-05-14T10:00:00.000Z',
+    });
+  });
+
+  it('renders name, brand, year and main specs from fixtures', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('heading', { name: /BMW F 900 GS/i })).toBeInTheDocument();
+    expect(screen.getAllByText('2024').length).toBeGreaterThan(0);
+    expect(screen.getByText(/Trail media con electrónica completa/i)).toBeInTheDocument();
+
+    const mainSpecs = screen.getByRole('group', { name: 'Datos principales' });
+    expect(within(mainSpecs).getByText('Potencia')).toBeInTheDocument();
+    expect(within(mainSpecs).getByText(/105/)).toBeInTheDocument();
+    expect(within(mainSpecs).getByText('Peso')).toBeInTheDocument();
+    expect(within(mainSpecs).getByText(/219/)).toBeInTheDocument();
+    expect(within(mainSpecs).getByText('Motor')).toBeInTheDocument();
+    expect(within(mainSpecs).getByText(/895/)).toBeInTheDocument();
+  });
+
+  it('shows pros, cons and common reliability issues', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByText('Motor elástico')).toBeInTheDocument();
+    expect(screen.getByText('Buen equilibrio')).toBeInTheDocument();
+    expect(screen.getByText('Precio alto')).toBeInTheDocument();
+    expect(screen.getByText('Calor en ciudad')).toBeInTheDocument();
+  });
+
+  it('has a working add-to-comparator link without calling Supabase', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('link', { name: /Añadir al comparador/i })).toHaveAttribute(
+      'href',
+      '#/buscador?compare=test-bmw-f-900-gs',
+    );
+  });
+
+  it('has working links back to the search page', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('link', { name: /Volver al catálogo/i })).toHaveAttribute('href', '#/buscador');
+    expect(screen.getByRole('link', { name: /Ver más motos/i })).toHaveAttribute('href', '#/buscador?browse=1');
+  });
+
+  it('renders related motorcycles from local fixtures', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('heading', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
+  });
+
+  it('renders a not found state when the motorcycle is missing', () => {
+    render(<BikeDetailPage motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('heading', { name: /Moto no encontrada/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Volver al buscador/i })).toHaveAttribute('href', '#/buscador');
+  });
+
+  it('renders a real motorcycle from the current JSON seed', () => {
+    const bmwF900Gs = realMotorcycles.find((bike) => bike.id === 'bmw-f-900-gs-2024');
+
+    render(<BikeDetailPage bike={bmwF900Gs} motorcycles={realMotorcycles} />);
+
+    expect(screen.getByRole('heading', { name: /BMW F 900 GS/i })).toBeInTheDocument();
+    expect(screen.getByText(/Trail media-alta con mucho par/i)).toBeInTheDocument();
+
+    const mainSpecs = screen.getByRole('group', { name: 'Datos principales' });
+    expect(within(mainSpecs).getByText(/105/)).toBeInTheDocument();
+    expect(within(mainSpecs).getByText(/895/)).toBeInTheDocument();
+  });
+
+  it('renders a pending technical image overlay when detail image is missing', () => {
+    const bikeWithoutImage = { ...bikeFixtures[0], imageUrl: '' } as Bike;
+
+    const { container } = render(<BikeDetailPage bike={bikeWithoutImage} motorcycles={[bikeWithoutImage, ...bikeFixtures.slice(1)]} />);
+
+    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
+    expect(container.querySelector(`img[src="${MOTORCYCLE_IMAGE_FALLBACK_URL}"]`)).toBeInTheDocument();
+  });
+
+  it('renders approved reviews and aggregate rating', async () => {
+    getApprovedReviewsMock.mockResolvedValue([
+      {
+        id: 'review-1',
+        motorcycleId: bikeFixtures[0].id,
+        userName: 'Laura',
+        rating: 5,
+        ownershipMonths: 10,
+        kilometers: 12000,
+        comment: 'Muy equilibrada para viajar.',
+        pros: [],
+        cons: [],
+        status: 'approved',
+        createdAt: '2026-05-14T10:00:00.000Z',
+        updatedAt: '2026-05-14T10:00:00.000Z',
+      },
+      {
+        id: 'review-2',
+        motorcycleId: bikeFixtures[0].id,
+        userName: 'Marc',
+        rating: 4,
+        ownershipMonths: null,
+        kilometers: null,
+        comment: 'Cara, pero completa.',
+        pros: [],
+        cons: [],
+        status: 'approved',
+        createdAt: '2026-05-14T10:00:00.000Z',
+        updatedAt: '2026-05-14T10:00:00.000Z',
+      },
+    ]);
+
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(await screen.findByText('4.5/5 · 2 reviews')).toBeInTheDocument();
+    expect(screen.getByText('Muy equilibrada para viajar.')).toBeInTheDocument();
+  });
+
+  it('submits a basic pending review', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.type(screen.getByLabelText(/Nombre/i), 'Dani');
+    await user.selectOptions(screen.getByLabelText(/Rating/i), '4');
+    await user.type(screen.getByLabelText(/Opinión/i), 'La moto va muy fina en carretera.');
+    await user.click(screen.getByRole('button', { name: /Enviar review/i }));
+
+    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
+    expect(createReviewMock).toHaveBeenCalledWith(expect.objectContaining({ motorcycleId: bikeFixtures[0].id, rating: 4 }));
+    expect(screen.getByRole('status')).toHaveTextContent(/pendiente de moderación/i);
+  });
+});

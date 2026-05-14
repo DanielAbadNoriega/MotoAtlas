@@ -1,7 +1,7 @@
 import type { MouseEvent } from 'react';
-import { duelBikes } from '../../../data/bikes';
-import { defaultBikeComparison } from '../../../data/comparisons';
+import { duelBikes, getBikeById } from '../../../data/bikes';
 import { machineDuelContent } from '../../../data/home';
+import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import { Button } from '../../ui/Button';
 import { ComparisonBikeCard } from '../../ui/ComparisonBikeCard';
 import { SectionHeader } from '../../ui/SectionHeader';
@@ -9,10 +9,12 @@ import { VersusBadge } from '../../ui/VersusBadge';
 import './MachineDuel.scss';
 
 export function MachineDuel() {
+  const detailedDuelBikes = duelBikes.map((bike) => getBikeById(bike.id));
+
   const openDetailedComparison = (event: MouseEvent<HTMLButtonElement>) => {
     event.currentTarget.blur();
     window.scrollTo({ left: 0, top: 0 });
-    window.location.hash = defaultBikeComparison.routeHash;
+    window.location.hash = getComparatorHashFromBikes(detailedDuelBikes);
   };
 
   return (

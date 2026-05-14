@@ -9,10 +9,15 @@
 
     aspect-ratio: 16 / 9;
     background: $color-surface-lowest;
+    position: relative;
 
-    img {
+    img,
+    .motorcycle-image {
       width: 100%;
       height: 100%;
+    }
+
+    img {
       object-fit: cover;
     }
   }

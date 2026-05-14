@@ -78,12 +78,17 @@
 .comparison-detail__hero-bike {
   min-width: 0;
 
-  img {
+  .motorcycle-image {
     width: 100%;
     height: clamp(18rem, 31vw, 25rem);
     border: 1px solid rgba($color-outline-variant, 0.35);
     border-radius: $radius-xl;
     background: $color-surface-lowest;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     filter: grayscale(0.85);
     transition:
@@ -96,7 +101,7 @@
     transform: scale(1.015);
   }
 
-  div {
+  > div:not(.motorcycle-image) {
     margin-top: 1.5rem;
   }
 
@@ -248,6 +253,39 @@
   justify-content: center;
   gap: 1rem;
   margin-top: 4rem;
+}
+
+.comparison-detail__vote-choice {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.comparison-detail__vote-option {
+  @include label-caps;
+
+  border: 1px solid rgba($color-outline-variant, 0.36);
+  border-radius: $radius-md;
+  background: rgba($color-surface-container, 0.72);
+  color: $color-on-surface-variant;
+  cursor: pointer;
+  padding: 0.75rem 0.95rem;
+  transition:
+    background $transition-base,
+    border-color $transition-base,
+    color $transition-base,
+    transform $transition-base;
+
+  &:hover,
+  &:focus-visible,
+  &--active {
+    border-color: $color-accent;
+    background: rgba($color-accent, 0.14);
+    color: $color-accent;
+    transform: translateY(-1px);
+  }
 }
 
 .comparison-detail__vote {
@@ -454,8 +492,16 @@
   gap: 2.5rem 5rem;
 
   article {
+    @include glass-hud;
+
     display: grid;
     gap: 1rem;
+    border-radius: $radius-xl;
+    padding: clamp(1.25rem, 2vw, 1.75rem);
+    background:
+      linear-gradient(135deg, rgba($color-surface-container-high, 0.74), rgba($color-surface-lowest, 0.42)),
+      rgba($color-surface-container, 0.48);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
   }
 
   header,
@@ -677,6 +723,11 @@
     transition: transform $transition-slow;
   }
 
+  .motorcycle-image {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+  }
+
   article:hover img {
     transform: scale(1.05);
   }
@@ -760,7 +811,7 @@
     font-size: 1.6rem;
   }
 
-  .comparison-detail__hero-bike img {
+  .comparison-detail__hero-bike .motorcycle-image {
     height: 16rem;
   }
 
@@ -791,5 +842,229 @@
   .comparison-detail__report-grid,
   .comparison-detail__video-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.comparison-detail__notice,
+.comparison-detail__status {
+  @include label-caps;
+
+  max-width: 56rem;
+  margin: 0 auto 2rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba($color-accent, 0.35);
+  border-radius: $radius-lg;
+  background: rgba($color-accent, 0.08);
+  color: $color-accent;
+  text-align: center;
+}
+
+.comparison-detail__status {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+}
+
+.comparison-detail__duel--three {
+  grid-template-columns: minmax(0, 1fr) 5rem minmax(0, 1fr) 5rem minmax(0, 1fr);
+
+  .comparison-detail__vs {
+    width: 5rem;
+    height: 5rem;
+    font-size: 1.55rem;
+  }
+}
+
+.comparison-detail__hero-bike--center {
+  text-align: center;
+}
+
+.comparison-detail__hero-bike-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem !important;
+}
+
+.comparison-detail__data-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.8rem;
+
+  small {
+    @include label-caps;
+
+    border: 1px solid rgba($color-accent, 0.3);
+    border-radius: $radius-sm;
+    background: rgba($color-accent, 0.08);
+    color: rgba($color-on-surface, 0.82);
+    font-size: 0.58rem;
+    padding: 0.35rem 0.45rem;
+  }
+}
+
+.comparison-detail__hero-bike--right .comparison-detail__hero-bike-actions {
+  justify-content: flex-end;
+}
+
+.comparison-detail__hero-bike--center .comparison-detail__hero-bike-actions {
+  justify-content: center;
+}
+
+.comparison-detail__hero-bike-actions a,
+.comparison-detail__hero-bike-actions button {
+  @include label-caps;
+
+  border: 1px solid rgba($color-outline-variant, 0.32);
+  border-radius: $radius-md;
+  padding: 0.65rem 0.85rem;
+  background: rgba($color-surface-container, 0.72);
+  color: $color-on-surface-variant;
+  cursor: pointer;
+  transition:
+    border-color $transition-base,
+    color $transition-base,
+    background $transition-base;
+}
+
+.comparison-detail__hero-bike-actions a:hover,
+.comparison-detail__hero-bike-actions a:focus-visible,
+.comparison-detail__hero-bike-actions button:hover,
+.comparison-detail__hero-bike-actions button:focus-visible {
+  border-color: $color-accent;
+  background: rgba($color-accent, 0.12);
+  color: $color-accent;
+}
+
+.comparison-detail__winner-cell {
+  color: $color-accent !important;
+  font-weight: 800;
+}
+
+.comparison-detail__score-rows {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.comparison-detail__score-row {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.comparison-detail__score-row footer {
+  color: $color-on-surface-variant;
+}
+
+.comparison-detail__score-row .comparison-detail__score-track strong {
+  background: $color-accent-container;
+}
+
+.comparison-detail__pros-cons--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2rem;
+
+  > article + article {
+    padding-left: 2rem;
+  }
+
+  article > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparison-detail__final-verdict {
+  @include container;
+  @include section-spacing;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.85fr);
+  gap: 3rem;
+  align-items: center;
+  border-top: 1px solid rgba($color-outline-variant, 0.14);
+
+  > div > span:first-child {
+    @include label-caps;
+
+    color: $color-accent;
+  }
+
+  h2 {
+    @include headline-lg;
+
+    margin: 0.75rem 0 1rem;
+    font-style: italic;
+    text-transform: uppercase;
+  }
+
+  p {
+    color: $color-on-surface-variant;
+    line-height: 1.7;
+  }
+
+  ol {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba($color-outline-variant, 0.22);
+    border-radius: $radius-lg;
+    background: $color-surface-container;
+  }
+}
+
+.comparison-detail__empty {
+  @include container;
+
+  min-height: 65vh;
+  padding-block: 6rem;
+  text-align: center;
+
+  > span {
+    @include label-caps;
+
+    color: $color-accent;
+  }
+
+  h1 {
+    @include headline-xl;
+
+    margin: 1rem 0;
+  }
+
+  p {
+    max-width: 34rem;
+    margin: 0 auto 2rem;
+    color: $color-on-surface-variant;
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .comparison-detail__duel--three,
+  .comparison-detail__final-verdict,
+  .comparison-detail__pros-cons--three {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-detail__hero-bike--center {
+    text-align: left;
+  }
+
+  .comparison-detail__hero-bike--right .comparison-detail__hero-bike-actions,
+  .comparison-detail__hero-bike--center .comparison-detail__hero-bike-actions {
+    justify-content: flex-start;
+  }
+
+  .comparison-detail__pros-cons--three > article + article {
+    border-left: 0;
+    padding-left: 0;
   }
 }

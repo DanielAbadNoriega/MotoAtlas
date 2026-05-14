@@ -1,4 +1,3 @@
-import { bikeCatalog } from '../data/bikes';
 import type { Bike } from '../types/bike';
 
 export const compareQueueMaxSize = 3;
@@ -7,10 +6,6 @@ const compareQueueStorageKey = 'motoatlas.compareQueue.v1';
 
 function isBrowser() {
   return typeof window !== 'undefined';
-}
-
-function isBikeId(value: string): value is Bike['id'] {
-  return bikeCatalog.some((bike) => bike.id === value);
 }
 
 export function getCompareSearchHash(bike: Pick<Bike, 'id'>) {
@@ -41,7 +36,7 @@ export function sanitizeCompareQueue(ids: readonly string[]): Bike['id'][] {
   const queue: Bike['id'][] = [];
 
   ids.forEach((id) => {
-    if (!isBikeId(id) || queue.includes(id) || queue.length >= compareQueueMaxSize) {
+    if (!id || queue.includes(id) || queue.length >= compareQueueMaxSize) {
       return;
     }
 
@@ -56,7 +51,7 @@ export function mergeCompareQueue(currentIds: readonly Bike['id'][], incomingIds
   const rejectedIds: string[] = [];
 
   incomingIds.forEach((id) => {
-    if (!isBikeId(id) || queue.includes(id)) {
+    if (!id || queue.includes(id)) {
       return;
     }
 
@@ -96,7 +91,14 @@ export function saveCompareQueue(ids: readonly Bike['id'][]) {
   window.localStorage.setItem(compareQueueStorageKey, JSON.stringify(sanitizeCompareQueue(ids)));
 }
 
-export function getComparatorIdsFromHash(hash: string) {
+
+export type ComparatorHashSelection = Readonly<{
+  ids: readonly Bike['id'][];
+  ignoredIds: readonly Bike['id'][];
+  rawIds: readonly Bike['id'][];
+}>;
+
+function getComparatorRawIdsFromHash(hash: string) {
   const queryStart = hash.indexOf('?');
 
   if (queryStart === -1) {
@@ -104,13 +106,38 @@ export function getComparatorIdsFromHash(hash: string) {
   }
 
   const params = new URLSearchParams(hash.slice(queryStart + 1));
-  const ids = params
+
+  return params
     .getAll('bikes')
     .flatMap((value) => value.split(','))
     .map((value) => value.trim())
     .filter(Boolean);
+}
 
-  return sanitizeCompareQueue(ids);
+export function getComparatorHashSelection(hash: string): ComparatorHashSelection {
+  const rawIds = getComparatorRawIdsFromHash(hash);
+  const ids: Bike['id'][] = [];
+  const ignoredIds: Bike['id'][] = [];
+
+  rawIds.forEach((id) => {
+    if (!id || ids.includes(id)) {
+      ignoredIds.push(id);
+      return;
+    }
+
+    if (ids.length >= compareQueueMaxSize) {
+      ignoredIds.push(id);
+      return;
+    }
+
+    ids.push(id);
+  });
+
+  return { ids, ignoredIds, rawIds };
+}
+
+export function getComparatorIdsFromHash(hash: string) {
+  return getComparatorHashSelection(hash).ids;
 }
 
 export function getIncomingCompareIdsFromHash(hash: string) {

@@ -3,10 +3,12 @@ import { getBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../dat
 import type { Bike } from '../../../types/bike';
 import type { BikeComparison, ComparisonScore } from '../../../types/comparison';
 import { Button } from '../../ui/Button';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './ComparisonDetailPage.scss';
 
 type ComparisonDetailPageProps = {
   comparison?: BikeComparison;
+  motorcycles?: readonly Bike[];
 };
 
 const numberFormatter = new Intl.NumberFormat('es-ES');
@@ -43,10 +45,14 @@ function getScoreWinner(score: ComparisonScore, leftBike: Bike, rightBike: Bike)
   return score.leftScore > score.rightScore ? getBikeDisplayName(leftBike) : getBikeDisplayName(rightBike);
 }
 
-export function ComparisonDetailPage({ comparison = defaultBikeComparison }: ComparisonDetailPageProps) {
+function resolveBike(id: Bike['id'], motorcycles: readonly Bike[]) {
+  return motorcycles.find((bike) => bike.id === id) ?? getBikeById(id);
+}
+
+export function ComparisonDetailPage({ comparison = defaultBikeComparison, motorcycles = [] }: ComparisonDetailPageProps) {
   const [leftHeroBike, rightHeroBike] = comparison.bikes;
-  const leftBike = getBikeById(leftHeroBike.bikeId);
-  const rightBike = getBikeById(rightHeroBike.bikeId);
+  const leftBike = resolveBike(leftHeroBike.bikeId, motorcycles);
+  const rightBike = resolveBike(rightHeroBike.bikeId, motorcycles);
   const leftBikeName = getBikeDisplayName(leftBike);
   const rightBikeName = getBikeDisplayName(rightBike);
 
@@ -65,7 +71,7 @@ export function ComparisonDetailPage({ comparison = defaultBikeComparison }: Com
 
         <div className="comparison-detail__duel">
           <article className="comparison-detail__hero-bike comparison-detail__hero-bike--left">
-            <img src={leftBike.imageUrl} alt={leftBike.description} />
+            <MotorcycleImage motorcycle={leftBike} />
             <div>
               <span>{leftHeroBike.tagline}</span>
               <h2>{leftBikeName}</h2>
@@ -77,7 +83,7 @@ export function ComparisonDetailPage({ comparison = defaultBikeComparison }: Com
           </div>
 
           <article className="comparison-detail__hero-bike comparison-detail__hero-bike--right">
-            <img src={rightBike.imageUrl} alt={rightBike.description} />
+            <MotorcycleImage motorcycle={rightBike} />
             <div>
               <span>{rightHeroBike.tagline}</span>
               <h2>{rightBikeName}</h2>
@@ -130,7 +136,7 @@ export function ComparisonDetailPage({ comparison = defaultBikeComparison }: Com
 
       <section className="comparison-detail__verdicts" aria-label="Veredictos rápidos">
         {comparison.verdicts.map((verdict) => {
-          const winner = getBikeById(verdict.winnerBikeId);
+          const winner = resolveBike(verdict.winnerBikeId, motorcycles);
 
           return (
             <article key={verdict.id}>

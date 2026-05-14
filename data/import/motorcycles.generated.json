@@ -1,0 +1,917 @@
+[
+  {
+    "brand": "BMW",
+    "cons": [
+      "Precio final sube con paquetes",
+      "Depósito más pequeño que rivales viajeras",
+      "Altura intimidante para novatos"
+    ],
+    "description": "Trail media-alta con mucho par, electrónica moderna y enfoque mixto entre viaje rápido y pista sencilla.",
+    "displacementCc": 895,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": true,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": true,
+      "ridingModes": true,
+      "tractionControl": true,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 14.38,
+    "id": "bmw-f-900-gs-2024",
+    "imageUrl": "https://images.unsplash.com/photo-1558981403-c5f91cbba527?q=80&w=1200",
+    "license": "A",
+    "model": "F 900 GS",
+    "powerHp": 105,
+    "priceEur": 13950,
+    "pros": [
+      "Motor elástico y con mucho par",
+      "Buen equilibrio carretera/pista",
+      "Ergonomía trail seria"
+    ],
+    "reliabilityReports": {
+      "commonIssues": [
+        "Calor percibido en conducción lenta",
+        "Coste alto de recambios y extras"
+      ],
+      "reliabilityScore": 8.2,
+      "reportCount": 124
+    },
+    "seatHeightMm": 869,
+    "segment": "trail",
+    "torqueNm": 92.2,
+    "useScores": {
+      "city": 6.5,
+      "touring": 8.5,
+      "offroad": 8,
+      "passenger": 7.5,
+      "beginner": 4.5,
+      "sport": 7.5,
+      "funFactor": 8
+    },
+    "wetWeightKg": 219,
+    "year": 2024
+  },
+  {
+    "brand": "BMW",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 1300,
+    "engineType": "boxer-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 19.68,
+    "id": "bmw-r-1300-gs-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "R 1300 GS",
+    "powerHp": 145,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 848,
+    "segment": "trail",
+    "torqueNm": 149.2,
+    "useScores": {
+      "city": 6,
+      "touring": 7,
+      "offroad": 7,
+      "passenger": 6,
+      "beginner": 5,
+      "sport": 6,
+      "funFactor": 7
+    },
+    "wetWeightKg": 237.2,
+    "year": 2024
+  },
+  {
+    "brand": "Yamaha",
+    "cons": [
+      "Altura elevada",
+      "Electrónica básica",
+      "Confort limitado de serie"
+    ],
+    "description": "Trail sencilla, robusta y muy popular para aventura real, con menos electrónica y más foco en fiabilidad.",
+    "displacementCc": 689,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 15.9,
+    "id": "yamaha-tenere-700-2024",
+    "imageUrl": "https://images.unsplash.com/photo-1558980394-4c7c9299fe96?q=80&w=1200",
+    "license": "A2",
+    "model": "Ténéré 700",
+    "powerHp": 73.4,
+    "priceEur": 10799,
+    "pros": [
+      "Motor CP2 probado",
+      "Simplicidad mecánica",
+      "Gran mercado de accesorios"
+    ],
+    "reliabilityReports": {
+      "commonIssues": [
+        "Asiento duro",
+        "Protección de viento mejorable"
+      ],
+      "reliabilityScore": 9.1,
+      "reportCount": 312
+    },
+    "seatHeightMm": 874,
+    "segment": "trail",
+    "torqueNm": 68,
+    "useScores": {
+      "city": 6,
+      "touring": 7,
+      "offroad": 9,
+      "passenger": 5.5,
+      "beginner": 5.5,
+      "sport": 6.5,
+      "funFactor": 8.5
+    },
+    "wetWeightKg": 205,
+    "year": 2024
+  },
+  {
+    "brand": "Aprilia",
+    "cons": [
+      "Asiento firme en tiradas largas",
+      "Protección aerodinámica limitada",
+      "Red de talleres menor que japonesas"
+    ],
+    "description": "Trail ligera y muy campera, con electrónica completa y un carácter más rally que turístico.",
+    "displacementCc": 659,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": true,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": true,
+      "tractionControl": true,
+      "tubelessWheels": true
+    },
+    "fuelTankLiters": 18,
+    "id": "aprilia-tuareg-660-2024",
+    "imageUrl": "https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?q=80&w=1200",
+    "license": "A2",
+    "model": "Tuareg 660",
+    "powerHp": 80,
+    "priceEur": 11999,
+    "pros": [
+      "Ligereza y reparto de pesos",
+      "Suspensiones muy capaces",
+      "Electrónica generosa para el segmento"
+    ],
+    "reliabilityReports": {
+      "commonIssues": [
+        "Cúpula insuficiente para pilotos altos",
+        "Ajustes de mapa sensibles en bajas vueltas"
+      ],
+      "reliabilityScore": 7.8,
+      "reportCount": 89
+    },
+    "seatHeightMm": 860,
+    "segment": "trail",
+    "torqueNm": 70,
+    "useScores": {
+      "city": 7,
+      "touring": 7,
+      "offroad": 9.5,
+      "passenger": 6,
+      "beginner": 6,
+      "sport": 7.5,
+      "funFactor": 9
+    },
+    "wetWeightKg": 204,
+    "year": 2024
+  },
+  {
+    "brand": "Honda",
+    "cons": [
+      "Suspensiones justas para offroad duro",
+      "Equipamiento turístico mejorable",
+      "Sin control de crucero"
+    ],
+    "description": "Trail polivalente de media cilindrada, cómoda para carretera y suficientemente capaz en pistas fáciles.",
+    "displacementCc": 755,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": true,
+      "tractionControl": true,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 16.9,
+    "id": "honda-xl750-transalp-2024",
+    "imageUrl": "https://images.unsplash.com/photo-1558979158-65a1eaa08691?q=80&w=1200",
+    "license": "A2",
+    "model": "XL750 Transalp",
+    "powerHp": 91.8,
+    "priceEur": 10900,
+    "pros": [
+      "Motor suave y lleno",
+      "Altura accesible para una trail",
+      "Coste de uso razonable"
+    ],
+    "reliabilityReports": {
+      "commonIssues": [
+        "Cúpula corta",
+        "Horquilla blanda con carga"
+      ],
+      "reliabilityScore": 8.8,
+      "reportCount": 176
+    },
+    "seatHeightMm": 850,
+    "segment": "trail",
+    "torqueNm": 75,
+    "useScores": {
+      "city": 7.5,
+      "touring": 8,
+      "offroad": 7,
+      "passenger": 7,
+      "beginner": 6.5,
+      "sport": 7,
+      "funFactor": 7.5
+    },
+    "wetWeightKg": 208,
+    "year": 2024
+  },
+  {
+    "brand": "Honda",
+    "cons": [
+      "Peso alto fuera de asfalto",
+      "Volumen notable en ciudad",
+      "Precio elevado equipada"
+    ],
+    "description": "Trail viajera de gran cilindrada, cómoda, fiable y con electrónica madura para viajes largos y pistas.",
+    "displacementCc": 1084,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": true,
+      "cruiseControl": true,
+      "heatedGrips": true,
+      "quickshifter": false,
+      "ridingModes": true,
+      "tractionControl": true,
+      "tubelessWheels": true
+    },
+    "fuelTankLiters": 18.8,
+    "id": "honda-africa-twin-1100-2024",
+    "imageUrl": "https://images.unsplash.com/photo-1544654803-b69110bb2183?q=80&w=1200",
+    "license": "A",
+    "model": "Africa Twin 1100",
+    "powerHp": 102,
+    "priceEur": 16500,
+    "pros": [
+      "Confort viajero",
+      "Motor con mucho par abajo",
+      "Fiabilidad Honda"
+    ],
+    "reliabilityReports": {
+      "commonIssues": [
+        "Peso en maniobras",
+        "Mantenimiento caro con mucho kilometraje"
+      ],
+      "reliabilityScore": 8.7,
+      "reportCount": 268
+    },
+    "seatHeightMm": 850,
+    "segment": "trail",
+    "torqueNm": 112,
+    "useScores": {
+      "city": 5.5,
+      "touring": 9,
+      "offroad": 8,
+      "passenger": 8,
+      "beginner": 3.5,
+      "sport": 6.5,
+      "funFactor": 7.5
+    },
+    "wetWeightKg": 243,
+    "year": 2024
+  },
+  {
+    "brand": "CFMoto",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 0,
+    "id": "cfmoto-800mt-x-2025",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "800MT-X",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 0,
+    "segment": "naked",
+    "torqueNm": 0,
+    "useScores": {
+      "city": 8,
+      "touring": 5,
+      "offroad": 1,
+      "passenger": 4,
+      "beginner": 6,
+      "sport": 8,
+      "funFactor": 8
+    },
+    "wetWeightKg": 0,
+    "year": 2025
+  },
+  {
+    "brand": "Suzuki",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 20.06,
+    "id": "suzuki-v-strom-800de-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "V-Strom 800DE",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 855,
+    "segment": "trail",
+    "torqueNm": 78,
+    "useScores": {
+      "city": 6,
+      "touring": 7,
+      "offroad": 7,
+      "passenger": 6,
+      "beginner": 5,
+      "sport": 6,
+      "funFactor": 7
+    },
+    "wetWeightKg": 0,
+    "year": 2024
+  },
+  {
+    "brand": "Ducati",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 937,
+    "engineType": "l-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 21,
+    "id": "ducati-desertx-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "DesertX",
+    "powerHp": 110,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 875,
+    "segment": "trail",
+    "torqueNm": 92,
+    "useScores": {
+      "city": 6,
+      "touring": 7,
+      "offroad": 7,
+      "passenger": 6,
+      "beginner": 5,
+      "sport": 6,
+      "funFactor": 7
+    },
+    "wetWeightKg": 0,
+    "year": 2024
+  },
+  {
+    "brand": "KTM",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 20,
+    "id": "ktm-890-adventure-r-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "890 Adventure R",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 910,
+    "segment": "trail",
+    "torqueNm": 100,
+    "useScores": {
+      "city": 6,
+      "touring": 7,
+      "offroad": 7,
+      "passenger": 6,
+      "beginner": 5,
+      "sport": 6,
+      "funFactor": 7
+    },
+    "wetWeightKg": 0,
+    "year": 2024
+  },
+  {
+    "brand": "Yamaha",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 689,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 14,
+    "id": "yamaha-mt-07-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "MT-07",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 805,
+    "segment": "naked",
+    "torqueNm": 67,
+    "useScores": {
+      "city": 8,
+      "touring": 5,
+      "offroad": 1,
+      "passenger": 4,
+      "beginner": 6,
+      "sport": 8,
+      "funFactor": 8
+    },
+    "wetWeightKg": 184.2,
+    "year": 2024
+  },
+  {
+    "brand": "Honda",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 755,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 15.2,
+    "id": "honda-cb750-hornet-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "CB750 Hornet",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 795,
+    "segment": "naked",
+    "torqueNm": 74.4,
+    "useScores": {
+      "city": 8,
+      "touring": 5,
+      "offroad": 1,
+      "passenger": 4,
+      "beginner": 6,
+      "sport": 8,
+      "funFactor": 8
+    },
+    "wetWeightKg": 190,
+    "year": 2024
+  },
+  {
+    "brand": "Kawasaki",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 948,
+    "engineType": "inline-four",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 17.03,
+    "id": "kawasaki-z900-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "Z900",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 800,
+    "segment": "naked",
+    "torqueNm": 99.1,
+    "useScores": {
+      "city": 8,
+      "touring": 5,
+      "offroad": 1,
+      "passenger": 4,
+      "beginner": 6,
+      "sport": 8,
+      "funFactor": 8
+    },
+    "wetWeightKg": 212.1,
+    "year": 2024
+  },
+  {
+    "brand": "Suzuki",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 14,
+    "id": "suzuki-gsx-8s-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "GSX-8S",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 810,
+    "segment": "naked",
+    "torqueNm": 78,
+    "useScores": {
+      "city": 8,
+      "touring": 5,
+      "offroad": 1,
+      "passenger": 4,
+      "beginner": 6,
+      "sport": 8,
+      "funFactor": 8
+    },
+    "wetWeightKg": 202,
+    "year": 2024
+  },
+  {
+    "brand": "Triumph",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "inline-three",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 15,
+    "id": "triumph-street-triple-765-r-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "Street Triple 765 R",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 825,
+    "segment": "naked",
+    "torqueNm": 80,
+    "useScores": {
+      "city": 8,
+      "touring": 5,
+      "offroad": 1,
+      "passenger": 4,
+      "beginner": 6,
+      "sport": 8,
+      "funFactor": 8
+    },
+    "wetWeightKg": 189,
+    "year": 2024
+  },
+  {
+    "brand": "Yamaha",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 18.93,
+    "id": "yamaha-tracer-9-gt-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "Tracer 9 GT",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 820,
+    "segment": "sport-touring",
+    "torqueNm": 93,
+    "useScores": {
+      "city": 6,
+      "touring": 9,
+      "offroad": 2,
+      "passenger": 8,
+      "beginner": 4,
+      "sport": 7,
+      "funFactor": 7
+    },
+    "wetWeightKg": 223.2,
+    "year": 2024
+  },
+  {
+    "brand": "BMW",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 895,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 15.5,
+    "id": "bmw-f-900-xr-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "F 900 XR",
+    "powerHp": 99,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 826,
+    "segment": "sport-touring",
+    "torqueNm": 92.2,
+    "useScores": {
+      "city": 6,
+      "touring": 9,
+      "offroad": 2,
+      "passenger": 8,
+      "beginner": 4,
+      "sport": 7,
+      "funFactor": 7
+    },
+    "wetWeightKg": 219,
+    "year": 2024
+  },
+  {
+    "brand": "Kawasaki",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 21,
+    "id": "kawasaki-versys-650-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "Versys 650",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 845,
+    "segment": "sport-touring",
+    "torqueNm": 61,
+    "useScores": {
+      "city": 6,
+      "touring": 9,
+      "offroad": 2,
+      "passenger": 8,
+      "beginner": 4,
+      "sport": 7,
+      "funFactor": 7
+    },
+    "wetWeightKg": 0,
+    "year": 2024
+  },
+  {
+    "brand": "Ducati",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "l-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 20,
+    "id": "ducati-multistrada-v2-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "Multistrada V2",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 830,
+    "segment": "sport-touring",
+    "torqueNm": 94,
+    "useScores": {
+      "city": 6,
+      "touring": 9,
+      "offroad": 2,
+      "passenger": 8,
+      "beginner": 4,
+      "sport": 7,
+      "funFactor": 7
+    },
+    "wetWeightKg": 230,
+    "year": 2024
+  },
+  {
+    "brand": "Honda",
+    "cons": [],
+    "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
+    "displacementCc": 0,
+    "engineType": "parallel-twin",
+    "features": {
+      "absCornering": false,
+      "cruiseControl": false,
+      "heatedGrips": false,
+      "quickshifter": false,
+      "ridingModes": false,
+      "tractionControl": false,
+      "tubelessWheels": false
+    },
+    "fuelTankLiters": 20.4,
+    "id": "honda-nt1100-2024",
+    "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+    "license": "A",
+    "model": "NT1100",
+    "powerHp": 0,
+    "priceEur": 0,
+    "pros": [],
+    "reliabilityReports": {
+      "commonIssues": [],
+      "reliabilityScore": 0,
+      "reportCount": 0
+    },
+    "seatHeightMm": 820,
+    "segment": "sport-touring",
+    "torqueNm": 104,
+    "useScores": {
+      "city": 6,
+      "touring": 9,
+      "offroad": 2,
+      "passenger": 8,
+      "beginner": 4,
+      "sport": 7,
+      "funFactor": 7
+    },
+    "wetWeightKg": 238.1,
+    "year": 2024
+  }
+]
