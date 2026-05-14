@@ -6,8 +6,7 @@
 
   h1,
   h2,
-  h3,
-  p {
+  h3 {
     margin: 0;
   }
 }
@@ -77,7 +76,7 @@
 
 .comparison-detail__hero-bike {
   min-width: 0;
-
+  align-self: flex-start;
   .motorcycle-image {
     width: 100%;
     height: clamp(18rem, 31vw, 25rem);
