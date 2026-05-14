@@ -193,7 +193,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           </h1>
           <p>{bike.description}</p>
 
-          <div className="bike-detail__hero-specs" aria-label="Datos principales">
+          <div className="bike-detail__hero-specs" role="group" aria-label="Datos principales">
             <div>
               <span>Potencia</span>
               <strong>
@@ -220,7 +220,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
 
           <div className="bike-detail__actions">
             <a className="button button--primary" href={getCompareSearchHash(bike)}>
-              Comparar en buscador
+              Añadir al comparador
             </a>
             <a className="button button--ghost" href={getBrowseSearchHash()}>
               Ver más motos

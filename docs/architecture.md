@@ -244,7 +244,9 @@ Fixtures:
 Tests actuales:
 
 - `src/utils/motorcycleSearch.test.ts`
+- `src/utils/compareQueue.test.ts`
 - `src/services/motorcycleService.test.ts`
+- `src/App.test.tsx`
 - `src/components/pages/SearchPage/SearchPage.test.tsx`
 - `src/components/pages/BikeDetailPage/BikeDetailPage.test.tsx`
 - `src/components/pages/ComparatorPage/ComparatorPage.test.tsx`

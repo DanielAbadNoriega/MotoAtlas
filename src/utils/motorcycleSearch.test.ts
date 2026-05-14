@@ -29,6 +29,16 @@ describe('motorcycle search filtering', () => {
   it('filters motorcycles by license', () => {
     expect(ids({ licenses: ['A2'] })).toEqual(['test-aprilia-tuareg-660']);
   });
+
+
+  it('filters motorcycles by price range, minimum power and maximum weight', () => {
+    expect(ids({ minPrice: '11500', maxPrice: '14000' })).toEqual([
+      'test-aprilia-tuareg-660',
+      'test-bmw-f-900-gs',
+    ]);
+    expect(ids({ minPower: '110' })).toEqual(['test-yamaha-mt-09']);
+    expect(ids({ maxWeight: '205' })).toEqual(['test-yamaha-mt-09', 'test-aprilia-tuareg-660']);
+  });
 });
 
 describe('motorcycle search sorting', () => {

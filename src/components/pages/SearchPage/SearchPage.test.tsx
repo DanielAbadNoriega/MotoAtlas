@@ -1,9 +1,111 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { initialSearchFilters } from '../../../utils/motorcycleSearch';
-import { AdvancedFilters, BikeResultCard, CompareDrawer } from './SearchPage';
+import { AdvancedFilters, BikeResultCard, CompareDrawer, SearchPage } from './SearchPage';
+
+function renderSearchPage() {
+  return render(<SearchPage motorcycles={bikeFixtures} routeHash="#/buscador?browse=1" />);
+}
+
+describe('SearchPage', () => {
+  it('renders motorcycles from fixtures', () => {
+    renderSearchPage();
+
+    expect(screen.getByRole('heading', { name: /F 900 GS/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Tuareg 660/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /MT-09/i })).toBeInTheDocument();
+  });
+
+  it('searches by brand', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.type(screen.getByLabelText(/Buscar por marca o modelo/i), 'yamaha');
+
+    expect(screen.getByRole('heading', { name: /MT-09/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
+  });
+
+  it('searches by model', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.type(screen.getByLabelText(/Buscar por marca o modelo/i), 'tuareg');
+
+    expect(screen.getByRole('heading', { name: /Tuareg 660/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /MT-09/i })).not.toBeInTheDocument();
+  });
+
+  it('filters by segment', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'Naked' }));
+
+    expect(screen.getByRole('heading', { name: /MT-09/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Tuareg 660/i })).not.toBeInTheDocument();
+  });
+
+  it('filters by license', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
+
+    expect(screen.getByRole('heading', { name: /Tuareg 660/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
+  });
+
+  it('sorts by price', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.selectOptions(screen.getByLabelText(/Ordenar por/i), 'price-desc');
+
+    const resultHeadings = screen
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent)
+      .filter((text) => ['F 900 GS', 'Tuareg 660', 'MT-09', 'NT1100'].includes(text ?? ''));
+    expect(resultHeadings[0]).toBe('NT1100');
+  });
+
+  it('sorts by power', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.selectOptions(screen.getByLabelText(/Ordenar por/i), 'power-desc');
+
+    const resultHeadings = screen
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent)
+      .filter((text) => ['F 900 GS', 'Tuareg 660', 'MT-09', 'NT1100'].includes(text ?? ''));
+    expect(resultHeadings[0]).toBe('MT-09');
+  });
+
+  it('shows an empty state when no results match', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.type(screen.getByLabelText(/Buscar por marca o modelo/i), 'zzzz');
+
+    expect(screen.getByRole('heading', { name: /No hay motos con esos filtros/i })).toBeInTheDocument();
+  });
+
+  it('does not allow selecting more than 3 motorcycles for comparison', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.click(screen.getAllByRole('button', { name: /^Comparar$/i })[0]);
+    await user.click(screen.getAllByRole('button', { name: /^Comparar$/i })[0]);
+    await user.click(screen.getAllByRole('button', { name: /^Comparar$/i })[0]);
+    await user.click(screen.getAllByRole('button', { name: /^Comparar$/i })[0]);
+
+    expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
+    expect(screen.getByText(/Solo podés seleccionar hasta 3 motos/i)).toBeInTheDocument();
+  });
+});
 
 describe('BikeResultCard', () => {
   it('renders motorcycle data and toggles compare selection', async () => {
@@ -28,7 +130,7 @@ describe('BikeResultCard', () => {
 });
 
 describe('AdvancedFilters', () => {
-  it('emits filter changes for brand, segment and license', async () => {
+  it('emits filter changes for brand, segment, license and numeric filters', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
 
@@ -47,10 +149,18 @@ describe('AdvancedFilters', () => {
     await user.click(screen.getByLabelText('BMW'));
     await user.click(screen.getByRole('button', { name: 'Naked' }));
     await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
+    fireEvent.change(screen.getByLabelText('Desde'), { target: { value: '10000' } });
+    fireEvent.change(screen.getByLabelText('Hasta'), { target: { value: '15000' } });
+    fireEvent.change(screen.getByLabelText('Potencia mínima'), { target: { value: '90' } });
+    fireEvent.change(screen.getByLabelText('Peso máximo'), { target: { value: '220' } });
 
-    expect(onChange).toHaveBeenNthCalledWith(1, { brands: ['BMW'] });
-    expect(onChange).toHaveBeenNthCalledWith(2, { segments: ['naked'] });
-    expect(onChange).toHaveBeenNthCalledWith(3, { licenses: ['A2'] });
+    expect(onChange).toHaveBeenCalledWith({ brands: ['BMW'] });
+    expect(onChange).toHaveBeenCalledWith({ segments: ['naked'] });
+    expect(onChange).toHaveBeenCalledWith({ licenses: ['A2'] });
+    expect(onChange).toHaveBeenCalledWith({ minPrice: '10000' });
+    expect(onChange).toHaveBeenCalledWith({ maxPrice: '15000' });
+    expect(onChange).toHaveBeenCalledWith({ minPower: '90' });
+    expect(onChange).toHaveBeenCalledWith({ maxWeight: '220' });
   });
 
   it('can reset and close filters', async () => {
@@ -79,7 +189,7 @@ describe('AdvancedFilters', () => {
 });
 
 describe('CompareDrawer', () => {
-  it('links to the comparator when at least two motorcycles are selected', () => {
+  it('allows comparing two selected motorcycles', () => {
     render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 2)} onClear={vi.fn()} onRemove={vi.fn()} />);
 
     const compareLink = screen.getByRole('link', { name: /Comparar ahora \(2\)/i });
@@ -88,6 +198,16 @@ describe('CompareDrawer', () => {
     expect(compareLink).toHaveAttribute(
       'href',
       '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
+    );
+  });
+
+  it('allows comparing three selected motorcycles', () => {
+    render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 3)} onClear={vi.fn()} onRemove={vi.fn()} />);
+
+    expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Comparar ahora \(3\)/i })).toHaveAttribute(
+      'href',
+      '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09',
     );
   });
 
@@ -105,5 +225,11 @@ describe('CompareDrawer', () => {
 
     expect(onRemove).toHaveBeenCalledWith('test-bmw-f-900-gs');
     expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not render when no motorcycles are selected', () => {
+    const { container } = render(<CompareDrawer selectedBikes={[]} onClear={vi.fn()} onRemove={vi.fn()} />);
+
+    expect(container).toBeEmptyDOMElement();
   });
 });
