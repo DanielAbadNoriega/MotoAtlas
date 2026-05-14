@@ -11,7 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "import:motos": "tsx scripts/importMotorcycles.ts"
+    "import:motos": "tsx scripts/importMotorcycles.ts",
+    "fetch:motos": "tsx scripts/fetchMotorcyclesFromApi.ts",
+    "import:motos:check": "tsx scripts/importMotorcycles.ts --dry-run"
   },
   "dependencies": {
     "react": "^19.2.6",

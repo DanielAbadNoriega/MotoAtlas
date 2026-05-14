@@ -1,0 +1,22 @@
+[
+  { "make": "BMW", "model": "F 900 GS", "year": 2024 },
+  { "make": "BMW", "model": "R 1300 GS", "year": 2024 },
+  { "make": "Yamaha", "model": "Ténéré 700", "year": 2024 },
+  { "make": "Aprilia", "model": "Tuareg 660", "year": 2024 },
+  { "make": "Honda", "model": "XL750 Transalp", "year": 2024 },
+  { "make": "Honda", "model": "Africa Twin 1100", "year": 2024 },
+  { "make": "CFMoto", "model": "800MT-X", "year": 2025 },
+  { "make": "Suzuki", "model": "V-Strom 800DE", "year": 2024 },
+  { "make": "Ducati", "model": "DesertX", "year": 2024 },
+  { "make": "KTM", "model": "890 Adventure R", "year": 2024 },
+  { "make": "Yamaha", "model": "MT-07", "year": 2024 },
+  { "make": "Honda", "model": "CB750 Hornet", "year": 2024 },
+  { "make": "Kawasaki", "model": "Z900", "year": 2024 },
+  { "make": "Suzuki", "model": "GSX-8S", "year": 2024 },
+  { "make": "Triumph", "model": "Street Triple 765 R", "year": 2024 },
+  { "make": "Yamaha", "model": "Tracer 9 GT", "year": 2024 },
+  { "make": "BMW", "model": "F 900 XR", "year": 2024 },
+  { "make": "Kawasaki", "model": "Versys 650", "year": 2024 },
+  { "make": "Ducati", "model": "Multistrada V2", "year": 2024 },
+  { "make": "Honda", "model": "NT1100", "year": 2024 }
+]
