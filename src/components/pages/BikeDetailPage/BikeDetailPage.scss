@@ -17,11 +17,15 @@
     inset: 0;
     position: absolute;
 
-    img {
+    img,
+    .motorcycle-image {
       filter: saturate(0.82) contrast(1.1);
       height: 100%;
-      object-fit: cover;
       width: 100%;
+    }
+
+    img {
+      object-fit: cover;
     }
 
     &::after {
@@ -535,13 +539,17 @@
       padding: 1.25rem;
     }
 
-    img {
+    img,
+    .motorcycle-image {
       aspect-ratio: 16 / 10;
       border-radius: $radius-lg;
-      filter: grayscale(1);
-      object-fit: cover;
       transition: filter $transition-base;
       width: 100%;
+    }
+
+    img {
+      filter: grayscale(1);
+      object-fit: cover;
     }
 
     article:hover img {
@@ -569,7 +577,7 @@
       margin: 0 0 1.25rem;
     }
 
-    div {
+    dl div {
       background: $color-surface-container;
       padding: 0.8rem;
     }

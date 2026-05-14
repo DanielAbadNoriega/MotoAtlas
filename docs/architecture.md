@@ -69,6 +69,9 @@ src/
     site.ts
   services/
     motorcycleService.ts
+  shared/
+    images/
+      getMotorcycleImage.ts
   styles/
   test/
     fixtures/bikes.ts
@@ -120,6 +123,27 @@ Flujo:
 
 `src/data/bikes.ts` sigue existiendo como fuente temporal offline. No debe borrarse hasta que Supabase tenga seed, tests y entorno estable.
 
+### Imágenes de motos
+
+La resolución de imágenes está centralizada en:
+
+```txt
+src/shared/images/getMotorcycleImage.ts
+```
+
+Reglas:
+
+- Si `imageUrl` / `image_url` es válida, se usa esa imagen.
+- Si está vacía, es `null`/`undefined`, tiene una URL inválida o apunta a un placeholder conocido, se usa:
+
+```txt
+public/images/placeholders/motorcycle-technical-pending.jpg
+```
+
+- El componente visual `MotorcycleImage` añade el overlay `TECHNICAL IMAGE PENDING`.
+- El `alt` de fallback debe indicar el modelo: `Imagen técnica pendiente de [marca modelo]`.
+- No duplicar esta lógica en páginas o cards: reutilizar el helper/componente.
+
 ### Supabase
 
 El schema vive en `supabase/schema.sql`.
@@ -141,7 +165,10 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key
 Archivos:
 
 - `data/import/motorcycles.json` — seed JSON inicial en formato dominio `Bike` camelCase.
+- `data/import/motorcycleSeedList.json` — lista editable de modelos para enriquecer desde API.
 - `scripts/importMotorcycles.ts` — importador Node/tsx.
+- `scripts/fetchMotorcyclesFromApi.ts` — genera `motorcycles.generated.json` desde API Ninjas si hay clave.
+- `scripts/repairMotorcycleData.ts` — intenta reparar specs técnicas inválidas sin sobrescribir el seed.
 - `.env.import.example` — plantilla segura para variables admin.
 
 Comando:
@@ -150,11 +177,24 @@ Comando:
 npm run import:motos
 ```
 
+Validación sin conectar con Supabase:
+
+```bash
+npm run import:motos:check
+```
+
+Importación parcial explícita:
+
+```bash
+npm run import:motos -- --allow-partial
+```
+
 Variables del importador:
 
 ```env
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
+API_NINJAS_KEY=opcional-para-fetch-y-repair
 ```
 
 Reglas:
@@ -162,9 +202,40 @@ Reglas:
 - El importador usa `SUPABASE_SERVICE_ROLE_KEY`, nunca `VITE_SUPABASE_ANON_KEY`.
 - `.env.import` y `.env.local` deben permanecer fuera de Git.
 - El JSON se valida antes de insertar: campos top-level, `useScores`, `features`, `pros`, `cons` y `reliabilityReports`.
+- Los campos técnicos críticos (`displacementCc`, `powerHp`, `torqueNm`, `wetWeightKg`, `seatHeightMm`, `fuelTankLiters`) deben ser números mayores que 0.
+- `priceEur` puede ser `0` solo como placeholder explícito y se reporta como aviso.
 - El payload se transforma a snake_case para `public.motorcycles`.
 - El `upsert` usa `id` como `onConflict` para evitar duplicados.
 - Los tests del importador mockean Supabase; no conectan a la base real.
+
+#### Reparación de JSON
+
+Cuando `npm run import:motos:check` detecte motos inválidas:
+
+```bash
+npm run repair:motos
+```
+
+El script:
+
+1. Lee `data/import/motorcycles.json`.
+2. Detecta campos técnicos a `0`, `null`, `undefined`, `N/A` o sin número útil.
+3. Busca en API Ninjas con variantes:
+   - marca + modelo + año
+   - marca + modelo sin año
+   - marca + primera parte del modelo
+   - marca + cilindrada detectada
+   - variantes sin acentos, sin guiones y sin sufijos
+4. Reemplaza solo campos inválidos.
+5. Mantiene los datos válidos aunque la API devuelva otro valor.
+6. Genera:
+
+```txt
+data/import/motorcycles.repaired.json
+data/import/motorcycles.repair-report.json
+```
+
+No sobrescribe `motorcycles.json`. Hay que revisar el reporte y copiar manualmente los cambios fiables.
 
 ## 6. Routing
 

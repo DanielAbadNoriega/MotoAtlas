@@ -1,4 +1,5 @@
 import type { ComparisonBike } from '../../../types/bike';
+import { MotorcycleImage } from '../MotorcycleImage';
 import './ComparisonBikeCard.scss';
 
 type ComparisonBikeCardProps = {
@@ -8,7 +9,7 @@ type ComparisonBikeCardProps = {
 export function ComparisonBikeCard({ bike }: ComparisonBikeCardProps) {
   return (
     <article className={`comparison-bike-card comparison-bike-card--${bike.accent}`}>
-      <img src={bike.image} alt={bike.alt} loading="lazy" />
+      <MotorcycleImage motorcycle={{ description: bike.alt, image: bike.image, name: bike.name }} loading="lazy" />
       <h3>{bike.name}</h3>
       <p>{bike.subtitle}</p>
 

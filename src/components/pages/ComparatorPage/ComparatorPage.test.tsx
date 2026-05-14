@@ -1,8 +1,13 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
+import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../../shared/images/getMotorcycleImage';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
+import type { Bike } from '../../../types/bike';
 import { ComparePage } from './index';
+
+const realMotorcycles = realMotorcycleSeed as readonly Bike[];
 
 
 function createBikeWithMissingData() {
@@ -147,7 +152,8 @@ describe('ComparePage', () => {
     const noDataBike = createBikeWithMissingData();
     render(<ComparePage bikes={[noDataBike, bikeFixtures[1]]} motorcycles={[noDataBike, ...bikeFixtures]} />);
 
-    expect(screen.getAllByRole('img').some((image) => image.getAttribute('src')?.startsWith('data:image/svg+xml'))).toBe(true);
+    expect(screen.getAllByRole('img').some((image) => image.getAttribute('src') === MOTORCYCLE_IMAGE_FALLBACK_URL)).toBe(true);
+    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
   });
 
   it('uses score 0 when a motorcycle has no use scores', () => {
@@ -164,5 +170,33 @@ describe('ComparePage', () => {
 
     expect(screen.getByRole('heading', { name: /Selecciona al menos 2 motos/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ir al buscador/i })).toHaveAttribute('href', '#/buscador?browse=1');
+  });
+
+  it('compares BMW F 900 GS, Aprilia Tuareg 660 and Yamaha Ténéré 700 from the current JSON seed', () => {
+    const selectedBikes = ['bmw-f-900-gs-2024', 'aprilia-tuareg-660-2024', 'yamaha-tenere-700-2024'].map((id) => {
+      const bike = realMotorcycles.find((motorcycle) => motorcycle.id === id);
+
+      if (!bike) {
+        throw new Error(`Missing real motorcycle fixture: ${id}`);
+      }
+
+      return bike;
+    });
+
+    render(<ComparePage bikes={selectedBikes} motorcycles={realMotorcycles} />);
+
+    expect(screen.getByRole('heading', { name: /Comparativa de 3 motos/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: /BMW F 900 GS/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('heading', { name: /Aprilia Tuareg 660/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('heading', { name: /Yamaha Ténéré 700/i }).length).toBeGreaterThan(0);
+  });
+
+  it('can compare motorcycles with fallback images', () => {
+    const noImageBike = { ...bikeFixtures[0], imageUrl: 'https://placehold.co/1200x800?text=sin+imagen' } as Bike;
+
+    render(<ComparePage bikes={[noImageBike, bikeFixtures[1]]} motorcycles={[noImageBike, ...bikeFixtures.slice(1)]} />);
+
+    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
+    expect(screen.getAllByRole('img').some((image) => image.getAttribute('alt') === 'Imagen técnica pendiente de BMW F 900 GS')).toBe(true);
   });
 });

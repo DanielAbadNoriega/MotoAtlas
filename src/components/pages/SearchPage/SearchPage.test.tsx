@@ -1,12 +1,21 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
+import type { Bike } from '../../../types/bike';
+import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../../shared/images/getMotorcycleImage';
 import { initialSearchFilters } from '../../../utils/motorcycleSearch';
 import { AdvancedFilters, BikeResultCard, CompareDrawer, SearchPage } from './SearchPage';
 
+const realMotorcycles = realMotorcycleSeed as readonly Bike[];
+
 function renderSearchPage() {
   return render(<SearchPage motorcycles={bikeFixtures} routeHash="#/buscador?browse=1" />);
+}
+
+function renderRealSearchPage() {
+  return render(<SearchPage motorcycles={realMotorcycles} routeHash="#/buscador?browse=1" />);
 }
 
 describe('SearchPage', () => {
@@ -105,6 +114,44 @@ describe('SearchPage', () => {
     expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
     expect(screen.getByText(/Solo podés seleccionar hasta 3 motos/i)).toBeInTheDocument();
   });
+
+  it('renders the 20 current JSON motorcycles', () => {
+    renderRealSearchPage();
+
+    expect(screen.getByRole('heading', { name: /20 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /F 900 GS/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /R 1300 GS/i })).toBeInTheDocument();
+  });
+
+  it('filters real motorcycles by trail segment', async () => {
+    const user = userEvent.setup();
+    renderRealSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'Trail' }));
+
+    expect(screen.getByRole('heading', { name: /9 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Ténéré 700/i })).toBeInTheDocument();
+  });
+
+  it('filters real motorcycles by naked segment', async () => {
+    const user = userEvent.setup();
+    renderRealSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'Naked' }));
+
+    expect(screen.getByRole('heading', { name: /6 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /MT-07/i })).toBeInTheDocument();
+  });
+
+  it('filters real motorcycles by sport-touring segment', async () => {
+    const user = userEvent.setup();
+    renderRealSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'Sport Touring' }));
+
+    expect(screen.getByRole('heading', { name: /5 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Tracer 9 GT/i })).toBeInTheDocument();
+  });
 });
 
 describe('BikeResultCard', () => {
@@ -126,6 +173,40 @@ describe('BikeResultCard', () => {
     render(<BikeResultCard bike={bikeFixtures[0]} isSelected onToggleCompare={vi.fn()} />);
 
     expect(screen.getByRole('button', { name: /Seleccionada/i })).toBeInTheDocument();
+  });
+
+  it('uses the real motorcycle image when imageUrl is valid', () => {
+    render(<BikeResultCard bike={bikeFixtures[0]} isSelected={false} onToggleCompare={vi.fn()} />);
+
+    expect(screen.getByRole('img', { name: /Trail media con electrónica completa/i })).toHaveAttribute(
+      'src',
+      'https://example.com/bmw.jpg',
+    );
+    expect(screen.queryByText('TECHNICAL IMAGE PENDING')).not.toBeInTheDocument();
+  });
+
+  it('uses the fallback image and overlay when imageUrl is missing', () => {
+    const bikeWithoutImage = { ...bikeFixtures[0], imageUrl: undefined } as unknown as Bike;
+
+    render(<BikeResultCard bike={bikeWithoutImage} isSelected={false} onToggleCompare={vi.fn()} />);
+
+    expect(screen.getByRole('img', { name: /Imagen técnica pendiente de BMW F 900 GS/i })).toHaveAttribute(
+      'src',
+      MOTORCYCLE_IMAGE_FALLBACK_URL,
+    );
+    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
+  });
+
+  it('uses the fallback image and overlay when imageUrl is empty', () => {
+    const bikeWithEmptyImage = { ...bikeFixtures[0], imageUrl: '' } as Bike;
+
+    render(<BikeResultCard bike={bikeWithEmptyImage} isSelected={false} onToggleCompare={vi.fn()} />);
+
+    expect(screen.getByRole('img', { name: /Imagen técnica pendiente de BMW F 900 GS/i })).toHaveAttribute(
+      'src',
+      MOTORCYCLE_IMAGE_FALLBACK_URL,
+    );
+    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
   });
 });
 

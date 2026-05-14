@@ -20,6 +20,7 @@ import {
   type SortOption,
 } from '../../../utils/motorcycleSearch';
 import { Button } from '../../ui/Button';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './SearchPage.scss';
 
 const segmentLabels: Record<BikeSegment, string> = {
@@ -231,7 +232,7 @@ export function BikeResultCard({
   return (
     <article className={isSelected ? 'search-result-card search-result-card--selected' : 'search-result-card'}>
       <div className="search-result-card__media">
-        <img src={bike.imageUrl} alt={bike.description} loading="lazy" />
+        <MotorcycleImage motorcycle={bike} loading="lazy" />
         <div className="search-result-card__badges">
           <span>{segmentLabels[bike.segment]}</span>
           <span>Carnet {bike.license}</span>
@@ -307,7 +308,7 @@ export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBi
       <div className="search-page__compare-thumbs">
         {selectedBikes.map((bike) => (
           <button key={bike.id} type="button" onClick={() => onRemove(bike.id)} aria-label={`Quitar ${getBikeDisplayName(bike)}`}>
-            <img src={bike.imageUrl} alt="" />
+            <MotorcycleImage motorcycle={bike} decorative />
           </button>
         ))}
       </div>

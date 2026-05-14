@@ -1,7 +1,12 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
+import type { Bike } from '../../../types/bike';
+import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../../shared/images/getMotorcycleImage';
 import { BikeDetailPage } from './BikeDetailPage';
+
+const realMotorcycles = realMotorcycleSeed as readonly Bike[];
 
 describe('BikeDetailPage', () => {
   it('renders name, brand, year and main specs from fixtures', () => {
@@ -56,5 +61,27 @@ describe('BikeDetailPage', () => {
 
     expect(screen.getByRole('heading', { name: /Moto no encontrada/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Volver al buscador/i })).toHaveAttribute('href', '#/buscador');
+  });
+
+  it('renders a real motorcycle from the current JSON seed', () => {
+    const bmwF900Gs = realMotorcycles.find((bike) => bike.id === 'bmw-f-900-gs-2024');
+
+    render(<BikeDetailPage bike={bmwF900Gs} motorcycles={realMotorcycles} />);
+
+    expect(screen.getByRole('heading', { name: /BMW F 900 GS/i })).toBeInTheDocument();
+    expect(screen.getByText(/Trail media-alta con mucho par/i)).toBeInTheDocument();
+
+    const mainSpecs = screen.getByRole('group', { name: 'Datos principales' });
+    expect(within(mainSpecs).getByText(/105/)).toBeInTheDocument();
+    expect(within(mainSpecs).getByText(/895/)).toBeInTheDocument();
+  });
+
+  it('renders a pending technical image overlay when detail image is missing', () => {
+    const bikeWithoutImage = { ...bikeFixtures[0], imageUrl: '' } as Bike;
+
+    const { container } = render(<BikeDetailPage bike={bikeWithoutImage} motorcycles={[bikeWithoutImage, ...bikeFixtures.slice(1)]} />);
+
+    expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
+    expect(container.querySelector(`img[src="${MOTORCYCLE_IMAGE_FALLBACK_URL}"]`)).toBeInTheDocument();
   });
 });

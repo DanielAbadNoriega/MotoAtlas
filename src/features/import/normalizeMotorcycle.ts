@@ -1,8 +1,8 @@
 import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores } from '../../types/bike';
 import type { ApiNinjasMotorcycle, DeepPartialBike, MotorcycleNormalizationResult, MotorcycleNormalizationWarning } from './motorcycleImportTypes';
+import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../shared/images/getMotorcycleImage';
 
-export const PLACEHOLDER_IMAGE_URL =
-  'https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen';
+export const PLACEHOLDER_IMAGE_URL = MOTORCYCLE_IMAGE_FALLBACK_URL;
 
 export const PLACEHOLDER_DESCRIPTION =
   'Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.';

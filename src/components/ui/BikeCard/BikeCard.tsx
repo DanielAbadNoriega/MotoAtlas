@@ -2,6 +2,7 @@ import { cardActions } from '../../../data/home';
 import { getBikeCardSpecs, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
+import { MotorcycleImage } from '../MotorcycleImage';
 import './BikeCard.scss';
 
 type BikeCardProps = {
@@ -14,7 +15,7 @@ export function BikeCard({ bike }: BikeCardProps) {
   return (
     <article className="bike-card">
       <div className="bike-card__media">
-        <img src={bike.imageUrl} alt={bike.description} loading="lazy" />
+        <MotorcycleImage motorcycle={bike} loading="lazy" />
       </div>
 
       <div className="bike-card__body">

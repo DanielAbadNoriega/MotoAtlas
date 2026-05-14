@@ -1,6 +1,7 @@
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './BikeDetailPage.scss';
 
 type BikeDetailPageProps = {
@@ -174,7 +175,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
     <main className="bike-detail" aria-labelledby="bike-detail-title">
       <header className="bike-detail__hero">
         <div className="bike-detail__hero-media" aria-hidden="true">
-          <img src={bike.imageUrl} alt="" />
+          <MotorcycleImage motorcycle={bike} decorative />
         </div>
 
         <div className="bike-detail__hero-content">
@@ -393,7 +394,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
         <div className="bike-detail__related-list">
           {relatedBikes.map((relatedBike) => (
             <article key={relatedBike.id}>
-              <img src={relatedBike.imageUrl} alt={relatedBike.description} loading="lazy" />
+              <MotorcycleImage motorcycle={relatedBike} loading="lazy" />
               <span>{segmentLabels[relatedBike.segment]}</span>
               <h3>{getBikeDisplayName(relatedBike)}</h3>
               <dl>

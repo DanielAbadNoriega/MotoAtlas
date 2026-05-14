@@ -1,5 +1,6 @@
 import type { Bike } from '../../types/bike';
 import { compareQueueMaxSize, getComparatorHashSelection, sanitizeCompareQueue } from '../../utils/compareQueue';
+import { MOTORCYCLE_IMAGE_FALLBACK_URL, getMotorcycleImage } from '../../shared/images/getMotorcycleImage';
 
 export type CompareUseScoreKey = keyof Bike['useScores'];
 
@@ -105,19 +106,7 @@ export type ResolvedCompareSelection = CompareHashSelection &
 
 export const NO_DATA_LABEL = 'Sin datos disponibles';
 export const NOT_AVAILABLE_LABEL = 'N/D';
-export const PLACEHOLDER_IMAGE_URL =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
-      <rect width="1200" height="800" fill="#151515"/>
-      <path d="M210 520h780" stroke="#343434" stroke-width="18" stroke-linecap="round"/>
-      <circle cx="360" cy="545" r="92" fill="none" stroke="#e4002b" stroke-width="22"/>
-      <circle cx="835" cy="545" r="92" fill="none" stroke="#e4002b" stroke-width="22"/>
-      <path d="M370 525l145-150h160l125 150M520 375l-58-88h130l83 88" fill="none" stroke="#f4f4f4" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
-      <text x="600" y="230" fill="#f4f4f4" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" text-anchor="middle">MotoAtlas</text>
-      <text x="600" y="300" fill="#9b9b9b" font-family="Arial, Helvetica, sans-serif" font-size="34" text-anchor="middle">Sin imagen disponible</text>
-    </svg>
-  `);
+export const PLACEHOLDER_IMAGE_URL = MOTORCYCLE_IMAGE_FALLBACK_URL;
 
 const numberFormatter = new Intl.NumberFormat('es-ES');
 const currencyFormatter = new Intl.NumberFormat('es-ES', {
@@ -199,8 +188,7 @@ export function getBikeDescription(bike: Bike) {
 }
 
 export function getBikeImageUrl(bike: Bike) {
-  const imageUrl = getRuntimeValue<string>(bike, 'imageUrl');
-  return isNonEmptyString(imageUrl) ? imageUrl : PLACEHOLDER_IMAGE_URL;
+  return getMotorcycleImage(bike).imageUrl;
 }
 
 export function getBikePros(bike: Bike) {

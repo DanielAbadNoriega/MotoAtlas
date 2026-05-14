@@ -5,8 +5,6 @@ import {
   getBestBikeForSpec,
   getBikeBrandLabel,
   getBikeCons,
-  getBikeDescription,
-  getBikeImageUrl,
   getBikePros,
   getBikeSegmentLabel,
   getSafeBikeDisplayName,
@@ -18,6 +16,7 @@ import {
 import { getBrowseSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import { Button } from '../../ui/Button';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import '../ComparisonDetailPage/ComparisonDetailPage.scss';
 
 type ComparatorPageProps = {
@@ -163,7 +162,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
                   .filter(Boolean)
                   .join(' ')}
               >
-                <img src={getBikeImageUrl(entry.bike)} alt={getBikeDescription(entry.bike)} />
+                <MotorcycleImage motorcycle={entry.bike} />
                 <div>
                   <span>
                     {getBikeBrandLabel(entry.bike)} · {getBikeSegmentLabel(entry.bike)}

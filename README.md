@@ -32,26 +32,72 @@ npm run typecheck
 
 El seed inicial vive en `data/import/motorcycles.json`.
 
-1. Copiá el ejemplo de entorno:
+1. Copia el ejemplo de entorno:
 
 ```bash
 cp .env.import.example .env.import
 ```
 
-2. Rellená solo variables server/admin:
+2. Rellena solo variables server/admin:
 
 ```env
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
 ```
 
-3. Ejecutá el importador:
+3. Ejecuta el importador:
 
 ```bash
 npm run import:motos
 ```
 
 El script valida campos obligatorios, genera payload snake_case compatible con `public.motorcycles` y hace `upsert` usando `id` para evitar duplicados.
+
+### Reparación y enriquecimiento de JSON
+
+`data/import/motorcycles.json` es la fuente editable. Si el validador detecta specs técnicas inválidas, usa:
+
+```bash
+npm run repair:motos
+```
+
+El flujo no inventa datos críticos y no sobrescribe el JSON fuente. Genera:
+
+- `data/import/motorcycles.repaired.json`
+- `data/import/motorcycles.repair-report.json`
+
+Pasos recomendados:
+
+1. Ejecuta `npm run repair:motos` con `API_NINJAS_KEY` en `.env.import`.
+2. Revisa manualmente `motorcycles.repair-report.json`.
+3. Si los datos son fiables, copia los campos reparados a `motorcycles.json`.
+4. Valida:
+
+```bash
+npm run import:motos:check
+```
+
+5. Importa a Supabase solo cuando el check esté limpio:
+
+```bash
+npm run import:motos
+```
+
+Si necesitas subir solo las válidas de forma consciente:
+
+```bash
+npm run import:motos -- --allow-partial
+```
+
+### Fallback de imágenes
+
+Las motos sin imagen real usan:
+
+```txt
+public/images/placeholders/motorcycle-technical-pending.jpg
+```
+
+La lógica está centralizada en `src/shared/images/getMotorcycleImage.ts` y se renderiza con overlay `TECHNICAL IMAGE PENDING`.
 
 Seguridad: no uses `VITE_SUPABASE_ANON_KEY` para importar. La service role key va solo en `.env.import` local; `.env.import` y `.env.local` están ignorados por Git.
 
