@@ -291,9 +291,10 @@ Responsabilidades:
 
 Reglas:
 
-- Soporta 2 o 3 motos.
-- Si llegan más de 3, se ignoran extras y se muestra aviso.
+- Soporta 2 o 3 motos para comparar; con 1 moto muestra un estado específico para añadir otra.
+- Si llegan más de 3, se ignoran extras y se muestra aviso discreto.
 - Quitar o añadir motos modifica `window.location.hash`; la ruta es la fuente de verdad.
+- Si faltan `pros`, `cons`, `commonIssues`, `useScores`, `imageUrl` o `reliabilityScore`, muestra fallbacks limpios: `Sin datos disponibles`, imagen placeholder, score 0 o `N/D`.
 - Los tests mockean datos con fixtures, nunca Supabase real.
 
 ## 9. Testing actual

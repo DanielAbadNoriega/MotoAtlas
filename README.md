@@ -92,7 +92,7 @@ npm run test:coverage
 - Navegación principal: buscador, comparador desde selección/query params y acciones principales de la home.
 - Fallback a `src/data/bikes.ts` si Supabase falla o no hay variables de entorno.
 - Integración de App mockeando `motorcycleService` sin Supabase real.
-- Comparador dinámico con diseño Stitch: 2/3 motos, añadir/quitar, URL sync, best value, technical table, performance bars y empty states.
+- Comparador dinámico con diseño Stitch: 1/2/3 motos, añadir/quitar, URL sync, best value, technical table, performance bars, fallbacks visuales y empty states.
 - Componentes principales:
   - `BikeResultCard`
   - `AdvancedFilters`

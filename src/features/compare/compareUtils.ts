@@ -1,4 +1,3 @@
-import { getBikeDisplayName } from '../../data/bikes';
 import type { Bike } from '../../types/bike';
 import { compareQueueMaxSize, getComparatorHashSelection, sanitizeCompareQueue } from '../../utils/compareQueue';
 
@@ -16,7 +15,7 @@ export type CompareSpecRow = Readonly<{
   id: string;
   label: string;
   getValue: (bike: Bike) => string;
-  getNumber?: (bike: Bike) => number;
+  getNumber?: (bike: Bike) => number | undefined;
   lowerIsBetter?: boolean;
 }>;
 
@@ -104,6 +103,22 @@ export type ResolvedCompareSelection = CompareHashSelection &
     missingIds: readonly Bike['id'][];
   }>;
 
+export const NO_DATA_LABEL = 'Sin datos disponibles';
+export const NOT_AVAILABLE_LABEL = 'N/D';
+export const PLACEHOLDER_IMAGE_URL =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+      <rect width="1200" height="800" fill="#151515"/>
+      <path d="M210 520h780" stroke="#343434" stroke-width="18" stroke-linecap="round"/>
+      <circle cx="360" cy="545" r="92" fill="none" stroke="#e4002b" stroke-width="22"/>
+      <circle cx="835" cy="545" r="92" fill="none" stroke="#e4002b" stroke-width="22"/>
+      <path d="M370 525l145-150h160l125 150M520 375l-58-88h130l83 88" fill="none" stroke="#f4f4f4" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="600" y="230" fill="#f4f4f4" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" text-anchor="middle">MotoAtlas</text>
+      <text x="600" y="300" fill="#9b9b9b" font-family="Arial, Helvetica, sans-serif" font-size="34" text-anchor="middle">Sin imagen disponible</text>
+    </svg>
+  `);
+
 const numberFormatter = new Intl.NumberFormat('es-ES');
 const currencyFormatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
@@ -127,45 +142,145 @@ const engineTypeLabels: Record<Bike['engineType'], string> = {
   'v-twin': 'v-twin',
 };
 
+function getRuntimeValue<T = unknown>(bike: Bike, key: keyof Bike) {
+  return (bike as Partial<Record<keyof Bike, T>>)[key];
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function getText(value: unknown, fallback = NO_DATA_LABEL) {
+  return isNonEmptyString(value) ? value.trim() : fallback;
+}
+
+function getOptionalNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function getNumber(value: unknown, fallback = 0) {
+  return getOptionalNumber(value) ?? fallback;
+}
+
+function getTextArray(value: unknown) {
+  return Array.isArray(value) ? value.filter(isNonEmptyString) : [];
+}
+
+function formatNumberWithUnit(value: unknown, unit: string) {
+  const parsed = getOptionalNumber(value);
+  return parsed === undefined ? NOT_AVAILABLE_LABEL : `${numberFormatter.format(parsed)} ${unit}`;
+}
+
+function formatCurrency(value: unknown) {
+  const parsed = getOptionalNumber(value);
+  return parsed === undefined ? NOT_AVAILABLE_LABEL : currencyFormatter.format(parsed);
+}
+
+export function getSafeBikeDisplayName(bike: Bike) {
+  const brand = getText(getRuntimeValue(bike, 'brand'), '');
+  const model = getText(getRuntimeValue(bike, 'model'), '');
+  const displayName = [brand, model].filter(Boolean).join(' ').trim();
+
+  return displayName || NO_DATA_LABEL;
+}
+
+export function getBikeBrandLabel(bike: Bike) {
+  return getText(getRuntimeValue(bike, 'brand'));
+}
+
+export function getBikeSegmentLabel(bike: Bike) {
+  const segment = getRuntimeValue<Bike['segment']>(bike, 'segment');
+  return segment ? (segmentLabels[segment] ?? segment) : NOT_AVAILABLE_LABEL;
+}
+
+export function getBikeDescription(bike: Bike) {
+  return getText(getRuntimeValue(bike, 'description'));
+}
+
+export function getBikeImageUrl(bike: Bike) {
+  const imageUrl = getRuntimeValue<string>(bike, 'imageUrl');
+  return isNonEmptyString(imageUrl) ? imageUrl : PLACEHOLDER_IMAGE_URL;
+}
+
+export function getBikePros(bike: Bike) {
+  return getTextArray(getRuntimeValue(bike, 'pros'));
+}
+
+export function getBikeCons(bike: Bike) {
+  return getTextArray(getRuntimeValue(bike, 'cons'));
+}
+
+export function getCommonIssues(bike: Bike) {
+  const reliabilityReports = getRuntimeValue<Partial<Bike['reliabilityReports']>>(bike, 'reliabilityReports');
+  return getTextArray(reliabilityReports?.commonIssues);
+}
+
+export function getReportCount(bike: Bike) {
+  const reliabilityReports = getRuntimeValue<Partial<Bike['reliabilityReports']>>(bike, 'reliabilityReports');
+  return getNumber(reliabilityReports?.reportCount);
+}
+
+export function getReliabilityScore(bike: Bike) {
+  const reliabilityReports = getRuntimeValue<Partial<Bike['reliabilityReports']>>(bike, 'reliabilityReports');
+  return getOptionalNumber(reliabilityReports?.reliabilityScore);
+}
+
+export function getUseScore(bike: Bike, key: CompareUseScoreKey) {
+  const useScores = getRuntimeValue<Partial<Bike['useScores']>>(bike, 'useScores');
+  return getNumber(useScores?.[key]);
+}
+
+function getPrice(bike: Bike) {
+  return getOptionalNumber(getRuntimeValue(bike, 'priceEur'));
+}
+
 export const compareSpecRows = [
-  { id: 'engine-type', label: 'Engine Type', getValue: (bike) => engineTypeLabels[bike.engineType] },
-  { id: 'displacement', label: 'Displacement', getValue: (bike) => `${numberFormatter.format(bike.displacementCc)} cc` },
+  {
+    id: 'engine-type',
+    label: 'Engine Type',
+    getValue: (bike) => {
+      const engineType = getRuntimeValue<Bike['engineType']>(bike, 'engineType');
+      return engineType ? (engineTypeLabels[engineType] ?? engineType) : NOT_AVAILABLE_LABEL;
+    },
+  },
+  { id: 'displacement', label: 'Displacement', getValue: (bike) => formatNumberWithUnit(getRuntimeValue(bike, 'displacementCc'), 'cc') },
   {
     id: 'power',
     label: 'Max Power',
-    getValue: (bike) => `${numberFormatter.format(bike.powerHp)} HP`,
-    getNumber: (bike) => bike.powerHp,
+    getValue: (bike) => formatNumberWithUnit(getRuntimeValue(bike, 'powerHp'), 'HP'),
+    getNumber: (bike) => getOptionalNumber(getRuntimeValue(bike, 'powerHp')),
   },
   {
     id: 'torque',
     label: 'Max Torque',
-    getValue: (bike) => `${numberFormatter.format(bike.torqueNm)} Nm`,
-    getNumber: (bike) => bike.torqueNm,
+    getValue: (bike) => formatNumberWithUnit(getRuntimeValue(bike, 'torqueNm'), 'Nm'),
+    getNumber: (bike) => getOptionalNumber(getRuntimeValue(bike, 'torqueNm')),
   },
   {
     id: 'weight',
     label: 'Wet Weight',
-    getValue: (bike) => `${numberFormatter.format(bike.wetWeightKg)} kg`,
-    getNumber: (bike) => bike.wetWeightKg,
+    getValue: (bike) => formatNumberWithUnit(getRuntimeValue(bike, 'wetWeightKg'), 'kg'),
+    getNumber: (bike) => getOptionalNumber(getRuntimeValue(bike, 'wetWeightKg')),
     lowerIsBetter: true,
   },
   {
     id: 'seat-height',
     label: 'Seat Height',
-    getValue: (bike) => `${numberFormatter.format(bike.seatHeightMm)} mm`,
-    getNumber: (bike) => bike.seatHeightMm,
+    getValue: (bike) => formatNumberWithUnit(getRuntimeValue(bike, 'seatHeightMm'), 'mm'),
+    getNumber: (bike) => getOptionalNumber(getRuntimeValue(bike, 'seatHeightMm')),
     lowerIsBetter: true,
   },
-  { id: 'fuel-tank', label: 'Fuel Tank', getValue: (bike) => `${numberFormatter.format(bike.fuelTankLiters)} L` },
+  { id: 'fuel-tank', label: 'Fuel Tank', getValue: (bike) => formatNumberWithUnit(getRuntimeValue(bike, 'fuelTankLiters'), 'L') },
   {
     id: 'price',
     label: 'Est. Price',
-    getValue: (bike) => currencyFormatter.format(bike.priceEur),
-    getNumber: (bike) => bike.priceEur,
+    getValue: (bike) => formatCurrency(getRuntimeValue(bike, 'priceEur')),
+    getNumber: getPrice,
     lowerIsBetter: true,
   },
-  { id: 'license', label: 'License', getValue: (bike) => `Carnet ${bike.license}` },
-  { id: 'segment', label: 'Segment', getValue: (bike) => segmentLabels[bike.segment] },
+  { id: 'license', label: 'License', getValue: (bike) => `Carnet ${getText(getRuntimeValue(bike, 'license'), NOT_AVAILABLE_LABEL)}` },
+  { id: 'segment', label: 'Segment', getValue: getBikeSegmentLabel },
 ] satisfies readonly CompareSpecRow[];
 
 export const comparePerformanceConfig = [
@@ -187,23 +302,41 @@ export function scoreWidth(score: number) {
 }
 
 export function getOverallScore(bike: Bike) {
-  const scores = Object.values(bike.useScores);
+  const scores = comparePerformanceConfig.map((metric) => getUseScore(bike, metric.id));
   return scores.reduce((total, score) => total + score, 0) / scores.length;
 }
 
 export function getValueScore(bike: Bike) {
-  return (getOverallScore(bike) * 10000) / Math.max(bike.priceEur, 1);
+  const price = getPrice(bike);
+  return price && price > 0 ? (getOverallScore(bike) * 10000) / price : 0;
 }
 
 export function getBestBikeByNumber(
   bikes: readonly Bike[],
-  getNumber: (bike: Bike) => number,
+  getNumericValue: (bike: Bike) => number | undefined,
   { lowerIsBetter = false }: { lowerIsBetter?: boolean } = {},
 ) {
-  return [...bikes].sort((first, second) => {
-    const delta = getNumber(first) - getNumber(second);
+  const sortedBikes = [...bikes].sort((first, second) => {
+    const firstValue = getNumericValue(first);
+    const secondValue = getNumericValue(second);
+
+    if (firstValue === undefined && secondValue === undefined) {
+      return 0;
+    }
+
+    if (firstValue === undefined) {
+      return 1;
+    }
+
+    if (secondValue === undefined) {
+      return -1;
+    }
+
+    const delta = firstValue - secondValue;
     return lowerIsBetter ? delta : -delta;
-  })[0];
+  });
+
+  return sortedBikes[0] ?? bikes[0];
 }
 
 export function getBestBikeForSpec(row: CompareSpecRow, bikes: readonly Bike[]) {
@@ -211,7 +344,7 @@ export function getBestBikeForSpec(row: CompareSpecRow, bikes: readonly Bike[]) 
 }
 
 export function getCompareTitle(bikes: readonly Bike[]) {
-  const names = bikes.map(getBikeDisplayName);
+  const names = bikes.map(getSafeBikeDisplayName);
 
   if (names.length === 2) {
     return `${names[0]} vs ${names[1]}`;
@@ -221,7 +354,18 @@ export function getCompareTitle(bikes: readonly Bike[]) {
 }
 
 function normalizeVotePercentages(entries: readonly CompareBikeEntry[]) {
-  const total = entries.reduce((sum, entry) => sum + entry.overallScore, 0) || 1;
+  if (entries.length === 0) {
+    return [];
+  }
+
+  const total = entries.reduce((sum, entry) => sum + entry.overallScore, 0);
+
+  if (total <= 0) {
+    const base = Math.floor(100 / entries.length);
+    const remainder = 100 - base * entries.length;
+    return entries.map((_, index) => base + (index < remainder ? 1 : 0));
+  }
+
   const rounded = entries.map((entry) => Math.max(1, Math.round((entry.overallScore / total) * 100)));
   const drift = 100 - rounded.reduce((sum, value) => sum + value, 0);
 
@@ -232,7 +376,7 @@ function normalizeVotePercentages(entries: readonly CompareBikeEntry[]) {
 function buildEntries(bikes: readonly Bike[]): readonly CompareBikeEntry[] {
   return bikes.map((bike, index) => ({
     bike,
-    displayName: getBikeDisplayName(bike),
+    displayName: getSafeBikeDisplayName(bike),
     index,
     overallScore: getOverallScore(bike),
     valueScore: getValueScore(bike),
@@ -242,7 +386,7 @@ function buildEntries(bikes: readonly Bike[]): readonly CompareBikeEntry[] {
 function buildHighlights(bikes: readonly Bike[]) {
   const overallWinner = getBestBikeByNumber(bikes, getOverallScore);
   const valueWinner = getBestBikeByNumber(bikes, getValueScore);
-  const offroadWinner = getBestBikeByNumber(bikes, (bike) => bike.useScores.offroad);
+  const offroadWinner = getBestBikeByNumber(bikes, (bike) => getUseScore(bike, 'offroad'));
 
   return [
     {
@@ -275,16 +419,16 @@ function buildHighlights(bikes: readonly Bike[]) {
 function buildVoteSummary(entries: readonly CompareBikeEntry[]): CompareVoteSummary {
   const percentages = normalizeVotePercentages(entries);
   const winner = [...entries].sort((first, second) => second.overallScore - first.overallScore)[0];
-  const totalVotes = entries.reduce((total, entry) => total + entry.bike.reliabilityReports.reportCount, 0) + 1200;
+  const totalVotes = entries.reduce((total, entry) => total + getReportCount(entry.bike), 0) + 1200;
 
   return {
     marginOfErrorPercent: entries.length === 2 ? 1.2 : 1.8,
     segments: entries.map((entry, index) => ({
       bike: entry.bike,
       displayName: entry.displayName,
-      percent: percentages[index],
+      percent: percentages[index] ?? 0,
     })),
-    topComment: `${winner.displayName} parece la opción más completa si miramos uso real, fiabilidad percibida y coste total.`,
+    topComment: `${winner?.displayName ?? NO_DATA_LABEL} parece la opción más completa si miramos uso real, fiabilidad percibida y coste total.`,
     topCommentAuthor: '@MOTOATLAS_DATA',
     totalVotes,
   };
@@ -292,7 +436,7 @@ function buildVoteSummary(entries: readonly CompareBikeEntry[]): CompareVoteSumm
 
 function buildPerformanceRows(bikes: readonly Bike[]) {
   return comparePerformanceConfig.map((metric) => {
-    const winnerBike = getBestBikeByNumber(bikes, (bike) => bike.useScores[metric.id]);
+    const winnerBike = getBestBikeByNumber(bikes, (bike) => getUseScore(bike, metric.id));
 
     return {
       id: metric.id,
@@ -300,19 +444,25 @@ function buildPerformanceRows(bikes: readonly Bike[]) {
       winnerBike,
       scores: bikes.map((bike) => ({
         bike,
-        displayName: getBikeDisplayName(bike),
-        value: bike.useScores[metric.id],
+        displayName: getSafeBikeDisplayName(bike),
+        value: getUseScore(bike, metric.id),
       })),
     } satisfies ComparePerformanceRow;
   });
 }
 
 function issueSeverity(bike: Bike): CompareIssue['severity'] {
-  if (bike.reliabilityReports.reliabilityScore < 8) {
+  const reliabilityScore = getReliabilityScore(bike);
+
+  if (reliabilityScore === undefined) {
+    return 'BAJA';
+  }
+
+  if (reliabilityScore < 8) {
     return 'ALTA';
   }
 
-  if (bike.reliabilityReports.reliabilityScore < 8.6) {
+  if (reliabilityScore < 8.6) {
     return 'MEDIA';
   }
 
@@ -321,28 +471,37 @@ function issueSeverity(bike: Bike): CompareIssue['severity'] {
 
 function buildReports(bikes: readonly Bike[]) {
   return bikes.flatMap((bike) => {
-    const issues = bike.reliabilityReports.commonIssues.length > 0 ? bike.reliabilityReports.commonIssues : ['Sin patrones críticos reportados'];
+    const issues = getCommonIssues(bike);
+    const issuesToRender = issues.length > 0 ? issues : [NO_DATA_LABEL];
 
-    return issues.slice(0, 2).map((issue, index) => ({
+    return issuesToRender.slice(0, 2).map((issue, index) => ({
       id: `${bike.id}-${index}`,
       bike,
-      description: `Reportado en ${getBikeDisplayName(bike)}. ${issue}.`,
-      icon: index === 0 ? 'warning' : 'build',
-      reportCount: Math.max(1, Math.round(bike.reliabilityReports.reportCount / issues.length)),
-      severity: issueSeverity(bike),
+      description:
+        issue === NO_DATA_LABEL
+          ? `${getSafeBikeDisplayName(bike)} no tiene common issues registrados.`
+          : `Reportado en ${getSafeBikeDisplayName(bike)}. ${issue}.`,
+      icon: issue === NO_DATA_LABEL ? 'info' : index === 0 ? 'warning' : 'build',
+      reportCount: issues.length > 0 ? Math.round(getReportCount(bike) / issues.length) : 0,
+      severity: issue === NO_DATA_LABEL ? 'BAJA' : issueSeverity(bike),
       title: issue,
     }));
   });
 }
 
 function buildVideos(bikes: readonly Bike[]) {
-  return bikes.map((bike) => ({
-    id: `${bike.id}-analysis`,
-    alt: bike.description,
-    duration: `${Math.max(10, Math.round(getOverallScore(bike) + bike.pros.length + bike.cons.length))}:00`,
-    imageUrl: bike.imageUrl,
-    title: `${getBikeDisplayName(bike)}: análisis técnico y uso real`,
-  })) satisfies readonly CompareVideoAnalysis[];
+  return bikes.map((bike) => {
+    const overallScore = getOverallScore(bike);
+    const hasScore = overallScore > 0;
+
+    return {
+      id: `${bike.id}-analysis`,
+      alt: getBikeDescription(bike),
+      duration: hasScore ? `${Math.max(10, Math.round(overallScore + getBikePros(bike).length + getBikeCons(bike).length))}:00` : NOT_AVAILABLE_LABEL,
+      imageUrl: getBikeImageUrl(bike),
+      title: `${getSafeBikeDisplayName(bike)}: análisis técnico y uso real`,
+    };
+  }) satisfies readonly CompareVideoAnalysis[];
 }
 
 function buildFinalVerdict(entries: readonly CompareBikeEntry[]): CompareFinalVerdict {

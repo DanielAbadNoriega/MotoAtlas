@@ -1,8 +1,15 @@
 import { Fragment, useState } from 'react';
-import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { getBikeDetailHash } from '../../../data/bikes';
 import {
   buildCompareViewModel,
   getBestBikeForSpec,
+  getBikeBrandLabel,
+  getBikeCons,
+  getBikeDescription,
+  getBikeImageUrl,
+  getBikePros,
+  getBikeSegmentLabel,
+  getSafeBikeDisplayName,
   getCompareHashAfterAdding,
   getCompareHashAfterRemoving,
   getFirstAddableBike,
@@ -33,8 +40,8 @@ function EmptyComparator() {
     <main className="comparison-detail comparison-detail--empty">
       <section className="comparison-detail__empty">
         <span>Comparador</span>
-        <h1>Seleccioná al menos 2 motos</h1>
-        <p>El comparador necesita una cola real. Andá al buscador y elegí entre 2 y 3 motos.</p>
+        <h1>Selecciona al menos 2 motos</h1>
+        <p>El comparador necesita una cola real. Ve al buscador y elige entre 2 y 3 motos.</p>
         <a className="button button--primary" href={getBrowseSearchHash()}>
           Ir al buscador
         </a>
@@ -43,11 +50,73 @@ function EmptyComparator() {
   );
 }
 
+
+function OneBikeComparator({ bike, motorcycles }: { bike: Bike; motorcycles: readonly Bike[] }) {
+  const addableBike = getFirstAddableBike([bike], motorcycles);
+  const displayName = getSafeBikeDisplayName(bike);
+
+  return (
+    <main className="comparison-detail comparison-detail--empty">
+      <section className="comparison-detail__empty">
+        <span>Comparador</span>
+        <h1>Añade otra moto para comparar</h1>
+        <p>{displayName} ya está en la cola. Añade una segunda moto para activar el comparador dinámico.</p>
+        {addableBike ? (
+          <button
+            className="button button--primary"
+            type="button"
+            onClick={() => navigateToHash(getCompareHashAfterAdding([bike.id], addableBike.id))}
+            aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
+          >
+            Añadir {getSafeBikeDisplayName(addableBike)}
+          </button>
+        ) : (
+          <a className="button button--primary" href={getBrowseSearchHash()}>
+            Ir al buscador
+          </a>
+        )}
+      </section>
+    </main>
+  );
+}
+
+function DataList({ icon, items }: { icon: 'cancel' | 'check_circle'; items: readonly string[] }) {
+  if (items.length === 0) {
+    return (
+      <ul>
+        <li>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            info
+          </span>
+          Sin datos disponibles
+        </li>
+      </ul>
+    );
+  }
+
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item}>
+          <span className="material-symbols-outlined" aria-hidden="true">
+            {icon}
+          </span>
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount = 0, motorcycles = [] }: ComparatorPageProps) {
   const [voteMessage, setVoteMessage] = useState('');
 
-  if (bikes.length < 2) {
+  if (bikes.length === 0) {
     return <EmptyComparator />;
+  }
+
+  if (bikes.length === 1) {
+    return <OneBikeComparator bike={bikes[0]} motorcycles={motorcycles} />;
   }
 
   const comparison = buildCompareViewModel(bikes);
@@ -94,14 +163,14 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
                   .filter(Boolean)
                   .join(' ')}
               >
-                <img src={entry.bike.imageUrl} alt={entry.bike.description} />
+                <img src={getBikeImageUrl(entry.bike)} alt={getBikeDescription(entry.bike)} />
                 <div>
                   <span>
-                    {entry.bike.brand} · {entry.bike.segment}
+                    {getBikeBrandLabel(entry.bike)} · {getBikeSegmentLabel(entry.bike)}
                   </span>
                   <h2>{entry.displayName}</h2>
                   <div className="comparison-detail__hero-bike-actions">
-                    <a href={getBikeDetailHash(entry.bike)}>Ver ficha</a>
+                    <a href={getBikeDetailHash(entry.bike)} aria-label={`Ver ficha de ${entry.displayName}`}>Ver ficha</a>
                     <button
                       type="button"
                       onClick={() => navigateToHash(getCompareHashAfterRemoving(currentIds, entry.bike.id))}
@@ -123,17 +192,17 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
         </div>
 
         <div className="comparison-detail__actions">
-          <Button onClick={() => setVoteMessage(`Voto registrado para ${getBikeDisplayName(comparison.finalVerdict.winnerBike)}.`)}>
+          <Button onClick={() => setVoteMessage(`Voto registrado para ${getSafeBikeDisplayName(comparison.finalVerdict.winnerBike)}.`)}>
             Votar ganadora
           </Button>
           {comparison.bikes.map((bike) => (
-            <a className="button button--ghost" href={getBikeDetailHash(bike)} key={bike.id}>
-              Ficha {bike.brand}
+            <a className="button button--ghost" href={getBikeDetailHash(bike)} key={bike.id} aria-label={`Ver ficha de ${getSafeBikeDisplayName(bike)}`}>
+              Ficha {getBikeBrandLabel(bike)}
             </a>
           ))}
           {addableBike ? (
-            <Button variant="secondary" onClick={() => navigateToHash(getCompareHashAfterAdding(currentIds, addableBike.id))}>
-              Añadir {getBikeDisplayName(addableBike)}
+            <Button variant="secondary" onClick={() => navigateToHash(getCompareHashAfterAdding(currentIds, addableBike.id))} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
+              Añadir {getSafeBikeDisplayName(addableBike)}
             </Button>
           ) : (
             <a className="button button--secondary" href={getBrowseSearchHash()}>
@@ -188,7 +257,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
             <strong>{highlight.badgeLabel}</strong>
             <h2>{highlight.title}</h2>
             <p>{highlight.description}</p>
-            <footer>{getBikeDisplayName(highlight.winnerBike)}</footer>
+            <footer>{getSafeBikeDisplayName(highlight.winnerBike)}</footer>
           </article>
         ))}
       </section>
@@ -201,7 +270,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
               <tr>
                 <th>Specification</th>
                 {comparison.bikes.map((bike) => (
-                  <th key={bike.id}>{getBikeDisplayName(bike)}</th>
+                  <th key={bike.id}>{getSafeBikeDisplayName(bike)}</th>
                 ))}
               </tr>
             </thead>
@@ -232,7 +301,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
             <article key={row.id}>
               <header>
                 <span>{row.label}</span>
-                <strong>Gana {getBikeDisplayName(row.winnerBike)}</strong>
+                <strong>Gana {getSafeBikeDisplayName(row.winnerBike)}</strong>
               </header>
               <div className="comparison-detail__score-rows">
                 {row.scores.map((score) => (
@@ -265,33 +334,15 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
       >
         {comparison.bikes.map((bike) => (
           <article key={bike.id}>
-            <h2>{getBikeDisplayName(bike)}</h2>
+            <h2>{getSafeBikeDisplayName(bike)}</h2>
             <div>
               <section>
                 <h3>Puntos fuertes</h3>
-                <ul>
-                  {bike.pros.map((pro) => (
-                    <li key={pro}>
-                      <span className="material-symbols-outlined" aria-hidden="true">
-                        check_circle
-                      </span>
-                      {pro}
-                    </li>
-                  ))}
-                </ul>
+                <DataList icon="check_circle" items={getBikePros(bike)} />
               </section>
               <section>
                 <h3>A mejorar</h3>
-                <ul>
-                  {bike.cons.map((con) => (
-                    <li key={con}>
-                      <span className="material-symbols-outlined" aria-hidden="true">
-                        cancel
-                      </span>
-                      {con}
-                    </li>
-                  ))}
-                </ul>
+                <DataList icon="cancel" items={getBikeCons(bike)} />
               </section>
             </div>
           </article>

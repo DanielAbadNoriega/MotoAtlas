@@ -4,6 +4,27 @@ import { describe, expect, it } from 'vitest';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { ComparePage } from './index';
 
+
+function createBikeWithMissingData() {
+  const bike = {
+    ...bikeFixtures[0],
+    id: 'test-no-data-bike',
+    brand: 'NoData',
+    model: 'Ghost',
+    imageUrl: undefined,
+    pros: undefined,
+    cons: undefined,
+    reliabilityReports: {
+      commonIssues: undefined,
+      reportCount: undefined,
+      reliabilityScore: undefined,
+    },
+    useScores: undefined,
+  };
+
+  return bike as unknown as typeof bikeFixtures[number];
+}
+
 describe('ComparePage', () => {
   it('renders the Stitch visual comparator with dynamic data', () => {
     render(<ComparePage bikes={bikeFixtures.slice(0, 2)} motorcycles={bikeFixtures} />);
@@ -100,10 +121,48 @@ describe('ComparePage', () => {
     expect(screen.getByRole('heading', { name: 'Calor en ciudad' })).toBeInTheDocument();
   });
 
+
+
+  it('shows a clear one-bike state and can add another motorcycle', async () => {
+    const user = userEvent.setup();
+    render(<ComparePage bikes={[bikeFixtures[0]]} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('heading', { name: /Añade otra moto para comparar/i })).toBeInTheDocument();
+    expect(screen.getByText(/BMW F 900 GS ya está en la cola/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Añadir Aprilia Tuareg 660 a la comparativa/i }));
+
+    expect(window.location.hash).toBe('#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660');
+  });
+
+  it('renders clean fallbacks when a motorcycle has no pros, cons or common issues', () => {
+    const noDataBike = createBikeWithMissingData();
+    render(<ComparePage bikes={[noDataBike, bikeFixtures[1]]} motorcycles={[noDataBike, ...bikeFixtures]} />);
+
+    expect(screen.getAllByText('Sin datos disponibles').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByRole('heading', { name: 'Sin datos disponibles' })).toBeInTheDocument();
+  });
+
+  it('uses a placeholder image when a motorcycle has no image', () => {
+    const noDataBike = createBikeWithMissingData();
+    render(<ComparePage bikes={[noDataBike, bikeFixtures[1]]} motorcycles={[noDataBike, ...bikeFixtures]} />);
+
+    expect(screen.getAllByRole('img').some((image) => image.getAttribute('src')?.startsWith('data:image/svg+xml'))).toBe(true);
+  });
+
+  it('uses score 0 when a motorcycle has no use scores', () => {
+    const noDataBike = createBikeWithMissingData();
+    render(<ComparePage bikes={[noDataBike, bikeFixtures[1]]} motorcycles={[noDataBike, ...bikeFixtures]} />);
+
+    expect(screen.getByRole('progressbar', { name: /City Use NoData Ghost/i })).toHaveAttribute('aria-valuenow', '0');
+    expect(screen.getAllByText('0.0/10').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('N/D').length).toBeGreaterThan(0);
+  });
+
   it('asks for at least two motorcycles when comparison is empty', () => {
     render(<ComparePage bikes={[]} motorcycles={bikeFixtures} />);
 
-    expect(screen.getByRole('heading', { name: /Seleccioná al menos 2 motos/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Selecciona al menos 2 motos/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ir al buscador/i })).toHaveAttribute('href', '#/buscador?browse=1');
   });
 });
