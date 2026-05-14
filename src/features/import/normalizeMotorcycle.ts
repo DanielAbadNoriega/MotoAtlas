@@ -328,6 +328,24 @@ function withPlaceholder<T>(
   return placeholder;
 }
 
+function withRequiredNumberWarning(
+  value: number | undefined,
+  allowPlaceholders: boolean,
+  warnings: MotorcycleNormalizationWarning[],
+  field: string,
+  message: string,
+) {
+  if (value !== undefined) {
+    return value;
+  }
+
+  if (allowPlaceholders) {
+    addWarning(warnings, field, message);
+  }
+
+  return undefined;
+}
+
 export function normalizeMotorcycle(input: unknown, options: NormalizeMotorcycleOptions = {}): MotorcycleNormalizationResult {
   const warnings: MotorcycleNormalizationWarning[] = [];
 
@@ -407,64 +425,58 @@ export function normalizeMotorcycle(input: unknown, options: NormalizeMotorcycle
     brand,
     cons,
     description,
-    displacementCc: withPlaceholder(
+    displacementCc: withRequiredNumberWarning(
       displacementCc,
-      0,
       allowPlaceholders,
       warnings,
       'displacement_cc',
-      'Cilindrada ausente: se usa 0 como placeholder hasta revisión manual.',
+      'Cilindrada ausente o inválida: no se aplica placeholder numérico.',
     ),
     engineType,
     features,
-    fuelTankLiters: withPlaceholder(
+    fuelTankLiters: withRequiredNumberWarning(
       fuelTankLiters,
-      0,
       allowPlaceholders,
       warnings,
       'fuel_tank_liters',
-      'Depósito ausente: se usa 0 como placeholder hasta revisión manual.',
+      'Depósito ausente o inválido: no se aplica placeholder numérico.',
     ),
     id,
     imageUrl,
     license,
     model,
-    powerHp: withPlaceholder(
+    powerHp: withRequiredNumberWarning(
       powerHp,
-      0,
       allowPlaceholders,
       warnings,
       'power_hp',
-      'Potencia ausente: se usa 0 como placeholder hasta revisión manual.',
+      'Potencia ausente o inválida: no se aplica placeholder numérico.',
     ),
     priceEur,
     pros,
     reliabilityReports,
-    seatHeightMm: withPlaceholder(
+    seatHeightMm: withRequiredNumberWarning(
       seatHeightMm,
-      0,
       allowPlaceholders,
       warnings,
       'seat_height_mm',
-      'Altura de asiento ausente: se usa 0 como placeholder hasta revisión manual.',
+      'Altura de asiento ausente o inválida: no se aplica placeholder numérico.',
     ),
     segment,
-    torqueNm: withPlaceholder(
+    torqueNm: withRequiredNumberWarning(
       torqueNm,
-      0,
       allowPlaceholders,
       warnings,
       'torque_nm',
-      'Par ausente: se usa 0 como placeholder hasta revisión manual.',
+      'Par ausente o inválido: no se aplica placeholder numérico.',
     ),
     useScores,
-    wetWeightKg: withPlaceholder(
+    wetWeightKg: withRequiredNumberWarning(
       wetWeightKg,
-      0,
       allowPlaceholders,
       warnings,
       'wet_weight_kg',
-      'Peso en orden de marcha ausente: se usa 0 como placeholder hasta revisión manual.',
+      'Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.',
     ),
     year,
   };

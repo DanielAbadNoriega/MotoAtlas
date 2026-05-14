@@ -76,6 +76,7 @@ export type MotorcycleUpsertPayload = Readonly<{
 export type MotorcycleValidationError = Readonly<{
   field: keyof MotorcycleUpsertPayload | string;
   message: string;
+  receivedValue?: unknown;
 }>;
 
 export type MotorcycleValidationItem = Readonly<{
@@ -117,10 +118,12 @@ export type SupabaseMotorcycleClient = Readonly<{
 }>;
 
 export type ImportMotorcyclesResult = Readonly<{
+  allowPartial: boolean;
   errors: readonly string[];
   importedCount: number;
   invalidCount: number;
   readCount: number;
+  skippedCount: number;
   validCount: number;
   warnings: readonly MotorcycleNormalizationWarning[];
 }>;

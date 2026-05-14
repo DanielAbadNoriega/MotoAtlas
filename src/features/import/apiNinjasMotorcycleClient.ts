@@ -11,7 +11,7 @@ export type ApiNinjasMotorcycleClientOptions = Readonly<{
 }>;
 
 export type SearchApiNinjasMotorcyclesOptions = Readonly<{
-  seed: MotorcycleSeed;
+  seed: MotorcycleSeed | Readonly<{ make: string; model?: string; year?: number }>;
 }>;
 
 export function createApiNinjasMotorcycleClient({
@@ -22,8 +22,14 @@ export function createApiNinjasMotorcycleClient({
   async function searchMotorcycles({ seed }: SearchApiNinjasMotorcyclesOptions) {
     const url = new URL(endpoint);
     url.searchParams.set('make', seed.make);
-    url.searchParams.set('model', seed.model);
-    url.searchParams.set('year', String(seed.year));
+
+    if (seed.model) {
+      url.searchParams.set('model', seed.model);
+    }
+
+    if (seed.year) {
+      url.searchParams.set('year', String(seed.year));
+    }
 
     const response = await fetchImpl(url, {
       headers: {

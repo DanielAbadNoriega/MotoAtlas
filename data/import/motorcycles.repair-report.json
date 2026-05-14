@@ -1,0 +1,1294 @@
+{
+  "generatedAt": "2026-05-14T14:36:43.989Z",
+  "motorcyclesRead": 20,
+  "motorcyclesRepaired": [
+    {
+      "brand": "CFMoto",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 799,
+          "oldValue": 0,
+          "query": {
+            "make": "CF Moto",
+            "model": "800"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 89.9,
+          "oldValue": 0,
+          "query": {
+            "make": "CF Moto",
+            "model": "800"
+          }
+        },
+        {
+          "field": "torque_nm",
+          "newValue": 75,
+          "oldValue": 0,
+          "query": {
+            "make": "CF Moto",
+            "model": "800"
+          }
+        },
+        {
+          "field": "wet_weight_kg",
+          "newValue": 231,
+          "oldValue": 0,
+          "query": {
+            "make": "CF Moto",
+            "model": "800"
+          }
+        },
+        {
+          "field": "seat_height_mm",
+          "newValue": 825,
+          "oldValue": 0,
+          "query": {
+            "make": "CF Moto",
+            "model": "800"
+          }
+        },
+        {
+          "field": "fuel_tank_liters",
+          "newValue": 19,
+          "oldValue": 0,
+          "query": {
+            "make": "CF Moto",
+            "model": "800"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 17,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "CFMoto",
+            "model": "800MT-X",
+            "year": 2025
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CFMoto",
+            "model": "800MT-X"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CFMoto",
+            "model": "800MT"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CFMoto",
+            "model": "800"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CFMoto",
+            "model": "800mtx"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CFMoto",
+            "model": "800-x"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CFMoto",
+            "model": "800 mt x"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CF Moto",
+            "model": "800MT-X"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CF Moto",
+            "model": "800mtx"
+          },
+          "results": [],
+          "resultsFound": 0
+        },
+        {
+          "query": {
+            "make": "CF Moto",
+            "model": "800"
+          },
+          "results": [
+            {
+              "make": "CF Moto",
+              "model": "800MT Sport",
+              "year": "2022"
+            },
+            {
+              "make": "CF Moto",
+              "model": "800MT Touring",
+              "year": "2022"
+            },
+            {
+              "make": "CF Moto",
+              "model": "CForce 800 25th",
+              "year": "2016"
+            },
+            {
+              "make": "CF Moto",
+              "model": "CForce 800 Classic",
+              "year": "2016"
+            },
+            {
+              "make": "CF Moto",
+              "model": "CForce 800",
+              "year": "2015"
+            }
+          ],
+          "resultsFound": 17
+        }
+      ]
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 776,
+          "oldValue": 0,
+          "query": {
+            "make": "Suzuki",
+            "model": "V-Strom 800DE"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 84.3,
+          "oldValue": 0,
+          "query": {
+            "make": "Suzuki",
+            "model": "V-Strom 800DE"
+          }
+        },
+        {
+          "field": "wet_weight_kg",
+          "newValue": 277,
+          "oldValue": 0,
+          "query": {
+            "make": "Suzuki",
+            "model": "V"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 38,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Suzuki",
+            "model": "V-Strom 800DE",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Suzuki",
+              "model": "V-Strom 800DE",
+              "year": "2024"
+            },
+            {
+              "make": "Suzuki",
+              "model": "V-Strom 800DE Adventure",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 2
+        },
+        {
+          "query": {
+            "make": "Suzuki",
+            "model": "V-Strom 800DE"
+          },
+          "results": [
+            {
+              "make": "Suzuki",
+              "model": "V-Strom 800DE",
+              "year": "2023"
+            },
+            {
+              "make": "Suzuki",
+              "model": "V-Strom 800DE Adventure",
+              "year": "2023"
+            },
+            {
+              "make": "Suzuki",
+              "model": "V-Strom 800DE",
+              "year": "2024"
+            },
+            {
+              "make": "Suzuki",
+              "model": "V-Strom 800DE Adventure",
+              "year": "2024"
+            },
+            {
+              "make": "Suzuki",
+              "model": "V-Strom 800DE",
+              "year": "2025"
+            }
+          ],
+          "resultsFound": 6
+        },
+        {
+          "query": {
+            "make": "Suzuki",
+            "model": "V"
+          },
+          "results": [
+            {
+              "make": "Suzuki",
+              "model": "Avenis",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "Boulevard C50",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "Boulevard C50SE",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "Boulevard C50T",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "Boulevard C90 B O S S",
+              "year": "2022"
+            }
+          ],
+          "resultsFound": 30
+        }
+      ]
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "fieldsRepaired": [
+        {
+          "field": "wet_weight_kg",
+          "newValue": 223,
+          "oldValue": 0,
+          "query": {
+            "make": "Ducati",
+            "model": "DesertX"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 10,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Ducati",
+            "model": "DesertX",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Ducati",
+              "model": "DesertX",
+              "year": "2024"
+            },
+            {
+              "make": "Ducati",
+              "model": "DesertX Rally",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 2
+        },
+        {
+          "query": {
+            "make": "Ducati",
+            "model": "DesertX"
+          },
+          "results": [
+            {
+              "make": "Ducati",
+              "model": "DesertX",
+              "year": "2022"
+            },
+            {
+              "make": "Ducati",
+              "model": "Scrambler DesertX Concept",
+              "year": "2020"
+            },
+            {
+              "make": "Ducati",
+              "model": "DesertX",
+              "year": "2023"
+            },
+            {
+              "make": "Ducati",
+              "model": "DesertX",
+              "year": "2024"
+            },
+            {
+              "make": "Ducati",
+              "model": "DesertX Rally",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 8
+        }
+      ]
+    },
+    {
+      "brand": "KTM",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 889,
+          "oldValue": 0,
+          "query": {
+            "make": "KTM",
+            "model": "890 Adventure R"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 103.3,
+          "oldValue": 0,
+          "query": {
+            "make": "KTM",
+            "model": "890 Adventure R"
+          }
+        }
+      ],
+      "remainingInvalidFields": [
+        {
+          "camelField": "wetWeightKg",
+          "field": "wet_weight_kg",
+          "value": 0
+        }
+      ],
+      "resultsFound": 21,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890 Adventure R",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 1
+        },
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890 Adventure R"
+          },
+          "results": [
+            {
+              "make": "KTM",
+              "model": "890 Adventure R",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R",
+              "year": "2023"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 4
+        },
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890"
+          },
+          "results": [
+            {
+              "make": "KTM",
+              "model": "890 Adventure ",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure L",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Duke ",
+              "year": "2021"
+            }
+          ],
+          "resultsFound": 16
+        },
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890adventurer"
+          },
+          "results": [],
+          "resultsFound": 0
+        }
+      ]
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "fieldsRepaired": [
+        {
+          "field": "power_hp",
+          "newValue": 74,
+          "oldValue": 0,
+          "query": {
+            "make": "Yamaha",
+            "model": "MT-07"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 30,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Yamaha",
+            "model": "MT-07",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Yamaha",
+              "model": "MT-07",
+              "year": "2024"
+            },
+            {
+              "make": "Yamaha",
+              "model": "MT-07-Pure",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 2
+        },
+        {
+          "query": {
+            "make": "Yamaha",
+            "model": "MT-07"
+          },
+          "results": [
+            {
+              "make": "Yamaha",
+              "model": "MT-07",
+              "year": "2022"
+            },
+            {
+              "make": "Yamaha",
+              "model": "MT-07HO",
+              "year": "2022"
+            },
+            {
+              "make": "Yamaha",
+              "model": "MT-07",
+              "year": "2021"
+            },
+            {
+              "make": "Yamaha",
+              "model": "MT-07HO",
+              "year": "2021"
+            },
+            {
+              "make": "Yamaha",
+              "model": "MT-07LA",
+              "year": "2021"
+            }
+          ],
+          "resultsFound": 28
+        }
+      ]
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "fieldsRepaired": [
+        {
+          "field": "power_hp",
+          "newValue": 72,
+          "oldValue": 0,
+          "query": {
+            "make": "Honda",
+            "model": "CB750"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 7,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Honda",
+            "model": "CB750 Hornet",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Honda",
+              "model": "CB750 Hornet",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 1
+        },
+        {
+          "query": {
+            "make": "Honda",
+            "model": "CB750 Hornet"
+          },
+          "results": [
+            {
+              "make": "Honda",
+              "model": "CB750 Hornet",
+              "year": "2023"
+            },
+            {
+              "make": "Honda",
+              "model": "CB750 Hornet",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 2
+        },
+        {
+          "query": {
+            "make": "Honda",
+            "model": "CB750"
+          },
+          "results": [
+            {
+              "make": "Honda",
+              "model": "CB750F SuperSport",
+              "year": "1979"
+            },
+            {
+              "make": "Honda",
+              "model": "CB750",
+              "year": "1969"
+            },
+            {
+              "make": "Honda",
+              "model": "CB750 Hornet",
+              "year": "2023"
+            },
+            {
+              "make": "Honda",
+              "model": "CB750 Hornet",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 4
+        }
+      ]
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "fieldsRepaired": [
+        {
+          "field": "power_hp",
+          "newValue": 110,
+          "oldValue": 0,
+          "query": {
+            "make": "Kawasaki",
+            "model": "Z900",
+            "year": 2024
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 4,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Kawasaki",
+            "model": "Z900",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Kawasaki",
+              "model": "Z900 ABS",
+              "year": "2024"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Z900 SE ABS",
+              "year": "2024"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Z900RS ABS",
+              "year": "2024"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Z900RS Cafe ABS",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 4
+        }
+      ]
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 776,
+          "oldValue": 0,
+          "query": {
+            "make": "Suzuki",
+            "model": "GSX-8S"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 198.5,
+          "oldValue": 0,
+          "query": {
+            "make": "Suzuki",
+            "model": "GSX"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 34,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Suzuki",
+            "model": "GSX-8S",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Suzuki",
+              "model": "GSX-8S",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 1
+        },
+        {
+          "query": {
+            "make": "Suzuki",
+            "model": "GSX-8S"
+          },
+          "results": [
+            {
+              "make": "Suzuki",
+              "model": "GSX-8S",
+              "year": "2023"
+            },
+            {
+              "make": "Suzuki",
+              "model": "GSX-8S",
+              "year": "2024"
+            },
+            {
+              "make": "Suzuki",
+              "model": "GSX-8S",
+              "year": "2025"
+            }
+          ],
+          "resultsFound": 3
+        },
+        {
+          "query": {
+            "make": "Suzuki",
+            "model": "GSX"
+          },
+          "results": [
+            {
+              "make": "Suzuki",
+              "model": "GSX-R1000",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "GSX-R1000A",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "GSX-R1000R",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "GSX-R1000R Phantom",
+              "year": "2022"
+            },
+            {
+              "make": "Suzuki",
+              "model": "GSX-R1000RZ",
+              "year": "2022"
+            }
+          ],
+          "resultsFound": 30
+        }
+      ]
+    },
+    {
+      "brand": "Triumph",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 765,
+          "oldValue": 0,
+          "query": {
+            "make": "Triumph",
+            "model": "Street Triple 765 R",
+            "year": 2024
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 128.2,
+          "oldValue": 0,
+          "query": {
+            "make": "Triumph",
+            "model": "Street Triple 765 R",
+            "year": 2024
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 2,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Triumph",
+            "model": "Street Triple 765 R",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Triumph",
+              "model": "Street Triple 765 R",
+              "year": "2024"
+            },
+            {
+              "make": "Triumph",
+              "model": "Street Triple 765 RS",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 2
+        }
+      ]
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 890,
+          "oldValue": 0,
+          "query": {
+            "make": "Yamaha",
+            "model": "Tracer 9 GT"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 119,
+          "oldValue": 0,
+          "query": {
+            "make": "Yamaha",
+            "model": "Tracer 9 GT"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 6,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Yamaha",
+            "model": "Tracer 9 GT",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Yamaha",
+              "model": "Tracer 9 GT Plus",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 1
+        },
+        {
+          "query": {
+            "make": "Yamaha",
+            "model": "Tracer 9 GT"
+          },
+          "results": [
+            {
+              "make": "Yamaha",
+              "model": "Tracer 9 GT",
+              "year": "2022"
+            },
+            {
+              "make": "Yamaha",
+              "model": "Tracer 9 GT",
+              "year": "2021"
+            },
+            {
+              "make": "Yamaha",
+              "model": "Tracer 9 GT",
+              "year": "2023"
+            },
+            {
+              "make": "Yamaha",
+              "model": "Tracer 9 GT Plus",
+              "year": "2023"
+            },
+            {
+              "make": "Yamaha",
+              "model": "Tracer 9 GT Plus",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 5
+        }
+      ]
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 649,
+          "oldValue": 0,
+          "query": {
+            "make": "Kawasaki",
+            "model": "Versys 650"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 69,
+          "oldValue": 0,
+          "query": {
+            "make": "Kawasaki",
+            "model": "Versys 650"
+          }
+        },
+        {
+          "field": "wet_weight_kg",
+          "newValue": 217,
+          "oldValue": 0,
+          "query": {
+            "make": "Kawasaki",
+            "model": "Versys 650"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 32,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Kawasaki",
+            "model": "Versys 650",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Kawasaki",
+              "model": "Versys 650",
+              "year": "2024"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Versys 650 LT ABS",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 2
+        },
+        {
+          "query": {
+            "make": "Kawasaki",
+            "model": "Versys 650"
+          },
+          "results": [
+            {
+              "make": "Kawasaki",
+              "model": "Versys 650",
+              "year": "2022"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Versys 650 Grand Tourer",
+              "year": "2022"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Versys 650 LT",
+              "year": "2022"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Versys 650 Tourer",
+              "year": "2022"
+            },
+            {
+              "make": "Kawasaki",
+              "model": "Versys 650",
+              "year": "2021"
+            }
+          ],
+          "resultsFound": 30
+        }
+      ]
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 937,
+          "oldValue": 0,
+          "query": {
+            "make": "Ducati",
+            "model": "Multistrada V2"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 93,
+          "oldValue": 0,
+          "query": {
+            "make": "Ducati",
+            "model": "Multistrada V2"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 8,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Ducati",
+            "model": "Multistrada V2",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Ducati",
+              "model": "Multistrada V2",
+              "year": "2024"
+            },
+            {
+              "make": "Ducati",
+              "model": "Multistrada V2 S",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 2
+        },
+        {
+          "query": {
+            "make": "Ducati",
+            "model": "Multistrada V2"
+          },
+          "results": [
+            {
+              "make": "Ducati",
+              "model": "Multistrada V2",
+              "year": "2022"
+            },
+            {
+              "make": "Ducati",
+              "model": "Multistrada V2 S",
+              "year": "2022"
+            },
+            {
+              "make": "Ducati",
+              "model": "Multistrada V2",
+              "year": "2023"
+            },
+            {
+              "make": "Ducati",
+              "model": "Multistrada V2 S",
+              "year": "2023"
+            },
+            {
+              "make": "Ducati",
+              "model": "Multistrada V2",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 6
+        }
+      ]
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "fieldsRepaired": [
+        {
+          "field": "displacement_cc",
+          "newValue": 1084,
+          "oldValue": 0,
+          "query": {
+            "make": "Honda",
+            "model": "NT1100"
+          }
+        },
+        {
+          "field": "power_hp",
+          "newValue": 100.6,
+          "oldValue": 0,
+          "query": {
+            "make": "Honda",
+            "model": "NT1100"
+          }
+        }
+      ],
+      "remainingInvalidFields": [],
+      "resultsFound": 9,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "Honda",
+            "model": "NT1100",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "Honda",
+              "model": "NT1100",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 1
+        },
+        {
+          "query": {
+            "make": "Honda",
+            "model": "NT1100"
+          },
+          "results": [
+            {
+              "make": "Honda",
+              "model": "NT1100",
+              "year": "2022"
+            },
+            {
+              "make": "Honda",
+              "model": "NT1100 DCT",
+              "year": "2022"
+            },
+            {
+              "make": "Honda",
+              "model": "NT1100",
+              "year": "2023"
+            },
+            {
+              "make": "Honda",
+              "model": "NT1100 DCT",
+              "year": "2023"
+            },
+            {
+              "make": "Honda",
+              "model": "NT1100",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 8
+        }
+      ]
+    }
+  ],
+  "motorcyclesUnrepaired": [
+    {
+      "brand": "KTM",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "invalidFields": [
+        {
+          "camelField": "wetWeightKg",
+          "field": "wet_weight_kg",
+          "value": 0
+        }
+      ],
+      "resultsFound": 21,
+      "searchesAttempted": [
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890 Adventure R",
+            "year": 2024
+          },
+          "results": [
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 1
+        },
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890 Adventure R"
+          },
+          "results": [
+            {
+              "make": "KTM",
+              "model": "890 Adventure R",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R",
+              "year": "2023"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2024"
+            }
+          ],
+          "resultsFound": 4
+        },
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890"
+          },
+          "results": [
+            {
+              "make": "KTM",
+              "model": "890 Adventure ",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure L",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Adventure R Rally",
+              "year": "2021"
+            },
+            {
+              "make": "KTM",
+              "model": "890 Duke ",
+              "year": "2021"
+            }
+          ],
+          "resultsFound": 16
+        },
+        {
+          "query": {
+            "make": "KTM",
+            "model": "890adventurer"
+          },
+          "results": [],
+          "resultsFound": 0
+        }
+      ]
+    }
+  ]
+}

@@ -28,10 +28,10 @@ describe('validateMotorcycleImport', () => {
 
     expect(result.valid).toBe(false);
     expect(result.invalidItems).toHaveLength(1);
-    expect(result.errors).toEqual(
+    expect(result.invalidItems[0].errors).toEqual(
       expect.arrayContaining([
-        'motorcycles[0].brand es obligatorio y debe ser texto no vacío.',
-        'motorcycles[0].engine_type es obligatorio y debe ser válido.',
+        expect.objectContaining({ field: 'brand', message: 'brand es obligatorio y debe ser texto no vacío.' }),
+        expect.objectContaining({ field: 'engine_type', message: 'engine_type es obligatorio y debe ser válido.' }),
       ]),
     );
   });
@@ -49,6 +49,82 @@ describe('validateMotorcycleImport', () => {
     });
   });
 
+  it('normaliza strings numéricos como "895 cc" antes de validar', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, displacementCc: '895 cc' }]);
+
+    expect(result.valid).toBe(true);
+    expect(result.validItems[0].motorcycle?.displacementCc).toBe(895);
+  });
+
+  it('rechaza displacement 0 porque Supabase exige un valor mayor que 0', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, displacementCc: 0 }]);
+
+    expect(result.valid).toBe(false);
+    expect(result.invalidItems[0].errors).toContainEqual(
+      expect.objectContaining({
+        field: 'displacement_cc',
+        message: 'displacement_cc debe ser mayor que 0.',
+        receivedValue: 0,
+      }),
+    );
+  });
+
+  it('rechaza displacement null porque no es un número útil', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, displacementCc: null }]);
+
+    expect(result.valid).toBe(false);
+    expect(result.invalidItems[0].errors).toContainEqual(
+      expect.objectContaining({
+        field: 'displacement_cc',
+        message: 'displacement_cc es obligatorio y debe ser numérico.',
+        receivedValue: null,
+      }),
+    );
+  });
+
+  it('rechaza strings externos tipo "N/A" porque no contienen número útil', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, displacementCc: 'N/A' }]);
+
+    expect(result.valid).toBe(false);
+    expect(result.invalidItems[0].errors).toContainEqual(
+      expect.objectContaining({
+        field: 'displacement_cc',
+        message: 'displacement_cc es obligatorio y debe ser numérico.',
+        receivedValue: 'N/A',
+      }),
+    );
+  });
+
+  it('rechaza campos técnicos que no sean mayores que 0', () => {
+    const result = validateMotorcycleImport([
+      {
+        ...completeMotorcycle,
+        fuelTankLiters: 0,
+        powerHp: 0,
+        seatHeightMm: 0,
+        torqueNm: 0,
+        wetWeightKg: 0,
+      },
+    ]);
+
+    expect(result.valid).toBe(false);
+    expect(result.invalidItems[0].errors.map((error) => error.field)).toEqual(
+      expect.arrayContaining(['power_hp', 'torque_nm', 'wet_weight_kg', 'seat_height_mm', 'fuel_tank_liters']),
+    );
+  });
+
+  it('permite price_eur 0 pero lo marca como placeholder', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, priceEur: 0 }]);
+
+    expect(result.valid).toBe(true);
+    expect(result.validItems[0].warnings).toContainEqual(
+      expect.objectContaining({
+        field: 'price_eur',
+        message: 'Precio 0 detectado: se acepta como placeholder y debe revisarse manualmente.',
+      }),
+    );
+  });
+
   it('rechaza scores incompletos', () => {
     const invalidMotorcycle = {
       ...completeMotorcycle,
@@ -61,6 +137,6 @@ describe('validateMotorcycleImport', () => {
     const result = validateMotorcycleImport([invalidMotorcycle]);
 
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('motorcycles[0].use_scores.funFactor es obligatorio y debe ser numérico.');
+    expect(result.errors.some((error) => error.includes('use_scores.funFactor es obligatorio y debe ser numérico.'))).toBe(true);
   });
 });

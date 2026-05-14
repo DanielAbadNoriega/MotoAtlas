@@ -13,7 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "import:motos": "tsx scripts/importMotorcycles.ts",
     "fetch:motos": "tsx scripts/fetchMotorcyclesFromApi.ts",
-    "import:motos:check": "tsx scripts/importMotorcycles.ts --dry-run"
+    "import:motos:check": "tsx scripts/importMotorcycles.ts --dry-run",
+    "repair:motos": "tsx scripts/repairMotorcycleData.ts"
   },
   "dependencies": {
     "react": "^19.2.6",

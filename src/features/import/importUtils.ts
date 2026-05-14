@@ -10,6 +10,8 @@ export const importPaths = {
   existingMotorcyclesFileUrl: new URL('../../../data/import/motorcycles.json', import.meta.url),
   generatedMotorcyclesFileUrl: new URL('../../../data/import/motorcycles.generated.json', import.meta.url),
   motorcyclesFileUrl: new URL('../../../data/import/motorcycles.json', import.meta.url),
+  repairReportFileUrl: new URL('../../../data/import/motorcycles.repair-report.json', import.meta.url),
+  repairedMotorcyclesFileUrl: new URL('../../../data/import/motorcycles.repaired.json', import.meta.url),
   seedListFileUrl: new URL('../../../data/import/motorcycleSeedList.json', import.meta.url),
 };
 

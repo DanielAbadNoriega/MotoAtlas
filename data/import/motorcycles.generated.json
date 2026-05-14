@@ -316,7 +316,7 @@
     "brand": "CFMoto",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 799,
+    "displacementCc": 0,
     "engineType": "parallel-twin",
     "features": {
       "absCornering": false,
@@ -327,12 +327,12 @@
       "tractionControl": false,
       "tubelessWheels": false
     },
-    "fuelTankLiters": 19,
+    "fuelTankLiters": 0,
     "id": "cfmoto-800mt-x-2025",
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "800MT-X",
-    "powerHp": 89.9,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -340,9 +340,9 @@
       "reliabilityScore": 0,
       "reportCount": 0
     },
-    "seatHeightMm": 825,
+    "seatHeightMm": 0,
     "segment": "naked",
-    "torqueNm": 75,
+    "torqueNm": 0,
     "useScores": {
       "city": 8,
       "touring": 5,
@@ -352,14 +352,14 @@
       "sport": 8,
       "funFactor": 8
     },
-    "wetWeightKg": 231,
+    "wetWeightKg": 0,
     "year": 2025
   },
   {
     "brand": "Suzuki",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 776,
+    "displacementCc": 0,
     "engineType": "parallel-twin",
     "features": {
       "absCornering": false,
@@ -375,7 +375,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "V-Strom 800DE",
-    "powerHp": 84.3,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -395,7 +395,7 @@
       "sport": 6,
       "funFactor": 7
     },
-    "wetWeightKg": 277,
+    "wetWeightKg": 0,
     "year": 2024
   },
   {
@@ -438,14 +438,14 @@
       "sport": 6,
       "funFactor": 7
     },
-    "wetWeightKg": 223,
+    "wetWeightKg": 0,
     "year": 2024
   },
   {
     "brand": "KTM",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 889,
+    "displacementCc": 0,
     "engineType": "parallel-twin",
     "features": {
       "absCornering": false,
@@ -461,7 +461,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "890 Adventure R",
-    "powerHp": 103.3,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -481,7 +481,7 @@
       "sport": 6,
       "funFactor": 7
     },
-    "wetWeightKg": 230,
+    "wetWeightKg": 0,
     "year": 2024
   },
   {
@@ -504,7 +504,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "MT-07",
-    "powerHp": 74,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -547,7 +547,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "CB750 Hornet",
-    "powerHp": 72,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -590,7 +590,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "Z900",
-    "powerHp": 110,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -617,7 +617,7 @@
     "brand": "Suzuki",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 776,
+    "displacementCc": 0,
     "engineType": "parallel-twin",
     "features": {
       "absCornering": false,
@@ -633,7 +633,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "GSX-8S",
-    "powerHp": 198.5,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -660,7 +660,7 @@
     "brand": "Triumph",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 765,
+    "displacementCc": 0,
     "engineType": "inline-three",
     "features": {
       "absCornering": false,
@@ -676,7 +676,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "Street Triple 765 R",
-    "powerHp": 128.2,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -703,7 +703,7 @@
     "brand": "Yamaha",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 890,
+    "displacementCc": 0,
     "engineType": "parallel-twin",
     "features": {
       "absCornering": false,
@@ -719,7 +719,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "Tracer 9 GT",
-    "powerHp": 119,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -789,7 +789,7 @@
     "brand": "Kawasaki",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 649,
+    "displacementCc": 0,
     "engineType": "parallel-twin",
     "features": {
       "absCornering": false,
@@ -805,7 +805,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "Versys 650",
-    "powerHp": 69,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -825,14 +825,14 @@
       "sport": 7,
       "funFactor": 7
     },
-    "wetWeightKg": 217,
+    "wetWeightKg": 0,
     "year": 2024
   },
   {
     "brand": "Ducati",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 937,
+    "displacementCc": 0,
     "engineType": "l-twin",
     "features": {
       "absCornering": false,
@@ -848,7 +848,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "Multistrada V2",
-    "powerHp": 93,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
@@ -875,7 +875,7 @@
     "brand": "Honda",
     "cons": [],
     "description": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas.",
-    "displacementCc": 1084,
+    "displacementCc": 0,
     "engineType": "parallel-twin",
     "features": {
       "absCornering": false,
@@ -891,7 +891,7 @@
     "imageUrl": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
     "license": "A",
     "model": "NT1100",
-    "powerHp": 100.6,
+    "powerHp": 0,
     "priceEur": 0,
     "pros": [],
     "reliabilityReports": {
