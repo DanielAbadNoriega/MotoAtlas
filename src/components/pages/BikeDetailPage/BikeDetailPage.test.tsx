@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
@@ -27,6 +27,7 @@ describe('BikeDetailPage', () => {
       motorcycleId: bikeFixtures[0].id,
       userName: 'Dani',
       rating: 5,
+      ridingStyle: 'viaje',
       ownershipMonths: null,
       kilometers: null,
       comment: 'Muy buena.',
@@ -121,6 +122,7 @@ describe('BikeDetailPage', () => {
         motorcycleId: bikeFixtures[0].id,
         userName: 'Laura',
         rating: 5,
+        ridingStyle: 'viaje',
         ownershipMonths: 10,
         kilometers: 12000,
         comment: 'Muy equilibrada para viajar.',
@@ -135,6 +137,7 @@ describe('BikeDetailPage', () => {
         motorcycleId: bikeFixtures[0].id,
         userName: 'Marc',
         rating: 4,
+        ridingStyle: 'diario',
         ownershipMonths: null,
         kilometers: null,
         comment: 'Cara, pero completa.',
@@ -152,17 +155,19 @@ describe('BikeDetailPage', () => {
     expect(screen.getByText('Muy equilibrada para viajar.')).toBeInTheDocument();
   });
 
-  it('submits a basic pending review', async () => {
+  it('opens the review modal from the write review button', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
-    await user.type(screen.getByLabelText(/Nombre/i), 'Dani');
-    await user.selectOptions(screen.getByLabelText(/Rating/i), '4');
-    await user.type(screen.getByLabelText(/Opinión/i), 'La moto va muy fina en carretera.');
-    await user.click(screen.getByRole('button', { name: /Enviar review/i }));
+    await user.click(screen.getByRole('button', { name: /Escribir review/i }));
 
-    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
-    expect(createReviewMock).toHaveBeenCalledWith(expect.objectContaining({ motorcycleId: bikeFixtures[0].id, rating: 4 }));
-    expect(screen.getByRole('status')).toHaveTextContent(/pendiente de moderación/i);
+    expect(screen.getByRole('dialog', { name: /Comparte tu experiencia real/i })).toBeInTheDocument();
+    expect(createReviewMock).not.toHaveBeenCalled();
+  });
+
+  it('links to the future community reviews route', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('link', { name: /Ver reviews/i })).toHaveAttribute('href', `#/comunidad/${bikeFixtures[0].id}`);
   });
 });

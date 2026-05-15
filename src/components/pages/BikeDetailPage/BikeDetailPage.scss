@@ -559,6 +559,19 @@
     }
   }
 
+  &__review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+
+    .button {
+      align-items: center;
+      display: inline-flex;
+      justify-content: center;
+    }
+  }
+
   &__review-grid {
     display: grid;
     gap: 2rem;
@@ -568,6 +581,7 @@
   &__approved-reviews {
     display: grid;
     gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 
     article,
     > p {
@@ -778,6 +792,7 @@
     &__score-list,
     &__spec-groups,
     &__review-grid,
+    &__approved-reviews,
     &__related-list {
       grid-template-columns: 1fr;
     }
@@ -802,7 +817,12 @@
     }
 
     &__actions,
+    &__review-actions,
     &__actions .button {
+      width: 100%;
+    }
+
+    &__review-actions .button {
       width: 100%;
     }
 

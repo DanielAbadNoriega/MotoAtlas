@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#c6c6c7",
+                    "on-secondary-fixed-variant": "#92001d",
+                    "on-error": "#690005",
+                    "background": "#141313",
+                    "on-secondary-fixed": "#410007",
+                    "surface-dim": "#141313",
+                    "tertiary-container": "#181a1b",
+                    "secondary-fixed-dim": "#ffb3b1",
+                    "on-primary": "#303031",
+                    "on-tertiary-fixed": "#1a1c1d",
+                    "outline-variant": "#46474a",
+                    "surface-container-low": "#1c1b1b",
+                    "on-tertiary-container": "#818284",
+                    "on-surface-variant": "#c7c6ca",
+                    "secondary-container": "#d6042f",
+                    "on-primary-container": "#848283",
+                    "surface-container": "#201f1f",
+                    "inverse-surface": "#e5e2e1",
+                    "primary": "#c8c6c7",
+                    "secondary-fixed": "#ffdad8",
+                    "surface-container-high": "#2b2a2a",
+                    "surface-tint": "#c8c6c7",
+                    "surface": "#141313",
+                    "primary-container": "#1a1a1b",
+                    "surface-container-lowest": "#0e0e0e",
+                    "primary-fixed-dim": "#c8c6c7",
+                    "secondary": "#ffb3b1",
+                    "on-error-container": "#ffdad6",
+                    "primary-fixed": "#e5e2e3",
+                    "on-background": "#e5e2e1",
+                    "error": "#ffb4ab",
+                    "tertiary-fixed": "#e2e2e3",
+                    "on-primary-fixed": "#1b1b1c",
+                    "error-container": "#93000a",
+                    "on-surface": "#e5e2e1",
+                    "on-primary-fixed-variant": "#474647",
+                    "surface-variant": "#353434",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "surface-container-highest": "#353434",
+                    "outline": "#909094",
+                    "on-tertiary-fixed-variant": "#454748",
+                    "on-secondary-container": "#ffe7e5",
+                    "inverse-primary": "#5f5e5f",
+                    "surface-bright": "#3a3939",
+                    "on-tertiary": "#2f3132",
+                    "inverse-on-surface": "#313030",
+                    "on-secondary": "#680011"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+              "margin-desktop": "80px",
+              "section-gap": "120px"
+            },
+            "fontFamily": {
+                    "headline": ["Hanken Grotesk"],
+                    "display": ["Hanken Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["JetBrains Mono"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, #2b2a2a 1px, transparent 1px),
+                              linear-gradient(to bottom, #2b2a2a 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-secondary-container selection:text-white">
+<!-- TopNavBar -->
+<nav class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/20">
+<div class="flex justify-between items-center px-margin-desktop h-20 max-w-[1440px] mx-auto">
+<div class="font-headline font-extrabold text-[24px] tracking-tighter text-on-surface">MotoAtlas</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Comparison</a>
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">News</a>
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Routes</a>
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Community</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:text-on-surface transition-all active:scale-95">account_circle</button>
+<button class="bg-secondary-container text-on-secondary-container font-headline font-bold px-6 py-2 rounded-lg text-sm hover:brightness-110 active:scale-95 transition-all">Sign In</button>
+</div>
+</div>
+</nav>
+<main class="min-h-screen bg-grid-pattern flex items-center justify-center py-20 px-4">
+<!-- Modal Overlay Mock -->
+<div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"></div>
+<!-- Review Modal Structure -->
+<div class="relative z-50 w-full max-w-2xl bg-surface-container border border-outline-variant/30 rounded-xl shadow-2xl overflow-hidden">
+<!-- Modal Header -->
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-high">
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">Publicar Reseña</h2>
+<p class="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mt-1">Ducati Panigale V4 S (2024)</p>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-surface">close</button>
+</div>
+<!-- Error Alert Message -->
+<div class="bg-error-container/20 border-l-4 border-error px-6 py-4 flex items-center gap-4">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">report</span>
+<span class="text-error font-body font-medium text-sm">Revisa los campos obligatorios antes de enviar.</span>
+</div>
+<div class="p-8 space-y-8">
+<!-- Rating Section (Missing State) -->
+<div class="space-y-3">
+<label class="block font-headline text-sm font-bold text-on-surface uppercase tracking-wider">Tu Valoración</label>
+<div class="flex gap-2 p-4 rounded-lg bg-surface-container-lowest border border-error/50 transition-all">
+<button class="material-symbols-outlined text-outline-variant hover:text-secondary-container transition-colors text-3xl">star</button>
+<button class="material-symbols-outlined text-outline-variant hover:text-secondary-container transition-colors text-3xl">star</button>
+<button class="material-symbols-outlined text-outline-variant hover:text-secondary-container transition-colors text-3xl">star</button>
+<button class="material-symbols-outlined text-outline-variant hover:text-secondary-container transition-colors text-3xl">star</button>
+<button class="material-symbols-outlined text-outline-variant hover:text-secondary-container transition-colors text-3xl">star</button>
+</div>
+<p class="text-error font-label text-[11px] flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">error</span>
+                        La valoración es obligatoria
+                    </p>
+</div>
+<!-- Comment Section (Empty State) -->
+<div class="space-y-3">
+<label class="block font-headline text-sm font-bold text-on-surface uppercase tracking-wider">Comentarios Técnicos</label>
+<textarea class="w-full bg-surface-container-lowest border border-error/50 rounded-lg p-4 font-body text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container transition-all resize-none" placeholder="Comparte tu experiencia sobre el rendimiento, manejo y electrónica..." rows="5"></textarea>
+<p class="text-error font-label text-[11px] flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">error</span>
+                        Por favor, escribe un comentario
+                    </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-end gap-4 pt-4">
+<button class="px-6 py-3 font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors">Cancelar</button>
+<button class="bg-secondary-container text-on-secondary-container font-headline font-bold px-8 py-3 rounded-lg text-sm hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-secondary-container/20">Enviar Reseña</button>
+</div>
+</div>
+<!-- Technical Decorative Bottom -->
+<div class="h-1 bg-gradient-to-r from-transparent via-secondary-container to-transparent opacity-30"></div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-section-gap border-t border-outline-variant/10 bg-surface-container-lowest">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-[1440px] mx-auto gap-8">
+<div class="flex flex-col items-center md:items-start gap-4">
+<div class="font-headline font-bold text-[24px] text-on-surface">MotoAtlas</div>
+<p class="font-body text-body-md text-on-surface-variant max-w-sm text-center md:text-left">© 2024 MotoAtlas. High-Performance Engineering Registry.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-x-8 gap-y-4">
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Technical Specifications</a>
+<a class="font-label text-[12px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+</body></html>

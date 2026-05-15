@@ -18,7 +18,7 @@ export const bikes = [
     seatHeightMm: 870,
     fuelTankLiters: 14.5,
     priceEur: 13950,
-    imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?q=80&w=1200',
+    imageUrl: '/images/motorcycles/bmw-f-900-gs-2024.webp',
     description:
       'Trail media-alta con mucho par, electrónica moderna y enfoque mixto entre viaje rápido y pista sencilla.',
     useScores: { city: 6.5, touring: 8.5, offroad: 8, passenger: 7.5, beginner: 4.5, sport: 7.5, funFactor: 8 },
@@ -54,7 +54,7 @@ export const bikes = [
     seatHeightMm: 860,
     fuelTankLiters: 18,
     priceEur: 11999,
-    imageUrl: 'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?q=80&w=1200',
+    imageUrl: '/images/motorcycles/aprilia-tuareg-660-2024.webp',
     description:
       'Trail ligera y muy campera, con electrónica completa y un carácter más rally que turístico.',
     useScores: { city: 7, touring: 7, offroad: 9.5, passenger: 6, beginner: 6, sport: 7.5, funFactor: 9 },
@@ -90,7 +90,7 @@ export const bikes = [
     seatHeightMm: 875,
     fuelTankLiters: 16,
     priceEur: 10799,
-    imageUrl: 'https://images.unsplash.com/photo-1558980394-4c7c9299fe96?q=80&w=1200',
+    imageUrl: '/images/motorcycles/yamaha-tenere-700-2024.webp',
     description:
       'Trail sencilla, robusta y muy popular para aventura real, con menos electrónica y más foco en fiabilidad.',
     useScores: { city: 6, touring: 7, offroad: 9, passenger: 5.5, beginner: 5.5, sport: 6.5, funFactor: 8.5 },
@@ -234,7 +234,7 @@ export const bikes = [
     seatHeightMm: 875,
     fuelTankLiters: 21,
     priceEur: 17790,
-    imageUrl: 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?q=80&w=1200',
+    imageUrl: '/images/motorcycles/ducati-desertx-2024.webp',
     description:
       'Trail premium con estética rally, electrónica avanzada y motor Testastretta de fuerte personalidad.',
     useScores: { city: 5.5, touring: 8, offroad: 8.5, passenger: 6.5, beginner: 3.5, sport: 8.5, funFactor: 9 },
@@ -270,7 +270,7 @@ export const bikes = [
     seatHeightMm: 880,
     fuelTankLiters: 20,
     priceEur: 15300,
-    imageUrl: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=1200',
+    imageUrl: '/images/motorcycles/ktm-890-adventure-r-2024.webp',
     description:
       'Trail muy orientada al offroad rápido, con suspensiones largas, electrónica deportiva y depósito bajo.',
     useScores: { city: 5.5, touring: 7.5, offroad: 9.5, passenger: 5.5, beginner: 3, sport: 8, funFactor: 9 },
@@ -378,7 +378,7 @@ export const bikes = [
     seatHeightMm: 805,
     fuelTankLiters: 14,
     priceEur: 7799,
-    imageUrl: 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?q=80&w=1200',
+    imageUrl: '/images/motorcycles/yamaha-mt-07-2024.webp',
     description:
       'Naked ligera, simple y muy divertida, ideal como moto diaria con carácter y bajo coste de uso.',
     useScores: { city: 9, touring: 5.5, offroad: 1, passenger: 5, beginner: 8, sport: 6.5, funFactor: 9 },
@@ -522,7 +522,7 @@ export const bikes = [
     seatHeightMm: 820,
     fuelTankLiters: 17,
     priceEur: 10299,
-    imageUrl: 'https://images.unsplash.com/photo-1611241443322-78b19f76b04b?q=80&w=1200',
+    imageUrl: '/images/motorcycles/kawasaki-z900-2024.webp',
     description:
       'Naked tetracilíndrica potente y suave, muy usable en carretera y con carácter clásico japonés.',
     useScores: { city: 6.5, touring: 5.5, offroad: 1, passenger: 5, beginner: 3, sport: 8, funFactor: 8.5 },

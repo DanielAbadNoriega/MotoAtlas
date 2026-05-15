@@ -1,11 +1,12 @@
-import { type FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
-import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './BikeDetailPage.scss';
 
@@ -179,8 +180,7 @@ function NotFoundDetail() {
 
 export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
-  const [reviewStatus, setReviewStatus] = useState('');
-  const [reviewError, setReviewError] = useState('');
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
     if (!bike) {
@@ -219,40 +219,6 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
   const reviewAggregate = getReviewAggregate(reviews);
   const enabledFeatures = getFeatureEntries(bike).filter(([, isEnabled]) => isEnabled);
   const relatedBikes = motorcycles.filter((item) => item.segment === bike.segment && item.id !== bike.id).slice(0, 3);
-  const submitReview = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setReviewError('');
-    setReviewStatus('');
-
-    const form = event.currentTarget;
-    const formData = new FormData(event.currentTarget);
-    const rating = Number(formData.get('rating'));
-    const ownershipMonthsValue = String(formData.get('ownershipMonths') ?? '').trim();
-    const kilometersValue = String(formData.get('kilometers') ?? '').trim();
-
-    try {
-      await createReview({
-        motorcycleId: bike.id,
-        userName: String(formData.get('userName') ?? ''),
-        rating,
-        ownershipMonths: ownershipMonthsValue ? Number(ownershipMonthsValue) : null,
-        kilometers: kilometersValue ? Number(kilometersValue) : null,
-        comment: String(formData.get('comment') ?? ''),
-        pros: String(formData.get('pros') ?? '')
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean),
-        cons: String(formData.get('cons') ?? '')
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean),
-      });
-      form.reset();
-      setReviewStatus('Review enviada. Queda pendiente de moderación.');
-    } catch (error) {
-      setReviewError(error instanceof Error ? error.message : 'No se pudo enviar la review.');
-    }
-  };
 
   return (
     <main className="bike-detail" aria-labelledby="bike-detail-title">
@@ -474,68 +440,34 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
           <strong>{formatReviewAggregate(reviewAggregate)}</strong>
           <p>Las nuevas opiniones entran en moderación como pendientes. Sin login todavía.</p>
+          <div className="bike-detail__review-actions">
+            <a className="button button--ghost" href={`#/comunidad/${bike.id}`}>
+              Ver reviews
+            </a>
+            <button className="button button--primary" type="button" onClick={() => setIsReviewModalOpen(true)}>
+              Escribir review
+            </button>
+          </div>
         </div>
 
-        <div className="bike-detail__review-grid">
-          <div className="bike-detail__approved-reviews" aria-live="polite">
-            {reviews.length > 0 ? (
-              reviews.map((review) => (
-                <article key={review.id}>
-                  <header>
-                    <strong>{review.userName}</strong>
-                    <span>{review.rating}/5</span>
-                  </header>
-                  <p>{review.comment}</p>
-                </article>
-              ))
-            ) : (
-              <p>Sin reviews aprobadas todavía.</p>
-            )}
-          </div>
-
-          <form className="bike-detail__review-form" onSubmit={submitReview}>
-            <label htmlFor="review-user-name">
-              Nombre
-              <input id="review-user-name" name="userName" required type="text" />
-            </label>
-            <label htmlFor="review-rating">
-              Rating
-              <select id="review-rating" name="rating" required defaultValue="5">
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <option key={rating} value={rating}>
-                    {rating}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label htmlFor="review-ownership-months">
-              Meses con la moto
-              <input id="review-ownership-months" name="ownershipMonths" min="0" type="number" />
-            </label>
-            <label htmlFor="review-kilometers">
-              Kilómetros
-              <input id="review-kilometers" name="kilometers" min="0" type="number" />
-            </label>
-            <label htmlFor="review-comment">
-              Opinión
-              <textarea id="review-comment" name="comment" required rows={4} />
-            </label>
-            <label htmlFor="review-pros">
-              Pros separados por coma
-              <input id="review-pros" name="pros" type="text" />
-            </label>
-            <label htmlFor="review-cons">
-              Contras separados por coma
-              <input id="review-cons" name="cons" type="text" />
-            </label>
-            <button className="button button--primary" type="submit">
-              Enviar review
-            </button>
-            {reviewStatus ? <p role="status">{reviewStatus}</p> : null}
-            {reviewError ? <p role="alert">{reviewError}</p> : null}
-          </form>
+        <div className="bike-detail__approved-reviews" aria-live="polite">
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <article key={review.id}>
+                <header>
+                  <strong>{review.userName}</strong>
+                  <span>{review.rating}/5</span>
+                </header>
+                <p>{review.comment}</p>
+              </article>
+            ))
+          ) : (
+            <p>Sin reviews aprobadas todavía.</p>
+          )}
         </div>
       </section>
+
+      <ReviewModal isOpen={isReviewModalOpen} motorcycle={bike} onClose={() => setIsReviewModalOpen(false)} />
 
       <section className="bike-detail__related" aria-labelledby="bike-detail-related-title">
         <div>

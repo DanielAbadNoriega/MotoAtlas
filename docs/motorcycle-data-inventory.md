@@ -68,6 +68,7 @@ Regla UX: no mostrar `PLACEHOLDER` al usuario final. Usar textos como “Precio 
 | `motorcycleId` | `motorcycle_id` | Sí | Relación con moto. |
 | `userName` | `user_name` | Sí | Nombre mostrado en ficha. |
 | `rating` | `rating` | Sí | Rating 1-5; se usa en promedio y JSON-LD. |
+| `ridingStyle` | `riding_style` | Sí | Uso principal declarado: ciudad, viaje, offroad, deportivo, pasajero o diario. |
 | `ownershipMonths` | `ownership_months` | No | Contexto de uso real. |
 | `kilometers` | `kilometers` | No | Contexto de uso real. |
 | `comment` | `comment` | Sí | Texto de la opinión. |

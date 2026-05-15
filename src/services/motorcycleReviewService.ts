@@ -1,9 +1,11 @@
 export type MotorcycleReviewStatus = 'pending' | 'approved' | 'rejected';
+export type MotorcycleReviewRidingStyle = 'ciudad' | 'viaje' | 'offroad' | 'deportivo' | 'pasajero' | 'diario';
 
 export type MotorcycleReviewInput = Readonly<{
   motorcycleId: string;
-  userName: string;
+  userName?: string;
   rating: number;
+  ridingStyle: MotorcycleReviewRidingStyle;
   ownershipMonths?: number | null;
   kilometers?: number | null;
   comment: string;
@@ -16,6 +18,7 @@ export type MotorcycleReview = Readonly<{
   motorcycleId: string;
   userName: string;
   rating: number;
+  ridingStyle: MotorcycleReviewRidingStyle;
   ownershipMonths: number | null;
   kilometers: number | null;
   comment: string;
@@ -31,6 +34,7 @@ type MotorcycleReviewRow = Readonly<{
   motorcycle_id: string;
   user_name: string;
   rating: number;
+  riding_style?: MotorcycleReviewRidingStyle;
   ownership_months: number | null;
   kilometers: number | null;
   comment: string;
@@ -56,17 +60,37 @@ function normalizeTextArray(value: readonly string[] | undefined) {
   return Array.isArray(value) ? value.filter((item) => item.trim().length > 0) : [];
 }
 
+function isValidRidingStyle(value: unknown): value is MotorcycleReviewRidingStyle {
+  return ['ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario'].includes(String(value));
+}
+
 function assertValidReview(input: MotorcycleReviewInput) {
   if (!input.motorcycleId.trim()) {
     throw new Error('motorcycleId es obligatorio.');
   }
 
-  if (!input.userName.trim()) {
-    throw new Error('userName es obligatorio.');
-  }
-
   if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
     throw new Error('rating debe ser un entero entre 1 y 5.');
+  }
+
+  if (!isValidRidingStyle(input.ridingStyle)) {
+    throw new Error('ridingStyle es obligatorio.');
+  }
+
+  if (
+    input.ownershipMonths !== undefined &&
+    input.ownershipMonths !== null &&
+    (!Number.isFinite(input.ownershipMonths) || input.ownershipMonths < 0)
+  ) {
+    throw new Error('ownershipMonths debe ser mayor o igual que 0.');
+  }
+
+  if (
+    input.kilometers !== undefined &&
+    input.kilometers !== null &&
+    (!Number.isFinite(input.kilometers) || input.kilometers < 0)
+  ) {
+    throw new Error('kilometers debe ser mayor o igual que 0.');
   }
 
   if (!input.comment.trim()) {
@@ -80,6 +104,7 @@ function mapReviewRow(row: MotorcycleReviewRow): MotorcycleReview {
     motorcycleId: row.motorcycle_id,
     userName: row.user_name,
     rating: row.rating,
+    ridingStyle: row.riding_style ?? 'diario',
     ownershipMonths: row.ownership_months,
     kilometers: row.kilometers,
     comment: row.comment,
@@ -94,8 +119,9 @@ function mapReviewRow(row: MotorcycleReviewRow): MotorcycleReview {
 function buildReviewPayload(input: MotorcycleReviewInput) {
   return {
     motorcycle_id: input.motorcycleId,
-    user_name: input.userName.trim(),
+    user_name: input.userName?.trim() || 'Anónimo',
     rating: input.rating,
+    riding_style: input.ridingStyle,
     ownership_months: input.ownershipMonths ?? null,
     kilometers: input.kilometers ?? null,
     comment: input.comment.trim(),

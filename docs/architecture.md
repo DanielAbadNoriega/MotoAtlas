@@ -560,6 +560,7 @@ Reglas:
 - No hay login todavía.
 - Inserción pública solo con `status = pending`.
 - Lectura pública solo de `status = approved`.
+- `riding_style` es obligatorio en el formulario y se guarda como `ciudad`, `viaje`, `offroad`, `deportivo`, `pasajero` o `diario`.
 - El promedio y contador se calculan con `src/shared/reviews/reviewUtils.ts`.
 
 ## 11. Testing actual

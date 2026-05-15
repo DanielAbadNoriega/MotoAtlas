@@ -10,6 +10,7 @@ describe('seoUtils', () => {
         motorcycleId: bikeFixtures[0].id,
         userName: 'Dani',
         rating: 5,
+        ridingStyle: 'viaje',
         ownershipMonths: null,
         kilometers: null,
         comment: 'Muy buena.',

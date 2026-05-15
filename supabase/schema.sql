@@ -198,6 +198,7 @@ create table if not exists public.motorcycle_reviews (
   motorcycle_id text not null references public.motorcycles(id) on delete cascade,
   user_name text not null,
   rating integer not null check (rating between 1 and 5),
+  riding_style text not null default 'diario' check (riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')),
   ownership_months integer null check (ownership_months is null or ownership_months >= 0),
   kilometers integer null check (kilometers is null or kilometers >= 0),
   comment text not null,
@@ -207,6 +208,10 @@ create table if not exists public.motorcycle_reviews (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table if exists public.motorcycle_reviews
+  add column if not exists riding_style text not null default 'diario'
+  check (riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario'));
 
 create index if not exists motorcycle_reviews_motorcycle_id_idx on public.motorcycle_reviews (motorcycle_id);
 create index if not exists motorcycle_reviews_status_idx on public.motorcycle_reviews (status);

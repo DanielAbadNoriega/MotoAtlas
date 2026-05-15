@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MotoAtlas - Review Success</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700;800&amp;family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#c6c6c7",
+                    "on-secondary-fixed-variant": "#92001d",
+                    "on-error": "#690005",
+                    "background": "#141313",
+                    "on-secondary-fixed": "#410007",
+                    "surface-dim": "#141313",
+                    "tertiary-container": "#181a1b",
+                    "secondary-fixed-dim": "#ffb3b1",
+                    "on-primary": "#303031",
+                    "on-tertiary-fixed": "#1a1c1d",
+                    "outline-variant": "#46474a",
+                    "surface-container-low": "#1c1b1b",
+                    "on-tertiary-container": "#818284",
+                    "on-surface-variant": "#c7c6ca",
+                    "secondary-container": "#d6042f",
+                    "on-primary-container": "#848283",
+                    "surface-container": "#201f1f",
+                    "inverse-surface": "#e5e2e1",
+                    "primary": "#c8c6c7",
+                    "secondary-fixed": "#ffdad8",
+                    "surface-container-high": "#2b2a2a",
+                    "surface-tint": "#c8c6c7",
+                    "surface": "#141313",
+                    "primary-container": "#1a1a1b",
+                    "surface-container-lowest": "#0e0e0e",
+                    "primary-fixed-dim": "#c8c6c7",
+                    "secondary": "#ffb3b1",
+                    "on-error-container": "#ffdad6",
+                    "primary-fixed": "#e5e2e3",
+                    "on-background": "#e5e2e1",
+                    "error": "#ffb4ab",
+                    "tertiary-fixed": "#e2e2e3",
+                    "on-primary-fixed": "#1b1b1c",
+                    "error-container": "#93000a",
+                    "on-surface": "#e5e2e1",
+                    "on-primary-fixed-variant": "#474647",
+                    "surface-variant": "#353434",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "surface-container-highest": "#353434",
+                    "outline": "#909094",
+                    "on-tertiary-fixed-variant": "#454748",
+                    "on-secondary-container": "#ffe7e5",
+                    "inverse-primary": "#5f5e5f",
+                    "surface-bright": "#3a3939",
+                    "on-tertiary": "#2f3132",
+                    "inverse-on-surface": "#313030",
+                    "on-secondary": "#680011"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+              "margin-desktop": "80px",
+              "section-gap": "120px"
+            },
+            "fontFamily": {
+                    "headline": ["Hanken Grotesk"],
+                    "display": ["Hanken Grotesk"],
+                    "body": ["Inter"],
+                    "label": ["JetBrains Mono"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .bg-glass {
+        background: rgba(20, 19, 19, 0.8);
+        backdrop-filter: blur(20px);
+      }
+      .technical-grid {
+        background-size: 30px 30px;
+        background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/20">
+<nav class="flex justify-between items-center px-margin-desktop h-20 max-w-[1440px] mx-auto">
+<div class="font-headline text-2xl font-extrabold tracking-tighter text-on-surface">MotoAtlas</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Comparison</a>
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">News</a>
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Routes</a>
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Community</a>
+</div>
+<div class="flex items-center space-x-6">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-on-surface cursor-pointer" data-icon="account_circle">account_circle</span>
+<button class="bg-secondary-container text-on-secondary-container px-6 py-2 rounded-lg font-headline font-bold text-sm hover:brightness-110 active:scale-95 transition-all">Sign In</button>
+</div>
+</nav>
+</header>
+<main class="min-h-[calc(100vh-80px)] relative flex items-center justify-center py-20 px-4 overflow-hidden">
+<!-- Background Decorative Element -->
+<div class="absolute inset-0 z-0 opacity-20">
+<img class="w-full h-full object-cover" data-alt="A cinematic, low-angle shot of a high-performance Italian superbike parked on a dark, wet asphalt track at dusk. The scene is illuminated by dramatic neon red rim lighting and soft overhead spotlights, emphasizing the sharp carbon fiber bodywork and technical precision of the machine. The overall atmosphere is dark, moody, and premium, perfectly matching a technical engineering aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjXF2EfNA7P7BN-Xl7x9t_mAoSxpDmQyATvugsgC_1OOYofGmfE_4A5mAMlWcboDwB5U6PBVvciRSJpBqrp3oJG0EBEMWbWazeP341pVwrwifYtAA3qhYqpEztVUAXfuP4j1Z-eNyoilin51hnUyrlaMWl_SyB9CXs9-el2AcXxpN7o64ypcGjY2djr1NZaQV5WKiG98GQSyekyAZiKz5cfqwMfzshS1GxdnFrpy57kh-PE7I-kT4jjF1ejJ7cAGjO-eNGmmSoh1Aw"/>
+</div>
+<div class="absolute inset-0 z-10 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
+<div class="absolute inset-0 z-10 technical-grid"></div>
+<!-- Success Modal Canvas -->
+<div class="relative z-20 w-full max-w-[540px] bg-surface-container border border-outline-variant/30 rounded-xl overflow-hidden shadow-2xl">
+<!-- Modal Accent Line -->
+<div class="h-1 w-full bg-secondary-container"></div>
+<div class="p-12 md:p-16 flex flex-col items-center text-center">
+<!-- Technical Checkmark Icon -->
+<div class="relative mb-10">
+<div class="absolute inset-0 bg-secondary-container/20 blur-2xl rounded-full scale-150"></div>
+<div class="relative flex items-center justify-center w-24 h-24 rounded-full border-2 border-secondary-container bg-surface-container-high shadow-[inset_0_0_20px_rgba(214,4,47,0.2)]">
+<span class="material-symbols-outlined text-secondary-container !text-5xl font-light" data-icon="check_circle" style="font-variation-settings: 'FILL' 0;">check_circle</span>
+</div>
+<!-- Technical Detail Elements -->
+<div class="absolute -top-2 -right-2 w-4 h-4 border-t-2 border-r-2 border-secondary-container/40"></div>
+<div class="absolute -bottom-2 -left-2 w-4 h-4 border-b-2 border-l-2 border-secondary-container/40"></div>
+</div>
+<!-- Content -->
+<h2 class="font-headline text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-6">Review enviada</h2>
+<p class="font-body text-body-lg text-on-surface-variant leading-relaxed max-w-[320px] mb-12">
+                    Gracias. Tu opinión se revisará antes de publicarse.
+                </p>
+<!-- Technical Footer/Metadata (Design Detail) -->
+<div class="w-full flex items-center justify-center space-x-4 mb-10 opacity-30">
+<div class="h-[1px] flex-1 bg-outline-variant"></div>
+<span class="font-label text-[10px] tracking-widest uppercase">Submission Protocol Verified</span>
+<div class="h-[1px] flex-1 bg-outline-variant"></div>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-surface-container-highest border border-outline-variant/30 text-on-surface font-headline font-bold py-4 rounded-lg tracking-wide hover:bg-surface-bright hover:border-outline transition-all active:scale-95 duration-150">
+                    Cerrar
+                </button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-section-gap border-t border-outline-variant/10 bg-surface-container-lowest">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop max-w-[1440px] mx-auto">
+<div class="mb-8 md:mb-0">
+<div class="font-headline text-2xl font-bold text-on-surface mb-2">MotoAtlas</div>
+<p class="font-body text-body-md text-on-surface-variant">© 2024 MotoAtlas. High-Performance Engineering Registry.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Technical Specifications</a>
+<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+</body></html>

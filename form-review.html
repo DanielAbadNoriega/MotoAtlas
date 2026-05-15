@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="es"><head>
+<html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700;800&amp;family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -14,52 +14,52 @@
           extend: {
             "colors": {
                     "tertiary": "#c6c6c7",
-                    "on-secondary": "#680011",
-                    "surface": "#141313",
-                    "surface-variant": "#353434",
-                    "secondary": "#ffb3b1",
-                    "tertiary-fixed-dim": "#c6c6c7",
-                    "tertiary-fixed": "#e2e2e3",
-                    "on-error-container": "#ffdad6",
-                    "primary-fixed-dim": "#c8c6c7",
-                    "background": "#141313",
-                    "tertiary-container": "#181a1b",
                     "on-secondary-fixed-variant": "#92001d",
                     "on-error": "#690005",
-                    "error-container": "#93000a",
-                    "on-tertiary-fixed": "#1a1c1d",
-                    "surface-bright": "#3a3939",
-                    "primary-container": "#1a1a1b",
-                    "on-tertiary-container": "#818284",
+                    "background": "#141313",
+                    "on-secondary-fixed": "#410007",
+                    "surface-dim": "#141313",
+                    "tertiary-container": "#181a1b",
+                    "secondary-fixed-dim": "#ffb3b1",
                     "on-primary": "#303031",
-                    "on-primary-fixed-variant": "#474647",
+                    "on-tertiary-fixed": "#1a1c1d",
                     "outline-variant": "#46474a",
                     "surface-container-low": "#1c1b1b",
-                    "inverse-primary": "#5f5e5f",
-                    "surface-dim": "#141313",
-                    "on-tertiary-fixed-variant": "#454748",
-                    "error": "#ffb4ab",
-                    "surface-container-lowest": "#0e0e0e",
-                    "surface-container-high": "#2b2a2a",
-                    "primary-fixed": "#e5e2e3",
+                    "on-tertiary-container": "#818284",
                     "on-surface-variant": "#c7c6ca",
-                    "surface-container-highest": "#353434",
                     "secondary-container": "#d6042f",
-                    "primary": "#c8c6c7",
-                    "on-background": "#e5e2e1",
-                    "inverse-on-surface": "#313030",
-                    "on-primary-fixed": "#1b1b1c",
                     "on-secondary-container": "#ffe7e5",
-                    "inverse-surface": "#e5e2e1",
-                    "secondary-fixed-dim": "#ffb3b1",
-                    "secondary-fixed": "#ffdad8",
-                    "outline": "#909094",
-                    "on-surface": "#e5e2e1",
-                    "on-tertiary": "#2f3132",
-                    "surface-tint": "#c8c6c7",
-                    "on-primary-container": "#848283",
                     "surface-container": "#201f1f",
-                    "on-secondary-fixed": "#410007"
+                    "inverse-surface": "#e5e2e1",
+                    "primary": "#c8c6c7",
+                    "secondary-fixed": "#ffdad8",
+                    "surface-container-high": "#2b2a2a",
+                    "surface-tint": "#c8c6c7",
+                    "surface": "#141313",
+                    "primary-container": "#1a1a1b",
+                    "surface-container-lowest": "#0e0e0e",
+                    "primary-fixed-dim": "#c8c6c7",
+                    "secondary": "#ffb3b1",
+                    "on-error-container": "#ffdad6",
+                    "primary-fixed": "#e5e2e3",
+                    "on-background": "#e5e2e1",
+                    "error": "#ffb4ab",
+                    "tertiary-fixed": "#e2e2e3",
+                    "on-primary-fixed": "#1b1b1c",
+                    "error-container": "#93000a",
+                    "on-surface": "#e5e2e1",
+                    "on-primary-fixed-variant": "#474647",
+                    "surface-variant": "#353434",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "surface-container-highest": "#353434",
+                    "outline": "#909094",
+                    "on-tertiary-fixed-variant": "#454748",
+                    "on-secondary-container": "#ffe7e5",
+                    "inverse-primary": "#5f5e5f",
+                    "surface-bright": "#3a3939",
+                    "on-tertiary": "#2f3132",
+                    "inverse-on-surface": "#313030",
+                    "on-secondary": "#680011"
             },
             "borderRadius": {
                     "DEFAULT": "0.125rem",
@@ -78,186 +78,148 @@
       }
     </script>
 <style>
-        .glass-panel {
-            background: rgba(32, 31, 31, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(144, 144, 148, 0.1);
-        }
-        .technical-grid {
-            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        .star-active {
-            font-variation-settings: 'FILL' 1;
-            color: #d6042f;
+        .glass-panel {
+            background: rgba(32, 31, 31, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(70, 71, 74, 0.3);
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #46474a; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-background text-on-surface font-body selection:bg-secondary-container selection:text-on-secondary-container">
-<!-- TopNavBar Component -->
+<body class="bg-background text-on-background font-body min-h-screen flex flex-col">
+<!-- TopNavBar -->
 <header class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/20">
-<nav class="flex justify-between items-center px-8 md:px-20 h-20 max-w-[1440px] mx-auto">
-<div class="font-headline font-extrabold text-2xl tracking-tighter text-on-surface">
-                MotoAtlas
-            </div>
-<div class="hidden md:flex items-center space-x-8">
-<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Comparison</a>
-<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">News</a>
-<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Routes</a>
-<a class="font-label text-[12px] tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Community</a>
-</div>
-<div class="flex items-center space-x-4">
-<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">account_circle</span>
-<button class="bg-surface-variant text-on-surface px-4 py-2 text-sm font-bold rounded-lg hover:bg-surface-bright transition-all">Sign In</button>
-</div>
+<div class="flex justify-between items-center px-8 md:px-[80px] h-20 max-w-[1440px] mx-auto">
+<div class="font-headline text-2xl font-extrabold tracking-tighter text-on-surface">MotoAtlas</div>
+<nav class="hidden md:flex gap-8">
+<a class="font-label text-xs uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Comparison</a>
+<a class="font-label text-xs uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">News</a>
+<a class="font-label text-xs uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Routes</a>
+<a class="font-label text-xs uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors" href="#">Community</a>
 </nav>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-on-surface cursor-pointer">account_circle</span>
+<button class="bg-secondary-container text-on-secondary-container px-6 py-2 font-headline font-bold text-sm rounded transition-all active:scale-95">Sign In</button>
+</div>
+</div>
 </header>
-<main class="min-h-screen technical-grid">
-<!-- Hero Context (Simulated Detail Page) -->
-<section class="relative h-[400px] overflow-hidden">
-<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
-<img alt="Moto Detail" class="w-full h-full object-cover grayscale opacity-40" data-alt="A close-up, high-performance studio photograph of a modern superbike's engine components and fairing. The lighting is dramatic and moody, utilizing deep shadows and sharp highlights to emphasize the technical engineering and carbon fiber textures. The overall aesthetic is dark and sophisticated, aligning with a premium motorcycle registry's high-end visual language featuring subtle red lighting accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD78Vdtw02JD_h3HtvhCOu_AEqgw-k1A3MrHm0hxKeWRyPj88HCsgnoHKB149gJTNWj6rSzuVC1BnDfzKKUDxV5_PqIEa4devCHU4ouigOjygNBmtAOg8kIQQq9eBhouQmwPpw5YjAjYqTwbO-wRF2PJ3zQffYvvDCot0AGgmyWgM71eYhNwN2PGuM4_1ihsvWgQnJLO0NfFIT4VPtj6lElnjZby1xfqqnpBv7TYNSQ686ApRWo2V4K6oLkdTCVI2IEkI20Gk4gcAyZ"/>
-<div class="absolute bottom-12 left-8 md:left-20 z-20">
-<span class="font-label text-secondary-container tracking-widest text-xs uppercase mb-2 block">Premium Registry</span>
-<h1 class="font-headline font-extrabold text-4xl md:text-6xl text-on-surface tracking-tighter">DUCATI PANIGALE V4 R</h1>
-</div>
-</section>
-<!-- Review Section -->
-<section class="max-w-[1440px] mx-auto px-8 md:px-20 py-20">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-<!-- Section Intro -->
-<div class="lg:col-span-4">
-<div class="sticky top-32">
-<h2 class="font-headline font-extrabold text-4xl text-on-surface mb-4 leading-tight">Comparte tu experiencia real</h2>
-<p class="text-on-surface-variant text-lg mb-8">Ayuda a otros motoristas con datos de uso real. Tu perspectiva técnica es fundamental para la comunidad.</p>
-<div class="space-y-4 border-l-2 border-secondary-container/30 pl-6">
-<div>
-<span class="font-label text-[10px] text-secondary-container uppercase tracking-widest block mb-1">Métrica de Calidad</span>
-<p class="text-sm text-on-surface-variant">Las reseñas verificadas aumentan el MotoScore de este modelo en un 15%.</p>
-</div>
-<div class="flex items-center gap-2 text-on-surface">
-<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
-<span class="font-label text-xs">COMUNIDAD VERIFICADA</span>
+<!-- Main Content (Blur Overlay Effect) -->
+<main class="flex-grow relative flex items-center justify-center py-12 px-4 overflow-hidden">
+<!-- Background Mock Content (Blurred) -->
+<div class="absolute inset-0 z-0 opacity-20 blur-xl pointer-events-none scale-105">
+<div class="grid grid-cols-3 gap-8 p-20">
+<div class="h-64 bg-surface-container rounded-xl border border-outline-variant"></div>
+<div class="h-64 bg-surface-container rounded-xl border border-outline-variant"></div>
+<div class="h-64 bg-surface-container rounded-xl border border-outline-variant"></div>
 </div>
 </div>
+<!-- REVIEW MODAL -->
+<div class="relative z-10 w-full max-w-2xl glass-panel rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+<div class="flex flex-col h-full max-h-[921px]">
+<!-- Modal Header -->
+<div class="p-8 border-b border-outline-variant/20">
+<div class="flex justify-between items-start mb-2">
+<h1 class="font-headline text-3xl font-extrabold tracking-tight">Comparte tu experiencia real</h1>
+<button class="p-1 hover:bg-surface-variant rounded transition-colors">
+<span class="material-symbols-outlined text-outline">close</span>
+</button>
+</div>
+<p class="text-on-surface-variant font-body text-sm">Tu opinión ayudará a otros motoristas a elegir mejor.</p>
+</div>
+<div class="p-8 overflow-y-auto custom-scrollbar space-y-8">
+<!-- Context Card -->
+<div class="flex items-center gap-6 p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
+<div class="w-24 h-16 rounded overflow-hidden bg-surface-container-high shrink-0">
+<img alt="BMW F 900 GS" class="w-full h-full object-cover" data-alt="A professional studio product shot of a 2024 BMW F 900 GS adventure motorcycle. The lighting is dramatic and moody, highlighting the sharp technical lines of the bike against a dark carbon-fiber textured background. The image uses a high-contrast palette of deep blacks and technical greys, with the motorcycle's metallic surfaces gleaming under focused spotlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG6E9Rf3sJm75KDjFKYHuzU2O1RTb9pMbgCVK8k3ix60bcmhZs8shQWzaf3jsTW3ofL2Fr1In9lAvHLUMe5wzprqH5lGewZoNnxedlt84wRnABvQXq7BsypBlUwA9LZ1yczqKtXCS6FHF2YU0OByW5IWWAxr4GebMz_eqDTJsTQ3hIJ3ORjs41YPwFHNwChtIgPlXdkCsxs8x7H-zZhIVNH56ApQ9JMSFRneQmT4x_VKR-tl50Mh6ejbYqnkjnmUeiUBWbWl4u4acH"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-label text-[10px] bg-secondary-container/20 text-secondary px-2 py-0.5 rounded-sm">TRAIL</span>
+<span class="font-label text-[10px] text-on-tertiary-container">MY 2024</span>
+</div>
+<h3 class="font-headline text-xl font-bold">BMW F 900 GS</h3>
 </div>
 </div>
-<!-- Form Section -->
-<div class="lg:col-span-8">
-<div class="glass-panel rounded-xl p-8 md:p-12 relative overflow-hidden">
-<!-- Decorative Red Glow -->
-<div class="absolute -top-24 -right-24 w-48 h-48 bg-secondary-container/10 blur-[100px] rounded-full"></div>
-<form class="space-y-10 relative z-10">
-<!-- Row 1: Identity & Rating -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Rating Section -->
+<div class="space-y-3">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant block">Valoración general</label>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-secondary-container scale-125 cursor-pointer" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary-container scale-125 cursor-pointer" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary-container scale-125 cursor-pointer" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-secondary-container scale-125 cursor-pointer" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-outline-variant scale-125 cursor-pointer">star</span>
+</div>
+</div>
+<!-- Ownership Fields -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div class="space-y-2">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest">Nombre o alias</label>
-<input class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 text-on-surface focus:border-secondary-container focus:ring-0 font-body text-sm placeholder:text-on-surface-variant/30" placeholder="EJ. RIDER_74" type="text"/>
-</div>
-<div class="space-y-2">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest">Puntuación técnica</label>
-<div class="flex items-center gap-2 h-11">
-<span class="material-symbols-outlined star-active cursor-pointer">star</span>
-<span class="material-symbols-outlined star-active cursor-pointer">star</span>
-<span class="material-symbols-outlined star-active cursor-pointer">star</span>
-<span class="material-symbols-outlined star-active cursor-pointer">star</span>
-<span class="material-symbols-outlined text-outline-variant cursor-pointer">star</span>
-<span class="ml-2 font-label text-xs text-secondary-container">4.0 / 5.0</span>
-</div>
-</div>
-</div>
-<!-- Row 2: Usage Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-<div class="space-y-2">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest">Tiempo con la moto</label>
-<select class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 text-on-surface focus:border-secondary-container focus:ring-0 font-body text-sm appearance-none cursor-pointer">
-<option>Menos de 6 meses</option>
-<option>6 meses - 1 año</option>
-<option>1 - 2 años</option>
-<option>Más de 2 años</option>
-</select>
-</div>
-<div class="space-y-2">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest">Kilómetros recorridos</label>
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Tiempo con la moto</label>
 <div class="relative">
-<input class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 text-on-surface focus:border-secondary-container focus:ring-0 font-label text-sm" placeholder="5500" type="number"/>
-<span class="absolute right-4 top-1/2 -translate-y-1/2 font-label text-[10px] text-on-surface-variant">KM</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 font-label text-sm focus:border-secondary-container focus:ring-1 focus:ring-secondary-container outline-none transition-all placeholder:text-outline-variant" placeholder="Ej: 1 año y 3 meses" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant text-sm">schedule</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Kilómetros recorridos</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 font-label text-sm focus:border-secondary-container focus:ring-1 focus:ring-secondary-container outline-none transition-all placeholder:text-outline-variant" placeholder="Ej: 12.500" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant text-sm">speed</span>
 </div>
 </div>
 </div>
-<!-- Row 3: Primary Use Selector -->
+<!-- Use Selector -->
 <div class="space-y-4">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest">Uso principal del vehículo</label>
-<div class="flex flex-wrap gap-3">
-<label class="cursor-pointer">
-<input checked="" class="peer hidden" name="usage" type="radio"/>
-<div class="px-5 py-2 rounded-lg border border-outline-variant/30 text-xs font-label uppercase tracking-wider peer-checked:border-secondary-container peer-checked:bg-secondary-container peer-checked:text-on-secondary-container transition-all">Ciudad</div>
-</label>
-<label class="cursor-pointer">
-<input class="peer hidden" name="usage" type="radio"/>
-<div class="px-5 py-2 rounded-lg border border-outline-variant/30 text-xs font-label uppercase tracking-wider peer-checked:border-secondary-container peer-checked:bg-secondary-container peer-checked:text-on-secondary-container transition-all">Viaje</div>
-</label>
-<label class="cursor-pointer">
-<input class="peer hidden" name="usage" type="radio"/>
-<div class="px-5 py-2 rounded-lg border border-outline-variant/30 text-xs font-label uppercase tracking-wider peer-checked:border-secondary-container peer-checked:bg-secondary-container peer-checked:text-on-secondary-container transition-all">Offroad</div>
-</label>
-<label class="cursor-pointer">
-<input class="peer hidden" name="usage" type="radio"/>
-<div class="px-5 py-2 rounded-lg border border-outline-variant/30 text-xs font-label uppercase tracking-wider peer-checked:border-secondary-container peer-checked:bg-secondary-container peer-checked:text-on-secondary-container transition-all">Deportivo</div>
-</label>
-<label class="cursor-pointer">
-<input class="peer hidden" name="usage" type="radio"/>
-<div class="px-5 py-2 rounded-lg border border-outline-variant/30 text-xs font-label uppercase tracking-wider peer-checked:border-secondary-container peer-checked:bg-secondary-container peer-checked:text-on-secondary-container transition-all">Pasajero</div>
-</label>
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Uso principal</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-sm font-label text-[11px] tracking-wider uppercase transition-all">Ciudad</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant hover:border-on-surface hover:text-on-surface rounded-sm font-label text-[11px] tracking-wider uppercase transition-all">Viaje</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant hover:border-on-surface hover:text-on-surface rounded-sm font-label text-[11px] tracking-wider uppercase transition-all">Off-road</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant hover:border-on-surface hover:text-on-surface rounded-sm font-label text-[11px] tracking-wider uppercase transition-all">Deportivo</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant hover:border-on-surface hover:text-on-surface rounded-sm font-label text-[11px] tracking-wider uppercase transition-all">Pasajero</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant hover:border-on-surface hover:text-on-surface rounded-sm font-label text-[11px] tracking-wider uppercase transition-all">Diario</button>
 </div>
 </div>
-<!-- Row 4: Pros & Cons -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Pros & Cons -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div class="space-y-2">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Pros
-                                    </label>
-<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 text-on-surface focus:border-emerald-500 focus:ring-0 font-body text-sm" placeholder="Puntos fuertes, rendimiento..." rows="3"></textarea>
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-green-500 text-sm">add_circle</span> Lo mejor
+                            </label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 font-body text-sm focus:border-secondary-container focus:ring-1 focus:ring-secondary-container outline-none transition-all placeholder:text-outline-variant resize-none" placeholder="Puntos positivos, ergonomía, motor..." rows="3"></textarea>
 </div>
 <div class="space-y-2">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest flex items-center gap-2">
-<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span> Contras
-                                    </label>
-<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 text-on-surface focus:border-secondary-container focus:ring-0 font-body text-sm" placeholder="Defectos, mantenimiento..." rows="3"></textarea>
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-sm">remove_circle</span> Lo peor
+                            </label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 font-body text-sm focus:border-secondary-container focus:ring-1 focus:ring-secondary-container outline-none transition-all placeholder:text-outline-variant resize-none" placeholder="Defectos, mantenimiento, consumo..." rows="3"></textarea>
 </div>
 </div>
-<!-- Row 5: General Comment -->
+<!-- Detailed Comment -->
 <div class="space-y-2">
-<label class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest">Comentario general</label>
-<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 text-on-surface focus:border-secondary-container focus:ring-0 font-body text-sm" placeholder="Describe tu experiencia detallada..." rows="4"></textarea>
+<label class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Comentario detallado</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded px-4 py-3 font-body text-sm focus:border-secondary-container focus:ring-1 focus:ring-secondary-container outline-none transition-all placeholder:text-outline-variant resize-none" placeholder="Cuéntanos con detalle tu experiencia tras estos kilómetros..." rows="5"></textarea>
 </div>
-<!-- CTA & Note -->
-<div class="pt-6 border-t border-outline-variant/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-<div class="flex items-center gap-3 text-on-surface-variant">
-<span class="material-symbols-outlined text-lg">info</span>
-<span class="text-xs font-body italic">Las opiniones se revisan antes de publicarse.</span>
 </div>
-<button class="bg-secondary-container text-on-secondary-container font-headline font-bold px-10 py-4 rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-secondary-container/20" type="submit">
-                                    Enviar opinión
-                                </button>
-</div>
-</form>
+<!-- Footer Buttons -->
+<div class="p-8 border-t border-outline-variant/20 bg-surface-container-low flex flex-col md:flex-row justify-end gap-4">
+<button class="px-8 py-3 border border-outline-variant text-on-surface-variant font-headline font-bold text-sm rounded hover:bg-surface-variant transition-all order-2 md:order-1">Cancelar</button>
+<button class="px-10 py-3 bg-secondary-container text-on-secondary-container font-headline font-extrabold text-sm rounded shadow-lg shadow-secondary-container/20 hover:brightness-110 active:scale-95 transition-all order-1 md:order-2">Enviar review</button>
 </div>
 </div>
 </div>
-</section>
 </main>
-<!-- Footer Component -->
-<footer class="w-full py-20 bg-surface-container-lowest border-t border-outline-variant/10">
-<div class="flex flex-col md:flex-row justify-between items-center px-8 md:px-20 max-w-[1440px] mx-auto gap-8">
+<!-- Footer -->
+<footer class="w-full py-[120px] bg-surface-container-lowest border-t border-outline-variant/10">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 md:px-[80px] max-w-[1440px] mx-auto gap-12">
 <div class="flex flex-col items-center md:items-start gap-4">
-<div class="font-headline font-bold text-2xl text-on-surface">MotoAtlas</div>
-<p class="font-body text-sm text-on-surface-variant text-center md:text-left max-w-sm">
-                    © 2024 MotoAtlas. High-Performance Engineering Registry.
-                </p>
+<div class="font-headline text-2xl font-bold text-on-surface">MotoAtlas</div>
+<p class="text-on-surface-variant font-body text-sm text-center md:text-left">© 2024 MotoAtlas. High-Performance Engineering Registry.</p>
 </div>
 <div class="flex flex-wrap justify-center gap-8">
 <a class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
