@@ -19,6 +19,10 @@ export function getBikeCanonicalPath(bike: Pick<Bike, 'brand' | 'model'>) {
   return `/motos/${getBikeSeoSlug(bike)}`;
 }
 
+export function getCommunityCanonicalPath(bike: Pick<Bike, 'id'>) {
+  return `/comunidad/${bike.id}`;
+}
+
 export function getCompareSeoSlug(bikes: readonly Pick<Bike, 'brand' | 'model'>[]) {
   return bikes.map(getBikeSeoSlug).join('-vs-');
 }
@@ -111,6 +115,18 @@ export function getBikeDetailIdFromRoute(route: string, motorcycles: readonly Bi
   return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
 }
 
+export function getCommunityMotorcycleIdFromRoute(route: string, motorcycles: readonly Bike[]) {
+  const { path } = routeToPathAndSearch(route);
+  const match = path.match(/^\/comunidad\/([^/?#]+)/);
+
+  if (!match) {
+    return undefined;
+  }
+
+  const slugOrId = decodeURIComponent(match[1]);
+  return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
+}
+
 export function isSearchRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return /^\/(buscador|catalogo)(\/|$)/.test(path);
@@ -119,6 +135,11 @@ export function isSearchRoute(route: string) {
 export function isComparatorRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return /^\/comparador(\/|$)/.test(path);
+}
+
+export function isCommunityRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return /^\/comunidad(\/|$)/.test(path);
 }
 
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {

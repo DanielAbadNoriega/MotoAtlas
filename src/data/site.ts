@@ -13,11 +13,9 @@ export const brand = {
 } satisfies BrandContent;
 
 export const navLinks = [
-  { label: 'Buscador', href: '#/buscador' },
   { label: 'Comparativas', href: '#comparativas' },
   { label: 'Noticias', href: '#noticias' },
-  { label: 'Rutas', href: '#rutas' },
-  { label: 'Comunidad', href: '#comunidad' },
+  { label: 'Comunidad', href: '#/comunidad' },
 ] satisfies readonly NavLink[];
 
 export const siteA11y = {
@@ -25,7 +23,7 @@ export const siteA11y = {
 } satisfies SiteA11yContent;
 
 export const navActions = {
-  signInLabel: 'Ingresar',
+  signInLabel: 'Iniciar sesión',
   searchLabel: 'Buscar en MotoAtlas',
   menuLabel: 'Abrir menú',
   profileLabel: 'Abrir perfil',

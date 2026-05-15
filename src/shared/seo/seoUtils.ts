@@ -1,7 +1,13 @@
 import type { Bike } from '../../types/bike';
 import type { MotorcycleReview } from '../../services/motorcycleReviewService';
 import { getMotorcycleImage } from '../images/getMotorcycleImage';
-import { getBikeCanonicalPath, getBikeSeoSlug, getCompareCanonicalPath, getCompareSeoSlug } from '../routing/routeUtils';
+import {
+  getBikeCanonicalPath,
+  getBikeSeoSlug,
+  getCommunityCanonicalPath,
+  getCompareCanonicalPath,
+  getCompareSeoSlug,
+} from '../routing/routeUtils';
 import { getReviewAggregate } from '../reviews/reviewUtils';
 
 export const siteBaseUrl = 'https://motoatlas.com';
@@ -106,6 +112,31 @@ export function buildBikeSeoMetadata(bike: Bike, reviews: readonly MotorcycleRev
   };
 }
 
+export function buildCommunitySeoMetadata(bike: Bike): SeoMetadata {
+  const image = getMotorcycleImage(bike);
+  const name = `${bike.brand} ${bike.model} ${bike.year}`;
+
+  return {
+    canonicalUrl: absoluteUrl(getCommunityCanonicalPath(bike)),
+    description: `Opiniones reales, problemas comunes y experiencia de propietarios de ${name}.`,
+    imageUrl: absoluteUrl(image.imageUrl),
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      about: {
+        '@type': 'Motorcycle',
+        brand: { '@type': 'Brand', name: bike.brand },
+        model: bike.model,
+        name,
+        productionDate: String(bike.year),
+      },
+      name: `Reviews ${name} | ${siteName}`,
+      url: absoluteUrl(getCommunityCanonicalPath(bike)),
+    },
+    title: `Reviews ${name} | ${siteName}`,
+  };
+}
+
 export function buildCompareSeoMetadata(bikes: readonly Bike[]): SeoMetadata {
   const names = bikes.map((bike) => `${bike.brand} ${bike.model}`);
   const title = `${names.join(' vs ')} | Comparador MotoAtlas`;
@@ -147,11 +178,12 @@ export function applySeoMetadata(metadata: SeoMetadata) {
 
 export function getSitemapUrls(motorcycles: readonly Bike[]) {
   const bikeUrls = motorcycles.map((bike) => absoluteUrl(getBikeCanonicalPath(bike)));
+  const communityUrls = motorcycles.map((bike) => absoluteUrl(getCommunityCanonicalPath(bike)));
   const compareUrls = motorcycles.slice(0, 3).flatMap((bike, index, selectedBikes) =>
     selectedBikes.slice(index + 1).map((otherBike) => absoluteUrl(getCompareCanonicalPath([bike, otherBike]))),
   );
 
-  return [siteBaseUrl, `${siteBaseUrl}/buscador`, ...bikeUrls, ...compareUrls];
+  return [siteBaseUrl, `${siteBaseUrl}/buscador`, ...bikeUrls, ...communityUrls, ...compareUrls];
 }
 
 export function buildSitemapXml(urls: readonly string[]) {
@@ -164,4 +196,4 @@ export function buildRobotsTxt() {
   return `User-agent: *\nAllow: /\nSitemap: ${siteBaseUrl}/sitemap.xml\n`;
 }
 
-export { getBikeCanonicalPath, getBikeSeoSlug, getCompareCanonicalPath, getCompareSeoSlug };
+export { getBikeCanonicalPath, getBikeSeoSlug, getCommunityCanonicalPath, getCompareCanonicalPath, getCompareSeoSlug };

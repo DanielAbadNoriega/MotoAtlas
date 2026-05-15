@@ -306,6 +306,29 @@ describe('AdvancedFilters', () => {
     expect(onReset).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('allows collapsing filter groups', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdvancedFilters
+        brandOptions={['BMW']}
+        filters={initialSearchFilters}
+        isOpen
+        onChange={vi.fn()}
+        onClose={vi.fn()}
+        onReset={vi.fn()}
+        segmentOptions={['trail']}
+      />,
+    );
+
+    const brandGroup = screen.getByText('Marca').closest('details');
+    expect(brandGroup).toHaveAttribute('open');
+
+    await user.click(screen.getByText('Marca'));
+
+    expect(brandGroup).not.toHaveAttribute('open');
+  });
 });
 
 describe('CompareDrawer', () => {

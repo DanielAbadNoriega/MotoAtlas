@@ -93,7 +93,21 @@
   max-height: calc(92vh - 8rem);
   overflow-y: auto;
   padding: clamp(1.25rem, 3vw, 2rem);
+  scrollbar-color: rgba($color-outline-variant, 0.7) transparent;
   scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 0.45rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($color-outline-variant, 0.7);
+    border-radius: 999px;
+  }
 }
 
 .review-modal__context-card {
@@ -224,12 +238,10 @@
 }
 
 .review-modal__rating > div {
-  background: $color-surface-lowest;
-  border: 1px solid rgba($color-outline-variant, 0.3);
   border-radius: $radius-lg;
   display: flex;
   gap: 0.35rem;
-  padding: 0.75rem;
+  padding: 0.75rem 0;
 }
 
 .review-modal__rating button {

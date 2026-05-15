@@ -3,13 +3,13 @@ import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
+import { MotorcycleCommunityPage } from './components/pages/MotorcycleCommunityPage';
 import { SearchPage } from './components/pages/SearchPage';
 import { FeaturedBikes } from './components/sections/FeaturedBikes';
 import { Hero } from './components/sections/Hero';
 import { LatestNews } from './components/sections/LatestNews';
 import { MachineDuel } from './components/sections/MachineDuel';
 import { ReliabilityReports } from './components/sections/ReliabilityReports';
-import { RoutesSection } from './components/sections/RoutesSection';
 import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
 import { bikeCatalog } from './data/bikes';
 import { findBikeComparisonByHash } from './data/comparisons';
@@ -17,12 +17,14 @@ import { getMotorcycles } from './services/motorcycleService';
 import type { Bike } from './types/bike';
 import {
   getBikeDetailIdFromRoute,
+  getCommunityMotorcycleIdFromRoute,
   getComparatorSelectionFromRoute,
   getCurrentAppRoute,
+  isCommunityRoute,
   isComparatorRoute,
   isSearchRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildBikeSeoMetadata, buildCompareSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildBikeSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -53,7 +55,6 @@ function HomePage() {
       <MachineDuel />
       <LatestNews />
       <ReliabilityReports />
-      <RoutesSection />
     </main>
   );
 }
@@ -64,10 +65,13 @@ export function App() {
   const legacyComparison = findBikeComparisonByHash(route);
   const legacyComparisonIds = legacyComparison?.bikes.map((bike) => bike.bikeId) ?? [];
   const bikeDetailId = getBikeDetailIdFromRoute(route, motorcycles);
+  const communityMotorcycleId = getCommunityMotorcycleIdFromRoute(route, motorcycles);
   const findMotorcycleById = (id: Bike['id']) => motorcycles.find((bike) => bike.id === id);
   const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
+  const communityBike = communityMotorcycleId ? findMotorcycleById(communityMotorcycleId) : undefined;
   const isSearchPage = isSearchRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
+  const isCommunityPage = isCommunityRoute(route);
   const routeComparatorSelection = getComparatorSelectionFromRoute(route, motorcycles);
   const comparatorIds = legacyComparisonIds.length > 0 ? legacyComparisonIds : routeComparatorSelection.ids;
   const comparatorBikes = comparatorIds
@@ -96,6 +100,11 @@ export function App() {
   }, [route]);
 
   useEffect(() => {
+    if (isCommunityPage && communityBike) {
+      applySeoMetadata(buildCommunitySeoMetadata(communityBike));
+      return;
+    }
+
     if (detailBike) {
       applySeoMetadata(buildBikeSeoMetadata(detailBike));
       return;
@@ -111,7 +120,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [comparatorBikes, detailBike, isComparatorPage]);
+  }, [communityBike, comparatorBikes, detailBike, isCommunityPage, isComparatorPage]);
 
   return (
     <div className="app">
@@ -123,6 +132,8 @@ export function App() {
           missingBikeCount={missingComparatorIds.length}
           motorcycles={motorcycles}
         />
+      ) : isCommunityPage ? (
+        <MotorcycleCommunityPage bike={communityBike} motorcycleId={communityMotorcycleId} />
       ) : bikeDetailId ? (
         <BikeDetailPage bike={detailBike} motorcycles={motorcycles} />
       ) : isSearchPage ? (

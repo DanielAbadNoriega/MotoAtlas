@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   clearIncomingCompareHash,
@@ -78,6 +78,20 @@ function SearchField({ filters, onChange }: { filters: SearchFilters; onChange: 
   );
 }
 
+function FilterGroup({ children, title }: { children: ReactNode; title: string }) {
+  return (
+    <details className="search-page__filter-group" open>
+      <summary>
+        <span>{title}</span>
+        <span className="material-symbols-outlined" aria-hidden="true">
+          expand_more
+        </span>
+      </summary>
+      <div className="search-page__filter-group-body">{children}</div>
+    </details>
+  );
+}
+
 export function AdvancedFilters({
   brandOptions,
   filters,
@@ -111,8 +125,7 @@ export function AdvancedFilters({
         </button>
       </div>
 
-      <section className="search-page__filter-group">
-        <h3>Marca</h3>
+      <FilterGroup title="Marca">
         <div className="search-page__check-list">
           {brandOptions.map((brand) => (
             <label key={brand}>
@@ -126,10 +139,9 @@ export function AdvancedFilters({
             </label>
           ))}
         </div>
-      </section>
+      </FilterGroup>
 
-      <section className="search-page__filter-group">
-        <h3>Segmento</h3>
+      <FilterGroup title="Segmento">
         <div className="search-page__pill-list">
           {segmentOptions.map((segment) => (
             <button
@@ -142,10 +154,9 @@ export function AdvancedFilters({
             </button>
           ))}
         </div>
-      </section>
+      </FilterGroup>
 
-      <section className="search-page__filter-group">
-        <h3>Carnet</h3>
+      <FilterGroup title="Carnet">
         <div className="search-page__pill-list">
           {(['A2', 'A'] satisfies BikeLicense[]).map((license) => (
             <button
@@ -158,10 +169,9 @@ export function AdvancedFilters({
             </button>
           ))}
         </div>
-      </section>
+      </FilterGroup>
 
-      <section className="search-page__filter-group">
-        <h3>Rango de precio</h3>
+      <FilterGroup title="Rango de precio">
         <div className="search-page__range-grid">
           <label>
             <span>Desde</span>
@@ -190,10 +200,9 @@ export function AdvancedFilters({
             />
           </label>
         </div>
-      </section>
+      </FilterGroup>
 
-      <section className="search-page__filter-group">
-        <h3>Datos técnicos</h3>
+      <FilterGroup title="Datos técnicos">
         <label className="search-page__numeric-filter">
           <span>Potencia mínima</span>
           <input
@@ -220,7 +229,7 @@ export function AdvancedFilters({
             onChange={(event) => onChange({ maxWeight: event.target.value })}
           />
         </label>
-      </section>
+      </FilterGroup>
     </aside>
   );
 }

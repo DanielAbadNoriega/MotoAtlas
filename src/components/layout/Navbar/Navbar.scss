@@ -17,7 +17,7 @@
     height: 80px;
     align-items: center;
     justify-content: space-between;
-    gap: 2rem;
+    gap: clamp(1rem, 3vw, 2rem);
   }
 
   .navbar__brand {
@@ -32,15 +32,22 @@
     display: flex;
     align-items: center;
     gap: 2rem;
+    height: 100%;
 
     a {
       @include label-caps;
 
       color: $color-on-surface-variant;
-      transition: color $transition-base;
+      display: inline-flex;
+      align-items: center;
+      height: 100%;
+      transition:
+        border-color $transition-base,
+        color $transition-base;
 
       &:hover,
       &:focus-visible {
+        border-bottom-color: $color-accent;
         color: $color-on-surface;
       }
     }
@@ -67,10 +74,6 @@
     }
   }
 
-  .navbar__icon--menu {
-    display: none;
-  }
-
   @media (max-width: $breakpoint-tablet) {
     .navbar__inner,
     .navbar__links {
@@ -83,14 +86,13 @@
       height: 64px;
     }
 
-    .navbar__links,
-    .navbar__signin,
-    .navbar__icon--profile {
+    .navbar__links {
       display: none;
     }
 
-    .navbar__icon--menu {
-      display: inline-grid;
+    .navbar__signin {
+      min-height: 36px;
+      padding-inline: 0.75rem;
     }
   }
 }

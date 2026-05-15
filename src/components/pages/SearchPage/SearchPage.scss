@@ -124,6 +124,21 @@
     align-self: start;
     border-radius: $radius-xl;
     padding: 1.5rem;
+    scrollbar-color: rgba($color-outline-variant, 0.68) transparent;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      width: 0.45rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba($color-outline-variant, 0.68);
+      border-radius: 999px;
+    }
   }
 
   &__filters-header {
@@ -170,11 +185,44 @@
     border-top: 1px solid rgba($color-outline-variant, 0.24);
     padding-block: 1.25rem;
 
-    h3 {
+    summary {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      list-style: none;
+      user-select: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      .material-symbols-outlined {
+        color: $color-outline;
+        transition: transform $transition-base;
+      }
+    }
+
+    summary > span:first-child {
       @include label-caps;
 
       color: $color-on-surface;
-      margin: 0 0 1rem;
+    }
+
+    &[open] summary .material-symbols-outlined {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__filter-group-body {
+    padding-top: 1rem;
+  }
+
+  &__filter-group:not([open]) {
+    padding-bottom: 1.25rem;
+
+    .search-page__filter-group-body {
+      display: none;
     }
   }
 
@@ -184,6 +232,21 @@
     max-height: 16rem;
     overflow: auto;
     padding-right: 0.35rem;
+    scrollbar-color: rgba($color-outline-variant, 0.7) transparent;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      width: 0.4rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba($color-outline-variant, 0.7);
+      border-radius: 999px;
+    }
 
     label {
       align-items: center;
@@ -516,6 +579,8 @@
       position: absolute;
       right: 1rem;
       z-index: 4;
+      font-size: 0.75rem;
+      max-width: none;
     }
   }
 

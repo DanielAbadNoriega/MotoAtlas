@@ -33,16 +33,6 @@ export function Navbar() {
             label={navActions.searchLabel}
             onClick={openSearch}
           />
-          <IconButton
-            className="navbar__icon navbar__icon--menu"
-            icon="menu"
-            label={navActions.menuLabel}
-          />
-          <IconButton
-            className="navbar__icon navbar__icon--profile"
-            icon="account_circle"
-            label={navActions.profileLabel}
-          />
         </div>
       </div>
     </header>

@@ -4,13 +4,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { bikeCatalog } from './data/bikes';
 import { getMotorcycles } from './services/motorcycleService';
+import { getApprovedReviewsByMotorcycleId } from './services/motorcycleReviewService';
 import { bikeFixtures } from './test/fixtures/bikes';
 
 vi.mock('./services/motorcycleService', () => ({
   getMotorcycles: vi.fn(),
 }));
 
+vi.mock('./services/motorcycleReviewService', () => ({
+  createReview: vi.fn(),
+  getApprovedReviewsByMotorcycleId: vi.fn(),
+}));
+
 const getMotorcyclesMock = vi.mocked(getMotorcycles);
+const getApprovedReviewsMock = vi.mocked(getApprovedReviewsByMotorcycleId);
 
 async function renderApp() {
   const view = render(<App />);
@@ -23,7 +30,9 @@ describe('App navigation with mocked motorcycleService', () => {
     window.history.pushState(null, '', '/');
     window.location.hash = '';
     getMotorcyclesMock.mockReset();
+    getApprovedReviewsMock.mockReset();
     getMotorcyclesMock.mockResolvedValue({ motorcycles: bikeFixtures, source: 'supabase' });
+    getApprovedReviewsMock.mockResolvedValue([]);
   });
 
   it('does not depend on real Supabase data', async () => {
@@ -33,10 +42,13 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(screen.getByRole('heading', { name: /La Enciclopedia del Motero Técnico/i })).toBeInTheDocument();
   });
 
-  it('has a navigation link toward the search page', async () => {
+  it('has the simplified primary navigation links', async () => {
     await renderApp();
 
-    expect(screen.getByRole('link', { name: 'Buscador' })).toHaveAttribute('href', '#/buscador');
+    expect(screen.getByRole('link', { name: 'Comparativas' })).toHaveAttribute('href', '#comparativas');
+    expect(screen.getByRole('link', { name: 'Noticias' })).toHaveAttribute('href', '#noticias');
+    expect(screen.getByRole('link', { name: 'Comunidad' })).toHaveAttribute('href', '#/comunidad');
+    expect(screen.queryByRole('link', { name: 'Rutas' })).not.toBeInTheDocument();
   });
 
   it('opens the search page from the main search button', async () => {
@@ -120,6 +132,16 @@ describe('App navigation with mocked motorcycleService', () => {
     await renderApp();
 
     expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
+  });
+
+  it('renders community page from a motorcycle route', async () => {
+    window.location.hash = '#/comunidad/test-bmw-f-900-gs';
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /Reviews BMW F 900 GS/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Volver a ficha/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+    expect(getApprovedReviewsMock).toHaveBeenCalledWith('test-bmw-f-900-gs');
   });
 
   it('does not render more than 3 motorcycles from a comparator route', async () => {

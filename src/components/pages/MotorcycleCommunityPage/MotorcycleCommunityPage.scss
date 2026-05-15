@@ -1,0 +1,540 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.motorcycle-community {
+  min-height: 100vh;
+  padding-bottom: clamp(5rem, 10vw, 8rem);
+  background:
+    radial-gradient(circle at top right, rgba($color-accent, 0.16), transparent 34rem),
+    linear-gradient(180deg, rgba($color-surface-lowest, 0.72), rgba($color-surface, 0));
+
+  &__hero {
+    @include container;
+
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    padding-block: clamp(2rem, 6vw, 5rem) clamp(2.5rem, 6vw, 5.5rem);
+  }
+
+  &__hero-media {
+    @include glass-hud;
+
+    aspect-ratio: 16 / 9;
+    border-radius: $radius-xl;
+    overflow: hidden;
+    position: relative;
+
+    .motorcycle-image,
+    img {
+      height: 100%;
+      width: 100%;
+    }
+
+    img {
+      filter: saturate(0.88) contrast(1.08);
+      object-fit: cover;
+    }
+
+    > div:last-child {
+      background: linear-gradient(180deg, transparent, rgba($color-surface-lowest, 0.84));
+      inset: 0;
+      pointer-events: none;
+      position: absolute;
+    }
+  }
+
+  &__hero-content {
+    align-self: end;
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  &__hero-badges,
+  &__hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  &__hero-badges span {
+    @include technical-badge;
+  }
+
+  &__eyebrow,
+  &__section-header span,
+  &__insights > div > span {
+    @include label-caps;
+
+    color: $color-accent;
+  }
+
+  h1 {
+    @include headline-xl;
+
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  &__hero-content > p {
+    color: $color-on-surface-variant;
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  &__hero-rating {
+    align-items: center;
+    display: flex;
+    gap: 1.25rem;
+
+    > strong {
+      @include headline-xl;
+
+      color: white;
+      line-height: 1;
+    }
+
+    > div {
+      display: grid;
+      gap: 0.3rem;
+
+      > span:last-child {
+        @include label-caps;
+
+        color: $color-outline;
+        font-size: 0.64rem;
+      }
+    }
+  }
+
+  &__stars {
+    color: $color-accent;
+    display: inline-flex;
+    gap: 0.05rem;
+
+    .material-symbols-outlined[data-filled='true'] {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .material-symbols-outlined[data-filled='false'] {
+      color: rgba($color-outline, 0.52);
+    }
+  }
+
+  &__compare {
+    @include label-caps;
+
+    align-items: center;
+    border-bottom: 1px solid rgba($color-accent, 0.72);
+    color: $color-accent;
+    display: inline-flex;
+    min-height: 44px;
+  }
+
+  &__layout {
+    @include container;
+
+    align-items: start;
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
+    grid-template-columns: minmax(280px, 0.38fr) minmax(0, 1fr);
+  }
+
+  &__sidebar {
+    display: grid;
+    gap: 1.25rem;
+    position: sticky;
+    top: 7rem;
+  }
+
+  &__panel,
+  &__review-card,
+  &__empty,
+  &__insights {
+    @include glass-hud;
+
+    border-radius: $radius-xl;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+  }
+
+  &__panel--hud {
+    position: relative;
+
+    &::before,
+    &::after {
+      border-color: $color-accent;
+      content: '';
+      height: 10px;
+      position: absolute;
+      width: 10px;
+    }
+
+    &::before {
+      border-left: 2px solid;
+      border-top: 2px solid;
+      left: -1px;
+      top: -1px;
+    }
+
+    &::after {
+      border-bottom: 2px solid;
+      border-right: 2px solid;
+      bottom: -1px;
+      right: -1px;
+    }
+  }
+
+  &__panel h2,
+  &__section-header h2,
+  &__insights h2 {
+    @include headline-md;
+
+    margin: 0 0 1.25rem;
+    text-transform: uppercase;
+  }
+
+  &__metrics {
+    display: grid;
+    gap: 0.75rem;
+
+    article {
+      background: rgba($color-surface-container-high, 0.56);
+      border: 1px solid rgba($color-outline-variant, 0.22);
+      border-radius: $radius-lg;
+      display: grid;
+      gap: 0.35rem;
+      padding: 0.95rem;
+    }
+
+    span,
+    small {
+      @include label-caps;
+
+      color: $color-outline;
+      font-size: 0.62rem;
+    }
+
+    strong {
+      color: white;
+      font-size: 1.15rem;
+    }
+  }
+
+  &__distribution {
+    display: grid;
+    gap: 0.8rem;
+
+    > div {
+      align-items: center;
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: 2.25rem 1fr 1.5rem;
+    }
+
+    span,
+    strong {
+      @include label-caps;
+
+      color: $color-on-surface-variant;
+      font-size: 0.68rem;
+    }
+
+    > div > div {
+      background: rgba($color-surface-container-highest, 0.62);
+      border-radius: 999px;
+      height: 0.4rem;
+      overflow: hidden;
+    }
+
+    > div > div span {
+      background: $color-accent;
+      box-shadow: 0 0 8px rgba($color-accent, 0.65);
+      display: block;
+      height: 100%;
+    }
+  }
+
+  &__main {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    min-width: 0;
+  }
+
+  &__insights > div:first-child,
+  &__section-header {
+    align-items: end;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  &__insight-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    article {
+      background: rgba($color-surface-low, 0.72);
+      border: 1px solid rgba($color-outline-variant, 0.2);
+      border-radius: $radius-lg;
+      padding: 1rem;
+    }
+
+    h3 {
+      @include label-caps;
+
+      color: white;
+      margin: 0 0 0.9rem;
+    }
+
+    ul {
+      display: grid;
+      gap: 0.55rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li,
+    p {
+      color: $color-on-surface-variant;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    li::before {
+      color: $color-accent;
+      content: '— ';
+    }
+  }
+
+  &__pending,
+  &__notice {
+    color: $color-on-surface-variant;
+    margin: 0;
+  }
+
+  &__review-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  &__review-card {
+    overflow: hidden;
+    position: relative;
+
+    &::after {
+      background: rgba($color-accent, 0.08);
+      border-radius: 999px;
+      content: '';
+      filter: blur(40px);
+      height: 7rem;
+      pointer-events: none;
+      position: absolute;
+      right: -2rem;
+      top: -2rem;
+      width: 7rem;
+    }
+
+    > header {
+      align-items: start;
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    > header > div:first-child {
+      align-items: center;
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    > header > div:first-child > span {
+      align-items: center;
+      background: rgba($color-accent, 0.18);
+      border: 1px solid rgba($color-accent, 0.34);
+      border-radius: 999px;
+      color: $color-accent;
+      display: inline-flex;
+      font-family: $font-headline;
+      font-weight: 800;
+      height: 2.5rem;
+      justify-content: center;
+      width: 2.5rem;
+    }
+
+    h3 {
+      color: white;
+      font-family: $font-headline;
+      font-size: 1rem;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    small,
+    dt,
+    strong {
+      @include label-caps;
+
+      color: $color-outline;
+      font-size: 0.62rem;
+    }
+
+    > header > div:last-child {
+      align-items: end;
+      display: grid;
+      justify-items: end;
+    }
+
+    > p {
+      color: $color-on-surface-variant;
+      font-size: 0.98rem;
+      font-style: italic;
+      line-height: 1.7;
+      margin: 0 0 1.2rem;
+    }
+
+    dl {
+      border-top: 1px solid rgba($color-outline-variant, 0.2);
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 0;
+      padding-top: 1rem;
+    }
+
+    dd {
+      color: white;
+      margin: 0.25rem 0 0;
+    }
+  }
+
+  &__review-pros-cons {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 1rem;
+
+    ul {
+      color: $color-on-surface-variant;
+      line-height: 1.6;
+      margin: 0.5rem 0 0;
+      padding-left: 1.1rem;
+    }
+  }
+
+  &__empty {
+    align-items: center;
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+    text-align: center;
+
+    .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 2.5rem;
+    }
+
+    h3 {
+      @include headline-md;
+
+      margin: 0;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      line-height: 1.65;
+      margin: 0;
+      max-width: 34rem;
+    }
+  }
+
+  &--state {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding: clamp(3rem, 10vw, 8rem) $margin-mobile;
+
+    section {
+      @include glass-hud;
+
+      border-radius: $radius-xl;
+      max-width: 680px;
+      padding: clamp(2rem, 6vw, 4rem);
+      text-align: center;
+    }
+
+    span {
+      @include label-caps;
+
+      color: $color-accent;
+    }
+
+    h1 {
+      margin: 1rem 0;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      line-height: 1.65;
+      margin: 0 auto 1.75rem;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .motorcycle-community {
+    &__hero,
+    &__layout,
+    &__insight-grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__sidebar {
+      position: static;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .motorcycle-community {
+    padding-bottom: 5rem;
+
+    &__hero {
+      gap: 0;
+      padding-inline: 0;
+      padding-top: 0;
+    }
+
+    &__hero-media {
+      border-inline: 0;
+      border-radius: 0;
+    }
+
+    &__hero-content {
+      padding: $margin-mobile;
+    }
+
+    &__hero-actions,
+    &__section-header,
+    &__insights > div:first-child,
+    &__review-card > header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    &__layout {
+      padding-inline: $margin-mobile;
+    }
+
+    &__review-pros-cons,
+    &__review-card dl {
+      grid-template-columns: 1fr;
+    }
+  }
+}

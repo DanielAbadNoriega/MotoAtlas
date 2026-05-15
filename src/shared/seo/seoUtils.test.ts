@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { bikeFixtures } from '../../test/fixtures/bikes';
-import { applySeoMetadata, buildBikeJsonLd, buildBikeSeoMetadata, buildCompareSeoMetadata, buildRobotsTxt, buildSitemapXml, getSitemapUrls } from './seoUtils';
+import {
+  applySeoMetadata,
+  buildBikeJsonLd,
+  buildBikeSeoMetadata,
+  buildCommunitySeoMetadata,
+  buildCompareSeoMetadata,
+  buildRobotsTxt,
+  buildSitemapXml,
+  getSitemapUrls,
+} from './seoUtils';
 
 describe('seoUtils', () => {
   it('genera meta de ficha de moto con JSON-LD Motorcycle y AggregateRating', () => {
@@ -35,6 +44,15 @@ describe('seoUtils', () => {
     expect(metadata.canonicalUrl).toContain('/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660');
   });
 
+  it('genera meta SEO para comunidad de una moto', () => {
+    const metadata = buildCommunitySeoMetadata(bikeFixtures[0]);
+
+    expect(metadata.title).toBe('Reviews BMW F 900 GS 2024 | MotoAtlas');
+    expect(metadata.description).toContain('Opiniones reales');
+    expect(metadata.canonicalUrl).toContain('/comunidad/test-bmw-f-900-gs');
+    expect(metadata.jsonLd).toMatchObject({ '@type': 'CollectionPage' });
+  });
+
   it('aplica meta tags, canonical y JSON-LD al documento', () => {
     applySeoMetadata(buildCompareSeoMetadata(bikeFixtures.slice(0, 2)));
 
@@ -50,6 +68,7 @@ describe('seoUtils', () => {
     const sitemap = buildSitemapXml(urls);
 
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/motos/bmw-f-900-gs']));
+    expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/comunidad/test-bmw-f-900-gs']));
     expect(sitemap).toContain('<urlset');
     expect(buildRobotsTxt()).toContain('Sitemap: https://motoatlas.com/sitemap.xml');
   });
