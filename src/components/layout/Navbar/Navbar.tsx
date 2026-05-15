@@ -168,12 +168,10 @@ function DrawerNav({ compareHref, isOpen, onClose, route }: { compareHref: `#${s
     <div className="navbar__drawer-layer">
       <button className="navbar__drawer-backdrop" type="button" onClick={onClose} aria-label="Cerrar navegación" />
       <aside id="navbar-tablet-drawer" className="navbar__drawer" role="dialog" aria-modal="true" aria-labelledby="navbar-drawer-title">
-        <header className="navbar__drawer-header">
-          <span id="navbar-drawer-title" className="navbar__drawer-title">Navegación</span>
-          <button ref={closeButtonRef} className="navbar__drawer-close" type="button" onClick={onClose} aria-label="Cerrar menú">
-            <NavIcon icon="close" />
-          </button>
-        </header>
+        <button ref={closeButtonRef} className="navbar__drawer-close" type="button" onClick={onClose} aria-label="Cerrar menú">
+          <NavIcon icon="close" />
+        </button>
+        <hr/>
         <nav className="navbar__drawer-links" aria-label="Navegación tablet">
           {drawerItems.map((item) => (
             <a href={item.href} key={item.id} onClick={onClose} aria-current={getAriaCurrent(route, item.id)}>

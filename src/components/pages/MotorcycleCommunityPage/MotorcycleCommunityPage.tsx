@@ -244,14 +244,16 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
           <div aria-hidden="true" />
         </div>
         <div className="motorcycle-community__hero-content">
-          <div className="motorcycle-community__hero-badges">
-            <span>{segmentLabels[bike.segment]}</span>
-            <span>{a2Badge.label}</span>
-            <span>{bike.year}</span>
+          <div>
+            <div className="motorcycle-community__hero-badges">
+              <span>{segmentLabels[bike.segment]}</span>
+              <span>{a2Badge.label}</span>
+              <span>{bike.year}</span>
+            </div>
+            <span className="motorcycle-community__eyebrow">Owner registry</span>
+            <h1 id="motorcycle-community-title">Reviews {bikeName}</h1>
+            <p>Opiniones reales, problemas comunes y experiencia de propietarios de {bikeName}.</p>
           </div>
-          <span className="motorcycle-community__eyebrow">Owner registry</span>
-          <h1 id="motorcycle-community-title">Reviews {bikeName}</h1>
-          <p>Opiniones reales, problemas comunes y experiencia de propietarios de {bikeName}.</p>
           <div className="motorcycle-community__hero-rating" aria-label="Resumen de rating">
             <strong>{aggregate.reviewCount > 0 ? aggregate.averageRating.toFixed(1) : 'N/D'}</strong>
             <div>

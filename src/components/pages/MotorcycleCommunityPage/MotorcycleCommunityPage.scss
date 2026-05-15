@@ -53,8 +53,9 @@
   &__hero-content {
     @include container;
 
-    display: grid;
-    gap: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 3rem;
     padding-block: clamp(8rem, 18vh, 12rem) clamp(5rem, 10vh, 7rem);
     position: relative;
     z-index: 1;
@@ -85,7 +86,7 @@
     text-transform: uppercase;
   }
 
-  &__hero-content > p {
+  &__hero-content p {
     color: $color-on-surface-variant;
     font-size: clamp(1rem, 2vw, 1.15rem);
     line-height: 1.65;
