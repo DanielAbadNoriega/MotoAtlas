@@ -15,6 +15,8 @@
     "fetch:motos": "tsx scripts/fetchMotorcyclesFromApi.ts",
     "import:motos:check": "tsx scripts/importMotorcycles.ts --dry-run",
     "repair:motos": "tsx scripts/repairMotorcycleData.ts",
+    "normalize:images": "tsx scripts/normalizeMotorcycleImages.ts",
+    "normalize:images:check": "tsx scripts/normalizeMotorcycleImages.ts --dry-run",
     "sync:images": "tsx scripts/syncMotorcycleImages.ts",
     "sync:images:check": "tsx scripts/syncMotorcycleImages.ts --dry-run",
     "seo:sitemap": "tsx scripts/generateSeoFiles.ts"
@@ -36,6 +38,7 @@
     "dotenv": "^17.4.2",
     "jsdom": "^29.1.1",
     "sass": "^1.99.0",
+    "sharp": "^0.34.5",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.12",

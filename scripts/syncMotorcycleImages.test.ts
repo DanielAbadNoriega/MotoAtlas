@@ -19,8 +19,8 @@ function createSupabaseMock() {
 
 describe('syncMotorcycleImages', () => {
   it('genera naming local obligatorio en webp', () => {
-    expect(getMotorcycleLocalImageFileName(bikeFixtures[0])).toBe('bmw-f-900-gs-2024.webp');
-    expect(getMotorcycleLocalImageUrl(bikeFixtures[0])).toBe('/images/motorcycles/bmw-f-900-gs-2024.webp');
+    expect(getMotorcycleLocalImageFileName(bikeFixtures[0])).toBe('test-bmw-f-900-gs.webp');
+    expect(getMotorcycleLocalImageUrl(bikeFixtures[0])).toBe('/images/motorcycles/test-bmw-f-900-gs.webp');
   });
 
   it('detecta imagen local y fallback sin conectar en dry-run', async () => {
@@ -30,12 +30,12 @@ describe('syncMotorcycleImages', () => {
       existingRows: [],
       logger,
       motorcycles: bikeFixtures.slice(0, 2),
-      readLocalImage: vi.fn().mockImplementation((filePath: string) => Promise.resolve(filePath.includes('bmw-f-900-gs'))),
+      readLocalImage: vi.fn().mockImplementation((filePath: string) => Promise.resolve(filePath.includes('test-bmw-f-900-gs'))),
     });
 
     expect(result).toMatchObject({ detectedLocalCount: 1, fallbackCount: 1, updatedCount: 0 });
     expect(result.updates).toEqual([
-      expect.objectContaining({ image_source: 'manual', image_url: '/images/motorcycles/bmw-f-900-gs-2024.webp' }),
+      expect.objectContaining({ image_source: 'manual', image_url: '/images/motorcycles/test-bmw-f-900-gs.webp' }),
       expect.objectContaining({ image_source: 'placeholder', image_url: MOTORCYCLE_IMAGE_FALLBACK_URL }),
     ]);
     expect(logger.log).toHaveBeenCalledWith('🧪 Dry run: no se ha actualizado Supabase.');
@@ -67,7 +67,7 @@ describe('syncMotorcycleImages', () => {
     });
 
     expect(result.updatedCount).toBe(1);
-    expect(update).toHaveBeenCalledWith({ image_source: 'manual', image_url: '/images/motorcycles/bmw-f-900-gs-2024.webp' });
+    expect(update).toHaveBeenCalledWith({ image_source: 'manual', image_url: '/images/motorcycles/test-bmw-f-900-gs.webp' });
     expect(eq).toHaveBeenCalledWith('id', bikeFixtures[0].id);
   });
 });

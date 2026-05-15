@@ -123,7 +123,7 @@ La lógica está centralizada en `src/shared/images/getMotorcycleImage.ts` y se 
 Las imágenes locales estables van en:
 
 ```txt
-public/images/motorcycles/brand-model-year.webp
+public/images/motorcycles/{motorcycle.id}.webp
 ```
 
 Ejemplo:
@@ -131,6 +131,32 @@ Ejemplo:
 ```txt
 public/images/motorcycles/bmw-f-900-gs-2024.webp
 ```
+
+Para normalizar imágenes raw descargadas manualmente:
+
+```txt
+data/import/raw-images/{motorcycle.id}.jpg
+```
+
+Ejecuta primero un check sin escribir:
+
+```bash
+npm run normalize:images:check
+```
+
+Y luego genera los `.webp` optimizados:
+
+```bash
+npm run normalize:images
+```
+
+Si necesitas regenerar una imagen existente:
+
+```bash
+npm run normalize:images -- --overwrite
+```
+
+El script genera WebP 1600x900, `fit: cover`, calidad 82 y sin metadata innecesaria. Después de normalizar, `sync:images` detecta automáticamente esas imágenes.
 
 Para comprobar qué imagen local o placeholder se aplicaría:
 

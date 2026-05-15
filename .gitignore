@@ -6,3 +6,6 @@ dist
 !.env.example
 !.env.import.example
 coverage
+
+data/import/raw-images/*
+!data/import/raw-images/.gitkeep

@@ -316,7 +316,7 @@ El script `fetch:motos` deduplica seeds por marca, modelo y año antes de consul
 El pipeline estable de imágenes usa:
 
 ```txt
-public/images/motorcycles/{brand-model-year}.webp
+public/images/motorcycles/{motorcycle.id}.webp
 ```
 
 Ejemplo:
@@ -328,14 +328,26 @@ public/images/motorcycles/bmw-f-900-gs-2024.webp
 Comandos:
 
 ```bash
+npm run normalize:images:check
+npm run normalize:images
 npm run sync:images:check
 npm run sync:images
 ```
 
+`normalizeMotorcycleImages.ts`:
+
+1. Lee imágenes raw desde `data/import/raw-images/`.
+2. El nombre del raw debe coincidir con `motorcycle.id` (`bmw-f-900-gs-2024.jpg`).
+3. Ignora archivos que no sean imagen.
+4. Avisa si el id no existe en `motorcycles.json`.
+5. Genera WebP 1600x900, `fit: cover`, calidad 82 y sin metadata.
+6. No sobrescribe si ya existe salvo `--overwrite`.
+7. `--dry-run` muestra input, validez y output esperado sin escribir.
+
 `syncMotorcycleImages.ts`:
 
 1. Lee las motos del JSON de importación.
-2. Busca el `.webp` local esperado.
+2. Busca el `.webp` local esperado por `motorcycle.id`.
 3. Si existe, prepara `image_url = /images/motorcycles/...` e `image_source = manual`.
 4. Si no existe, prepara el fallback técnico e `image_source = placeholder`.
 5. Si Supabase tiene `image_locked = true`, no sobrescribe `image_url`.

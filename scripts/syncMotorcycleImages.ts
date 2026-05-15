@@ -6,7 +6,10 @@ import { createClient } from '@supabase/supabase-js';
 import { importPaths, readJsonFile } from '../src/features/import/importUtils';
 import type { ImportLogger } from '../src/features/import/motorcycleImportTypes';
 import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../src/shared/images/getMotorcycleImage';
-import { slugifyRoutePart } from '../src/shared/routing/routeUtils';
+import {
+  getMotorcycleLocalImageFileName,
+  getMotorcycleLocalImageUrl,
+} from '../src/shared/images/motorcycleImageNaming';
 import type { Bike } from '../src/types/bike';
 
 loadEnv({ path: '.env.import', quiet: true });
@@ -80,13 +83,7 @@ async function fileExists(filePath: string) {
   }
 }
 
-export function getMotorcycleLocalImageFileName(motorcycle: Pick<Bike, 'brand' | 'model' | 'year'>) {
-  return `${slugifyRoutePart(`${motorcycle.brand} ${motorcycle.model} ${motorcycle.year}`)}.webp`;
-}
-
-export function getMotorcycleLocalImageUrl(motorcycle: Pick<Bike, 'brand' | 'model' | 'year'>) {
-  return `/images/motorcycles/${getMotorcycleLocalImageFileName(motorcycle)}`;
-}
+export { getMotorcycleLocalImageFileName, getMotorcycleLocalImageUrl };
 
 async function readExistingRows(client: SupabaseImageClient, ids: readonly string[]) {
   if (ids.length === 0) {
