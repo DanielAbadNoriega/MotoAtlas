@@ -11,8 +11,9 @@
   &__hero {
     border-bottom: 1px solid rgba($color-outline-variant, 0.22);
     background:
-      linear-gradient(90deg, transparent, rgba($color-accent, 0.08), transparent),
-      linear-gradient(180deg, rgba($color-surface-lowest, 0.96), rgba($color-surface-container, 0.45));
+      linear-gradient(180deg, rgba($color-surface-lowest, 0.72), rgba($color-surface, 0.94)),
+      radial-gradient(circle at 50% 20%, rgba($color-accent, 0.18), transparent 28rem),
+      url('../../../assets/comparison-hero.png') center / cover;
     overflow: hidden;
     padding-block: clamp(4rem, 10vw, 8rem);
     position: relative;
@@ -119,11 +120,19 @@
   }
 
   &__filters {
-    @include glass-hud;
-
+    backdrop-filter: blur(22px);
+    background:
+      linear-gradient(180deg, rgba($color-surface-container-high, 0.74), rgba($color-surface-low, 0.88)),
+      radial-gradient(circle at top left, rgba($color-accent, 0.12), transparent 17rem);
     align-self: start;
+    border: 1px solid rgba($color-outline-variant, 0.34);
     border-radius: $radius-xl;
-    padding: 1.5rem;
+    box-shadow: $shadow-glass;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 7rem);
+    overflow: hidden;
+    padding: 0;
     scrollbar-color: rgba($color-outline-variant, 0.68) transparent;
     scrollbar-width: thin;
 
@@ -141,12 +150,21 @@
     }
   }
 
+  &__filters-backdrop,
+  &__sheet-handle {
+    display: none;
+  }
+
   &__filters-header {
     align-items: center;
     display: grid;
     gap: 1rem;
     grid-template-columns: 1fr auto;
-    margin-bottom: 1.75rem;
+    padding: 1.35rem 1.35rem 1rem;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 2;
 
     h2 {
       @include headline-md;
@@ -166,6 +184,59 @@
       &:focus-visible {
         color: white;
       }
+    }
+  }
+
+  &__filters-body {
+    overflow-y: auto;
+    padding: 0 1.35rem;
+    scrollbar-color: rgba($color-outline-variant, 0.48) transparent;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      width: 0.35rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba($color-outline-variant, 0.42);
+      border-radius: 999px;
+    }
+  }
+
+  &__filters-footer {
+    align-items: center;
+    background: rgba($color-surface-lowest, 0.58);
+    border-top: 1px solid rgba($color-outline-variant, 0.22);
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr;
+    padding: 1rem 1.35rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+
+    button {
+      @include label-caps;
+
+      border-radius: $radius-md;
+      min-height: 44px;
+      padding: 0.75rem 0.85rem;
+    }
+
+    button:first-child {
+      background: transparent;
+      border: 1px solid rgba($color-outline-variant, 0.42);
+      color: $color-on-surface-variant;
+    }
+
+    button:last-child {
+      background: $color-accent;
+      border: 1px solid $color-accent;
+      color: white;
     }
   }
 
@@ -211,6 +282,231 @@
 
     &[open] summary .material-symbols-outlined {
       transform: rotate(180deg);
+    }
+  }
+
+  &__active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-bottom: 1.35rem;
+
+    button {
+      @include label-caps;
+
+      align-items: center;
+      background: rgba($color-accent, 0.15);
+      border: 1px solid rgba($color-accent, 0.42);
+      border-radius: 999px;
+      color: $color-accent;
+      display: inline-flex;
+      gap: 0.35rem;
+      min-height: 34px;
+      padding: 0.45rem 0.7rem;
+
+      .material-symbols-outlined {
+        font-size: 0.95rem;
+      }
+
+      &:hover,
+      &:focus-visible {
+        background: $color-accent;
+        color: white;
+        outline: 0;
+      }
+    }
+  }
+
+  &__active-filters--compact {
+    margin: 1rem 0 0;
+  }
+
+  &__brand-grid,
+  &__segment-grid {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__brand-card,
+  &__option-card {
+    @include label-caps;
+
+    align-items: center;
+    background: rgba($color-surface-container, 0.72);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-lg;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.45rem;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.75rem;
+    text-align: center;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+
+    &:hover,
+    &:focus-visible,
+    &--active {
+      background: rgba($color-accent, 0.16);
+      border-color: rgba($color-accent, 0.74);
+      color: $color-accent;
+      outline: 0;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  &__brand-card {
+    min-height: 56px;
+  }
+
+  &__option-card {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  &__range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.65rem;
+
+    span {
+      @include label-caps;
+
+      color: $color-accent;
+      font-size: 0.62rem;
+    }
+  }
+
+  &__range-desktop {
+    display: grid;
+    gap: 0.65rem;
+
+    label {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    label > span {
+      @include label-caps;
+
+      color: $color-outline;
+      font-size: 0.6rem;
+    }
+
+    input[type='range'] {
+      appearance: none;
+      background: transparent;
+      width: 100%;
+
+      &::-webkit-slider-runnable-track {
+        background: rgba($color-outline-variant, 0.9);
+        border-radius: 999px;
+        height: 4px;
+      }
+
+      &::-webkit-slider-thumb {
+        appearance: none;
+        background: $color-accent;
+        border-radius: 50%;
+        box-shadow: 0 0 16px rgba($color-accent, 0.62);
+        height: 16px;
+        margin-top: -6px;
+        width: 16px;
+      }
+
+      &::-moz-range-track {
+        background: rgba($color-outline-variant, 0.9);
+        border-radius: 999px;
+        height: 4px;
+      }
+
+      &::-moz-range-thumb {
+        background: $color-accent;
+        border: 0;
+        border-radius: 50%;
+        box-shadow: 0 0 16px rgba($color-accent, 0.62);
+        height: 16px;
+        width: 16px;
+      }
+    }
+  }
+
+  &__range-presets {
+    display: none;
+    gap: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__toggle-grid {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  &__toggle-card {
+    align-items: center;
+    background: rgba($color-surface-container, 0.72);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-lg;
+    color: $color-on-surface;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    min-height: 52px;
+    padding: 0.85rem;
+    text-align: left;
+
+    > span:first-child {
+      font-family: $font-headline;
+      font-weight: 800;
+    }
+
+    > span:last-child {
+      background: $color-surface-container-highest;
+      border: 1px solid rgba($color-outline-variant, 0.5);
+      border-radius: 999px;
+      height: 1.35rem;
+      position: relative;
+      width: 2.5rem;
+
+      &::after {
+        background: $color-outline;
+        border-radius: 50%;
+        content: '';
+        height: 0.85rem;
+        left: 0.22rem;
+        position: absolute;
+        top: 0.2rem;
+        transition:
+          background $transition-base,
+          transform $transition-base;
+        width: 0.85rem;
+      }
+    }
+
+    &:hover,
+    &:focus-visible,
+    &--active {
+      border-color: rgba($color-accent, 0.66);
+      outline: 0;
+    }
+
+    &--active > span:last-child {
+      background: $color-accent;
+      border-color: $color-accent;
+
+      &::after {
+        background: white;
+        transform: translateX(1.05rem);
+      }
     }
   }
 
@@ -791,7 +1087,7 @@
   }
 }
 
-@media (max-width: $breakpoint-tablet) {
+@media (max-width: 990px) {
   .search-page {
     &__mobile-filter-trigger {
       display: block;
@@ -806,18 +1102,28 @@
       border-radius: 0 20px 20px 0;
       bottom: 0;
       left: 0;
+      max-height: 100dvh;
       max-width: 390px;
-      overflow-y: auto;
       position: fixed;
       top: 0;
       transform: translateX(-105%);
       transition: transform $transition-base;
       width: min(88vw, 390px);
-      z-index: 90;
+      z-index: 150;
 
       &--open {
         transform: translateX(0);
       }
+    }
+
+    &__filters-backdrop {
+      backdrop-filter: blur(7px);
+      background: rgba(0, 0, 0, 0.62);
+      border: 0;
+      display: block;
+      inset: 0;
+      position: fixed;
+      z-index: 140;
     }
 
     &__filters-header {
@@ -826,6 +1132,14 @@
 
     &__filters-close {
       display: inline-flex;
+    }
+
+    &__range-desktop {
+      display: none;
+    }
+
+    &__range-presets {
+      display: grid;
     }
   }
 }
@@ -856,6 +1170,58 @@
       gap: 1.5rem;
       padding-block: 1.5rem;
     }
+
+    &__filters {
+      border-radius: 0 20px 20px 0;
+      bottom: 0;
+      left: 0;
+      max-height: min(86dvh, 760px);
+      max-width: none;
+      position: fixed;
+      right: 0;
+      top: auto;
+      transform: translateY(105%);
+      transition: transform $transition-base;
+      width: 100%;
+      border-radius: 28px 28px 0 0;
+      z-index: 150;
+
+      &--open {
+        transform: translateY(0);
+      }
+    }
+
+    &__sheet-handle {
+      display: flex;
+      justify-content: center;
+      padding: 0.75rem 0 0.25rem;
+
+      &::before {
+        background: rgba($color-outline, 0.5);
+        border-radius: 999px;
+        content: '';
+        height: 0.35rem;
+        width: 3rem;
+      }
+    }
+
+    &__filters-body {
+      padding-inline: $margin-mobile;
+    }
+
+    &__filters-footer {
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+
+    &__brand-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    &__segment-grid,
+    &__range-presets {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
 
     &__results-header {
       align-items: stretch;

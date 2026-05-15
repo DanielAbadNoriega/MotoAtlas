@@ -1,6 +1,6 @@
 import { compareQueueMaxSize } from './compareQueue';
-import type { Bike, BikeLicense, BikeSegment } from '../types/bike';
-import { getBikeA2Status, isBikeA2Compatible } from '../shared/motorcycles/motorcycleTaxonomy';
+import type { Bike, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../types/bike';
+import { getBikeA2Status, isBikeA2Compatible, type BikeA2Status } from '../shared/motorcycles/motorcycleTaxonomy';
 
 export type SortOption =
   | 'price-asc'
@@ -17,10 +17,18 @@ export type SearchFilters = {
   brands: string[];
   segments: BikeSegment[];
   licenses: BikeLicense[];
+  a2Statuses: BikeA2Status[];
   minPrice: string;
   maxPrice: string;
   minPower: string;
+  maxPower: string;
+  minWeight: string;
   maxWeight: string;
+  minSeatHeight: string;
+  maxSeatHeight: string;
+  equipment: (keyof BikeFeatures)[];
+  recommendedUses: (keyof BikeUseScores)[];
+  dataSources: MotorcycleDataSource[];
   sort: SortOption;
 };
 
@@ -29,10 +37,18 @@ export const initialSearchFilters: SearchFilters = {
   brands: [],
   segments: [],
   licenses: [],
+  a2Statuses: [],
   minPrice: '',
   maxPrice: '',
   minPower: '',
+  maxPower: '',
+  minWeight: '',
   maxWeight: '',
+  minSeatHeight: '',
+  maxSeatHeight: '',
+  equipment: [],
+  recommendedUses: [],
+  dataSources: [],
   sort: 'price-asc',
 };
 
@@ -86,10 +102,22 @@ export function filterMotorcycles(motorcycles: readonly Bike[], filters: SearchF
   const minPrice = toOptionalNumber(filters.minPrice);
   const maxPrice = toOptionalNumber(filters.maxPrice);
   const minPower = toOptionalNumber(filters.minPower);
+  const maxPower = toOptionalNumber(filters.maxPower);
+  const minWeight = toOptionalNumber(filters.minWeight);
   const maxWeight = toOptionalNumber(filters.maxWeight);
+  const minSeatHeight = toOptionalNumber(filters.minSeatHeight);
+  const maxSeatHeight = toOptionalNumber(filters.maxSeatHeight);
 
   const results = motorcycles.filter((bike) => {
     const haystack = normalizeText(`${bike.brand} ${bike.model}`);
+    const bikeDataSources = [
+      bike.specsSource,
+      bike.priceSource,
+      bike.imageSource,
+      bike.scoresSource,
+      bike.prosConsSource,
+      bike.reliabilitySource,
+    ];
 
     return (
       (!text || haystack.includes(text)) &&
@@ -99,10 +127,18 @@ export function filterMotorcycles(motorcycles: readonly Bike[], filters: SearchF
         filters.licenses.some((license) =>
           license === 'A2' ? isBikeA2Compatible(bike) : getBikeA2Status(bike) === 'A',
         )) &&
+      (filters.a2Statuses.length === 0 || filters.a2Statuses.includes(getBikeA2Status(bike))) &&
       (minPrice === undefined || bike.priceEur >= minPrice) &&
       (maxPrice === undefined || bike.priceEur <= maxPrice) &&
       (minPower === undefined || bike.powerHp >= minPower) &&
-      (maxWeight === undefined || bike.wetWeightKg <= maxWeight)
+      (maxPower === undefined || bike.powerHp <= maxPower) &&
+      (minWeight === undefined || bike.wetWeightKg >= minWeight) &&
+      (maxWeight === undefined || bike.wetWeightKg <= maxWeight) &&
+      (minSeatHeight === undefined || bike.seatHeightMm >= minSeatHeight) &&
+      (maxSeatHeight === undefined || bike.seatHeightMm <= maxSeatHeight) &&
+      (filters.equipment.length === 0 || filters.equipment.every((feature) => bike.features[feature])) &&
+      (filters.recommendedUses.length === 0 || filters.recommendedUses.some((use) => bike.useScores[use] >= 7)) &&
+      (filters.dataSources.length === 0 || filters.dataSources.some((source) => bikeDataSources.includes(source)))
     );
   });
 

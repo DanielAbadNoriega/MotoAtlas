@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
-import comparisonHeroImage from '../../../assets/comparison-hero.png';
+import comparisonHeroImage from '../../../assets/versus-bikes.png';
 import { getBikeDetailHash } from '../../../data/bikes';
 import {
   buildCompareViewModel,
@@ -76,17 +76,22 @@ function OneBikeComparator({ bike, motorcycles }: { bike: Bike; motorcycles: rea
         <h1>Añade otra moto para comparar</h1>
         <p>{displayName} ya está en la cola. Añade una segunda moto para activar el comparador dinámico.</p>
         {addableBike ? (
-          <button
-            className="button button--primary"
-            type="button"
-            onClick={() => persistAndNavigateToComparison([bike.id, addableBike.id], motorcycles)}
-            aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
-          >
-            Añadir {getSafeBikeDisplayName(addableBike)}
-          </button>
+          <div className="comparison-detail__empty-actions">
+            <button
+              className="button button--primary"
+              type="button"
+              onClick={() => persistAndNavigateToComparison([bike.id, addableBike.id], motorcycles)}
+              aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
+            >
+              Añadir {getSafeBikeDisplayName(addableBike)}
+            </button>
+            <a className="button button--secondary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
+              Buscar otra moto
+            </a>
+          </div>
         ) : (
-          <a className="button button--primary" href={getBrowseSearchHash()}>
-            Ir al buscador
+          <a className="button button--primary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
+            Buscar otra moto
           </a>
         )}
       </section>

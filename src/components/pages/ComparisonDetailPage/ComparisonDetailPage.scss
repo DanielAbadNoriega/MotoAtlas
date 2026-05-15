@@ -28,10 +28,7 @@
   &::before {
     background:
       linear-gradient(180deg, rgba($color-surface-lowest, 0.46), rgba($color-surface, 0.92) 76%, $color-surface 100%),
-      radial-gradient(circle at 50% 18%, rgba($color-accent, 0.22), transparent 30rem),
-      linear-gradient($color-surface-low 1px, transparent 1px),
-      linear-gradient(90deg, $color-surface-low 1px, transparent 1px);
-    background-size: auto, auto, 40px 40px, 40px 40px;
+      radial-gradient(circle at 50% 18%, rgba($color-accent, 0.22), transparent 30rem);
     content: '';
     inset: 0;
     pointer-events: none;
@@ -1090,6 +1087,13 @@
     margin: 0 auto 2rem;
     color: $color-on-surface-variant;
   }
+}
+
+.comparison-detail__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: center;
 }
 
 @media (max-width: $breakpoint-tablet) {

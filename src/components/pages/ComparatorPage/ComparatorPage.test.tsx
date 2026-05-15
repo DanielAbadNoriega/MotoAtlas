@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
 import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../../shared/images/getMotorcycleImage';
@@ -195,6 +196,29 @@ describe('ComparePage', () => {
     expect(window.location.hash).toBe(
       '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
     );
+  });
+
+  it('lets the user search another motorcycle when only one remains and keeps the queue', async () => {
+    const user = userEvent.setup();
+    render(<ComparePage bikes={[bikeFixtures[0]]} motorcycles={bikeFixtures} />);
+
+    const searchLink = screen.getByRole('link', { name: /Buscar otra moto/i });
+    expect(searchLink).toHaveAttribute('href', '#/buscador');
+
+    await user.click(searchLink);
+
+    expect(window.location.hash).toBe('#/buscador');
+    expect(window.localStorage.getItem('motoatlas.compareQueue.v1')).toBe(JSON.stringify(['test-bmw-f-900-gs']));
+  });
+
+  it('uses versus-bikes as comparator hero and removes the old grid pattern', () => {
+    const page = readFileSync('src/components/pages/ComparatorPage/ComparatorPage.tsx', 'utf8');
+    const styles = readFileSync('src/components/pages/ComparisonDetailPage/ComparisonDetailPage.scss', 'utf8');
+    const heroBlock = styles.slice(styles.indexOf('.comparison-detail__hero'), styles.indexOf('.comparison-detail__back'));
+
+    expect(page).toContain("../../../assets/versus-bikes.png");
+    expect(page).not.toContain("../../../assets/comparison-hero.png");
+    expect(heroBlock).not.toContain('40px 40px');
   });
 
   it('renders clean fallbacks when a motorcycle has no pros, cons or common issues', () => {

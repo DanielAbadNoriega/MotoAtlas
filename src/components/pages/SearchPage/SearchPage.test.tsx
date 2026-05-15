@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
@@ -19,6 +20,15 @@ function renderRealSearchPage() {
 }
 
 describe('SearchPage', () => {
+  it('renders the desktop advanced filter sidebar', () => {
+    renderSearchPage();
+
+    expect(screen.getByRole('complementary', { name: /Filtros avanzados/i })).toBeInTheDocument();
+    expect(screen.getByText('Marca')).toBeInTheDocument();
+    expect(screen.getByText('Electrónica')).toBeInTheDocument();
+    expect(screen.getByText('Calidad de datos')).toBeInTheDocument();
+  });
+
   it('renders motorcycles from fixtures', () => {
     renderSearchPage();
 
@@ -182,6 +192,61 @@ describe('SearchPage', () => {
     expect(screen.getByRole('heading', { name: /Ténéré 700/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /R 1300 GS/i })).not.toBeInTheDocument();
   });
+
+  it('shows removable active filter chips above results', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.click(screen.getByRole('button', { name: 'BMW' }));
+
+    expect(screen.getAllByLabelText('Filtros activos').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /Quitar filtro BMW/i }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('heading', { name: /Tuareg 660/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getAllByRole('button', { name: /Quitar filtro BMW/i })[0]);
+
+    expect(screen.getByRole('heading', { name: /Tuareg 660/i })).toBeInTheDocument();
+  });
+
+  it('opens the responsive bottom sheet and closes it with apply', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.click(screen.getByRole('button', { name: /Filtros avanzados/i }));
+
+    expect(screen.getByRole('dialog', { name: /Filtros avanzados/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Aplicar filtros/i }));
+
+    expect(screen.queryByRole('dialog', { name: /Filtros avanzados/i })).not.toBeInTheDocument();
+  });
+
+  it('closes the responsive filter panel with Escape and backdrop click', async () => {
+    const user = userEvent.setup();
+    renderSearchPage();
+
+    await user.click(screen.getByRole('button', { name: /Filtros avanzados/i }));
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: /Filtros avanzados/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Filtros avanzados/i }));
+    await user.click(screen.getAllByRole('button', { name: /Cerrar filtros/i })[0]);
+    expect(screen.queryByRole('dialog', { name: /Filtros avanzados/i })).not.toBeInTheDocument();
+  });
+
+  it('uses the comparison hero asset as search hero background', () => {
+    const styles = readFileSync('src/components/pages/SearchPage/SearchPage.scss', 'utf8');
+
+    expect(styles).toContain("url('../../../assets/comparison-hero.png')");
+  });
+
+  it('hides desktop range sliders in responsive filter panels', () => {
+    const styles = readFileSync('src/components/pages/SearchPage/SearchPage.scss', 'utf8');
+
+    expect(styles).toContain('@media (max-width: 990px)');
+    expect(styles).toContain('&__range-desktop {\n      display: none;');
+    expect(styles).toContain('&__range-presets {\n      display: grid;');
+  });
 });
 
 describe('BikeResultCard', () => {
@@ -266,12 +331,12 @@ describe('AdvancedFilters', () => {
       />,
     );
 
-    await user.click(screen.getByLabelText('BMW'));
+    await user.click(screen.getByRole('button', { name: 'BMW' }));
     await user.click(screen.getByRole('button', { name: 'Naked' }));
     await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
-    fireEvent.change(screen.getByLabelText('Desde'), { target: { value: '10000' } });
-    fireEvent.change(screen.getByLabelText('Hasta'), { target: { value: '15000' } });
-    fireEvent.change(screen.getByLabelText('Potencia mínima'), { target: { value: '90' } });
+    fireEvent.change(screen.getByLabelText('Precio mínimo'), { target: { value: '10000' } });
+    fireEvent.change(screen.getByLabelText('Precio máximo'), { target: { value: '15000' } });
+    fireEvent.change(screen.getByLabelText('Potencia mínimo'), { target: { value: '90' } });
     fireEvent.change(screen.getByLabelText('Peso máximo'), { target: { value: '220' } });
 
     expect(onChange).toHaveBeenCalledWith({ brands: ['BMW'] });
@@ -300,8 +365,8 @@ describe('AdvancedFilters', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: /Resetear/i }));
-    await user.click(screen.getByRole('button', { name: /Cerrar filtros/i }));
+    await user.click(screen.getAllByRole('button', { name: /Limpiar filtros/i })[0]);
+    await user.click(screen.getAllByRole('button', { name: /Cerrar filtros/i })[1]);
 
     expect(onReset).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
