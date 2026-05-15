@@ -37,6 +37,33 @@ Toda nueva funcionalidad debe traer tests en la misma entrega:
   - test de interacción principal
 - Integración con Supabase → mock de red o del servicio; nunca depender de Supabase real en tests.
 
+### SCSS y sistema visual
+
+Tokens y patrones reutilizables viven en:
+
+```txt
+src/styles/_variables.scss
+src/styles/_mixins.scss
+src/styles/_placeholders.scss
+src/styles/_typography.scss
+src/styles/_components.scss
+src/styles/globals.scss
+```
+
+Patrones disponibles:
+
+- `technical-card`
+- `glass-panel`
+- `technical-badge`
+- `red-accent-border`
+- `image-overlay`
+- `mono-label`
+- `section-title`
+- `primary-button`
+- `secondary-button`
+
+Regla: antes de crear otra variante BEM específica, comprobar si el patrón encaja como mixin/placeholder. El objetivo no es “hacer CSS genérico por hacerlo”, sino evitar repetir tarjetas, badges, glass panels y overlays por cada página.
+
 ### Estilo de tests
 
 - Preferir queries accesibles:
@@ -102,6 +129,12 @@ scripts/
 ## 4. Modelo de datos
 
 El dominio principal es `Bike`, definido en `src/types/bike.ts`.
+
+Inventario vivo de campos, procedencia, obligatoriedad y usos:
+
+```txt
+docs/motorcycle-data-inventory.md
+```
 
 Campos importantes:
 

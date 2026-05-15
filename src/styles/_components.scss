@@ -1,0 +1,21 @@
+@use './variables' as *;
+@use './mixins' as *;
+
+.technical-card {
+  @include technical-card;
+}
+
+.glass-panel {
+  @include glass-panel;
+}
+
+.technical-badge {
+  @include technical-badge;
+}
+
+.data-quality-note {
+  @include mono-label;
+
+  color: rgba($color-on-surface-variant, 0.82);
+  font-size: 0.62rem;
+}

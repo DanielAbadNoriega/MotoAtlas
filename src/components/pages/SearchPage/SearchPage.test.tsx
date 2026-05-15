@@ -37,6 +37,14 @@ describe('SearchPage', () => {
     expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
   });
 
+  it('applies search text from route params', () => {
+    render(<SearchPage motorcycles={bikeFixtures} routeHash="#/buscador?q=yamaha" />);
+
+    expect(screen.getByLabelText(/Buscar por marca o modelo/i)).toHaveValue('yamaha');
+    expect(screen.getByRole('heading', { name: /MT-09/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
+  });
+
   it('searches by model', async () => {
     const user = userEvent.setup();
     renderSearchPage();
@@ -229,6 +237,15 @@ describe('BikeResultCard', () => {
       MOTORCYCLE_IMAGE_FALLBACK_URL,
     );
     expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
+  });
+
+  it('shows a friendly pending price label instead of placeholder debug text', () => {
+    const bikeWithPendingPrice = { ...bikeFixtures[0], priceEur: 0, priceSource: 'placeholder' } as Bike;
+
+    render(<BikeResultCard bike={bikeWithPendingPrice} isSelected={false} onToggleCompare={vi.fn()} />);
+
+    expect(screen.getByText('Precio pendiente de confirmar')).toBeInTheDocument();
+    expect(screen.queryByText(/placeholder/i)).not.toBeInTheDocument();
   });
 });
 

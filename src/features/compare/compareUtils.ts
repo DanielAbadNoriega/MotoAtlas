@@ -1,7 +1,15 @@
 import type { Bike } from '../../types/bike';
 import { compareQueueMaxSize, getComparatorHashSelection, sanitizeCompareQueue } from '../../utils/compareQueue';
 import { MOTORCYCLE_IMAGE_FALLBACK_URL, getMotorcycleImage } from '../../shared/images/getMotorcycleImage';
-import { getBikeA2Badge, getDataSourceLabel, isLowConfidenceSource, segmentLabels } from '../../shared/motorcycles/motorcycleTaxonomy';
+import { getBikeA2Badge, segmentLabels } from '../../shared/motorcycles/motorcycleTaxonomy';
+import {
+  estimatedProsConsLabel,
+  estimatedReliabilityLabel,
+  estimatedScoresLabel,
+  isEstimatedSource,
+  isPendingPrice,
+  pendingPriceLabel,
+} from '../../shared/dataQuality/dataQualityLabels';
 
 export type CompareUseScoreKey = keyof Bike['useScores'];
 
@@ -100,6 +108,12 @@ export type CompareHashSelection = Readonly<{
   rawIds: readonly Bike['id'][];
 }>;
 
+export type BikeDataQualityNote = Readonly<{
+  description: string;
+  id: 'price' | 'scores' | 'pros-cons' | 'reliability';
+  label: string;
+}>;
+
 export type ResolvedCompareSelection = CompareHashSelection &
   Readonly<{
     bikes: readonly Bike[];
@@ -157,8 +171,13 @@ function formatNumberWithUnit(value: unknown, unit: string) {
   return parsed === undefined ? NOT_AVAILABLE_LABEL : `${numberFormatter.format(parsed)} ${unit}`;
 }
 
-function formatCurrency(value: unknown) {
+function formatCurrency(value: unknown, source?: Bike['priceSource']) {
   const parsed = getOptionalNumber(value);
+
+  if (isPendingPrice(parsed, source)) {
+    return pendingPriceLabel;
+  }
+
   return parsed === undefined ? NOT_AVAILABLE_LABEL : currencyFormatter.format(parsed);
 }
 
@@ -183,14 +202,46 @@ export function getBikeA2Label(bike: Bike) {
   return getBikeA2Badge(bike).label;
 }
 
+export function getBikeDataQualityNotes(bike: Bike): readonly BikeDataQualityNote[] {
+  const notes: BikeDataQualityNote[] = [];
+
+  if (isPendingPrice(bike.priceEur, bike.priceSource)) {
+    notes.push({
+      description: 'El precio todavía necesita confirmación editorial o de mercado.',
+      id: 'price',
+      label: pendingPriceLabel,
+    });
+  }
+
+  if (isEstimatedSource(bike.scoresSource)) {
+    notes.push({
+      description: 'Las puntuaciones de uso real son una valoración editorial estimada.',
+      id: 'scores',
+      label: estimatedScoresLabel,
+    });
+  }
+
+  if (isEstimatedSource(bike.prosConsSource)) {
+    notes.push({
+      description: 'Los pros y contras se revisarán con datos editoriales o comunidad.',
+      id: 'pros-cons',
+      label: estimatedProsConsLabel,
+    });
+  }
+
+  if (isEstimatedSource(bike.reliabilitySource)) {
+    notes.push({
+      description: 'La fiabilidad procede de una estimación inicial pendiente de más reportes.',
+      id: 'reliability',
+      label: estimatedReliabilityLabel,
+    });
+  }
+
+  return notes;
+}
+
 export function getBikeDataSourceBadges(bike: Bike) {
-  return [
-    { id: 'price', label: `Precio ${getDataSourceLabel(bike.priceSource)}`, source: bike.priceSource },
-    { id: 'image', label: `Imagen ${getDataSourceLabel(bike.imageSource)}`, source: bike.imageSource },
-    { id: 'scores', label: `Scores ${getDataSourceLabel(bike.scoresSource)}`, source: bike.scoresSource },
-    { id: 'pros-cons', label: `Pros/cons ${getDataSourceLabel(bike.prosConsSource)}`, source: bike.prosConsSource },
-    { id: 'reliability', label: `Fiabilidad ${getDataSourceLabel(bike.reliabilitySource)}`, source: bike.reliabilitySource },
-  ].filter((badge) => isLowConfidenceSource(badge.source));
+  return getBikeDataQualityNotes(bike);
 }
 
 export function getBikeDescription(bike: Bike) {
@@ -273,7 +324,7 @@ export const compareSpecRows = [
   {
     id: 'price',
     label: 'Est. Price',
-    getValue: (bike) => formatCurrency(getRuntimeValue(bike, 'priceEur')),
+    getValue: (bike) => formatCurrency(getRuntimeValue(bike, 'priceEur'), bike.priceSource),
     getNumber: getPrice,
     lowerIsBetter: true,
   },

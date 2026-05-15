@@ -1,4 +1,6 @@
 @use './variables' as *;
+@use './typography';
+@use './components';
 
 * {
   box-sizing: border-box;

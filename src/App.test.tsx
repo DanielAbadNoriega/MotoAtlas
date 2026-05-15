@@ -48,16 +48,20 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(await screen.findByRole('heading', { name: /Encuentra tu próxima moto/i })).toBeInTheDocument();
   });
 
-  it('keeps the home hero search button functional without navigating unexpectedly', async () => {
+  it('searches from the home hero by brand and opens the filtered catalog', async () => {
     const user = userEvent.setup();
+    getMotorcyclesMock.mockResolvedValue({ motorcycles: bikeCatalog, source: 'supabase' });
     await renderApp();
 
     const search = screen.getByRole('search');
-    await user.type(within(search).getByLabelText(/Buscar modelos/i), 'BMW');
+    await user.type(within(search).getByLabelText(/Buscar modelos/i), 'ducati');
     await user.click(within(search).getByRole('button', { name: 'Buscar' }));
 
-    expect(within(search).getByDisplayValue('BMW')).toBeInTheDocument();
-    expect(window.location.hash).toBe('');
+    expect(await screen.findByRole('heading', { name: /Encuentra tu próxima moto/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Buscar por marca o modelo/i)).toHaveValue('ducati');
+    expect(screen.getByRole('heading', { name: /DesertX/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
+    expect(window.location.hash).toBe('#/buscador?q=ducati');
   });
 
   it('has home card links toward search compare flow', async () => {
@@ -130,6 +134,20 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(screen.getAllByRole('heading', { name: /Yamaha MT-09/i }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('heading', { name: /Honda NT1100/i })).not.toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent(/Se ignoraron 1 moto/i);
+  });
+
+  it('preserves three comparator motorcycles when modifying the comparison from search', async () => {
+    const user = userEvent.setup();
+    window.location.hash = '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09';
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /Comparativa de 3 motos/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: /Modificar comparativa/i }));
+
+    expect(await screen.findByRole('heading', { name: /Encuentra tu próxima moto/i })).toBeInTheDocument();
+    expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Comparar ahora \(3\)/i })).toBeInTheDocument();
   });
 
   it('shows a glass scroll-to-top action when scrolling down', async () => {

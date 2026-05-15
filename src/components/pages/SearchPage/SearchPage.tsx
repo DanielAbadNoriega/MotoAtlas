@@ -21,7 +21,8 @@ import {
 import { Button } from '../../ui/Button';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
-import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
+import { getComparatorHashFromBikes, getSearchTextFromRoute } from '../../../shared/routing/routeUtils';
+import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import './SearchPage.scss';
 
 const sortLabels: Record<SortOption, string> = {
@@ -235,6 +236,7 @@ export function BikeResultCard({
 }) {
   const bestUse = getBestUseScore(bike);
   const a2Badge = getBikeA2Badge(bike);
+  const hasPendingPrice = isPendingPrice(bike.priceEur, bike.priceSource);
 
   return (
     <article className={isSelected ? 'search-result-card search-result-card--selected' : 'search-result-card'}>
@@ -244,7 +246,9 @@ export function BikeResultCard({
           <span>{segmentLabels[bike.segment]}</span>
           <span>{a2Badge.label}</span>
         </div>
-        <strong>{currencyFormatter.format(bike.priceEur)}</strong>
+        <strong className={hasPendingPrice ? 'search-result-card__price search-result-card__price--pending' : 'search-result-card__price'}>
+          {hasPendingPrice ? pendingPriceLabel : currencyFormatter.format(bike.priceEur)}
+        </strong>
       </div>
 
       <div className="search-result-card__body">
@@ -347,7 +351,10 @@ type SearchPageProps = {
 };
 
 export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
-  const [filters, setFilters] = useState<SearchFilters>(initialSearchFilters);
+  const [filters, setFilters] = useState<SearchFilters>(() => ({
+    ...initialSearchFilters,
+    text: getSearchTextFromRoute(routeHash),
+  }));
   const [selectedBikeIds, setSelectedBikeIds] = useState<Bike['id'][]>(() =>
     isBrowseSearchHash(routeHash) ? [] : loadCompareQueue(),
   );
@@ -361,6 +368,16 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
   const updateFilters = (next: Partial<SearchFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
   };
+
+  useEffect(() => {
+    const routeSearchText = getSearchTextFromRoute(routeHash);
+
+    if (!routeSearchText) {
+      return;
+    }
+
+    setFilters((current) => (current.text === routeSearchText ? current : { ...current, text: routeSearchText }));
+  }, [routeHash]);
 
   useEffect(() => {
     if (isInitialQueueSync.current) {

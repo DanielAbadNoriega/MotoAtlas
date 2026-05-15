@@ -21,6 +21,10 @@ export function getBrowseSearchHash() {
   return '#/buscador?browse=1';
 }
 
+export function getModifyComparisonSearchHash() {
+  return '#/buscador';
+}
+
 export function isBrowseSearchHash(hash: string) {
   const queryStart = hash.indexOf('?');
 

@@ -35,6 +35,12 @@ export function getComparatorHashFromBikes(bikes: readonly Pick<Bike, 'id' | 'br
   return `#/comparador${slug}?bikes=${ids.map((id) => encodeURIComponent(id)).join(',')}`;
 }
 
+export function getSearchHashWithText(text: string) {
+  const query = text.trim();
+
+  return query ? `#/buscador?q=${encodeURIComponent(query)}` : '#/buscador';
+}
+
 export function getCurrentAppRoute() {
   if (typeof window === 'undefined') {
     return '';
@@ -69,6 +75,17 @@ function getQueryParamIds(route: string) {
     .flatMap((value) => value.split(','))
     .map((value) => value.trim())
     .filter(Boolean);
+}
+
+export function getSearchTextFromRoute(route: string) {
+  const queryStart = route.indexOf('?');
+
+  if (queryStart === -1) {
+    return '';
+  }
+
+  const params = new URLSearchParams(route.slice(queryStart + 1));
+  return (params.get('q') ?? params.get('search') ?? params.get('text') ?? '').trim();
 }
 
 function getCompareSlugFromRoute(route: string) {

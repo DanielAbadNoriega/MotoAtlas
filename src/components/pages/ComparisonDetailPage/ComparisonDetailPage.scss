@@ -884,19 +884,23 @@
   margin-top: 1rem !important;
 }
 
-.comparison-detail__data-badges {
+.comparison-detail__data-notes {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
   margin-top: 0.8rem;
 
+  &:empty {
+    display: none;
+  }
+
   small {
     @include label-caps;
 
-    border: 1px solid rgba($color-accent, 0.3);
+    border: 1px solid rgba($color-outline-variant, 0.28);
     border-radius: $radius-sm;
-    background: rgba($color-accent, 0.08);
-    color: rgba($color-on-surface, 0.82);
+    background: rgba($color-surface-container, 0.34);
+    color: rgba($color-on-surface-variant, 0.78);
     font-size: 0.58rem;
     padding: 0.35rem 0.45rem;
   }

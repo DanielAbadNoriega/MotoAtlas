@@ -1,0 +1,9 @@
+@use './mixins' as *;
+
+.u-mono-label {
+  @include mono-label;
+}
+
+.u-section-title {
+  @include section-title;
+}

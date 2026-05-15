@@ -85,6 +85,22 @@ describe('ComparePage', () => {
     );
   });
 
+  it('also allows choosing another motorcycle manually when a suggestion exists', () => {
+    render(<ComparePage bikes={bikeFixtures.slice(0, 2)} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('button', { name: /Añadir Yamaha MT-09/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Elegir otra moto/i })).toHaveAttribute('href', '#/buscador');
+  });
+
+  it('keeps a full three-bike comparison when going back to modify it', () => {
+    render(<ComparePage bikes={bikeFixtures.slice(0, 3)} motorcycles={bikeFixtures} />);
+
+    expect(screen.getByRole('link', { name: /Modificar comparativa/i })).toHaveAttribute('href', '#/buscador');
+    expect(window.localStorage.getItem('motoatlas.compareQueue.v1')).toBe(
+      JSON.stringify(['test-bmw-f-900-gs', 'test-aprilia-tuareg-660', 'test-yamaha-mt-09']),
+    );
+  });
+
   it('registers a vote action', async () => {
     const user = userEvent.setup();
     render(<ComparePage bikes={bikeFixtures.slice(0, 2)} motorcycles={bikeFixtures} />);
@@ -100,6 +116,23 @@ describe('ComparePage', () => {
 
     expect(screen.getAllByText(/A2 LIMITABLE/i).length).toBeGreaterThan(0);
     expect(screen.getByText('A2 Compatibility')).toBeInTheDocument();
+  });
+
+  it('renders discrete data quality notes without placeholder debug badges', () => {
+    const pendingBike = {
+      ...bikeFixtures[0],
+      priceEur: 0,
+      priceSource: 'placeholder',
+      scoresSource: 'estimated',
+      reliabilitySource: 'estimated',
+    } as Bike;
+
+    render(<ComparePage bikes={[pendingBike, bikeFixtures[1]]} motorcycles={[pendingBike, ...bikeFixtures.slice(1)]} />);
+
+    expect(screen.getAllByText('Precio pendiente de confirmar').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Valoración estimada').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Fiabilidad estimada').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/placeholder/i)).not.toBeInTheDocument();
   });
 
   it('renders best value badges in highlights', () => {

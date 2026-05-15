@@ -1,5 +1,6 @@
 import { defaultBikeComparison } from '../../../data/comparisons';
 import { getBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import type { Bike } from '../../../types/bike';
 import type { BikeComparison, ComparisonScore } from '../../../types/comparison';
 import { Button } from '../../ui/Button';
@@ -26,7 +27,10 @@ const specs = [
   { label: 'Wet Weight', getValue: (bike: Bike) => `${numberFormatter.format(bike.wetWeightKg)} kg` },
   { label: 'Seat Height', getValue: (bike: Bike) => `${numberFormatter.format(bike.seatHeightMm)} mm` },
   { label: 'Fuel Tank', getValue: (bike: Bike) => `${numberFormatter.format(bike.fuelTankLiters)} L` },
-  { label: 'Est. Price', getValue: (bike: Bike) => currencyFormatter.format(bike.priceEur) },
+  {
+    label: 'Est. Price',
+    getValue: (bike: Bike) => (isPendingPrice(bike.priceEur, bike.priceSource) ? pendingPriceLabel : currencyFormatter.format(bike.priceEur)),
+  },
 ] satisfies readonly { label: string; getValue: (bike: Bike) => string }[];
 
 function clampScore(score: number) {

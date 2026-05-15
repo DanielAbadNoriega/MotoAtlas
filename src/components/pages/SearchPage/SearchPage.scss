@@ -350,7 +350,7 @@
     align-items: center;
     border-radius: 18px;
     bottom: 1.5rem;
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+    box-shadow: $shadow-glass;
     display: grid;
     gap: 1rem;
     grid-template-columns: auto 1fr minmax(12rem, auto) auto;
@@ -408,6 +408,7 @@
   &__compare-thumbs {
     display: flex;
     isolation: isolate;
+    column-gap: 20px;
 
     button {
       background: $color-surface-container;
@@ -472,7 +473,7 @@
 
   &--selected {
     border-color: rgba($color-accent, 0.85);
-    box-shadow: 0 0 0 1px rgba($color-accent, 0.26), 0 18px 48px rgba($color-accent-dark, 0.18);
+    box-shadow: $shadow-accent;
   }
 
   &__media {
@@ -518,6 +519,13 @@
     }
   }
 
+  &__price--pending {
+    @include label-caps;
+
+    max-width: min(15rem, calc(100% - 2rem));
+    text-align: right;
+  }
+
   &__badges {
     display: flex;
     flex-wrap: wrap;
@@ -528,13 +536,7 @@
     z-index: 4;
 
     span {
-      @include label-caps;
-
-      background: rgba($color-surface-lowest, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: $radius-sm;
-      color: white;
-      padding: 0.45rem 0.55rem;
+      @include technical-badge;
     }
   }
 
@@ -625,6 +627,12 @@
       justify-content: center;
       padding-inline: 1rem;
     }
+  }
+}
+
+@media (min-width: $breakpoint-desktop) {
+  .search-page__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

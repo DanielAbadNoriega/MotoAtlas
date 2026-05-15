@@ -4,6 +4,7 @@ import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview }
 import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './BikeDetailPage.scss';
@@ -151,7 +152,10 @@ function getSpecGroups(bike: Bike): readonly DetailSpecGroup[] {
       items: [
         { label: 'Carnet', value: a2Badge.label },
         { label: 'Año', value: String(bike.year) },
-        { label: 'Precio estimado', value: currencyFormatter.format(bike.priceEur) },
+        {
+          label: 'Precio estimado',
+          value: isPendingPrice(bike.priceEur, bike.priceSource) ? pendingPriceLabel : currencyFormatter.format(bike.priceEur),
+        },
         { label: 'Reportes comunidad', value: numberFormatter.format(bike.reliabilityReports.reportCount) },
       ],
     },
@@ -209,6 +213,9 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
   const overallScore = getOverallScore(bike);
   const bestUse = getBestUse(bike);
   const a2Badge = getBikeA2Badge(bike);
+  const priceLabel = isPendingPrice(bike.priceEur, bike.priceSource)
+    ? pendingPriceLabel
+    : currencyFormatter.format(bike.priceEur);
   const reviewAggregate = getReviewAggregate(reviews);
   const enabledFeatures = getFeatureEntries(bike).filter(([, isEnabled]) => isEnabled);
   const relatedBikes = motorcycles.filter((item) => item.segment === bike.segment && item.id !== bike.id).slice(0, 3);
@@ -291,7 +298,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
             </div>
             <div>
               <span>Precio</span>
-              <strong>{currencyFormatter.format(bike.priceEur)}</strong>
+              <strong>{priceLabel}</strong>
             </div>
           </div>
 

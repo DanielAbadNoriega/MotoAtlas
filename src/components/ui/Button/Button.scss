@@ -25,23 +25,11 @@
 }
 
 .button--primary {
-  background: $color-accent;
-  color: white;
-
-  &:hover {
-    background: $color-accent-dark;
-  }
+  @include primary-button;
 }
 
 .button--secondary {
-  background: transparent;
-  border-color: $color-accent;
-  color: $color-accent;
-
-  &:hover {
-    background: $color-accent;
-    color: white;
-  }
+  @include secondary-button;
 }
 
 .button--ghost {

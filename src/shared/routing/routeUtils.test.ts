@@ -7,6 +7,8 @@ import {
   getCompareCanonicalPath,
   getComparatorHashFromBikes,
   getComparatorSelectionFromRoute,
+  getSearchHashWithText,
+  getSearchTextFromRoute,
 } from './routeUtils';
 
 describe('routeUtils SEO routes', () => {
@@ -28,5 +30,11 @@ describe('routeUtils SEO routes', () => {
       'test-bmw-f-900-gs',
       'test-aprilia-tuareg-660',
     ]);
+  });
+
+  it('genera y lee rutas de búsqueda desde la home', () => {
+    expect(getSearchHashWithText(' ducati ')).toBe('#/buscador?q=ducati');
+    expect(getSearchTextFromRoute('#/buscador?q=ducati')).toBe('ducati');
+    expect(getSearchTextFromRoute('/buscador?search=yamaha')).toBe('yamaha');
   });
 });

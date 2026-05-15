@@ -7,13 +7,13 @@ import {
   getBikeCons,
   getBikePros,
   getBikeA2Label,
-  getBikeDataSourceBadges,
+  getBikeDataQualityNotes,
   getBikeSegmentLabel,
   getSafeBikeDisplayName,
   getFirstAddableBike,
   scoreWidth,
 } from '../../../features/compare/compareUtils';
-import { getBrowseSearchHash } from '../../../utils/compareQueue';
+import { getBrowseSearchHash, getModifyComparisonSearchHash } from '../../../utils/compareQueue';
 import { saveCompareQueue } from '../../../utils/compareQueue';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import type { Bike } from '../../../types/bike';
@@ -188,9 +188,9 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
                     {getBikeBrandLabel(entry.bike)} · {getBikeSegmentLabel(entry.bike)} · {getBikeA2Label(entry.bike)}
                   </span>
                   <h2>{entry.displayName}</h2>
-                  <div className="comparison-detail__data-badges" aria-label={`Calidad de datos de ${entry.displayName}`}>
-                    {getBikeDataSourceBadges(entry.bike).map((badge) => (
-                      <small key={badge.id}>{badge.label}</small>
+                  <div className="comparison-detail__data-notes" aria-label={`Calidad de datos de ${entry.displayName}`}>
+                    {getBikeDataQualityNotes(entry.bike).map((note) => (
+                      <small key={note.id} title={note.description}>{note.label}</small>
                     ))}
                   </div>
                   <div className="comparison-detail__hero-bike-actions">
@@ -242,12 +242,17 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
             </a>
           ))}
           {addableBike ? (
-            <Button variant="secondary" onClick={() => navigateToHash(getCompareHashForIds([...currentIds, addableBike.id], motorcycles))} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
-              Añadir {getSafeBikeDisplayName(addableBike)}
-            </Button>
+            <>
+              <Button variant="secondary" onClick={() => navigateToHash(getCompareHashForIds([...currentIds, addableBike.id], motorcycles))} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
+                Añadir {getSafeBikeDisplayName(addableBike)}
+              </Button>
+              <a className="button button--ghost" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue(currentIds)}>
+                Elegir otra moto
+              </a>
+            </>
           ) : (
-            <a className="button button--secondary" href={getBrowseSearchHash()}>
-              Añadir otra moto
+            <a className="button button--secondary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue(currentIds)}>
+              Modificar comparativa
             </a>
           )}
         </div>

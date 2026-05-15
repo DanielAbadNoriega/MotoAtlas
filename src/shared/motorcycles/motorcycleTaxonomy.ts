@@ -1,4 +1,5 @@
 import type { Bike, BikeLicense, BikeSegment, MotorcycleDataSource } from '../../types/bike';
+import { getDataQualityLabel, isLowConfidenceSource as isLowConfidenceDataSource } from '../dataQuality/dataQualityLabels';
 
 export const BIKE_SEGMENTS = [
   'trail',
@@ -100,21 +101,9 @@ export function getBikeA2Badge(bike: Bike): BikeA2Badge {
 }
 
 export function getDataSourceLabel(source: MotorcycleDataSource | undefined) {
-  switch (source) {
-    case 'api':
-      return 'API';
-    case 'manual':
-      return 'Manual';
-    case 'user':
-      return 'Usuario';
-    case 'placeholder':
-      return 'Placeholder';
-    case 'estimated':
-    default:
-      return 'Estimado';
-  }
+  return getDataQualityLabel(source);
 }
 
 export function isLowConfidenceSource(source: MotorcycleDataSource | undefined) {
-  return source === 'estimated' || source === 'placeholder';
+  return isLowConfidenceDataSource(source);
 }

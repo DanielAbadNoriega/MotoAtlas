@@ -8,8 +8,9 @@ MotoAtlas es una interfaz React + TypeScript + Vite para explorar motos, ver fic
 La documentación exhaustiva de arquitectura y reglas de desarrollo vive en:
 
 - [`docs/architecture.md`](docs/architecture.md)
+- [`docs/motorcycle-data-inventory.md`](docs/motorcycle-data-inventory.md)
 
-Esa guía explica estructura, rutas, datos, Supabase, comparador, testing y el checklist obligatorio para añadir funcionalidades.
+Estas guías explican estructura, rutas, datos, Supabase, comparador, testing, calidad de datos y el checklist obligatorio para ampliar el modelo.
 
 ## Regla obligatoria para nuevas funcionalidades
 

@@ -1,0 +1,37 @@
+@use './mixins' as *;
+
+%technical-card {
+  @include technical-card;
+}
+
+%glass-panel {
+  @include glass-panel;
+}
+
+%technical-badge {
+  @include technical-badge;
+}
+
+%red-accent-border {
+  @include red-accent-border;
+}
+
+%image-overlay {
+  @include image-overlay;
+}
+
+%mono-label {
+  @include mono-label;
+}
+
+%section-title {
+  @include section-title;
+}
+
+%primary-button {
+  @include primary-button;
+}
+
+%secondary-button {
+  @include secondary-button;
+}

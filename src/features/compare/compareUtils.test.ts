@@ -5,6 +5,7 @@ import {
   getCompareHashAfterAdding,
   getCompareHashAfterRemoving,
   getCompareHashSelection,
+  getBikeDataQualityNotes,
   resolveCompareSelectionFromHash,
 } from './compareUtils';
 
@@ -48,5 +49,20 @@ describe('compareUtils', () => {
     expect(getCompareHashAfterRemoving([...ids, 'test-yamaha-mt-09'], 'test-aprilia-tuareg-660')).toBe(
       '#/comparador?bikes=test-bmw-f-900-gs,test-yamaha-mt-09',
     );
+  });
+
+  it('builds friendly data quality notes without technical placeholder labels', () => {
+    const notes = getBikeDataQualityNotes({
+      ...bikeFixtures[0],
+      priceEur: 0,
+      priceSource: 'placeholder',
+      scoresSource: 'estimated',
+      reliabilitySource: 'estimated',
+    });
+
+    expect(notes.map((note) => note.label)).toEqual(
+      expect.arrayContaining(['Precio pendiente de confirmar', 'Valoración estimada', 'Fiabilidad estimada']),
+    );
+    expect(notes.map((note) => note.label).join(' ')).not.toMatch(/placeholder/i);
   });
 });
