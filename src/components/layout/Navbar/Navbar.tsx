@@ -1,6 +1,11 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { brand, navActions, siteA11y } from '../../../data/site';
-import { getCurrentAppRoute, getSearchHashWithText, routeToPathAndSearch } from '../../../shared/routing/routeUtils';
+import { getCurrentAppRoute, routeToPathAndSearch } from '../../../shared/routing/routeUtils';
+import {
+  compareQueueChangeEventName,
+  getComparatorHashFromIds,
+  loadCompareQueue,
+} from '../../../utils/compareQueue';
 import './Navbar.scss';
 
 type NavigationItem = Readonly<{
@@ -10,19 +15,14 @@ type NavigationItem = Readonly<{
   label: string;
 }>;
 
-const desktopItems = [
+const staticDesktopItems = [
   { id: 'search', icon: 'explore', label: 'Buscador', href: '#/buscador' },
   { id: 'compare', icon: 'compare_arrows', label: 'Comparador', href: '#/comparador' },
   { id: 'news', icon: 'article', label: 'Noticias', href: '#/noticias' },
   { id: 'community', icon: 'hub', label: 'Comunidad', href: '#/comunidad' },
 ] satisfies readonly NavigationItem[];
 
-const drawerItems = [
-  ...desktopItems,
-  { id: 'profile', icon: 'account_circle', label: 'Perfil', href: '#/perfil' },
-] satisfies readonly NavigationItem[];
-
-const mobileItems = [
+const staticMobileItems = [
   { id: 'home', icon: 'home', label: 'Home', href: '#/' },
   { id: 'compare', icon: 'compare_arrows', label: 'Comparar', href: '#/comparador' },
   { id: 'community', icon: 'hub', label: 'Comunidad', href: '#/comunidad' },
@@ -44,6 +44,26 @@ function useCurrentRoute() {
   }, []);
 
   return route;
+}
+
+function useCompareHref() {
+  const [queue, setQueue] = useState(loadCompareQueue);
+
+  useEffect(() => {
+    const updateQueue = () => setQueue(loadCompareQueue());
+
+    window.addEventListener(compareQueueChangeEventName, updateQueue);
+    window.addEventListener('storage', updateQueue);
+    window.addEventListener('hashchange', updateQueue);
+
+    return () => {
+      window.removeEventListener(compareQueueChangeEventName, updateQueue);
+      window.removeEventListener('storage', updateQueue);
+      window.removeEventListener('hashchange', updateQueue);
+    };
+  }, []);
+
+  return getComparatorHashFromIds(queue);
 }
 
 function getComparablePath(route: string) {
@@ -89,10 +109,16 @@ function getAriaCurrent(route: string, itemId: NavigationItem['id']) {
   return isRouteActive(route, itemId) ? 'page' : undefined;
 }
 
-function DesktopNav({ route }: { route: string }) {
+function getNavigationItems(compareHref: `#${string}`) {
+  return staticDesktopItems.map((item) => (item.id === 'compare' ? { ...item, href: compareHref } : item));
+}
+
+function DesktopNav({ compareHref, route }: { compareHref: `#${string}`; route: string }) {
+  const items = getNavigationItems(compareHref);
+
   return (
     <nav className="navbar__desktop-links" aria-label={siteA11y.mainNavigationLabel}>
-      {desktopItems.map((item) => (
+      {items.map((item) => (
         <a href={item.href} key={item.id} aria-current={getAriaCurrent(route, item.id)}>
           {item.label}
         </a>
@@ -101,23 +127,15 @@ function DesktopNav({ route }: { route: string }) {
   );
 }
 
-function DesktopSearch() {
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    window.location.hash = getSearchHashWithText(String(formData.get('navbar-search') ?? ''));
-  };
-
-  return (
-    <form className="navbar__search" onSubmit={handleSubmit}>
-      <NavIcon icon="search" />
-      <input aria-label="Buscar motos" id="navbar-search" name="navbar-search" placeholder="BUSCAR MOTOS..." type="search" />
-    </form>
-  );
-}
-
-function DrawerNav({ isOpen, onClose, route }: { isOpen: boolean; onClose: () => void; route: string }) {
+function DrawerNav({ compareHref, isOpen, onClose, route }: { compareHref: `#${string}`; isOpen: boolean; onClose: () => void; route: string }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerItems = useMemo(
+    () => [
+      ...getNavigationItems(compareHref),
+      { id: 'profile', icon: 'account_circle', label: 'Perfil', href: '#/perfil' },
+    ] satisfies readonly NavigationItem[],
+    [compareHref],
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -170,10 +188,12 @@ function DrawerNav({ isOpen, onClose, route }: { isOpen: boolean; onClose: () =>
   );
 }
 
-function MobileBottomNav({ route }: { route: string }) {
+function MobileBottomNav({ compareHref, route }: { compareHref: `#${string}`; route: string }) {
+  const items = staticMobileItems.map((item) => (item.id === 'compare' ? { ...item, href: compareHref } : item));
+
   return (
     <nav className="navbar__mobile-bottom" aria-label="Navegación móvil">
-      {mobileItems.map((item) => (
+      {items.map((item) => (
         <a href={item.href} key={item.id} aria-current={getAriaCurrent(route, item.id)}>
           <NavIcon icon={item.icon} />
           <span>{item.label}</span>
@@ -186,6 +206,7 @@ function MobileBottomNav({ route }: { route: string }) {
 export function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const route = useCurrentRoute();
+  const compareHref = useCompareHref();
 
   const openSearch = () => {
     window.location.hash = '#/buscador';
@@ -203,10 +224,12 @@ export function Navbar() {
             {brand.name}
           </a>
 
-          <DesktopNav route={route} />
+          <DesktopNav compareHref={compareHref} route={route} />
 
           <div className="navbar__desktop-actions">
-            <DesktopSearch />
+            <button className="navbar__mobile-icon" type="button" onClick={openSearch} aria-label="Abrir buscador">
+              <NavIcon icon="search" />
+            </button>
             <a className="navbar__signin" href="#/perfil">
               <NavIcon icon="account_circle" />
               <span>{navActions.signInLabel}</span>
@@ -234,8 +257,8 @@ export function Navbar() {
           </div>
         </div>
       </header>
-      <DrawerNav isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} route={route} />
-      <MobileBottomNav route={route} />
+      <DrawerNav compareHref={compareHref} isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} route={route} />
+      <MobileBottomNav compareHref={compareHref} route={route} />
     </>
   );
 }

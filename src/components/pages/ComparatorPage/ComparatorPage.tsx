@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
+import comparisonHeroImage from '../../../assets/comparison-hero.png';
 import { getBikeDetailHash } from '../../../data/bikes';
 import {
   buildCompareViewModel,
@@ -13,8 +14,7 @@ import {
   getFirstAddableBike,
   scoreWidth,
 } from '../../../features/compare/compareUtils';
-import { getBrowseSearchHash, getModifyComparisonSearchHash } from '../../../utils/compareQueue';
-import { saveCompareQueue } from '../../../utils/compareQueue';
+import { getBrowseSearchHash, getModifyComparisonSearchHash, saveCompareQueue } from '../../../utils/compareQueue';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import type { Bike } from '../../../types/bike';
 import { Button } from '../../ui/Button';
@@ -42,6 +42,11 @@ function getCompareHashForIds(ids: readonly Bike['id'][], motorcycles: readonly 
     .filter((motorcycle): motorcycle is Bike => Boolean(motorcycle));
 
   return bikes.length === ids.length ? getComparatorHashFromBikes(bikes) : `#/comparador?bikes=${ids.join(',')}`;
+}
+
+function persistAndNavigateToComparison(ids: readonly Bike['id'][], motorcycles: readonly Bike[]) {
+  saveCompareQueue(ids);
+  navigateToHash(getCompareHashForIds(ids, motorcycles));
 }
 
 function EmptyComparator() {
@@ -74,7 +79,7 @@ function OneBikeComparator({ bike, motorcycles }: { bike: Bike; motorcycles: rea
           <button
             className="button button--primary"
             type="button"
-            onClick={() => navigateToHash(getCompareHashForIds([bike.id, addableBike.id], motorcycles))}
+            onClick={() => persistAndNavigateToComparison([bike.id, addableBike.id], motorcycles)}
             aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
           >
             Añadir {getSafeBikeDisplayName(addableBike)}
@@ -146,6 +151,9 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
   return (
     <main className="comparison-detail" aria-labelledby="comparison-detail-title">
       <section className="comparison-detail__hero">
+        <div className="comparison-detail__hero-media" aria-hidden="true">
+          <img src={comparisonHeroImage} alt="" />
+        </div>
         <a className="comparison-detail__back" href={getBrowseSearchHash()}>
           ← Volver al buscador
         </a>
@@ -197,7 +205,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
                     <a href={getBikeDetailHash(entry.bike)} aria-label={`Ver ficha de ${entry.displayName}`}>Ver ficha</a>
                     <button
                       type="button"
-                      onClick={() => navigateToHash(getCompareHashForIds(currentIds.filter((id) => id !== entry.bike.id), motorcycles))}
+                      onClick={() => persistAndNavigateToComparison(currentIds.filter((id) => id !== entry.bike.id), motorcycles)}
                       aria-label={`Quitar ${entry.displayName} de la comparativa`}
                     >
                       Quitar
@@ -243,7 +251,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
           ))}
           {addableBike ? (
             <>
-              <Button variant="secondary" onClick={() => navigateToHash(getCompareHashForIds([...currentIds, addableBike.id], motorcycles))} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
+              <Button variant="secondary" onClick={() => persistAndNavigateToComparison([...currentIds, addableBike.id], motorcycles)} aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}>
                 Añadir {getSafeBikeDisplayName(addableBike)}
               </Button>
               <a className="button button--ghost" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue(currentIds)}>

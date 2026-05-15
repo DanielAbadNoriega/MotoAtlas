@@ -29,6 +29,7 @@ describe('App navigation with mocked motorcycleService', () => {
   beforeEach(() => {
     window.history.pushState(null, '', '/');
     window.location.hash = '';
+    window.localStorage.clear();
     getMotorcyclesMock.mockReset();
     getApprovedReviewsMock.mockReset();
     getMotorcyclesMock.mockResolvedValue({ motorcycles: bikeFixtures, source: 'supabase' });
@@ -127,6 +128,15 @@ describe('App navigation with mocked motorcycleService', () => {
 
     expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Technical Registry/i })).toBeInTheDocument();
+  });
+
+  it('renders comparator from persisted selection when navbar opens #/comparador without query params', async () => {
+    window.localStorage.setItem('motoatlas.compareQueue.v1', JSON.stringify(['test-bmw-f-900-gs', 'test-aprilia-tuareg-660']));
+    window.location.hash = '#/comparador';
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
   });
 
   it('renders comparator from a clean SEO path', async () => {

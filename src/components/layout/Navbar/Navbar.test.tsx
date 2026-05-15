@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Navbar } from './Navbar';
 
@@ -11,6 +12,14 @@ describe('Navbar responsive', () => {
   beforeEach(() => {
     window.history.pushState(null, '', '/');
     window.location.hash = '';
+    window.localStorage.clear();
+  });
+
+  it('define el navbar desktop desde 991px', () => {
+    const styles = readFileSync('src/components/layout/Navbar/Navbar.scss', 'utf8');
+
+    expect(styles).toContain('$navbar-desktop-min: 991px');
+    expect(styles).toContain('@media (min-width: $navbar-desktop-min)');
   });
 
   it('muestra enlaces principales en desktop', () => {
@@ -31,6 +40,33 @@ describe('Navbar responsive', () => {
     expect(within(mobileNav).getByRole('link', { name: 'Comparar' })).toHaveAttribute('href', '#/comparador');
     expect(within(mobileNav).getByRole('link', { name: 'Comunidad' })).toHaveAttribute('href', '#/comunidad');
     expect(within(mobileNav).queryByRole('link', { name: 'Perfil' })).not.toBeInTheDocument();
+  });
+
+  it('navega al buscador desde el icono de búsqueda desktop', async () => {
+    const user = userEvent.setup();
+    renderNavbar();
+
+    await user.click(screen.getByRole('button', { name: 'Abrir buscador' }));
+
+    expect(window.location.hash).toBe('#/buscador');
+  });
+
+  it('conserva las motos seleccionadas en el enlace del comparador', () => {
+    window.localStorage.setItem('motoatlas.compareQueue.v1', JSON.stringify(['test-bmw-f-900-gs', 'test-aprilia-tuareg-660']));
+
+    renderNavbar();
+
+    const primaryNav = screen.getByRole('navigation', { name: 'Navegación principal' });
+    const mobileNav = screen.getByRole('navigation', { name: 'Navegación móvil' });
+
+    expect(within(primaryNav).getByRole('link', { name: 'Comparador' })).toHaveAttribute(
+      'href',
+      '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
+    );
+    expect(within(mobileNav).getByRole('link', { name: 'Comparar' })).toHaveAttribute(
+      'href',
+      '#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
+    );
   });
 
   it('abre el drawer tablet con hamburguesa', async () => {

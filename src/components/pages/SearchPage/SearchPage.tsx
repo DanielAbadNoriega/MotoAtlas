@@ -324,27 +324,46 @@ export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBi
   }
 
   return (
-    <div className="search-page__compare-tray" aria-live="polite">
-      <div className="search-page__compare-thumbs">
+    <div className="search-page__compare-tray" aria-label="Comparador flotante" aria-live="polite">
+      <div className="search-page__compare-slots">
         {selectedBikes.map((bike) => (
-          <button key={bike.id} type="button" onClick={() => onRemove(bike.id)} aria-label={`Quitar ${getBikeDisplayName(bike)}`}>
+          <article className="search-page__compare-slot search-page__compare-slot--filled" key={bike.id}>
             <MotorcycleImage motorcycle={bike} decorative />
-          </button>
+            <div>
+              <span>{bike.brand}</span>
+              <strong>{bike.model}</strong>
+            </div>
+            <button type="button" onClick={() => onRemove(bike.id)} aria-label={`Quitar ${getBikeDisplayName(bike)}`}>
+              <span className="material-symbols-outlined" aria-hidden="true">
+                close
+              </span>
+            </button>
+          </article>
         ))}
+        {selectedBikes.length < compareQueueMaxSize ? (
+          <div className="search-page__compare-slot search-page__compare-slot--empty" aria-hidden="true">
+            <span className="material-symbols-outlined">add</span>
+            <span>Añadir otra</span>
+          </div>
+        ) : null}
       </div>
-      <div>
+
+      <div className="search-page__compare-summary">
         <strong>Comparador</strong>
         <span>
           {selectedBikes.length}/{compareQueueMaxSize} motos seleccionadas
         </span>
       </div>
+
       {selectedBikes.length >= 2 ? (
-        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHashFromBikes(selectedBikes)}>
-          Comparar ahora ({selectedBikes.length})
+        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHashFromBikes(selectedBikes)} aria-label={`Comparar ahora (${selectedBikes.length})`}>
+          <span>Comparar ahora</span>
+          <strong>{selectedBikes.length}</strong>
         </a>
       ) : (
         <div className="search-page__compare-status">Elige al menos 2 motos</div>
       )}
+
       <button className="search-page__compare-clear" type="button" onClick={onClear} aria-label="Vaciar comparador">
         <span className="material-symbols-outlined" aria-hidden="true">
           close

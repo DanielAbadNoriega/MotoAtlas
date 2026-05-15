@@ -337,6 +337,7 @@ describe('CompareDrawer', () => {
 
     const compareLink = screen.getByRole('link', { name: /Comparar ahora \(2\)/i });
 
+    expect(screen.getByLabelText('Comparador flotante')).toBeInTheDocument();
     expect(screen.getByText('2/3 motos seleccionadas')).toBeInTheDocument();
     expect(compareLink).toHaveAttribute(
       'href',

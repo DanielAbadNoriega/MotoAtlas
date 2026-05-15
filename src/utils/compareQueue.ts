@@ -3,6 +3,7 @@ import type { Bike } from '../types/bike';
 export const compareQueueMaxSize = 3;
 
 const compareQueueStorageKey = 'motoatlas.compareQueue.v1';
+export const compareQueueChangeEventName = 'motoatlas:compare-queue-change';
 
 function isBrowser() {
   return typeof window !== 'undefined';
@@ -12,9 +13,16 @@ export function getCompareSearchHash(bike: Pick<Bike, 'id'>) {
   return `#/buscador?compare=${encodeURIComponent(bike.id)}`;
 }
 
-export function getComparatorHash(bikes: readonly Pick<Bike, 'id'>[]) {
+export function getComparatorHash(bikes: readonly Pick<Bike, 'id'>[]): `#${string}` {
   const ids = sanitizeCompareQueue(bikes.map((bike) => bike.id));
   return `#/comparador?bikes=${ids.map((id) => encodeURIComponent(id)).join(',')}`;
+}
+
+export function getComparatorHashFromIds(ids: readonly Bike['id'][]): `#${string}` {
+  const queue = sanitizeCompareQueue(ids);
+  const query = queue.map((id) => encodeURIComponent(id)).join(',');
+
+  return query ? `#/comparador?bikes=${query}` : '#/comparador';
 }
 
 export function getBrowseSearchHash() {
@@ -92,7 +100,9 @@ export function saveCompareQueue(ids: readonly Bike['id'][]) {
     return;
   }
 
-  window.localStorage.setItem(compareQueueStorageKey, JSON.stringify(sanitizeCompareQueue(ids)));
+  const queue = sanitizeCompareQueue(ids);
+  window.localStorage.setItem(compareQueueStorageKey, JSON.stringify(queue));
+  window.dispatchEvent(new CustomEvent(compareQueueChangeEventName, { detail: { ids: queue } }));
 }
 
 

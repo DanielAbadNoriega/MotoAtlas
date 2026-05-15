@@ -137,6 +137,25 @@ describe('MotorcycleCommunityPage', () => {
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 
+  it('mantiene un único botón “Escribir review” en la comunidad', async () => {
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    await screen.findByText('Fantástica para viajar con equipaje.');
+
+    expect(screen.getAllByRole('button', { name: /^Escribir review$/i })).toHaveLength(1);
+  });
+
+  it('renderiza las reviews aprobadas dentro del slider horizontal', async () => {
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const slider = await screen.findByRole('region', { name: /Verified owner reports/i });
+
+    expect(within(slider).getByText('Fantástica para viajar con equipaje.')).toBeInTheDocument();
+    expect(within(slider).getByText('Muy equilibrada, aunque alta para ciudad.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ver reviews anteriores/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ver más reviews/i })).toBeInTheDocument();
+  });
+
   it('mantiene navegación hacia ficha y comparador', async () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 

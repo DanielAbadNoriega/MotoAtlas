@@ -14,6 +14,7 @@ import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
 import { bikeCatalog } from './data/bikes';
 import { findBikeComparisonByHash } from './data/comparisons';
 import { getMotorcycles } from './services/motorcycleService';
+import { loadCompareQueue } from './utils/compareQueue';
 import type { Bike } from './types/bike';
 import {
   getBikeDetailIdFromRoute,
@@ -73,7 +74,14 @@ export function App() {
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
   const routeComparatorSelection = getComparatorSelectionFromRoute(route, motorcycles);
-  const comparatorIds = legacyComparisonIds.length > 0 ? legacyComparisonIds : routeComparatorSelection.ids;
+  const persistedComparatorIds = isComparatorPage && routeComparatorSelection.rawIds.length === 0 && legacyComparisonIds.length === 0
+    ? loadCompareQueue()
+    : [];
+  const comparatorIds = legacyComparisonIds.length > 0
+    ? legacyComparisonIds
+    : routeComparatorSelection.ids.length > 0
+      ? routeComparatorSelection.ids
+      : persistedComparatorIds;
   const comparatorBikes = comparatorIds
     .map((id) => findMotorcycleById(id))
     .filter((bike): bike is Bike => Boolean(bike));

@@ -14,14 +14,51 @@
 .comparison-detail__hero {
   @include container;
 
-  position: relative;
+  background: $color-surface-lowest;
+  isolation: isolate;
+  margin-inline: 0;
+  max-width: none;
+  min-height: clamp(42rem, 82vh, 56rem);
   overflow: hidden;
   padding-block: 4rem 6rem;
-  background-image:
-    linear-gradient(rgba($color-surface, 0.82), rgba($color-surface, 0.98)),
-    linear-gradient($color-surface-low 1px, transparent 1px),
-    linear-gradient(90deg, $color-surface-low 1px, transparent 1px);
-  background-size: auto, 40px 40px, 40px 40px;
+  padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
+  position: relative;
+  width: 100%;
+
+  &::before {
+    background:
+      linear-gradient(180deg, rgba($color-surface-lowest, 0.46), rgba($color-surface, 0.92) 76%, $color-surface 100%),
+      radial-gradient(circle at 50% 18%, rgba($color-accent, 0.22), transparent 30rem),
+      linear-gradient($color-surface-low 1px, transparent 1px),
+      linear-gradient(90deg, $color-surface-low 1px, transparent 1px);
+    background-size: auto, auto, 40px 40px, 40px 40px;
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+  }
+
+  > *:not(.comparison-detail__hero-media) {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.comparison-detail__hero-media {
+  inset: 0;
+  opacity: 0.56;
+  position: absolute;
+  z-index: -2;
+
+  img {
+    filter: saturate(0.82) contrast(1.08);
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.02);
+    width: 100%;
+  }
 }
 
 .comparison-detail__back {
@@ -765,6 +802,10 @@
 }
 
 @media (max-width: $breakpoint-desktop) {
+  .comparison-detail__hero {
+    padding-inline: $margin-tablet;
+  }
+
   .comparison-detail__vote {
     padding-inline: $margin-tablet;
   }
@@ -793,6 +834,7 @@
 @media (max-width: $breakpoint-mobile) {
   .comparison-detail__hero {
     padding-block: 2.5rem 4rem;
+    padding-inline: $margin-mobile;
   }
 
   .comparison-detail__duel {

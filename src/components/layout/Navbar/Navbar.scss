@@ -3,6 +3,8 @@
 
 $navbar-mobile-max: 447px;
 $navbar-tablet-min: 448px;
+$navbar-tablet-max: 990px;
+$navbar-desktop-min: 991px;
 
 .navbar {
   backdrop-filter: blur(20px);
@@ -34,7 +36,7 @@ $navbar-tablet-min: 448px;
 
   &__desktop-links {
     align-items: center;
-    display: flex;
+    display: none;
     gap: 2rem;
     height: 100%;
 
@@ -67,51 +69,8 @@ $navbar-tablet-min: 448px;
 
   &__desktop-actions {
     align-items: center;
-    display: flex;
+    display: none;
     gap: 1rem;
-  }
-
-  &__search {
-    align-items: center;
-    background: rgba($color-surface-lowest, 0.86);
-    border: 1px solid rgba($color-outline-variant, 0.3);
-    border-radius: $radius-lg;
-    display: grid;
-    gap: 0.55rem;
-    grid-template-columns: auto 1fr;
-    min-height: 40px;
-    padding: 0.45rem 0.8rem;
-    transition:
-      border-color $transition-base,
-      box-shadow $transition-base;
-    width: 14rem;
-
-    .material-symbols-outlined {
-      color: $color-on-surface-variant;
-      font-size: 1.15rem;
-    }
-
-    input {
-      background: transparent;
-      border: 0;
-      color: $color-on-surface;
-      font-family: $font-mono;
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      min-width: 0;
-      outline: 0;
-      text-transform: uppercase;
-      width: 100%;
-
-      &::placeholder {
-        color: rgba($color-outline, 0.78);
-      }
-    }
-
-    &:focus-within {
-      border-color: rgba($color-accent-container, 0.72);
-      box-shadow: 0 0 0 1px rgba($color-accent-container, 0.18);
-    }
   }
 
   &__signin {
@@ -187,7 +146,14 @@ $navbar-tablet-min: 448px;
     display: none;
   }
 
-  @media (min-width: $navbar-tablet-min) and (max-width: $breakpoint-mobile) {
+  @media (min-width: $navbar-desktop-min) {
+    &__desktop-links,
+    &__desktop-actions {
+      display: flex;
+    }
+  }
+
+  @media (min-width: $navbar-tablet-min) and (max-width: $navbar-tablet-max) {
     &__inner {
       padding-inline: $margin-tablet;
     }

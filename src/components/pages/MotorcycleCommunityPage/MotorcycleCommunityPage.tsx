@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   getApprovedReviewsByMotorcycleId,
@@ -163,6 +163,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [hasReviewError, setHasReviewError] = useState(false);
+  const reviewSliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!bike) {
@@ -220,6 +221,13 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     return <NotFoundState motorcycleId={motorcycleId} />;
   }
 
+  const scrollReviews = (direction: -1 | 1) => {
+    reviewSliderRef.current?.scrollBy({
+      behavior: 'smooth',
+      left: direction * Math.min(420, window.innerWidth * 0.86),
+    });
+  };
+
   const bikeName = getBikeDisplayName(bike);
   const aggregate = getReviewAggregate(reviews);
   const a2Badge = getBikeA2Badge(bike);
@@ -231,8 +239,8 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   return (
     <main className="motorcycle-community" aria-labelledby="motorcycle-community-title">
       <header className="motorcycle-community__hero">
-        <div className="motorcycle-community__hero-media">
-          <MotorcycleImage motorcycle={bike} alt={`Imagen de ${bikeName}`} loading="lazy" />
+        <div className="motorcycle-community__hero-media" aria-hidden="true">
+          <MotorcycleImage motorcycle={bike} decorative loading="eager" />
           <div aria-hidden="true" />
         </div>
         <div className="motorcycle-community__hero-content">
@@ -251,19 +259,20 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
               <span>{numberFormatter.format(aggregate.reviewCount)} reviews aprobadas</span>
             </div>
           </div>
-          <div className="motorcycle-community__hero-actions">
-            <button className="button button--primary" type="button" onClick={() => setIsReviewModalOpen(true)}>
-              Escribir review
-            </button>
-            <a className="button button--ghost" href={getBikeDetailHash(bike)}>
-              Volver a ficha
-            </a>
-            <a className="motorcycle-community__compare" href={getComparatorHashFromBikes([bike])}>
-              Comparar esta moto
-            </a>
-          </div>
         </div>
       </header>
+
+      <section className="motorcycle-community__hero-actions" aria-label="Acciones de comunidad">
+        <a className="button button--ghost" href={getBikeDetailHash(bike)}>
+          Volver a ficha
+        </a>
+        <a className="button button--ghost" href={getComparatorHashFromBikes([bike])}>
+          Comparar esta moto
+        </a>
+        <button className="button button--ghost" type="button" onClick={() => setIsReviewModalOpen(true)}>
+          Escribir review
+        </button>
+      </section>
 
       <section className="motorcycle-community__layout">
         <aside className="motorcycle-community__sidebar" aria-label="Resumen de comunidad">
@@ -352,9 +361,20 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                 <span>Verified owner reports</span>
                 <h2 id="community-reviews-title">Reviews aprobadas</h2>
               </div>
-              <button className="button button--ghost" type="button" onClick={() => setIsReviewModalOpen(true)}>
-                Escribir review
-              </button>
+              {reviews.length > 1 ? (
+                <div className="motorcycle-community__review-controls" aria-label="Navegación de reviews">
+                  <button type="button" onClick={() => scrollReviews(-1)} aria-label="Ver reviews anteriores">
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      arrow_back
+                    </span>
+                  </button>
+                  <button type="button" onClick={() => scrollReviews(1)} aria-label="Ver más reviews">
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      arrow_forward
+                    </span>
+                  </button>
+                </div>
+              ) : null}
             </div>
 
             {hasReviewError ? (
@@ -364,12 +384,13 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             ) : null}
 
             {reviews.length > 0 ? (
-              <div className="motorcycle-community__review-list">
+              <div ref={reviewSliderRef} className="motorcycle-community__review-viewport" role="region" aria-label="Verified owner reports">
+                <div className="motorcycle-community__review-list" role="list">
                 {reviews.map((review) => {
                   const userName = review.userName.trim() || 'Usuario MotoAtlas';
 
                   return (
-                    <article className="motorcycle-community__review-card" key={review.id}>
+                    <article className="motorcycle-community__review-card" key={review.id} role="listitem">
                       <header>
                         <div>
                           <span aria-hidden="true">{getInitials(userName)}</span>
@@ -423,6 +444,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                     </article>
                   );
                 })}
+                </div>
               </div>
             ) : (
               <div className="motorcycle-community__empty">

@@ -408,35 +408,156 @@
   }
 
   &__compare-tray {
-    @include glass-hud;
-
     align-items: center;
-    border-radius: 18px;
-    bottom: 1.5rem;
-    box-shadow: $shadow-glass;
+    backdrop-filter: blur(22px);
+    background:
+      linear-gradient(180deg, rgba($color-surface-container-high, 0.86), rgba($color-surface-low, 0.92)),
+      radial-gradient(circle at top left, rgba($color-accent, 0.12), transparent 18rem);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.52);
     display: grid;
-    gap: 1rem;
-    grid-template-columns: auto 1fr minmax(12rem, auto) auto;
+    gap: 0.9rem;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     left: 50%;
-    max-width: 860px;
-    padding: 1rem;
+    max-width: 980px;
+    padding: 0.7rem;
     position: fixed;
     transform: translateX(-50%);
     width: calc(100% - 2rem);
     z-index: 70;
+  }
 
-    > div:nth-child(2) {
+  &__compare-slots {
+    align-items: center;
+    display: flex;
+    gap: 0.8rem;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-color: rgba($color-outline, 0.36) transparent;
+
+    &::-webkit-scrollbar {
+      height: 0.35rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba($color-outline, 0.3);
+      border-radius: 999px;
+    }
+  }
+
+  &__compare-slot {
+    align-items: center;
+    background: rgba($color-surface-container, 0.78);
+    border: 1px solid rgba($color-outline-variant, 0.24);
+    border-radius: $radius-lg;
+    display: grid;
+    flex: 0 0 auto;
+    gap: 0.7rem;
+    grid-template-columns: 4rem minmax(6.5rem, 1fr) auto;
+    min-height: 4rem;
+    min-width: min(17rem, 72vw);
+    overflow: hidden;
+    padding: 0.45rem 0.55rem;
+
+    .motorcycle-image {
+      border-radius: $radius-md;
+      height: 3rem;
+      width: 4rem;
+    }
+
+    img {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    div {
       display: grid;
-      gap: 0.2rem;
+      gap: 0.18rem;
+      min-width: 0;
+    }
 
-      strong {
-        @include label-caps;
+    div span,
+    div strong,
+    > span:last-child {
+      @include label-caps;
+    }
+
+    div span {
+      color: rgba($color-outline, 0.86);
+      font-size: 0.55rem;
+    }
+
+    div strong {
+      color: white;
+      font-size: 0.68rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    button {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      color: rgba($color-on-surface-variant, 0.76);
+      cursor: pointer;
+      display: inline-flex;
+      height: 1.8rem;
+      justify-content: center;
+      width: 1.8rem;
+
+      .material-symbols-outlined {
+        font-size: 1rem;
       }
 
-      span {
-        color: $color-on-surface-variant;
-        font-size: 0.9rem;
+      &:hover,
+      &:focus-visible {
+        background: rgba($color-accent, 0.16);
+        color: $color-accent;
+        outline: 0;
       }
+    }
+  }
+
+  &__compare-slot--empty {
+    border-style: dashed;
+    color: rgba($color-on-surface-variant, 0.66);
+    grid-template-columns: 3rem auto;
+    min-width: 10rem;
+
+    .material-symbols-outlined {
+      align-items: center;
+      border: 1px dashed rgba($color-outline-variant, 0.38);
+      border-radius: $radius-md;
+      display: inline-flex;
+      height: 3rem;
+      justify-content: center;
+      width: 3rem;
+    }
+  }
+
+  &__compare-summary {
+    display: grid;
+    gap: 0.18rem;
+    justify-self: end;
+    min-width: 8.5rem;
+
+    strong {
+      @include label-caps;
+    }
+
+    span {
+      color: $color-on-surface-variant;
+      font-size: 0.82rem;
+      white-space: nowrap;
     }
   }
 
@@ -449,9 +570,11 @@
     border-radius: $radius-md;
     color: $color-on-surface-variant;
     display: inline-flex;
+    gap: 0.55rem;
     justify-content: center;
-    min-height: 44px;
-    padding: 0.8rem 1rem;
+    min-height: 3.2rem;
+    min-width: 12rem;
+    padding: 0.8rem 1.05rem;
     text-align: center;
 
     &--ready {
@@ -465,46 +588,13 @@
         border-color: $color-accent-dark;
         transform: translateY(-1px);
       }
-    }
-  }
 
-  &__compare-thumbs {
-    display: flex;
-    isolation: isolate;
-    column-gap: 20px;
-
-    button {
-      background: $color-surface-container;
-      border: 2px solid $color-surface;
-      border-radius: $radius-lg;
-      height: 52px;
-      margin-left: -0.75rem;
-      overflow: hidden;
-      padding: 0;
-      transition:
-        transform $transition-base,
-        border-color $transition-base;
-      width: 52px;
-
-      &:first-child {
-        margin-left: 0;
+      strong {
+        background: rgba(255, 255, 255, 0.18);
+        border-radius: $radius-sm;
+        min-width: 1.2rem;
+        padding: 0.18rem 0.35rem;
       }
-
-      &:hover,
-      &:focus-visible {
-        border-color: $color-accent;
-        transform: translateY(-4px);
-      }
-    }
-
-    img,
-    .motorcycle-image {
-      height: 100%;
-      width: 100%;
-    }
-
-    img {
-      object-fit: cover;
     }
   }
 
@@ -515,9 +605,9 @@
     border-radius: $radius-md;
     color: $color-on-surface;
     display: inline-flex;
-    height: 44px;
+    height: 3.2rem;
     justify-content: center;
-    width: 44px;
+    width: 3.2rem;
 
     &:hover,
     &:focus-visible {
@@ -789,11 +879,23 @@
       align-items: stretch;
       bottom: 1rem;
       gap: 0.75rem;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: 1fr auto;
+
+      .search-page__compare-slots {
+        grid-column: 1 / -1;
+      }
+
+      .search-page__compare-summary {
+        justify-self: start;
+      }
 
       .search-page__compare-status {
         grid-column: 1 / -1;
       }
+    }
+
+    &__compare-slot {
+      min-width: min(15rem, 78vw);
     }
   }
 
@@ -813,5 +915,11 @@
     &__actions {
       flex-direction: column;
     }
+  }
+}
+
+@media (max-width: 447px) {
+  .search-page__compare-tray {
+    bottom: calc(6rem + env(safe-area-inset-bottom));
   }
 }

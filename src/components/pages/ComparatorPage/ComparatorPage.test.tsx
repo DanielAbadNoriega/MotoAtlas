@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import realMotorcycleSeed from '../../../../data/import/motorcycles.json';
 import { MOTORCYCLE_IMAGE_FALLBACK_URL } from '../../../shared/images/getMotorcycleImage';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
@@ -31,6 +31,12 @@ function createBikeWithMissingData() {
 }
 
 describe('ComparePage', () => {
+  beforeEach(() => {
+    window.history.pushState(null, '', '/');
+    window.location.hash = '';
+    window.localStorage.clear();
+  });
+
   it('renders the Stitch visual comparator with dynamic data', () => {
     render(<ComparePage bikes={bikeFixtures.slice(0, 2)} motorcycles={bikeFixtures} />);
 
@@ -72,6 +78,9 @@ describe('ComparePage', () => {
     await user.click(screen.getByRole('button', { name: /Quitar Aprilia Tuareg 660 de la comparativa/i }));
 
     expect(window.location.hash).toBe('#/comparador/bmw-f-900-gs-vs-yamaha-mt-09?bikes=test-bmw-f-900-gs,test-yamaha-mt-09');
+    expect(window.localStorage.getItem('motoatlas.compareQueue.v1')).toBe(
+      JSON.stringify(['test-bmw-f-900-gs', 'test-yamaha-mt-09']),
+    );
   });
 
   it('adds a motorcycle and syncs the URL', async () => {
@@ -82,6 +91,9 @@ describe('ComparePage', () => {
 
     expect(window.location.hash).toBe(
       '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660-vs-yamaha-mt-09?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09',
+    );
+    expect(window.localStorage.getItem('motoatlas.compareQueue.v1')).toBe(
+      JSON.stringify(['test-bmw-f-900-gs', 'test-aprilia-tuareg-660', 'test-yamaha-mt-09']),
     );
   });
 
