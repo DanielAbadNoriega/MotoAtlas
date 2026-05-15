@@ -28,4 +28,8 @@
     color: $color-accent;
     transform: translateY(-3px);
   }
+
+  @media (max-width: 447px) {
+    display: none;
+  }
 }

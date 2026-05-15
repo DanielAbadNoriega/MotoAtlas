@@ -67,6 +67,12 @@ img {
   min-height: 100vh;
 }
 
+@media (max-width: 447px) {
+  .app {
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+  }
+}
+
 .material-symbols-outlined {
   direction: ltr;
   display: inline-block;

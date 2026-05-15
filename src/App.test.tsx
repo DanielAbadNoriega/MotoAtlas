@@ -44,10 +44,12 @@ describe('App navigation with mocked motorcycleService', () => {
 
   it('has the simplified primary navigation links', async () => {
     await renderApp();
+    const primaryNav = screen.getByRole('navigation', { name: 'Navegación principal' });
 
-    expect(screen.getByRole('link', { name: 'Comparativas' })).toHaveAttribute('href', '#comparativas');
-    expect(screen.getByRole('link', { name: 'Noticias' })).toHaveAttribute('href', '#noticias');
-    expect(screen.getByRole('link', { name: 'Comunidad' })).toHaveAttribute('href', '#/comunidad');
+    expect(within(primaryNav).getByRole('link', { name: 'Buscador' })).toHaveAttribute('href', '#/buscador');
+    expect(within(primaryNav).getByRole('link', { name: 'Comparador' })).toHaveAttribute('href', '#/comparador');
+    expect(within(primaryNav).getByRole('link', { name: 'Noticias' })).toHaveAttribute('href', '#/noticias');
+    expect(within(primaryNav).getByRole('link', { name: 'Comunidad' })).toHaveAttribute('href', '#/comunidad');
     expect(screen.queryByRole('link', { name: 'Rutas' })).not.toBeInTheDocument();
   });
 
@@ -78,8 +80,9 @@ describe('App navigation with mocked motorcycleService', () => {
 
   it('has home card links toward search compare flow', async () => {
     await renderApp();
+    const compareLinks = screen.getAllByRole('link', { name: 'Comparar' });
 
-    expect(screen.getAllByRole('link', { name: 'Comparar' })[0]).toHaveAttribute('href', expect.stringContaining('#/buscador?compare='));
+    expect(compareLinks.some((link) => link.getAttribute('href')?.includes('#/buscador?compare='))).toBe(true);
   });
 
   it('navigates from the home duel button to the detailed comparison', async () => {

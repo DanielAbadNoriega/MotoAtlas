@@ -8,13 +8,14 @@ import type {
 
 export const brand = {
   name: 'MotoAtlas',
-  homeHref: '#top',
+  homeHref: '#/',
   homeAriaLabel: 'Ir al inicio de MotoAtlas',
 } satisfies BrandContent;
 
 export const navLinks = [
-  { label: 'Comparativas', href: '#comparativas' },
-  { label: 'Noticias', href: '#noticias' },
+  { label: 'Buscador', href: '#/buscador' },
+  { label: 'Comparador', href: '#/comparador' },
+  { label: 'Noticias', href: '#/noticias' },
   { label: 'Comunidad', href: '#/comunidad' },
 ] satisfies readonly NavLink[];
 
