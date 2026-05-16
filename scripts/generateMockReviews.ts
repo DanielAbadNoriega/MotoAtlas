@@ -14,6 +14,7 @@ type Review = {
   riding_style: string
   status: string
   verified: boolean
+  source?: string
 }
 
 const RIDING_STYLES = ['touring', 'offroad', 'daily', 'passenger', 'city', 'sport']
@@ -210,6 +211,7 @@ export async function generateMockReviews(opts?: {
       riding_style,
       status,
       verified
+      , source: 'mock'
     })
   }
 

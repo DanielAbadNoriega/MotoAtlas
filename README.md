@@ -198,6 +198,10 @@ Los meta tags, canonical, Open Graph y JSON-LD viven centralizados en `src/share
 
 Las reviews entran como `pending` por defecto y solo se muestran cuando están `approved`.
 
+## Datos mock para pruebas
+
+Se añadieron utilidades para generar, importar y limpiar reviews mock. Ver: [docs/mock-data.md](docs/mock-data.md)
+
 Estados de moderación:
 
 - `pending`: enviada correctamente, pendiente de revisión. No es visible públicamente.

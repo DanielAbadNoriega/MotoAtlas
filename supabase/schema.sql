@@ -204,6 +204,7 @@ create table if not exists public.motorcycle_reviews (
   comment text not null,
   pros text[] not null default '{}',
   cons text[] not null default '{}',
+  source text not null default 'user' check (source in ('user', 'mock', 'seed', 'import')),
   verified boolean not null default false,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz not null default now(),
@@ -216,6 +217,9 @@ alter table if exists public.motorcycle_reviews
 
 alter table if exists public.motorcycle_reviews
   add column if not exists verified boolean not null default false;
+
+alter table if exists public.motorcycle_reviews
+  add column if not exists source text not null default 'user' check (source in ('user', 'mock', 'seed', 'import'));
 
 create index if not exists motorcycle_reviews_motorcycle_id_idx on public.motorcycle_reviews (motorcycle_id);
 create index if not exists motorcycle_reviews_status_idx on public.motorcycle_reviews (status);
@@ -248,6 +252,7 @@ with check (
   and riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')
   and length(trim(comment)) > 0
   and verified = false
+  and source = 'user'
 );
 
 grant select on public.motorcycle_reviews to anon;

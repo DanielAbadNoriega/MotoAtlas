@@ -31,6 +31,11 @@ describe('generateMockReviews', () => {
     const ratio = verifiedCount / reviews.length
     expect(ratio).toBeGreaterThan(0.05)
     expect(ratio).toBeLessThan(0.3)
+
+    // all generated reviews must be marked as mock
+    for (const r of reviews) {
+      expect(r.source === 'mock' || r.source === undefined || r.source === null).toBe(true)
+    }
   })
 
   it('prepareSupabasePayload crea filas compatibles', async () => {
@@ -46,6 +51,7 @@ describe('generateMockReviews', () => {
       expect(row).toHaveProperty('comment')
       expect(row).toHaveProperty('status')
       expect(typeof row.rating).toBe('number')
+      expect(row.source).toBe('mock')
     }
   })
 })

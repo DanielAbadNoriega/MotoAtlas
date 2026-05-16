@@ -22,7 +22,11 @@
     "seo:sitemap": "tsx scripts/generateSeoFiles.ts"
     ,
     "generate:mock-reviews": "tsx scripts/generateMockReviews.ts",
-    "import:mock-reviews": "tsx scripts/importMockReviews.ts --dry-run"
+    "import:mock-reviews": "tsx scripts/importMockReviews.ts --dry-run",
+    "mock:reviews:generate": "tsx scripts/generateMockReviews.ts",
+    "mock:reviews:import": "tsx scripts/importMockReviews.ts",
+    "mock:reviews:clear": "tsx scripts/clearMockReviews.ts --dry-run",
+    "mock:reviews:clear:apply": "tsx scripts/clearMockReviews.ts --apply"
   },
   "dependencies": {
     "react": "^19.2.6",
