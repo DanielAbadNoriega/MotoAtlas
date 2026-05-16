@@ -662,9 +662,7 @@ export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBi
 
       <div className="search-page__compare-summary">
         <strong>Comparador</strong>
-        <span>
-          {selectedBikes.length}/{compareQueueMaxSize} motos seleccionadas
-        </span>
+        <span>{selectedBikes.length}/{compareQueueMaxSize} motos seleccionadas</span>
       </div>
 
       {selectedBikes.length >= 2 ? (

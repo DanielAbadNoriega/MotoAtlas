@@ -3,7 +3,7 @@ export type MotorcycleReviewRidingStyle = 'ciudad' | 'viaje' | 'offroad' | 'depo
 
 export type MotorcycleReviewInput = Readonly<{
   motorcycleId: string;
-  userName?: string;
+  userName: string;
   rating: number;
   ridingStyle: MotorcycleReviewRidingStyle;
   ownershipMonths?: number | null;
@@ -24,6 +24,7 @@ export type MotorcycleReview = Readonly<{
   comment: string;
   pros: readonly string[];
   cons: readonly string[];
+  verified: boolean;
   status: MotorcycleReviewStatus;
   createdAt: string;
   updatedAt: string;
@@ -40,6 +41,7 @@ type MotorcycleReviewRow = Readonly<{
   comment: string;
   pros: readonly string[] | null;
   cons: readonly string[] | null;
+  verified?: boolean | null;
   status: MotorcycleReviewStatus;
   created_at: string;
   updated_at: string;
@@ -67,6 +69,10 @@ function isValidRidingStyle(value: unknown): value is MotorcycleReviewRidingStyl
 function assertValidReview(input: MotorcycleReviewInput) {
   if (!input.motorcycleId.trim()) {
     throw new Error('motorcycleId es obligatorio.');
+  }
+
+  if (!input.userName.trim()) {
+    throw new Error('userName es obligatorio.');
   }
 
   if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
@@ -110,6 +116,7 @@ function mapReviewRow(row: MotorcycleReviewRow): MotorcycleReview {
     comment: row.comment,
     pros: row.pros ?? [],
     cons: row.cons ?? [],
+    verified: row.verified === true,
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -119,7 +126,7 @@ function mapReviewRow(row: MotorcycleReviewRow): MotorcycleReview {
 function buildReviewPayload(input: MotorcycleReviewInput) {
   return {
     motorcycle_id: input.motorcycleId,
-    user_name: input.userName?.trim() || 'Anónimo',
+    user_name: input.userName.trim(),
     rating: input.rating,
     riding_style: input.ridingStyle,
     ownership_months: input.ownershipMonths ?? null,
@@ -127,41 +134,63 @@ function buildReviewPayload(input: MotorcycleReviewInput) {
     comment: input.comment.trim(),
     pros: normalizeTextArray(input.pros),
     cons: normalizeTextArray(input.cons),
-    status: 'pending' satisfies MotorcycleReviewStatus,
+    status: 'pending' as const satisfies MotorcycleReviewStatus,
   };
 }
 
-async function parseSupabaseResponse<T>(response: Response): Promise<T> {
+type ReviewPayload = ReturnType<typeof buildReviewPayload>;
+
+async function assertSupabaseOk(response: Response) {
   if (!response.ok) {
     const errorBody = await response.text();
     throw new Error(`Supabase motorcycle_reviews request failed (${response.status}): ${errorBody}`);
   }
+}
 
+async function parseSupabaseResponse<T>(response: Response): Promise<T> {
+  await assertSupabaseOk(response);
   return (await response.json()) as T;
+}
+
+function mapPendingPayloadToReview(payload: ReviewPayload): MotorcycleReview {
+  const timestamp = new Date().toISOString();
+
+  return {
+    id: '',
+    motorcycleId: payload.motorcycle_id,
+    userName: payload.user_name,
+    rating: payload.rating,
+    ridingStyle: payload.riding_style,
+    ownershipMonths: payload.ownership_months,
+    kilometers: payload.kilometers,
+    comment: payload.comment,
+    pros: payload.pros,
+    cons: payload.cons,
+    verified: false,
+    status: payload.status,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
 }
 
 export async function createReview(input: MotorcycleReviewInput): Promise<MotorcycleReview> {
   assertValidReview(input);
   const config = getSupabaseConfig();
-  const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews?select=*`, {
-    body: JSON.stringify(buildReviewPayload(input)),
+  const payload = buildReviewPayload(input);
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews`, {
+    body: JSON.stringify(payload),
     headers: {
       Accept: 'application/json',
       apikey: config.supabaseAnonKey,
       Authorization: `Bearer ${config.supabaseAnonKey}`,
       'Content-Type': 'application/json',
-      Prefer: 'return=representation',
+      Prefer: 'return=minimal',
     },
     method: 'POST',
   });
-  const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);
-  const review = rows[0];
+  await assertSupabaseOk(response);
 
-  if (!review) {
-    throw new Error('Supabase no devolvió la review creada.');
-  }
-
-  return mapReviewRow(review);
+  return mapPendingPayloadToReview(payload);
 }
 
 export async function getApprovedReviewsByMotorcycleId(motorcycleId: string): Promise<readonly MotorcycleReview[]> {

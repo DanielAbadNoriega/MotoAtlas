@@ -30,6 +30,7 @@ describe('ReviewModal', () => {
       comment: 'Muy buena para viajar.',
       pros: [],
       cons: [],
+      verified: false,
       status: 'pending',
       createdAt: '2026-05-15T10:00:00.000Z',
       updatedAt: '2026-05-15T10:00:00.000Z',
@@ -72,6 +73,37 @@ describe('ReviewModal', () => {
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 
+  it('valida alias obligatorio', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /Valorar 5 de 5/i }));
+    await user.click(screen.getByRole('button', { name: 'Viaje' }));
+    await user.type(screen.getByLabelText(/Comentario detallado/i), 'La moto va muy fina en carretera.');
+    await user.click(screen.getByRole('button', { name: /Enviar review/i }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Revisa los campos obligatorios antes de enviar.');
+    expect(screen.getByText('El alias es obligatorio.')).toBeInTheDocument();
+    expect(createReviewMock).not.toHaveBeenCalled();
+  });
+
+  it('muestra claramente que el tiempo con la moto se introduce en meses', () => {
+    renderModal();
+
+    expect(screen.getByLabelText(/Tiempo con la moto \(meses\)/i)).toHaveAttribute('placeholder', 'Ej. 15 meses');
+  });
+
+  it('mantiene las acciones accesibles cuando hay error de validación', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /Enviar review/i }));
+
+    expect(screen.getByRole('alert')).toBeVisible();
+    expect(screen.getByRole('button', { name: /Cancelar/i })).toBeVisible();
+    expect(screen.getByRole('button', { name: /Enviar review/i })).toBeVisible();
+  });
+
   it('valida riding_style obligatorio', async () => {
     const user = userEvent.setup();
     renderModal();
@@ -100,8 +132,9 @@ describe('ReviewModal', () => {
     const user = userEvent.setup();
     renderModal();
 
+    await user.type(screen.getByLabelText(/Alias/i), 'MoteroViajero');
     await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
-    await user.type(screen.getByLabelText(/Tiempo con la moto/i), '12');
+    await user.type(screen.getByLabelText(/Tiempo con la moto \(meses\)/i), '12');
     await user.type(screen.getByLabelText(/Kilómetros recorridos/i), '8500');
     await user.click(screen.getByRole('button', { name: 'Viaje' }));
     await user.type(screen.getByLabelText(/Lo mejor/i), 'Motor lleno');
@@ -113,6 +146,7 @@ describe('ReviewModal', () => {
     expect(createReviewMock).toHaveBeenCalledWith(
       expect.objectContaining({
         motorcycleId: bikeFixtures[0].id,
+        userName: 'MoteroViajero',
         rating: 4,
         ridingStyle: 'viaje',
         ownershipMonths: 12,
@@ -131,6 +165,7 @@ describe('ReviewModal', () => {
     createReviewMock.mockRejectedValue(new Error('Servicio no disponible'));
     renderModal();
 
+    await user.type(screen.getByLabelText(/Alias/i), 'MoteroDiario');
     await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Diario' }));
     await user.type(screen.getByLabelText(/Comentario detallado/i), 'Uso diario correcto.');

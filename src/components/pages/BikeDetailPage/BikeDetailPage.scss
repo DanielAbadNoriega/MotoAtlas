@@ -605,6 +605,34 @@
       color: $color-accent;
     }
 
+    .bike-detail__review-author,
+    .bike-detail__review-verified {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.45rem;
+    }
+
+    .bike-detail__review-author .material-symbols-outlined {
+      background: rgba($color-accent, 0.16);
+      border: 1px solid rgba($color-accent, 0.28);
+      border-radius: 999px;
+      color: $color-accent;
+      font-size: 1rem;
+      padding: 0.25rem;
+    }
+
+    .bike-detail__review-verified {
+      @include label-caps;
+
+      color: $color-accent;
+      font-size: 0.62rem;
+      margin-bottom: 0.75rem;
+
+      .material-symbols-outlined {
+        font-size: 1rem;
+      }
+    }
+
     p {
       color: $color-on-surface-variant;
       line-height: 1.6;

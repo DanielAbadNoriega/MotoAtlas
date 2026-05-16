@@ -204,7 +204,7 @@ Campos añadidos al núcleo:
 - Protección editorial: `image_locked`, `description_locked`.
 - Procedencia/calidad: `specs_source`, `price_source`, `image_source`, `scores_source`, `pros_cons_source`, `reliability_source`.
 
-La tabla secundaria `public.motorcycle_reviews` permite reviews sin login todavía. Las nuevas reviews entran como `pending`; solo `approved` es legible por `anon`.
+La tabla secundaria `public.motorcycle_reviews` permite reviews sin login todavía. Las nuevas reviews entran como `pending`; solo `approved` es legible por `anon`. `rejected` queda reservado para moderación futura y no se muestra públicamente. El campo `verified` existe con `false` por defecto y la inserción pública anónima no puede marcarlo como `true`.
 
 RLS está activo:
 

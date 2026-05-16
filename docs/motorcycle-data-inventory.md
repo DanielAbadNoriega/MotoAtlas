@@ -66,7 +66,7 @@ Regla UX: no mostrar `PLACEHOLDER` al usuario final. Usar textos como “Precio 
 | --- | --- | --- | --- |
 | `id` | `id` | Sí | Identificador de review. |
 | `motorcycleId` | `motorcycle_id` | Sí | Relación con moto. |
-| `userName` | `user_name` | Sí | Nombre mostrado en ficha. |
+| `userName` | `user_name` | Sí | Alias mostrado en ficha/comunidad. Si faltase por datos antiguos, la UI muestra “Usuario MotoAtlas”. |
 | `rating` | `rating` | Sí | Rating 1-5; se usa en promedio y JSON-LD. |
 | `ridingStyle` | `riding_style` | Sí | Uso principal declarado: ciudad, viaje, offroad, deportivo, pasajero o diario. |
 | `ownershipMonths` | `ownership_months` | No | Contexto de uso real. |
@@ -74,7 +74,8 @@ Regla UX: no mostrar `PLACEHOLDER` al usuario final. Usar textos como “Precio 
 | `comment` | `comment` | Sí | Texto de la opinión. |
 | `pros` | `pros` | No | Pros aportados por usuario. |
 | `cons` | `cons` | No | Contras aportados por usuario. |
-| `status` | `status` | Sí | `pending`, `approved`, `rejected`. Solo `approved` se muestra. |
+| `verified` | `verified` | No | Preparado para reviews verificadas. Por defecto `false`; no se muestra badge si no hay dato real. |
+| `status` | `status` | Sí | `pending` = pendiente de moderación, `approved` = visible públicamente, `rejected` = futuro/no visible. |
 
 ## Campos pendientes futuros
 

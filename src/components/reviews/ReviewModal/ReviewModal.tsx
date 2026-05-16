@@ -14,7 +14,7 @@ type ReviewModalProps = {
   onClose: () => void;
 };
 
-type ReviewValidationErrors = Partial<Record<'comment' | 'kilometers' | 'ownershipMonths' | 'rating' | 'ridingStyle', string>>;
+type ReviewValidationErrors = Partial<Record<'comment' | 'kilometers' | 'ownershipMonths' | 'rating' | 'ridingStyle' | 'userName', string>>;
 
 const ridingStyleOptions = [
   { label: 'Ciudad', value: 'ciudad' },
@@ -107,8 +107,13 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
   const validate = (formData: FormData): ReviewValidationErrors => {
     const nextErrors: ReviewValidationErrors = {};
+    const userName = String(formData.get('user_name') ?? '').trim();
     const ownershipMonths = parseOptionalPositiveNumber(formData.get('ownership_months'));
     const kilometers = parseOptionalPositiveNumber(formData.get('kilometers'));
+
+    if (!userName) {
+      nextErrors.userName = 'El alias es obligatorio.';
+    }
 
     if (rating < 1 || rating > 5) {
       nextErrors.rating = 'La valoración es obligatoria.';
@@ -151,7 +156,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
     try {
       await createReview({
         motorcycleId: motorcycle.id,
-        userName: String(formData.get('user_name') ?? '').trim() || 'Anónimo',
+        userName: String(formData.get('user_name') ?? '').trim(),
         rating,
         ridingStyle,
         ownershipMonths: parseOptionalPositiveNumber(formData.get('ownership_months')),
@@ -187,7 +192,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
               <p>Gracias. Tu opinión se revisará antes de publicarse.</p>
               <div className="review-modal__success-meta" aria-hidden="true">
                 <span />
-                <small>Submission protocol verified</small>
+                <small>Review pendiente de moderación</small>
                 <span />
               </div>
               <button className="review-modal__secondary-action" type="button" onClick={requestClose}>
@@ -207,20 +212,20 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
               </button>
             </header>
 
-            {status === 'validation-error' ? (
-              <div className="review-modal__alert" role="alert">
-                <span className="material-symbols-outlined" aria-hidden="true">report</span>
-                <span>Revisa los campos obligatorios antes de enviar.</span>
-              </div>
-            ) : null}
-            {status === 'service-error' ? (
-              <div className="review-modal__alert" role="alert">
-                <span className="material-symbols-outlined" aria-hidden="true">report</span>
-                <span>{serviceError || 'No se pudo enviar la review. Inténtalo de nuevo.'}</span>
-              </div>
-            ) : null}
-
             <form ref={formRef} className="review-modal__form" onSubmit={submitReview} noValidate>
+              {status === 'validation-error' ? (
+                <div className="review-modal__alert" role="alert">
+                  <span className="material-symbols-outlined" aria-hidden="true">report</span>
+                  <span>Revisa los campos obligatorios antes de enviar.</span>
+                </div>
+              ) : null}
+              {status === 'service-error' ? (
+                <div className="review-modal__alert" role="alert">
+                  <span className="material-symbols-outlined" aria-hidden="true">report</span>
+                  <span>{serviceError || 'No se pudo enviar la review. Inténtalo de nuevo.'}</span>
+                </div>
+              ) : null}
+
               <div className="review-modal__context-card">
                 <div className="review-modal__thumb">
                   <MotorcycleImage motorcycle={motorcycle} decorative />
@@ -233,6 +238,12 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                   <strong>{bikeName}</strong>
                 </div>
               </div>
+
+              <label className={getFieldClass(Boolean(errors.userName))} htmlFor="review-modal-user-name">
+                <span>Alias</span>
+                <input id="review-modal-user-name" name="user_name" autoComplete="nickname" placeholder="Ej. MoteroViajero" type="text" />
+                {errors.userName ? <small>{errors.userName}</small> : null}
+              </label>
 
               <fieldset className={errors.rating ? 'review-modal__rating review-modal__rating--error' : 'review-modal__rating'}>
                 <legend>Valoración general</legend>
@@ -254,8 +265,8 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
               <div className="review-modal__grid">
                 <label className={getFieldClass(Boolean(errors.ownershipMonths))} htmlFor="review-modal-ownership-months">
-                  <span>Tiempo con la moto</span>
-                  <input id="review-modal-ownership-months" name="ownership_months" min="0" placeholder="Ej: 15" type="number" />
+                  <span>Tiempo con la moto (meses)</span>
+                  <input id="review-modal-ownership-months" name="ownership_months" min="0" placeholder="Ej. 15 meses" type="number" />
                   {errors.ownershipMonths ? <small>{errors.ownershipMonths}</small> : null}
                 </label>
                 <label className={getFieldClass(Boolean(errors.kilometers))} htmlFor="review-modal-kilometers">

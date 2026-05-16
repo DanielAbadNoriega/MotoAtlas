@@ -198,6 +198,14 @@ Los meta tags, canonical, Open Graph y JSON-LD viven centralizados en `src/share
 
 Las reviews entran como `pending` por defecto y solo se muestran cuando están `approved`.
 
+Estados de moderación:
+
+- `pending`: enviada correctamente, pendiente de revisión. No es visible públicamente.
+- `approved`: revisada y visible en ficha/comunidad.
+- `rejected`: reservada para moderación futura; no es visible públicamente.
+
+El badge “Review verificada” solo se muestra si la review trae `verified = true`. Las inserciones públicas anónimas quedan con `verified = false`.
+
 Servicio:
 
 ```txt

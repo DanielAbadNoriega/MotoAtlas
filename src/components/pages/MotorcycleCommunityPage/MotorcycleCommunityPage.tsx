@@ -7,7 +7,7 @@ import {
 } from '../../../services/motorcycleReviewService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
-import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { formatReviewAggregate, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
 import type { Bike } from '../../../types/bike';
 import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
@@ -389,18 +389,27 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
               <div ref={reviewSliderRef} className="motorcycle-community__review-viewport" role="region" aria-label="Verified owner reports">
                 <div className="motorcycle-community__review-list" role="list">
                 {reviews.map((review) => {
-                  const userName = review.userName.trim() || 'Usuario MotoAtlas';
+                  const userName = getReviewUserName(review);
 
                   return (
                     <article className="motorcycle-community__review-card" key={review.id} role="listitem">
                       <header>
                         <div>
-                          <span aria-hidden="true">{getInitials(userName)}</span>
+                          <span className="motorcycle-community__review-avatar" aria-hidden="true">
+                            <span className="material-symbols-outlined">person</span>
+                            <strong>{getInitials(userName)}</strong>
+                          </span>
                           <div>
                             <h3>{userName}</h3>
                             <small>
                               {ridingStyleLabels[review.ridingStyle]} · {formatDate(review.createdAt)}
                             </small>
+                            {isReviewVerified(review) ? (
+                              <span className="motorcycle-community__verified-badge">
+                                <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                                Review verificada
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                         <div>

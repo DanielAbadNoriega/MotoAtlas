@@ -5,7 +5,7 @@ import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compar
 import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
-import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { formatReviewAggregate, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
 import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './BikeDetailPage.scss';
@@ -455,9 +455,18 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
             reviews.map((review) => (
               <article key={review.id}>
                 <header>
-                  <strong>{review.userName}</strong>
+                  <div className="bike-detail__review-author">
+                    <span aria-hidden="true" className="material-symbols-outlined">person</span>
+                    <strong>{getReviewUserName(review)}</strong>
+                  </div>
                   <span>{review.rating}/5</span>
                 </header>
+                {isReviewVerified(review) ? (
+                  <small className="bike-detail__review-verified">
+                    <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                    Review verificada
+                  </small>
+                ) : null}
                 <p>{review.comment}</p>
               </article>
             ))

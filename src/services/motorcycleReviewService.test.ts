@@ -55,13 +55,62 @@ describe('motorcycleReviewService', () => {
       userName: 'Dani',
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://example.supabase.co/rest/v1/motorcycle_reviews?select=*',
+      'https://example.supabase.co/rest/v1/motorcycle_reviews',
       expect.objectContaining({
         method: 'POST',
         body: expect.stringContaining('"status":"pending"'),
       }),
     );
     expect(fetchMock.mock.calls[0][1].body).toContain('"riding_style":"viaje"');
+    expect(fetchMock.mock.calls[0][1].body).toContain('"user_name":"Dani"');
+  });
+
+  it('envía headers Supabase correctos para inserción pública sin leer la fila pending', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createReview({
+      motorcycleId: 'bmw-f-900-gs-2024',
+      userName: 'Dani',
+      rating: 4,
+      ridingStyle: 'diario',
+      comment: 'Buena moto para uso diario.',
+    });
+
+    const [, requestInit] = fetchMock.mock.calls[0];
+
+    expect(requestInit.headers).toMatchObject({
+      Accept: 'application/json',
+      apikey: 'anon-key',
+      Authorization: 'Bearer anon-key',
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    });
+  });
+
+  it('propaga un error Supabase legible si RLS rechaza el insert', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: () => Promise.resolve('new row violates row-level security policy for table "motorcycle_reviews"'),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      createReview({
+        motorcycleId: 'bmw-f-900-gs-2024',
+        userName: 'Dani',
+        rating: 4,
+        ridingStyle: 'diario',
+        comment: 'Buena moto para uso diario.',
+      }),
+    ).rejects.toThrow(
+      'Supabase motorcycle_reviews request failed (401): new row violates row-level security policy for table "motorcycle_reviews"',
+    );
   });
 
   it('rechaza rating inválido antes de llamar a red', async () => {
@@ -75,6 +124,17 @@ describe('motorcycleReviewService', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('rechaza alias vacío antes de llamar a red', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      createReview({ motorcycleId: 'bmw-f-900-gs-2024', userName: '   ', rating: 5, ridingStyle: 'viaje', comment: 'Texto' }),
+    ).rejects.toThrow('userName es obligatorio');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('rechaza riding_style inválido antes de llamar a red', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn();
@@ -83,6 +143,7 @@ describe('motorcycleReviewService', () => {
     await expect(
       createReview({
         motorcycleId: 'bmw-f-900-gs-2024',
+        userName: 'Dani',
         rating: 5,
         ridingStyle: 'invalid' as never,
         comment: 'Texto',
@@ -101,7 +162,7 @@ describe('motorcycleReviewService', () => {
 
     const reviews = await getApprovedReviewsByMotorcycleId('bmw-f-900-gs-2024');
 
-    expect(reviews[0]).toMatchObject({ motorcycleId: 'bmw-f-900-gs-2024', ridingStyle: 'viaje', status: 'approved' });
+    expect(reviews[0]).toMatchObject({ motorcycleId: 'bmw-f-900-gs-2024', ridingStyle: 'viaje', status: 'approved', verified: false });
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/rest/v1/motorcycle_reviews?'), expect.any(Object));
     expect(fetchMock.mock.calls[0][0]).toContain('status=eq.approved');
     expect(fetchMock.mock.calls[0][0]).toContain('motorcycle_id=eq.bmw-f-900-gs-2024');

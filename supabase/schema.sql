@@ -204,6 +204,7 @@ create table if not exists public.motorcycle_reviews (
   comment text not null,
   pros text[] not null default '{}',
   cons text[] not null default '{}',
+  verified boolean not null default false,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -212,6 +213,9 @@ create table if not exists public.motorcycle_reviews (
 alter table if exists public.motorcycle_reviews
   add column if not exists riding_style text not null default 'diario'
   check (riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario'));
+
+alter table if exists public.motorcycle_reviews
+  add column if not exists verified boolean not null default false;
 
 create index if not exists motorcycle_reviews_motorcycle_id_idx on public.motorcycle_reviews (motorcycle_id);
 create index if not exists motorcycle_reviews_status_idx on public.motorcycle_reviews (status);
@@ -236,4 +240,17 @@ create policy "Public motorcycle reviews can be created"
 on public.motorcycle_reviews
 for insert
 to anon
-with check (status = 'pending');
+with check (
+  status = 'pending'
+  and motorcycle_id is not null
+  and length(trim(user_name)) > 0
+  and rating between 1 and 5
+  and riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')
+  and length(trim(comment)) > 0
+  and verified = false
+);
+
+grant select on public.motorcycle_reviews to anon;
+grant insert on public.motorcycle_reviews to anon;
+
+notify pgrst, 'reload schema';

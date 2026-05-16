@@ -1,5 +1,7 @@
 import type { MotorcycleReview } from '../../services/motorcycleReviewService';
 
+export const fallbackReviewUserName = 'Usuario MotoAtlas';
+
 export type ReviewAggregate = Readonly<{
   averageRating: number;
   reviewCount: number;
@@ -19,4 +21,12 @@ export function getReviewAggregate(reviews: readonly Pick<MotorcycleReview, 'rat
 
 export function formatReviewAggregate({ averageRating, reviewCount }: ReviewAggregate) {
   return reviewCount === 0 ? 'Sin reviews aprobadas' : `${averageRating.toFixed(1)}/5 · ${reviewCount} reviews`;
+}
+
+export function getReviewUserName(review: Pick<MotorcycleReview, 'userName'>) {
+  return review.userName.trim() || fallbackReviewUserName;
+}
+
+export function isReviewVerified(review: Pick<MotorcycleReview, 'verified'>) {
+  return review.verified === true;
 }

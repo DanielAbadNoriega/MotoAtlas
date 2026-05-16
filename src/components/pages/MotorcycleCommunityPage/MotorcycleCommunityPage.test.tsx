@@ -25,6 +25,7 @@ const approvedReviews: readonly MotorcycleReview[] = [
     comment: 'Fantástica para viajar con equipaje.',
     pros: ['Motor lleno', 'Ergonomía cómoda'],
     cons: ['Precio alto'],
+    verified: false,
     status: 'approved',
     createdAt: '2026-05-14T10:00:00.000Z',
     updatedAt: '2026-05-14T10:00:00.000Z',
@@ -40,6 +41,7 @@ const approvedReviews: readonly MotorcycleReview[] = [
     comment: 'Muy equilibrada, aunque alta para ciudad.',
     pros: ['Motor lleno'],
     cons: ['Altura de asiento'],
+    verified: false,
     status: 'approved',
     createdAt: '2026-05-10T10:00:00.000Z',
     updatedAt: '2026-05-10T10:00:00.000Z',
@@ -55,6 +57,7 @@ const approvedReviews: readonly MotorcycleReview[] = [
     comment: 'No debería mostrarse todavía.',
     pros: [],
     cons: [],
+    verified: false,
     status: 'pending',
     createdAt: '2026-05-09T10:00:00.000Z',
     updatedAt: '2026-05-09T10:00:00.000Z',
@@ -77,6 +80,7 @@ describe('MotorcycleCommunityPage', () => {
       comment: 'Muy buena.',
       pros: [],
       cons: [],
+      verified: false,
       status: 'pending',
       createdAt: '2026-05-15T10:00:00.000Z',
       updatedAt: '2026-05-15T10:00:00.000Z',
@@ -106,6 +110,23 @@ describe('MotorcycleCommunityPage', () => {
     expect(await screen.findByText('Fantástica para viajar con equipaje.')).toBeInTheDocument();
     expect(screen.getByText('Muy equilibrada, aunque alta para ciudad.')).toBeInTheDocument();
     expect(screen.queryByText('No debería mostrarse todavía.')).not.toBeInTheDocument();
+    expect(screen.getByText('Usuario MotoAtlas')).toBeInTheDocument();
+  });
+
+  it('no muestra badge verificado cuando la review no trae verificación real', async () => {
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    await screen.findByText('Fantástica para viajar con equipaje.');
+
+    expect(screen.queryByText('Review verificada')).not.toBeInTheDocument();
+  });
+
+  it('muestra badge verificado solo cuando la review viene marcada como verified', async () => {
+    getApprovedReviewsMock.mockResolvedValue([{ ...approvedReviews[0], verified: true }]);
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    expect(await screen.findByText('Review verificada')).toBeInTheDocument();
   });
 
   it('calcula rating medio y uso principal más común', async () => {
