@@ -1,0 +1,2042 @@
+[
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 4,
+    "ownership_months": 25,
+    "kilometers": 21720,
+    "comment": "Ideal para rutas largas y autopista. Llevo 25 meses y 21720 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "PataCorta",
+    "rating": 2,
+    "ownership_months": 60,
+    "kilometers": 73641,
+    "comment": "Precio acorde a lo que ofrece.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "bmw-f-900-xr-2024",
+    "user_name": "KilometroCero",
+    "rating": 4,
+    "ownership_months": 36,
+    "kilometers": 43155,
+    "comment": "Aunque pesada, muy estable a velocidad. Llevo 36 meses y 43155 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-tracer-9-gt-2024",
+    "user_name": "AceleradorFeliz267",
+    "rating": 4,
+    "ownership_months": 68,
+    "kilometers": 34237,
+    "comment": "Neumáticos de serie limitan, cambié por algo más agresivo. Llevo 68 meses y 34237 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "PataCorta733",
+    "rating": 5,
+    "ownership_months": 9,
+    "kilometers": 7398,
+    "comment": "Precio acorde a lo que ofrece. Llevo 9 meses y 7398 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "suzuki-v-strom-800de-2024",
+    "user_name": "VientoYRuta",
+    "rating": 2,
+    "ownership_months": 8,
+    "kilometers": 4902,
+    "comment": "Perfecta para el día a día. Buena moto, cumplió mis expectativas. Precio acorde a lo que ofrece. Llevo 8 meses y 4902 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "KilometroCero",
+    "rating": 5,
+    "ownership_months": 113,
+    "kilometers": 112445,
+    "comment": "Aunque pesada, muy estable a velocidad. Precio acorde a lo que ofrece. Llevo 113 meses y 112445 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "RutaLibre696",
+    "rating": 3,
+    "ownership_months": 61,
+    "kilometers": 51922,
+    "comment": "Ideal para rutas largas y autopista. Aunque pesada, muy estable a velocidad. Buena moto, cumplió mis expectativas. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "bmw-r-1300-gs-2024",
+    "user_name": "MotoMecanica",
+    "rating": 5,
+    "ownership_months": 115,
+    "kilometers": 102053,
+    "comment": "Ideal para rutas largas y autopista. Llevo 115 meses y 102053 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "suzuki-v-strom-800de-2024",
+    "user_name": "RutaLibre",
+    "rating": 3,
+    "ownership_months": 48,
+    "kilometers": 23353,
+    "comment": "Precio acorde a lo que ofrece. Perfecta para el día a día. Llevo 48 meses y 23353 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "bmw-r-1300-gs-2024",
+    "user_name": "VientoYRuta849",
+    "rating": 5,
+    "ownership_months": 41,
+    "kilometers": 13356,
+    "comment": "Aunque pesada, muy estable a velocidad. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 3,
+    "ownership_months": 89,
+    "kilometers": 86420,
+    "comment": "Ideal para rutas largas y autopista. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "kawasaki-z900-2024",
+    "user_name": "BoxerRider636",
+    "rating": 5,
+    "ownership_months": 81,
+    "kilometers": 74153,
+    "comment": "Precio acorde a lo que ofrece. Llevo 81 meses y 74153 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 37,
+    "kilometers": 31770,
+    "comment": "Neumáticos de serie limitan, cambié por algo más agresivo.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "bmw-f-900-gs-2024",
+    "user_name": "AceleradorFeliz501",
+    "rating": 5,
+    "ownership_months": 116,
+    "kilometers": 84105,
+    "comment": "Ideal para rutas largas y autopista. Llevo 116 meses y 84105 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      "Motor elástico y con mucho par"
+    ],
+    "cons": [
+      "Depósito más pequeño que rivales viajeras"
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "TrailHunter",
+    "rating": 5,
+    "ownership_months": 50,
+    "kilometers": 41103,
+    "comment": "Aunque pesada, muy estable a velocidad. Precio acorde a lo que ofrece. Aunque pesada, muy estable a velocidad. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 3,
+    "ownership_months": 24,
+    "kilometers": 27049,
+    "comment": "Ideal para rutas largas y autopista. Aunque pesada, muy estable a velocidad. Llevo 24 meses y 27049 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "cfmoto-800mt-x-2025",
+    "user_name": "KilometroCero",
+    "rating": 5,
+    "ownership_months": 83,
+    "kilometers": 98826,
+    "comment": "Aunque pesada, muy estable a velocidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "kawasaki-versys-650-2024",
+    "user_name": "TrailHunter",
+    "rating": 5,
+    "ownership_months": 71,
+    "kilometers": 87640,
+    "comment": "Precio acorde a lo que ofrece. Precio acorde a lo que ofrece. Ideal para rutas largas y autopista. Llevo 71 meses y 87640 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-tracer-9-gt-2024",
+    "user_name": "VientoYRuta721",
+    "rating": 1,
+    "ownership_months": 43,
+    "kilometers": 57194,
+    "comment": "Buena moto, cumplió mis expectativas. Buena moto, cumplió mis expectativas. Llevo 43 meses y 57194 km. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "PataCorta797",
+    "rating": 5,
+    "ownership_months": 71,
+    "kilometers": 88328,
+    "comment": "Perfecta para el día a día. Llevo 71 meses y 88328 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "BoxerRider",
+    "rating": 5,
+    "ownership_months": 83,
+    "kilometers": 114527,
+    "comment": "Perfecta para el día a día.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-tracer-9-gt-2024",
+    "user_name": "BoxerRider665",
+    "rating": 4,
+    "ownership_months": 66,
+    "kilometers": 34223,
+    "comment": "Ideal para rutas largas y autopista. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-xl750-transalp-2024",
+    "user_name": "CurvasYPuños599",
+    "rating": 5,
+    "ownership_months": 3,
+    "kilometers": 3940,
+    "comment": "Aunque pesada, muy estable a velocidad. Llevo 3 meses y 3940 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      "Coste de uso razonable"
+    ],
+    "cons": [
+      "Equipamiento turístico mejorable"
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 21,
+    "kilometers": 19089,
+    "comment": "Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-xl750-transalp-2024",
+    "user_name": "DobleEmbrague765",
+    "rating": 3,
+    "ownership_months": 6,
+    "kilometers": 3605,
+    "comment": "Precio acorde a lo que ofrece. Llevo 6 meses y 3605 km.",
+    "pros": [
+      "Altura accesible para una trail"
+    ],
+    "cons": [
+      "Suspensiones justas para offroad duro"
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "RutaLibre",
+    "rating": 5,
+    "ownership_months": 106,
+    "kilometers": 81604,
+    "comment": "Perfecta para el día a día. Precio acorde a lo que ofrece. Precio acorde a lo que ofrece. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "cfmoto-800mt-x-2025",
+    "user_name": "DobleEmbrague",
+    "rating": 4,
+    "ownership_months": 55,
+    "kilometers": 38342,
+    "comment": "Perfecta para el día a día.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 51,
+    "kilometers": 50227,
+    "comment": "Precio acorde a lo que ofrece.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "pending",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "honda-xl750-transalp-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 3,
+    "ownership_months": 55,
+    "kilometers": 24368,
+    "comment": "Buena moto, cumplió mis expectativas. Perfecta para el día a día. Llevo 55 meses y 24368 km. No la vendería, me ha salido fiable.",
+    "pros": [
+      "Motor suave y lleno"
+    ],
+    "cons": [
+      "Suspensiones justas para offroad duro"
+    ],
+    "riding_style": "offroad",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-tenere-700-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 4,
+    "ownership_months": 19,
+    "kilometers": 11416,
+    "comment": "Buena moto, cumplió mis expectativas. Llevo 19 meses y 11416 km.",
+    "pros": [
+      "Gran mercado de accesorios"
+    ],
+    "cons": [
+      "Electrónica básica"
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "BoxerRider",
+    "rating": 5,
+    "ownership_months": 58,
+    "kilometers": 29511,
+    "comment": "Ideal para rutas largas y autopista. Buena moto, cumplió mis expectativas. Aunque pesada, muy estable a velocidad. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "CurvasYPuños303",
+    "rating": 4,
+    "ownership_months": 86,
+    "kilometers": 43966,
+    "comment": "Precio acorde a lo que ofrece. Aunque pesada, muy estable a velocidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ducati-multistrada-v2-2024",
+    "user_name": "BoxerRider435",
+    "rating": 5,
+    "ownership_months": 38,
+    "kilometers": 33212,
+    "comment": "Ideal para rutas largas y autopista. Llevo 38 meses y 33212 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "MotoMecanica",
+    "rating": 3,
+    "ownership_months": 102,
+    "kilometers": 84021,
+    "comment": "Ligera y maniobrable en zonas rotas.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "CurvasYPuños422",
+    "rating": 3,
+    "ownership_months": 59,
+    "kilometers": 53244,
+    "comment": "Perfecta para el día a día. Aunque pesada, muy estable a velocidad. Aunque pesada, muy estable a velocidad. Llevo 59 meses y 53244 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "cfmoto-800mt-x-2025",
+    "user_name": "VientoYRuta679",
+    "rating": 4,
+    "ownership_months": 31,
+    "kilometers": 19245,
+    "comment": "Buena moto, cumplió mis expectativas. Ideal para rutas largas y autopista. Perfecta para el día a día. Llevo 31 meses y 19245 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-xl750-transalp-2024",
+    "user_name": "KilometroCero",
+    "rating": 4,
+    "ownership_months": 80,
+    "kilometers": 81994,
+    "comment": "Buena moto, cumplió mis expectativas. Llevo 80 meses y 81994 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      "Altura accesible para una trail"
+    ],
+    "cons": [
+      "Suspensiones justas para offroad duro"
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "MotoMecanica",
+    "rating": 4,
+    "ownership_months": 12,
+    "kilometers": 12955,
+    "comment": "Ideal para rutas largas y autopista. Llevo 12 meses y 12955 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "BoxerRider",
+    "rating": 5,
+    "ownership_months": 3,
+    "kilometers": 1322,
+    "comment": "Precio acorde a lo que ofrece. Llevo 3 meses y 1322 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 117,
+    "kilometers": 91480,
+    "comment": "Aunque pesada, muy estable a velocidad. Llevo 117 meses y 91480 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "MotoMecanica",
+    "rating": 2,
+    "ownership_months": 57,
+    "kilometers": 51842,
+    "comment": "Aunque pesada, muy estable a velocidad. Aunque pesada, muy estable a velocidad. Perfecta para el día a día. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "rejected",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "yamaha-tenere-700-2024",
+    "user_name": "CurvasYPuños777",
+    "rating": 5,
+    "ownership_months": 97,
+    "kilometers": 110948,
+    "comment": "Buena moto, cumplió mis expectativas. Buena moto, cumplió mis expectativas. Llevo 97 meses y 110948 km.",
+    "pros": [
+      "Motor CP2 probado"
+    ],
+    "cons": [
+      "Electrónica básica"
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-nt1100-2024",
+    "user_name": "CurvasYPuños167",
+    "rating": 5,
+    "ownership_months": 15,
+    "kilometers": 10812,
+    "comment": "Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-nt1100-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 5,
+    "ownership_months": 86,
+    "kilometers": 76228,
+    "comment": "Perfecta para el día a día. Llevo 86 meses y 76228 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 5,
+    "ownership_months": 61,
+    "kilometers": 60063,
+    "comment": "Perfecta para el día a día. Llevo 61 meses y 60063 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "kawasaki-z900-2024",
+    "user_name": "KilometroCero312",
+    "rating": 5,
+    "ownership_months": 37,
+    "kilometers": 39191,
+    "comment": "Ideal para rutas largas y autopista. Precio acorde a lo que ofrece. Llevo 37 meses y 39191 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "bmw-f-900-xr-2024",
+    "user_name": "RutaLibre",
+    "rating": 5,
+    "ownership_months": 50,
+    "kilometers": 38255,
+    "comment": "Precio acorde a lo que ofrece. Ideal para rutas largas y autopista. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 1,
+    "ownership_months": 86,
+    "kilometers": 111198,
+    "comment": "Buena moto, cumplió mis expectativas. Ideal para rutas largas y autopista. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 3,
+    "ownership_months": 76,
+    "kilometers": 53660,
+    "comment": "Aunque pesada, muy estable a velocidad. Llevo 76 meses y 53660 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "KilometroCero",
+    "rating": 4,
+    "ownership_months": 41,
+    "kilometers": 48293,
+    "comment": "Buena moto, cumplió mis expectativas. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-mt-07-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 4,
+    "ownership_months": 51,
+    "kilometers": 49771,
+    "comment": "Buena moto, cumplió mis expectativas. Ideal para rutas largas y autopista. Perfecta para el día a día.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "honda-xl750-transalp-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 4,
+    "ownership_months": 87,
+    "kilometers": 44531,
+    "comment": "Ideal para rutas largas y autopista. Buena moto, cumplió mis expectativas.",
+    "pros": [
+      "Coste de uso razonable"
+    ],
+    "cons": [
+      "Suspensiones justas para offroad duro"
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "KilometroCero",
+    "rating": 4,
+    "ownership_months": 99,
+    "kilometers": 85284,
+    "comment": "Aunque pesada, muy estable a velocidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "DobleEmbrague867",
+    "rating": 5,
+    "ownership_months": 90,
+    "kilometers": 64745,
+    "comment": "Aunque pesada, muy estable a velocidad. Se defiende en pistas técnicas, suspensión OK con ajustes. Llevo 90 meses y 64745 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "VientoYRuta268",
+    "rating": 2,
+    "ownership_months": 78,
+    "kilometers": 50188,
+    "comment": "Precio acorde a lo que ofrece. Llevo 78 meses y 50188 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "CurvasYPuños177",
+    "rating": 1,
+    "ownership_months": 18,
+    "kilometers": 12241,
+    "comment": "Precio acorde a lo que ofrece. Perfecta para el día a día.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "CurvasYPuños829",
+    "rating": 5,
+    "ownership_months": 61,
+    "kilometers": 67680,
+    "comment": "Buena moto, cumplió mis expectativas. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "TrailHunter801",
+    "rating": 5,
+    "ownership_months": 30,
+    "kilometers": 31851,
+    "comment": "Precio acorde a lo que ofrece.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-nt1100-2024",
+    "user_name": "KilometroCero338",
+    "rating": 4,
+    "ownership_months": 110,
+    "kilometers": 62836,
+    "comment": "Precio acorde a lo que ofrece. Llevo 110 meses y 62836 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "pending",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "PataCorta",
+    "rating": 2,
+    "ownership_months": 118,
+    "kilometers": 72265,
+    "comment": "Perfecta para el día a día. Precio acorde a lo que ofrece. Llevo 118 meses y 72265 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "TrailHunter",
+    "rating": 3,
+    "ownership_months": 44,
+    "kilometers": 46891,
+    "comment": "Precio acorde a lo que ofrece. Buena moto, cumplió mis expectativas.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-tracer-9-gt-2024",
+    "user_name": "RutaLibre",
+    "rating": 4,
+    "ownership_months": 4,
+    "kilometers": 2667,
+    "comment": "Aunque pesada, muy estable a velocidad. Precio acorde a lo que ofrece. Llevo 4 meses y 2667 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 5,
+    "ownership_months": 103,
+    "kilometers": 139067,
+    "comment": "Precio acorde a lo que ofrece. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 109,
+    "kilometers": 33260,
+    "comment": "Se defiende en pistas técnicas, suspensión OK con ajustes. Ligera y maniobrable en zonas rotas. Llevo 109 meses y 33260 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "PataCorta",
+    "rating": 4,
+    "ownership_months": 19,
+    "kilometers": 17641,
+    "comment": "Perfecta para el día a día. Llevo 19 meses y 17641 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "KilometroCero",
+    "rating": 5,
+    "ownership_months": 112,
+    "kilometers": 120745,
+    "comment": "Perfecta para el día a día. Llevo 112 meses y 120745 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "kawasaki-z900-2024",
+    "user_name": "KilometroCero",
+    "rating": 5,
+    "ownership_months": 61,
+    "kilometers": 54603,
+    "comment": "Aunque pesada, muy estable a velocidad. Precio acorde a lo que ofrece. Llevo 61 meses y 54603 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-africa-twin-1100-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 4,
+    "ownership_months": 27,
+    "kilometers": 14162,
+    "comment": "Ideal para rutas largas y autopista.",
+    "pros": [
+      "Motor con mucho par abajo"
+    ],
+    "cons": [
+      "Peso alto fuera de asfalto"
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 93,
+    "kilometers": 72438,
+    "comment": "Ideal para rutas largas y autopista. Se defiende en pistas técnicas, suspensión OK con ajustes.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 2,
+    "ownership_months": 74,
+    "kilometers": 56020,
+    "comment": "Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "BoxerRider",
+    "rating": 5,
+    "ownership_months": 7,
+    "kilometers": 8502,
+    "comment": "Ideal para rutas largas y autopista. Llevo 7 meses y 8502 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "bmw-r-1300-gs-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 1,
+    "ownership_months": 87,
+    "kilometers": 69267,
+    "comment": "Se defiende en pistas técnicas, suspensión OK con ajustes. Neumáticos de serie limitan, cambié por algo más agresivo. Llevo 87 meses y 69267 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "PataCorta",
+    "rating": 3,
+    "ownership_months": 2,
+    "kilometers": 2091,
+    "comment": "Aunque pesada, muy estable a velocidad. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "aprilia-tuareg-660-2024",
+    "user_name": "PataCorta",
+    "rating": 5,
+    "ownership_months": 103,
+    "kilometers": 48035,
+    "comment": "Ligera y maniobrable en zonas rotas. Buena moto, cumplió mis expectativas. Aunque pesada, muy estable a velocidad. Llevo 103 meses y 48035 km. No la vendería, me ha salido fiable.",
+    "pros": [
+      "Suspensiones muy capaces"
+    ],
+    "cons": [
+      "Asiento firme en tiradas largas"
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "PataCorta",
+    "rating": 2,
+    "ownership_months": 104,
+    "kilometers": 127365,
+    "comment": "Precio acorde a lo que ofrece. Llevo 104 meses y 127365 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 3,
+    "ownership_months": 58,
+    "kilometers": 40312,
+    "comment": "Ideal para rutas largas y autopista. Ideal para rutas largas y autopista. Llevo 58 meses y 40312 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "MotoMecanica358",
+    "rating": 5,
+    "ownership_months": 21,
+    "kilometers": 17380,
+    "comment": "Ideal para rutas largas y autopista. Llevo 21 meses y 17380 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 4,
+    "ownership_months": 52,
+    "kilometers": 22506,
+    "comment": "Precio acorde a lo que ofrece. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "BoxerRider",
+    "rating": 3,
+    "ownership_months": 89,
+    "kilometers": 28808,
+    "comment": "Ligera y maniobrable en zonas rotas. Llevo 89 meses y 28808 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "bmw-r-1300-gs-2024",
+    "user_name": "PataCorta",
+    "rating": 4,
+    "ownership_months": 28,
+    "kilometers": 15982,
+    "comment": "Buena moto, cumplió mis expectativas. Llevo 28 meses y 15982 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 5,
+    "ownership_months": 21,
+    "kilometers": 8886,
+    "comment": "Neumáticos de serie limitan, cambié por algo más agresivo. Llevo 21 meses y 8886 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "RutaLibre601",
+    "rating": 5,
+    "ownership_months": 16,
+    "kilometers": 17169,
+    "comment": "Precio acorde a lo que ofrece. Perfecta para el día a día. Llevo 16 meses y 17169 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "honda-africa-twin-1100-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 5,
+    "ownership_months": 44,
+    "kilometers": 24181,
+    "comment": "Ideal para rutas largas y autopista. Llevo 44 meses y 24181 km.",
+    "pros": [
+      "Confort viajero"
+    ],
+    "cons": [
+      "Volumen notable en ciudad"
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "MotoMecanica",
+    "rating": 4,
+    "ownership_months": 39,
+    "kilometers": 24648,
+    "comment": "Precio acorde a lo que ofrece.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 7,
+    "kilometers": 5957,
+    "comment": "Precio acorde a lo que ofrece. Llevo 7 meses y 5957 km. Recomendable si buscas versatilidad. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-xl750-transalp-2024",
+    "user_name": "RutaLibre",
+    "rating": 5,
+    "ownership_months": 44,
+    "kilometers": 44357,
+    "comment": "Buena moto, cumplió mis expectativas. Recomendable si buscas versatilidad.",
+    "pros": [
+      "Altura accesible para una trail"
+    ],
+    "cons": [
+      "Sin control de crucero"
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "DobleEmbrague",
+    "rating": 3,
+    "ownership_months": 56,
+    "kilometers": 42341,
+    "comment": "Precio acorde a lo que ofrece. Ideal para rutas largas y autopista. Llevo 56 meses y 42341 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "VientoYRuta",
+    "rating": 4,
+    "ownership_months": 50,
+    "kilometers": 22717,
+    "comment": "Aunque pesada, muy estable a velocidad. Llevo 50 meses y 22717 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "PataCorta",
+    "rating": 5,
+    "ownership_months": 26,
+    "kilometers": 20285,
+    "comment": "Buena moto, cumplió mis expectativas. Perfecta para el día a día. Llevo 26 meses y 20285 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "TrailHunter",
+    "rating": 5,
+    "ownership_months": 25,
+    "kilometers": 12054,
+    "comment": "Aunque pesada, muy estable a velocidad. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "PataCorta",
+    "rating": 5,
+    "ownership_months": 72,
+    "kilometers": 63274,
+    "comment": "Ideal para rutas largas y autopista. Aunque pesada, muy estable a velocidad. Llevo 72 meses y 63274 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "honda-nt1100-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 102,
+    "kilometers": 35206,
+    "comment": "Perfecta para el día a día. Llevo 102 meses y 35206 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-tenere-700-2024",
+    "user_name": "BoxerRider324",
+    "rating": 4,
+    "ownership_months": 35,
+    "kilometers": 15224,
+    "comment": "Buena moto, cumplió mis expectativas. Buena moto, cumplió mis expectativas. Perfecta para el día a día. Llevo 35 meses y 15224 km. No la vendería, me ha salido fiable.",
+    "pros": [
+      "Motor CP2 probado"
+    ],
+    "cons": [
+      "Altura elevada"
+    ],
+    "riding_style": "diario",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "kawasaki-z900-2024",
+    "user_name": "KilometroCero",
+    "rating": 5,
+    "ownership_months": 19,
+    "kilometers": 26291,
+    "comment": "Ideal para rutas largas y autopista. Aunque pesada, muy estable a velocidad. Llevo 19 meses y 26291 km. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "kawasaki-z900-2024",
+    "user_name": "PataCorta738",
+    "rating": 3,
+    "ownership_months": 106,
+    "kilometers": 124517,
+    "comment": "Perfecta para el día a día. Llevo 106 meses y 124517 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "pending",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "AceleradorFeliz157",
+    "rating": 4,
+    "ownership_months": 107,
+    "kilometers": 35267,
+    "comment": "Buena moto, cumplió mis expectativas. Precio acorde a lo que ofrece. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "yamaha-tracer-9-gt-2024",
+    "user_name": "DobleEmbrague265",
+    "rating": 5,
+    "ownership_months": 63,
+    "kilometers": 28195,
+    "comment": "Ideal para rutas largas y autopista. Llevo 63 meses y 28195 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "yamaha-tenere-700-2024",
+    "user_name": "AceleradorFeliz795",
+    "rating": 4,
+    "ownership_months": 91,
+    "kilometers": 61703,
+    "comment": "Perfecta para el día a día. Llevo 91 meses y 61703 km.",
+    "pros": [
+      "Gran mercado de accesorios"
+    ],
+    "cons": [
+      "Electrónica básica"
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 44,
+    "kilometers": 36694,
+    "comment": "Ideal para rutas largas y autopista. Llevo 44 meses y 36694 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "KilometroCero",
+    "rating": 4,
+    "ownership_months": 100,
+    "kilometers": 37508,
+    "comment": "Ligera y maniobrable en zonas rotas. Llevo 100 meses y 37508 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "RutaLibre",
+    "rating": 3,
+    "ownership_months": 45,
+    "kilometers": 53475,
+    "comment": "Ideal para rutas largas y autopista. Llevo 45 meses y 53475 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "BoxerRider774",
+    "rating": 4,
+    "ownership_months": 23,
+    "kilometers": 23553,
+    "comment": "Perfecta para el día a día. Llevo 23 meses y 23553 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "honda-africa-twin-1100-2024",
+    "user_name": "AceleradorFeliz",
+    "rating": 5,
+    "ownership_months": 52,
+    "kilometers": 46064,
+    "comment": "Aunque pesada, muy estable a velocidad. Precio acorde a lo que ofrece. Aunque pesada, muy estable a velocidad.",
+    "pros": [
+      "Motor con mucho par abajo"
+    ],
+    "cons": [
+      "Precio elevado equipada"
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ducati-desertx-2024",
+    "user_name": "RutaLibre",
+    "rating": 5,
+    "ownership_months": 66,
+    "kilometers": 46717,
+    "comment": "Ideal para rutas largas y autopista. Llevo 66 meses y 46717 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "cfmoto-800mt-x-2025",
+    "user_name": "TrailHunter",
+    "rating": 4,
+    "ownership_months": 65,
+    "kilometers": 67860,
+    "comment": "Buena moto, cumplió mis expectativas. Perfecta para el día a día.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "yamaha-mt-07-2024",
+    "user_name": "RutaLibre724",
+    "rating": 4,
+    "ownership_months": 41,
+    "kilometers": 31429,
+    "comment": "Buena moto, cumplió mis expectativas. Perfecta para el día a día. Aunque pesada, muy estable a velocidad. Llevo 41 meses y 31429 km. Recomendable si buscas versatilidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "VientoYRuta",
+    "rating": 4,
+    "ownership_months": 100,
+    "kilometers": 72213,
+    "comment": "Perfecta para el día a día. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-africa-twin-1100-2024",
+    "user_name": "KilometroCero",
+    "rating": 5,
+    "ownership_months": 106,
+    "kilometers": 117590,
+    "comment": "Precio acorde a lo que ofrece. Precio acorde a lo que ofrece. Buena moto, cumplió mis expectativas. Llevo 106 meses y 117590 km.",
+    "pros": [
+      "Confort viajero"
+    ],
+    "cons": [
+      "Volumen notable en ciudad"
+    ],
+    "riding_style": "ciudad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "honda-nt1100-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 84,
+    "kilometers": 38657,
+    "comment": "Perfecta para el día a día. Llevo 84 meses y 38657 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "CurvasYPuños",
+    "rating": 5,
+    "ownership_months": 20,
+    "kilometers": 14408,
+    "comment": "Buena moto, cumplió mis expectativas. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ducati-multistrada-v2-2024",
+    "user_name": "MotoMecanica",
+    "rating": 5,
+    "ownership_months": 120,
+    "kilometers": 59981,
+    "comment": "Se defiende en pistas técnicas, suspensión OK con ajustes. Buena moto, cumplió mis expectativas. Ligera y maniobrable en zonas rotas. Llevo 120 meses y 59981 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "offroad",
+    "status": "approved",
+    "verified": true
+  },
+  {
+    "motorcycle_id": "yamaha-tracer-9-gt-2024",
+    "user_name": "PataCorta",
+    "rating": 4,
+    "ownership_months": 90,
+    "kilometers": 59834,
+    "comment": "Aunque pesada, muy estable a velocidad. Llevo 90 meses y 59834 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "pending",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "bmw-r-1300-gs-2024",
+    "user_name": "RutaLibre708",
+    "rating": 2,
+    "ownership_months": 12,
+    "kilometers": 12035,
+    "comment": "Aunque pesada, muy estable a velocidad.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "rejected",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "MotoMecanica",
+    "rating": 5,
+    "ownership_months": 7,
+    "kilometers": 8687,
+    "comment": "Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "KilometroCero357",
+    "rating": 4,
+    "ownership_months": 103,
+    "kilometers": 105875,
+    "comment": "Perfecta para el día a día. Ideal para rutas largas y autopista.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "pasajero",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "TrailHunter814",
+    "rating": 2,
+    "ownership_months": 42,
+    "kilometers": 53738,
+    "comment": "Perfecta para el día a día. Llevo 42 meses y 53738 km. Recomendable si buscas versatilidad. No la vendería, me ha salido fiable.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "triumph-street-triple-765-r-2024",
+    "user_name": "PataCorta",
+    "rating": 4,
+    "ownership_months": 5,
+    "kilometers": 3714,
+    "comment": "Precio acorde a lo que ofrece. Aunque pesada, muy estable a velocidad. Llevo 5 meses y 3714 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "diario",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "ktm-890-adventure-r-2024",
+    "user_name": "KilometroCero587",
+    "rating": 5,
+    "ownership_months": 41,
+    "kilometers": 40339,
+    "comment": "Precio acorde a lo que ofrece. Buena moto, cumplió mis expectativas. Llevo 41 meses y 40339 km.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "viaje",
+    "status": "approved",
+    "verified": false
+  },
+  {
+    "motorcycle_id": "honda-cb750-hornet-2024",
+    "user_name": "VientoYRuta",
+    "rating": 5,
+    "ownership_months": 84,
+    "kilometers": 99431,
+    "comment": "Perfecta para el día a día.",
+    "pros": [
+      null
+    ],
+    "cons": [
+      null
+    ],
+    "riding_style": "deportivo",
+    "status": "approved",
+    "verified": false
+  }
+]

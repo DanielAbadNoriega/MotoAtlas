@@ -59,7 +59,7 @@ function getSupabaseConfig() {
 }
 
 function normalizeTextArray(value: readonly string[] | undefined) {
-  return Array.isArray(value) ? value.filter((item) => item.trim().length > 0) : [];
+  return Array.isArray(value) ? value.filter((item) => String(item ?? '').trim().length > 0) : [];
 }
 
 function isValidRidingStyle(value: unknown): value is MotorcycleReviewRidingStyle {

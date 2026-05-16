@@ -24,7 +24,7 @@ export function formatReviewAggregate({ averageRating, reviewCount }: ReviewAggr
 }
 
 export function getReviewUserName(review: Pick<MotorcycleReview, 'userName'>) {
-  return review.userName.trim() || fallbackReviewUserName;
+  return (String(review.userName ?? '').trim() || fallbackReviewUserName);
 }
 
 export function isReviewVerified(review: Pick<MotorcycleReview, 'verified'>) {

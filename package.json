@@ -20,6 +20,9 @@
     "sync:images": "tsx scripts/syncMotorcycleImages.ts",
     "sync:images:check": "tsx scripts/syncMotorcycleImages.ts --dry-run",
     "seo:sitemap": "tsx scripts/generateSeoFiles.ts"
+    ,
+    "generate:mock-reviews": "tsx scripts/generateMockReviews.ts",
+    "import:mock-reviews": "tsx scripts/importMockReviews.ts --dry-run"
   },
   "dependencies": {
     "react": "^19.2.6",

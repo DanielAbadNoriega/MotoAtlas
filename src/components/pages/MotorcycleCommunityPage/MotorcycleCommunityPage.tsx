@@ -8,6 +8,7 @@ import {
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import { formatReviewAggregate, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
+import { getInitialsSafe, getTopCommunityItemsSafe, getMostCommonRidingStyleSafe, normalizeRidingStyleSafe } from '../../../shared/reviews/communityUtils';
 import type { Bike } from '../../../types/bike';
 import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
@@ -41,7 +42,7 @@ const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
 };
 
 function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
-  return reviews.filter((review) => review.status === 'approved');
+  return (reviews ?? []).filter((review) => review?.status === 'approved');
 }
 
 function getAverage(values: readonly (number | null)[]) {
@@ -62,25 +63,11 @@ function getStarDistribution(reviews: readonly MotorcycleReview[]) {
 }
 
 function getMostCommonRidingStyle(reviews: readonly MotorcycleReview[]) {
-  const entries = reviews.reduce<Record<MotorcycleReviewRidingStyle, number>>(
-    (accumulator, review) => ({
-      ...accumulator,
-      [review.ridingStyle]: (accumulator[review.ridingStyle] ?? 0) + 1,
-    }),
-    { ciudad: 0, deportivo: 0, diario: 0, offroad: 0, pasajero: 0, viaje: 0 },
-  );
-  const [style, count] = Object.entries(entries).sort((first, second) => second[1] - first[1])[0] as [MotorcycleReviewRidingStyle, number];
-
-  return count > 0 ? ridingStyleLabels[style] : 'Pendiente';
+  return getMostCommonRidingStyleSafe(reviews);
 }
 
 function getInitials(name: string) {
-  const cleanName = name.trim() || 'Usuario MotoAtlas';
-  return cleanName
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
+  return getInitialsSafe(name);
 }
 
 function formatDate(value: string) {
@@ -94,22 +81,7 @@ function formatDate(value: string) {
 }
 
 function getTopCommunityItems(reviews: readonly MotorcycleReview[], field: 'pros' | 'cons') {
-  const counts = new Map<string, number>();
-
-  reviews.forEach((review) => {
-    review[field].forEach((item) => {
-      const normalizedItem = item.trim();
-
-      if (normalizedItem) {
-        counts.set(normalizedItem, (counts.get(normalizedItem) ?? 0) + 1);
-      }
-    });
-  });
-
-  return [...counts.entries()]
-    .sort((first, second) => second[1] - first[1])
-    .slice(0, 4)
-    .map(([label, count]) => ({ count, label }));
+  return getTopCommunityItemsSafe(reviews, field);
 }
 
 function CommunityRootState() {
@@ -234,7 +206,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const starDistribution = getStarDistribution(reviews);
   const topPros = getTopCommunityItems(reviews, 'pros');
   const topCons = getTopCommunityItems(reviews, 'cons');
-  const commonIssues = bike.reliabilityReports.commonIssues;
+  const commonIssues = (bike.reliabilityReports?.commonIssues) ?? [];
 
   return (
     <main className="motorcycle-community" aria-labelledby="motorcycle-community-title">
@@ -336,7 +308,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                       ))}
                     </ul>
                   ) : (
-                    <p>{bike.pros.length > 0 ? bike.pros.join(' · ') : 'Datos comunitarios pendientes.'}</p>
+                    <p>{((bike.pros ?? []) as readonly string[]).length > 0 ? (bike.pros ?? []).join(' · ') : 'Datos comunitarios pendientes.'}</p>
                   )}
                 </article>
                 <article>
@@ -348,7 +320,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                       ))}
                     </ul>
                   ) : (
-                    <p>{bike.cons.length > 0 ? bike.cons.join(' · ') : 'Datos comunitarios pendientes.'}</p>
+                    <p>{((bike.cons ?? []) as readonly string[]).length > 0 ? (bike.cons ?? []).join(' · ') : 'Datos comunitarios pendientes.'}</p>
                   )}
                 </article>
               </div>
@@ -402,7 +374,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                           <div>
                             <h3>{userName}</h3>
                             <small>
-                              {ridingStyleLabels[review.ridingStyle]} · {formatDate(review.createdAt)}
+                              {ridingStyleLabels[(review.ridingStyle ?? 'diario') as keyof typeof ridingStyleLabels]} · {formatDate(review.createdAt ?? '')}
                             </small>
                             {isReviewVerified(review) ? (
                               <span className="motorcycle-community__verified-badge">
@@ -417,7 +389,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                           <strong>{review.rating}/5</strong>
                         </div>
                       </header>
-                      <p>{review.comment}</p>
+                      <p>{(review.comment ?? '').toString().trim() || '—'}</p>
                       <dl>
                         <div>
                           <dt>Propiedad</dt>
@@ -430,22 +402,22 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                       </dl>
                       {review.pros.length > 0 || review.cons.length > 0 ? (
                         <div className="motorcycle-community__review-pros-cons">
-                          {review.pros.length > 0 ? (
+                          {((review.pros ?? []) as readonly string[]).length > 0 ? (
                             <div>
                               <strong>Pros</strong>
                               <ul>
-                                {review.pros.map((pro) => (
-                                  <li key={pro}>{pro}</li>
+                                {((review.pros ?? []) as readonly any[]).map((pro, idx) => (
+                                  <li key={String(pro) || String(idx)}>{String(pro)}</li>
                                 ))}
                               </ul>
                             </div>
                           ) : null}
-                          {review.cons.length > 0 ? (
+                          {((review.cons ?? []) as readonly string[]).length > 0 ? (
                             <div>
                               <strong>Contras</strong>
                               <ul>
-                                {review.cons.map((con) => (
-                                  <li key={con}>{con}</li>
+                                {((review.cons ?? []) as readonly any[]).map((con, idx) => (
+                                  <li key={String(con) || String(idx)}>{String(con)}</li>
                                 ))}
                               </ul>
                             </div>
