@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^node -e \"const fs=require\\('fs'\\);const arr=JSON\\.parse\\(fs\\.readFileSync\\('data/mock/mockReviews\\.json','utf8'\\)\\); const counts=\\{\\}; arr\\.forEach\\(r=>counts\\[r\\.motorcycle_id\\]=\\(counts\\[r\\.motorcycle_id\\]\\|\\|0\\)\\+1\\); const entries=Object\\.entries\\(counts\\)\\.sort\\(\\(a,b\\)=>b\\[1\\]-a\\[1\\]\\); console\\.log\\('distinct_models:'\\+entries\\.length\\); console\\.log\\('top10:'\\+JSON\\.stringify\\(entries\\.slice\\(0,10\\)\\)\\); console\\.log\\('total_reviews:'\\+arr\\.length\\); console\\.log\\('min_count:'\\+entries\\[entries\\.length-1\\]\\[1\\]\\);\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
