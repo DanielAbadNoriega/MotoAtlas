@@ -1267,6 +1267,7 @@
   .search-result-card {
     &__media {
       aspect-ratio: 4 / 3;
+      max-height: 300px;
     }
 
     &__body {
@@ -1274,11 +1275,18 @@
     }
 
     &__specs {
+      margin-bottom: 15px;
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    &__description {
+      display: none;
+    }
+
     &__actions {
-      flex-direction: column;
+      .button {
+        font-size: 0.6rem;
+      }
     }
   }
 }

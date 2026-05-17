@@ -400,7 +400,7 @@ describe('CompareDrawer', () => {
   it('allows comparing two selected motorcycles', () => {
     render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 2)} onClear={vi.fn()} onRemove={vi.fn()} />);
 
-    const compareLink = screen.getByRole('link', { name: /Comparar ahora \(2\)/i });
+    const compareLink = screen.getByRole('link', { name: /Comparar \(2\)/i });
 
     expect(screen.getByLabelText('Comparador flotante')).toBeInTheDocument();
     expect(screen.getByText('2/3 motos seleccionadas')).toBeInTheDocument();
@@ -414,7 +414,7 @@ describe('CompareDrawer', () => {
     render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 3)} onClear={vi.fn()} onRemove={vi.fn()} />);
 
     expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Comparar ahora \(3\)/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Comparar \(3\)/i })).toHaveAttribute(
       'href',
       '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660-vs-yamaha-mt-09?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09',
     );
