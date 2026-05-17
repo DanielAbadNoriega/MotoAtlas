@@ -112,7 +112,7 @@ describe('App navigation with mocked motorcycleService', () => {
 
     await user.click(within(bmwCard as HTMLElement).getByRole('button', { name: /^Comparar$/i }));
     await user.click(within(apriliaCard as HTMLElement).getByRole('button', { name: /^Comparar$/i }));
-    await user.click(screen.getByRole('link', { name: /Comparar ahora \(2\)/i }));
+    await user.click(screen.getByRole('link', { name: /Comparar \(2\)/i }));
 
     expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { name: /BMW F 900 GS/i }).length).toBeGreaterThan(0);
@@ -182,7 +182,7 @@ describe('App navigation with mocked motorcycleService', () => {
 
     expect(await screen.findByRole('heading', { name: /Encuentra tu próxima moto/i })).toBeInTheDocument();
     expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Comparar ahora \(3\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Comparar \(3\)/i })).toBeInTheDocument();
   });
 
   it('shows a glass scroll-to-top action when scrolling down', async () => {

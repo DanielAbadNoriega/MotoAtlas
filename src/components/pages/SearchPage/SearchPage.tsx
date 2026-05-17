@@ -666,8 +666,8 @@ export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBi
       </div>
 
       {selectedBikes.length >= 2 ? (
-        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHashFromBikes(selectedBikes)} aria-label={`Comparar ahora (${selectedBikes.length})`}>
-          <span>Comparar ahora</span>
+        <a className="search-page__compare-status search-page__compare-status--ready" href={getComparatorHashFromBikes(selectedBikes)} aria-label={`Comparar (${selectedBikes.length})`}>
+          <span>Comparar</span>
           <strong>{selectedBikes.length}</strong>
         </a>
       ) : (

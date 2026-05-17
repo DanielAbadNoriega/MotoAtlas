@@ -395,7 +395,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
       <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
         <div>
           <h2 id="bike-detail-reliability-title">Lo que los catálogos no te cuentan</h2>
-          <p>Reportes mock de comunidad técnica para detectar patrones de uso y mantenimiento.</p>
+          <p>Reportes de comunidad técnica para detectar patrones de uso y mantenimiento.</p>
           <div className="bike-detail__reliability-index">
             <strong>{Math.round(bike.reliabilityReports.reliabilityScore * 10)}</strong>
             <span>
