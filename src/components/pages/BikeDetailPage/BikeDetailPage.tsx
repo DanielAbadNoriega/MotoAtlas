@@ -439,7 +439,6 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           <span>Opiniones verificadas</span>
           <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
           <strong>{formatReviewAggregate(reviewAggregate)}</strong>
-          <p>Las nuevas opiniones entran en moderación como pendientes. Sin login todavía.</p>
           <div className="bike-detail__review-actions">
             <a className="button button--ghost" href={`#/comunidad/${bike.id}`}>
               Ver reviews
