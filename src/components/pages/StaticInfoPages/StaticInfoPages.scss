@@ -17,7 +17,6 @@
   }
 }
 
-.static-info__hero,
 .static-info__section,
 .static-info__request-hero,
 .static-info__article-hero,
@@ -26,54 +25,69 @@
 }
 
 .static-info__hero {
-  align-items: center;
-  background-image: url(../../../assets/hero-metodology.png);
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-size: 100%;
-  background-position: 50%;
-  filter: grayscale(0.45) contrast(1.1);
-  display: flex;
-  min-height: clamp(28rem, 48vw, 34rem);
+  background: $color-surface;
+  display: grid;
+  min-height: min(760px, calc(100vh - 80px));
   overflow: hidden;
+  place-items: center start;
   position: relative;
-  
-  &::after {
-    background: linear-gradient(to top, #141313 0%, rgba(20, 19, 19, 0.45) 48%, transparent 100%);
-    content: '';
-    height: 32rem;
-    position: absolute;
-    right: -10rem;
-    top: 4rem;
+}
+
+.static-info__hero-background {
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+
+  img {
+    filter: grayscale(0.45) contrast(1.1);
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.01);
+    width: 100%;
   }
 
-  > div {
-    max-width: 760px;
-    padding: clamp(2rem, 6vw, 4rem);
-    position: relative;
-    z-index: 1;
+  span {
+    background:
+      linear-gradient(90deg, rgba($color-surface, 0.88) 0%, rgba($color-surface, 0.54) 45%, rgba($color-surface, 0.2) 100%),
+      linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.58) 42%, rgba($color-surface, 0.18) 100%);
+    inset: 0;
+    position: absolute;
   }
+}
+
+.static-info__hero-content {
+  @include container;
+
+  max-width: $max-width;
+  padding-block: clamp(7rem, 14vw, 12rem);
+  position: relative;
+  z-index: 1;
 
   span {
     @include label-caps;
 
     color: $color-accent;
     letter-spacing: 0.22em;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.88);
   }
 
   h1 {
     @include headline-xl;
 
+    color: #fff;
     margin-top: 1rem;
+    max-width: 760px;
+    text-shadow: 0 4px 28px rgba(0, 0, 0, 0.95);
     text-transform: uppercase;
   }
 
   p {
     @include body-lg;
 
-    color: $color-on-surface-variant;
-    margin: 1.25rem 0 2rem;
+    color: rgba(#fff, 0.86);
+    margin-top: 1.25rem;
     max-width: 660px;
+    text-shadow: 0 3px 18px rgba(0, 0, 0, 0.9);
   }
 }
 
@@ -512,7 +526,11 @@
   }
 
   .static-info__hero {
-    min-height: 24rem;
+    min-height: 36rem;
+  }
+
+  .static-info__hero-content {
+    padding-block: 8rem 5rem;
   }
 
   .static-info__cards,

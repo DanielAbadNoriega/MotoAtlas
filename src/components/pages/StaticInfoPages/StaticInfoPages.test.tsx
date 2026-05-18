@@ -18,6 +18,7 @@ describe('StaticInfoPages', () => {
     render(<DataMethodologyPage />);
 
     expect(screen.getByRole('heading', { name: /Datos técnicos con contexto/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Explorar motos/i })).not.toBeInTheDocument();
     expect(screen.getAllByText('api').length).toBeGreaterThan(0);
     expect(screen.getAllByText('manual').length).toBeGreaterThan(0);
     expect(screen.getAllByText('estimated').length).toBeGreaterThan(0);
@@ -29,6 +30,7 @@ describe('StaticInfoPages', () => {
     render(<DataSourcesPage />);
 
     expect(screen.getByRole('heading', { name: /Transparencia antes que falsa precisión/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Explorar motos/i })).not.toBeInTheDocument();
     expect(screen.getByText(/verifica siempre la información con el fabricante o concesionario/i)).toBeInTheDocument();
   });
 

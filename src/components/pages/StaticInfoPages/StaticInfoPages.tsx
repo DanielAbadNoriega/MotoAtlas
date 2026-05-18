@@ -1,4 +1,5 @@
 import { FormEvent, MouseEvent, useMemo, useState } from 'react';
+import methodologyHeroImage from '../../../assets/hero-metodology.png';
 import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import type { BikeSegment } from '../../../types/bike';
 import './StaticInfoPages.scss';
@@ -332,11 +333,14 @@ function TechnicalLandingPage({
   return (
     <main className="static-info static-info--technical" aria-labelledby="static-info-title">
       <section className="static-info__hero">
-        <div>
+        <div className="static-info__hero-background" aria-hidden="true">
+          <img src={methodologyHeroImage} alt="" />
+          <span />
+        </div>
+        <div className="static-info__hero-content">
           <span>{eyebrow}</span>
           <h1 id="static-info-title">{title}</h1>
           <p>{description}</p>
-          <a className="button button--primary" href="#/buscador">Explorar motos</a>
         </div>
       </section>
 
