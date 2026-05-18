@@ -57,8 +57,10 @@ describe('TopRatedMotorcyclesPage', () => {
   it('renderiza la landing sin header/footer ficticios de Stitch', async () => {
     await renderPage();
 
-    expect(screen.getByRole('heading', { name: /Motos mejor valoradas/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Fuel your passion/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Podium rankings/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Explorar comunidades/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Comparar motos/i })).toHaveAttribute('href', '#/comparador');
     expect(screen.queryByText(/TopAppBar/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Sign In/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/STATUS: ACQUIRING TELEMETRY/i)).not.toBeInTheDocument();
@@ -71,7 +73,24 @@ describe('TopRatedMotorcyclesPage', () => {
 
     expect(within(firstRank).getByLabelText(/Rating medio 5 de 5/i)).toBeInTheDocument();
     expect(within(firstRank).getByLabelText(/1 reviews aprobadas/i)).toBeInTheDocument();
-    expect(within(firstRank).getByText('Mejor valorada')).toBeInTheDocument();
+    expect(within(firstRank).queryByText('star')).not.toBeInTheDocument();
+    expect(within(firstRank).getByRole('link', { name: /Ver reviews de Aprilia Tuareg 660/i })).toBeInTheDocument();
+  });
+
+  it('el botón Explorar comunidades hace scroll al podium sin romper la ruta hash', async () => {
+    const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    window.location.hash = '#/comunidad';
+    const user = userEvent.setup();
+
+    await renderPage();
+    await user.click(screen.getByRole('button', { name: /Explorar comunidades/i }));
+
+    expect(window.location.hash).toBe('#/comunidad');
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
   });
 
   it('solo cuenta reviews approved y no pending/rejected/hidden', async () => {
@@ -89,8 +108,12 @@ describe('TopRatedMotorcyclesPage', () => {
 
     await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
 
-    expect(await screen.findByRole('article', { name: /Yamaha MT-09/i })).toBeInTheDocument();
-    expect(screen.queryByRole('article', { name: /Aprilia Tuareg 660/i })).not.toBeInTheDocument();
+    const podium = screen.getByLabelText('Top 3 motos mejor valoradas');
+
+    expect(await within(podium).findByRole('article', { name: /Yamaha MT-09/i })).toBeInTheDocument();
+    expect(within(podium).queryByRole('article', { name: /Aprilia Tuareg 660/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Top Rated/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Aprilia Tuareg 660/i).length).toBeGreaterThan(0);
   });
 
   it('filtra por carnet A2 compatible', async () => {
@@ -99,64 +122,64 @@ describe('TopRatedMotorcyclesPage', () => {
 
     await user.selectOptions(screen.getByLabelText('Carnet'), 'A2');
 
-    expect(await screen.findByRole('article', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
-    expect(screen.queryByRole('article', { name: /Yamaha MT-09/i })).not.toBeInTheDocument();
+    const podium = screen.getByLabelText('Top 3 motos mejor valoradas');
+
+    expect(await within(podium).findByRole('article', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(within(podium).queryByRole('article', { name: /Yamaha MT-09/i })).not.toBeInTheDocument();
   });
 
-  it('limpiar filtros restaura resultados', async () => {
+  it('permite volver a todos los segmentos desde el select sin chips extra', async () => {
     const user = userEvent.setup();
     await renderPage();
 
     await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
-    expect(await screen.findByRole('article', { name: /Yamaha MT-09/i })).toBeInTheDocument();
+    let podium = screen.getByLabelText('Top 3 motos mejor valoradas');
+    expect(await within(podium).findByRole('article', { name: /Yamaha MT-09/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Filtros activos/i)).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Limpiar filtros/i }));
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'all');
 
-    expect(await screen.findByRole('article', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
-    expect(screen.getByRole('article', { name: /BMW F 900 GS/i })).toBeInTheDocument();
+    podium = screen.getByLabelText('Top 3 motos mejor valoradas');
+    expect(await within(podium).findByRole('article', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(within(podium).getByRole('article', { name: /BMW F 900 GS/i })).toBeInTheDocument();
   });
 
-  it('renderiza empty state si no hay resultados', async () => {
+  it('renderiza empty state solo en el podium si sus filtros no tienen resultados', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.selectOptions(screen.getByLabelText('Reviews mínimas'), '5');
+
+    expect(await screen.findByRole('heading', { name: /Aún no hay suficientes datos de comunidad/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Ir al buscador/i })).toHaveAttribute('href', '#/buscador');
+    expect(screen.getByRole('link', { name: /^Explorar comunidad$/i })).toHaveAttribute('href', '#/comunidad');
+    expect(screen.getByRole('heading', { name: /Top Rated/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Recent Reviews/i })).toBeInTheDocument();
+  });
+
+  it('renderiza empty state global si no hay reviews aprobadas', async () => {
     mockReviews({});
     await renderPage();
 
     expect(await screen.findByRole('heading', { name: /Aún no hay suficientes datos de comunidad/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Ir al buscador/i })).toHaveAttribute('href', '#/buscador');
-    expect(screen.getByRole('link', { name: /Explorar comunidad/i })).toHaveAttribute('href', '#/comunidad');
   });
 
-  it('incluye enlaces a ficha, comunidad y CTA de comparar', async () => {
-    const user = userEvent.setup();
+  it('las cards del podium enlazan a las reviews de la moto', async () => {
     await renderPage();
 
     const firstRank = await screen.findByRole('article', { name: /Puesto 1: Aprilia Tuareg 660/i });
 
-    expect(within(firstRank).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/test-aprilia-tuareg-660');
-    expect(within(firstRank).getByRole('link', { name: /Ver comunidad/i })).toHaveAttribute('href', '#/comunidad/test-aprilia-tuareg-660');
-
-    await user.click(within(firstRank).getByRole('button', { name: /Comparar Aprilia Tuareg 660/i }));
-
-    expect(window.location.hash).toBe('#/comparador?bikes=test-aprilia-tuareg-660');
-    expect(window.localStorage.getItem('motoatlas.compareQueue.v1')).toContain('test-aprilia-tuareg-660');
+    expect(within(firstRank).getByRole('link', { name: /Ver reviews de Aprilia Tuareg 660/i })).toHaveAttribute('href', '#/comunidad/test-aprilia-tuareg-660');
+    expect(within(firstRank).queryByRole('link', { name: /Ver ficha/i })).not.toBeInTheDocument();
+    expect(within(firstRank).queryByRole('button', { name: /Comparar/i })).not.toBeInTheDocument();
   });
 
-  it('el CTA comparar respeta el máximo de 3 motos en cola', async () => {
-    const user = userEvent.setup();
-    window.localStorage.setItem(
-      'motoatlas.compareQueue.v1',
-      JSON.stringify([bikeFixtures[0].id, bikeFixtures[1].id, bikeFixtures[2].id]),
-    );
-
+  it('renderiza las secciones de comunidad posteriores al podium', async () => {
     await renderPage();
-    const hondaRank = await screen.findByRole('article', { name: /Honda NT1100/i });
-    await user.click(within(hondaRank).getByRole('button', { name: /Comparar Honda NT1100/i }));
 
-    expect(JSON.parse(window.localStorage.getItem('motoatlas.compareQueue.v1') ?? '[]')).toEqual([
-      bikeFixtures[0].id,
-      bikeFixtures[1].id,
-      bikeFixtures[2].id,
-    ]);
-    expect(window.location.hash).toBe('#/comparador?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09');
-    expect(screen.getByRole('status')).toHaveTextContent(/ya tiene 3 motos/i);
+    expect(screen.getByRole('heading', { name: /Top Rated/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Recent Reviews/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Trending Near You/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Active Communities/i })).toBeInTheDocument();
   });
 });

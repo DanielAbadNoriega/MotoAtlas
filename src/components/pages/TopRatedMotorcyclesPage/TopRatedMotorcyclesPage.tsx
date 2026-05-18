@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import rankingHeroImage from '../../../assets/comparison-hero.png';
-import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { getBikeDisplayName } from '../../../data/bikes';
 import {
   getApprovedReviewsByMotorcycleId,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
-import { BIKE_SEGMENTS, getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { formatReviewRating } from '../../../shared/reviews/reviewUtils';
 import {
   buildTopRatedMotorcycles,
@@ -17,12 +17,6 @@ import {
   type TopRatedSort,
 } from '../../../shared/reviews/topRatedMotorcycles';
 import type { Bike, BikeSegment } from '../../../types/bike';
-import {
-  getComparatorHashFromIds,
-  loadCompareQueue,
-  mergeCompareQueue,
-  saveCompareQueue,
-} from '../../../utils/compareQueue';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './TopRatedMotorcyclesPage.scss';
 
@@ -30,10 +24,9 @@ type TopRatedMotorcyclesPageProps = Readonly<{
   motorcycles: readonly Bike[];
 }>;
 
-type ActiveFilterChip = Readonly<{
-  id: string;
-  label: string;
-  onRemove: () => void;
+type RecentReviewItem = Readonly<{
+  bike: Bike;
+  review: MotorcycleReview;
 }>;
 
 const numberFormatter = new Intl.NumberFormat('es-ES');
@@ -65,13 +58,6 @@ function getCommunityHref(bike: Pick<Bike, 'id'>) {
   return `#/comunidad/${bike.id}`;
 }
 
-function getFilterLabel(filters: TopRatedFilters) {
-  const segment = filters.segment === 'all' ? 'todos los segmentos' : segmentLabels[filters.segment];
-  const license = licenseOptions.find((option) => option.value === filters.license)?.label ?? 'todos los carnets';
-
-  return `${segment} · ${license}`;
-}
-
 function RankingStats({ item }: { item: TopRatedMotorcycle }) {
   return (
     <div className="top-rated__stats" aria-label={`Datos clave de ${getBikeDisplayName(item.bike)}`}>
@@ -94,27 +80,25 @@ function RankingStats({ item }: { item: TopRatedMotorcycle }) {
 function RatingPill({ item }: { item: TopRatedMotorcycle }) {
   return (
     <div className="top-rated__rating" aria-label={`Rating medio ${formatReviewRating(item.averageRating)} de 5`}>
-      <span className="material-symbols-outlined" aria-hidden="true">star</span>
+      <span className="top-rated__rating-star" aria-hidden="true">★</span>
       <strong>{formatReviewRating(item.averageRating)}</strong>
     </div>
   );
 }
 
-function RankingActions({ item, onCompare }: { item: TopRatedMotorcycle; onCompare: (bike: Bike) => void }) {
+function PodiumReviewsLink({ item }: { item: TopRatedMotorcycle }) {
   const bikeName = getBikeDisplayName(item.bike);
 
   return (
     <div className="top-rated__card-actions">
-      <a href={getBikeDetailHash(item.bike)}>Ver ficha</a>
-      <a href={getCommunityHref(item.bike)}>Ver comunidad</a>
-      <button type="button" onClick={() => onCompare(item.bike)} aria-label={`Comparar ${bikeName}`}>
-        Comparar
-      </button>
+      <a href={getCommunityHref(item.bike)} aria-label={`Ver reviews de ${bikeName}`}>
+        Ver reviews <span className="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+      </a>
     </div>
   );
 }
 
-function PodiumCard({ item, onCompare, variant = 'featured' }: { item: TopRatedMotorcycle; onCompare: (bike: Bike) => void; variant?: 'featured' | 'compact' }) {
+function PodiumCard({ item, variant = 'featured' }: { item: TopRatedMotorcycle; variant?: 'featured' | 'compact' }) {
   const bikeName = getBikeDisplayName(item.bike);
 
   return (
@@ -123,7 +107,11 @@ function PodiumCard({ item, onCompare, variant = 'featured' }: { item: TopRatedM
       <div className="top-rated__podium-overlay" aria-hidden="true" />
       <div className="top-rated__rank-badge">
         <strong>{item.rank}</strong>
-        <span>Global rank</span>
+        <i aria-hidden="true" />
+        <div>
+          <span>Global rank</span>
+          <RatingPill item={item} />
+        </div>
       </div>
       <div className="top-rated__podium-content">
         <div>
@@ -133,42 +121,9 @@ function PodiumCard({ item, onCompare, variant = 'featured' }: { item: TopRatedM
             {item.bike.year} · {segmentLabels[item.bike.segment]} · {numberFormatter.format(item.bike.displacementCc)} cc
           </span>
         </div>
-        <RatingPill item={item} />
         {variant === 'featured' ? <RankingStats item={item} /> : null}
-        <div className="top-rated__badges" aria-label={`Badges de ${bikeName}`}>
-          {item.badges.slice(0, variant === 'featured' ? 4 : 2).map((badge) => (
-            <span key={badge}>{badge}</span>
-          ))}
-        </div>
-        <RankingActions item={item} onCompare={onCompare} />
+        <PodiumReviewsLink item={item} />
       </div>
-    </article>
-  );
-}
-
-function RegistryRow({ item, onCompare }: { item: TopRatedMotorcycle; onCompare: (bike: Bike) => void }) {
-  const bikeName = getBikeDisplayName(item.bike);
-
-  return (
-    <article className="top-rated__registry-row" aria-label={`Puesto ${item.rank}: ${bikeName}`}>
-      <div className="top-rated__registry-rank">{String(item.rank).padStart(2, '0')}</div>
-      <MotorcycleImage motorcycle={item.bike} alt={`Imagen de ${bikeName}`} loading="lazy" />
-      <div className="top-rated__registry-main">
-        <h3>{bikeName}</h3>
-        <p>
-          {item.bike.year} · {segmentLabels[item.bike.segment]} · {getBikeA2Badge(item.bike).label}
-        </p>
-      </div>
-      <div className="top-rated__registry-score">
-        <RatingPill item={item} />
-        <span>{numberFormatter.format(item.reviewCount)} reviews</span>
-      </div>
-      <div className="top-rated__badges top-rated__badges--row">
-        {item.badges.slice(0, 3).map((badge) => (
-          <span key={badge}>{badge}</span>
-        ))}
-      </div>
-      <RankingActions item={item} onCompare={onCompare} />
     </article>
   );
 }
@@ -203,12 +158,115 @@ function TopRatedEmptyState({ hasActiveFilters, onReset }: { hasActiveFilters: b
   );
 }
 
+function CommunityFeatureSections({
+  isLoading,
+  ranking,
+  recentReviews,
+}: {
+  isLoading: boolean;
+  ranking: readonly TopRatedMotorcycle[];
+  recentReviews: readonly RecentReviewItem[];
+}) {
+  return (
+    <>
+      <section className="top-rated__community-grid" aria-label="Actividad destacada de comunidad">
+        <div>
+          <div className="top-rated__community-heading">
+            <span className="material-symbols-outlined" aria-hidden="true">star</span>
+            <h2>Top Rated</h2>
+          </div>
+          <div className="top-rated__community-list">
+            {ranking.slice(0, 3).map((item) => (
+              <a href={getCommunityHref(item.bike)} key={item.bike.id}>
+                <strong>#{item.rank}</strong>
+                <span>
+                  <b>{getBikeDisplayName(item.bike)}</b>
+                  <small>{formatReviewRating(item.averageRating)}/5 rating · {numberFormatter.format(item.reviewCount)} reviews</small>
+                </span>
+                <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="top-rated__community-heading">
+            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+            <h2>Recent Reviews</h2>
+          </div>
+          <div className="top-rated__recent-list">
+            {recentReviews.length > 0 ? recentReviews.slice(0, 2).map(({ bike, review }) => (
+              <article key={review.id}>
+                <div>
+                  <span>User: {review.userName}</span>
+                  <small>{getBikeDisplayName(bike)}</small>
+                </div>
+                <p>“{review.comment}”</p>
+                <div>
+                  <span className="material-symbols-outlined" aria-hidden="true">star</span>
+                  <small>{formatReviewRating(review.rating)}/5</small>
+                </div>
+              </article>
+            )) : (
+              <article>
+                <div>
+                  <span>{isLoading ? 'Calibrando' : 'Sin reviews recientes'}</span>
+                  <small>Comunidad MotoAtlas</small>
+                </div>
+                <p>Las reviews aprobadas aparecerán aquí cuando la comunidad empiece a generar señales recientes.</p>
+              </article>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="top-rated__nearby" aria-labelledby="top-rated-nearby-title">
+        <div className="top-rated__community-heading">
+          <span className="material-symbols-outlined" aria-hidden="true">trending_up</span>
+          <h2 id="top-rated-nearby-title">Trending Near You</h2>
+        </div>
+        <div>
+          <span className="material-symbols-outlined" aria-hidden="true">location_off</span>
+          <h3>No hay tendencias locales activas</h3>
+          <p>Las comunidades locales llegarán cuando MotoAtlas active señales por zona. Mientras tanto, explora comunidades por modelo.</p>
+          <a href="#/comunidad">Explorar comunidades</a>
+        </div>
+      </section>
+
+      <section className="top-rated__active-communities" aria-labelledby="top-rated-active-title">
+        <div className="top-rated__active-header">
+          <div className="top-rated__community-heading">
+            <span className="material-symbols-outlined" aria-hidden="true">groups</span>
+            <h2 id="top-rated-active-title">Active Communities</h2>
+          </div>
+          <a href="#/buscador">Ver modelos</a>
+        </div>
+        <div>
+          {[
+            ['bolt', 'Técnica DIY', 'Mantenimiento, ajustes y soluciones reales de propietarios.'],
+            ['map', 'Rutas touring', 'Experiencias de viaje, confort, pasajero y carga.'],
+            ['timer', 'Track day ops', 'Uso deportivo, frenos, neumáticos y comportamiento en conducción rápida.'],
+          ].map(([icon, title, text]) => (
+            <article key={title}>
+              <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+              <div aria-hidden="true">
+                <i /><i /><i /><b>+{title === 'Rutas touring' ? '120' : title === 'Técnica DIY' ? '80' : '45'}</b>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
+
 export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPageProps) {
   const [reviewsByMotorcycleId, setReviewsByMotorcycleId] = useState<ReviewsByMotorcycleId>({});
   const [filters, setFilters] = useState<TopRatedFilters>(defaultTopRatedFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [hasReviewLoadError, setHasReviewLoadError] = useState(false);
-  const [compareMessage, setCompareMessage] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -244,69 +302,31 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
     };
   }, [motorcycles]);
 
-  const ranking = useMemo(
+  const podiumRanking = useMemo(
     () => buildTopRatedMotorcycles(motorcycles, reviewsByMotorcycleId, filters),
     [filters, motorcycles, reviewsByMotorcycleId],
   );
 
-  const podium = ranking.slice(0, 3);
-  const registry = ranking.slice(3);
+  const communityRanking = useMemo(
+    () => buildTopRatedMotorcycles(motorcycles, reviewsByMotorcycleId, defaultTopRatedFilters),
+    [motorcycles, reviewsByMotorcycleId],
+  );
+
+  const podium = podiumRanking.slice(0, 3);
   const hasActiveFilters =
     filters.segment !== defaultTopRatedFilters.segment ||
     filters.license !== defaultTopRatedFilters.license ||
     filters.minReviews !== defaultTopRatedFilters.minReviews ||
     filters.sort !== defaultTopRatedFilters.sort;
 
-  const activeFilterChips = useMemo<readonly ActiveFilterChip[]>(() => {
-    const chips: ActiveFilterChip[] = [];
-
-    if (filters.segment !== 'all') {
-      chips.push({
-        id: 'segment',
-        label: segmentLabels[filters.segment],
-        onRemove: () => setFilters((current) => ({ ...current, segment: 'all' })),
-      });
-    }
-
-    if (filters.license !== 'all') {
-      chips.push({
-        id: 'license',
-        label: licenseOptions.find((option) => option.value === filters.license)?.label ?? filters.license,
-        onRemove: () => setFilters((current) => ({ ...current, license: 'all' })),
-      });
-    }
-
-    if (filters.minReviews !== defaultTopRatedFilters.minReviews) {
-      chips.push({
-        id: 'min-reviews',
-        label: `${filters.minReviews}+ reviews`,
-        onRemove: () => setFilters((current) => ({ ...current, minReviews: defaultTopRatedFilters.minReviews })),
-      });
-    }
-
-    if (filters.sort !== defaultTopRatedFilters.sort) {
-      chips.push({
-        id: 'sort',
-        label: sortOptions.find((option) => option.value === filters.sort)?.label ?? 'Orden personalizado',
-        onRemove: () => setFilters((current) => ({ ...current, sort: defaultTopRatedFilters.sort })),
-      });
-    }
-
-    return chips;
-  }, [filters]);
+  const recentReviews = useMemo<readonly RecentReviewItem[]>(() => motorcycles
+    .flatMap((bike) => (reviewsByMotorcycleId[bike.id] ?? []).map((review) => ({ bike, review })))
+    .sort((a, b) => new Date(b.review.createdAt).getTime() - new Date(a.review.createdAt).getTime()),
+  [motorcycles, reviewsByMotorcycleId]);
 
   const resetFilters = () => setFilters(defaultTopRatedFilters);
-
-  const compareBike = (bike: Bike) => {
-    const currentQueue = loadCompareQueue();
-    const { queue, rejectedIds } = mergeCompareQueue(currentQueue, [bike.id]);
-    saveCompareQueue(queue);
-    window.location.hash = getComparatorHashFromIds(queue);
-    setCompareMessage(
-      rejectedIds.length > 0
-        ? 'La comparativa ya tiene 3 motos. Te llevamos a modificarla.'
-        : `${getBikeDisplayName(bike)} añadido a la comparativa.`,
-    );
+  const scrollToPodium = () => {
+    document.getElementById('community-podium')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -314,22 +334,26 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
       <section className="top-rated__hero">
         <img src={rankingHeroImage} alt="" aria-hidden="true" />
         <div>
-          <span>Top rated</span>
-          <h1 id="top-rated-title">Motos mejor valoradas</h1>
+          <span>Engineered for connection</span>
+          <h1 id="top-rated-title">Fuel your <span>passion.</span></h1>
           <p>
-            Descubre las motos con mejor feedback de propietarios, equilibrio técnico y confianza real de comunidad.
+            Únete a la comunidad MotoAtlas: reviews aprobadas, rankings por modelo y señales reales para elegir mejor.
           </p>
+          <div className="top-rated__hero-actions">
+            <button type="button" onClick={scrollToPodium}>Explorar comunidades</button>
+            <a href="#/comparador">Comparar motos</a>
+          </div>
         </div>
       </section>
 
-      <section className="top-rated__content" aria-label="Ranking de motos mejor valoradas">
+      <section className="top-rated__content" id="community-podium" aria-label="Ranking de motos mejor valoradas">
         <div className="top-rated__toolbar">
           <div>
             <h2>
               <span className="material-symbols-outlined" aria-hidden="true">military_tech</span>
               Podium rankings
             </h2>
-            <p>{isLoading ? 'Calibrando ranking...' : `${numberFormatter.format(ranking.length)} motos con reviews aprobadas`}</p>
+            <p>{isLoading ? 'Calibrando ranking...' : `${numberFormatter.format(podiumRanking.length)} motos con reviews aprobadas`}</p>
           </div>
 
           <form className="top-rated__filters" aria-label="Filtros del ranking" onSubmit={(event) => event.preventDefault()}>
@@ -388,18 +412,6 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
           </form>
         </div>
 
-        {activeFilterChips.length > 0 ? (
-          <div className="top-rated__active-filters" aria-label="Filtros activos">
-            {activeFilterChips.map((chip) => (
-              <button key={chip.id} type="button" onClick={chip.onRemove} aria-label={`Quitar filtro ${chip.label}`}>
-                {chip.label} ×
-              </button>
-            ))}
-            <button type="button" onClick={resetFilters}>Limpiar filtros</button>
-          </div>
-        ) : null}
-
-        {compareMessage ? <p className="top-rated__status" role="status">{compareMessage}</p> : null}
         {hasReviewLoadError && !isLoading ? (
           <p className="top-rated__notice" role="status">
             Algunas reviews no se han podido cargar. El ranking solo muestra datos aprobados disponibles.
@@ -408,41 +420,24 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
 
         {isLoading ? (
           <p className="top-rated__loading" role="status">Calibrando ranking con reviews aprobadas...</p>
-        ) : ranking.length === 0 ? (
+        ) : podiumRanking.length === 0 ? (
           <TopRatedEmptyState hasActiveFilters={hasActiveFilters} onReset={resetFilters} />
         ) : (
-          <>
-            <p className="top-rated__showing">Mostrando {getFilterLabel(filters)}</p>
-            <section className="top-rated__podium" aria-label="Top 3 motos mejor valoradas">
-              {podium[0] ? <PodiumCard item={podium[0]} onCompare={compareBike} /> : null}
-              {podium.length > 1 ? (
-                <div className="top-rated__podium-side">
-                  {podium.slice(1).map((item) => (
-                    <PodiumCard key={item.bike.id} item={item} onCompare={compareBike} variant="compact" />
-                  ))}
-                </div>
-              ) : null}
-            </section>
-
-            {registry.length > 0 ? (
-              <section className="top-rated__registry" aria-labelledby="top-rated-registry-title">
-                <h2 id="top-rated-registry-title">Global registry</h2>
-                <div className="top-rated__registry-header" aria-hidden="true">
-                  <span>Rank</span>
-                  <span>Modelo</span>
-                  <span>Score</span>
-                  <span>Señales</span>
-                  <span>Acciones</span>
-                </div>
-                <div role="list" aria-label="Ranking completo">
-                  {registry.map((item) => (
-                    <RegistryRow key={item.bike.id} item={item} onCompare={compareBike} />
-                  ))}
-                </div>
-              </section>
+          <section className="top-rated__podium" aria-label="Top 3 motos mejor valoradas">
+            {podium[0] ? <PodiumCard item={podium[0]} /> : null}
+            {podium.length > 1 ? (
+              <div className="top-rated__podium-side">
+                {podium.slice(1).map((item) => (
+                  <PodiumCard key={item.bike.id} item={item} variant="compact" />
+                ))}
+              </div>
             ) : null}
-          </>
+          </section>
         )}
+
+        {!isLoading ? (
+          <CommunityFeatureSections isLoading={isLoading} ranking={communityRanking} recentReviews={recentReviews} />
+        ) : null}
       </section>
     </main>
   );
