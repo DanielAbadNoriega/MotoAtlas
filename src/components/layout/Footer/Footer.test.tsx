@@ -22,13 +22,14 @@ describe('Footer', () => {
     expect(screen.getByRole('navigation', { name: 'Social' })).toBeInTheDocument();
   });
 
-  it('usa los href hash principales correctos', () => {
+  it('usa los href hash principales correctos sin duplicar comunidad', () => {
     render(<Footer />);
 
     expect(screen.getByRole('link', { name: 'Buscador' })).toHaveAttribute('href', '#/buscador');
     expect(screen.getByRole('link', { name: 'Comparador' })).toHaveAttribute('href', '#/comparador');
     expect(screen.getByRole('link', { name: 'Comunidad' })).toHaveAttribute('href', '#/comunidad');
-    expect(screen.getByRole('link', { name: 'Motos mejor valoradas' })).toHaveAttribute('href', '#/motos-mejor-valoradas');
+    expect(screen.getAllByRole('link', { name: 'Comunidad' })).toHaveLength(1);
+    expect(screen.queryByRole('link', { name: 'Motos mejor valoradas' })).not.toBeInTheDocument();
   });
 
 

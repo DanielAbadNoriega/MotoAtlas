@@ -4,6 +4,7 @@ import {
   applySeoMetadata,
   buildBikeJsonLd,
   buildBikeSeoMetadata,
+  buildCommunityLandingSeoMetadata,
   buildCommunitySeoMetadata,
   buildCompareSeoMetadata,
   buildStaticInfoSeoMetadata,
@@ -69,13 +70,17 @@ describe('seoUtils', () => {
     expect(buildStaticInfoSeoMetadata('terminos').title).toBe('Términos de uso | MotoAtlas');
   });
 
-  it('genera meta SEO para motos mejor valoradas', () => {
-    const metadata = buildTopRatedSeoMetadata();
+  it('genera meta SEO para la landing principal de comunidad', () => {
+    const metadata = buildCommunityLandingSeoMetadata();
 
-    expect(metadata.title).toBe('Motos mejor valoradas | MotoAtlas');
-    expect(metadata.description).toContain('motos mejor valoradas');
-    expect(metadata.canonicalUrl).toContain('/motos-mejor-valoradas');
+    expect(metadata.title).toBe('Comunidad MotoAtlas | Reviews y motos mejor valoradas');
+    expect(metadata.description).toContain('reviews aprobadas');
+    expect(metadata.canonicalUrl).toBe('https://motoatlas.com/comunidad');
     expect(metadata.jsonLd).toMatchObject({ '@type': 'CollectionPage' });
+  });
+
+  it('mantiene motos mejor valoradas como alias SEO de comunidad', () => {
+    expect(buildTopRatedSeoMetadata()).toMatchObject(buildCommunityLandingSeoMetadata());
   });
 
   it('aplica meta tags, canonical y JSON-LD al documento', () => {
@@ -93,7 +98,8 @@ describe('seoUtils', () => {
     const sitemap = buildSitemapXml(urls);
 
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/motos/bmw-f-900-gs']));
-    expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/motos-mejor-valoradas']));
+    expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/comunidad']));
+    expect(urls).not.toContain('https://motoatlas.com/motos-mejor-valoradas');
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/metodologia']));
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/fuentes-datos']));
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/solicitar-modelo']));

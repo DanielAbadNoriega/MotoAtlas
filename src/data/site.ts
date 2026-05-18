@@ -41,7 +41,6 @@ export const footerContent = {
         { label: 'Buscador', href: '#/buscador' },
         { label: 'Comparador', href: '#/comparador' },
         { label: 'Comunidad', href: '#/comunidad' },
-        { label: 'Motos mejor valoradas', href: '#/motos-mejor-valoradas' },
       ],
     },
     {

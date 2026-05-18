@@ -35,7 +35,7 @@ import {
   isSearchRoute,
   isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildBikeSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -85,6 +85,7 @@ export function App() {
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
+  const isCommunityLandingPage = isCommunityPage && !communityMotorcycleId;
   const routeComparatorSelection = getComparatorSelectionFromRoute(route, motorcycles);
   const persistedComparatorIds = isComparatorPage && routeComparatorSelection.rawIds.length === 0 && legacyComparisonIds.length === 0
     ? loadCompareQueue()
@@ -125,6 +126,11 @@ export function App() {
       return;
     }
 
+    if (isCommunityLandingPage) {
+      applySeoMetadata(buildCommunityLandingSeoMetadata());
+      return;
+    }
+
     if (isTopRatedPage) {
       applySeoMetadata(buildTopRatedSeoMetadata());
       return;
@@ -150,7 +156,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isCommunityPage, isComparatorPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [communityBike, comparatorBikes, detailBike, isCommunityLandingPage, isCommunityPage, isComparatorPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <div className="app">
@@ -162,6 +168,8 @@ export function App() {
           missingBikeCount={missingComparatorIds.length}
           motorcycles={motorcycles}
         />
+      ) : isCommunityLandingPage ? (
+        <TopRatedMotorcyclesPage motorcycles={motorcycles} />
       ) : isCommunityPage ? (
         <MotorcycleCommunityPage bike={communityBike} motorcycleId={communityMotorcycleId} />
       ) : bikeDetailId ? (

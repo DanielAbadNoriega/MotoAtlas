@@ -164,13 +164,23 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(document.title).toBe(expectedTitle);
   });
 
-  it('renderiza la landing de motos mejor valoradas desde la ruta del footer', async () => {
+  it('renderiza la landing principal de comunidad desde #/comunidad', async () => {
+    window.location.hash = '#/comunidad';
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /Motos mejor valoradas/i })).toBeInTheDocument();
+    expect(document.title).toBe('Comunidad MotoAtlas | Reviews y motos mejor valoradas');
+  });
+
+  it('mantiene #/motos-mejor-valoradas como alias sin SEO duplicado', async () => {
     window.location.hash = '#/motos-mejor-valoradas';
 
     await renderApp();
 
     expect(await screen.findByRole('heading', { name: /Motos mejor valoradas/i })).toBeInTheDocument();
-    expect(document.title).toBe('Motos mejor valoradas | MotoAtlas');
+    expect(document.title).toBe('Comunidad MotoAtlas | Reviews y motos mejor valoradas');
+    expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://motoatlas.com/comunidad');
   });
 
   it('renders community page from a motorcycle route', async () => {

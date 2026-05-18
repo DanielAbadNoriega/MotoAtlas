@@ -181,19 +181,23 @@ export function buildStaticInfoSeoMetadata(routeKey: StaticInfoRouteKey): SeoMet
   };
 }
 
-export function buildTopRatedSeoMetadata(): SeoMetadata {
+export function buildCommunityLandingSeoMetadata(): SeoMetadata {
   return {
-    canonicalUrl: absoluteUrl('/motos-mejor-valoradas'),
-    description: 'Descubre las motos mejor valoradas por la comunidad MotoAtlas, con ratings, reviews, comparativas y acceso a fichas técnicas.',
+    canonicalUrl: absoluteUrl('/comunidad'),
+    description: 'Explora las motos mejor valoradas por la comunidad MotoAtlas, reviews aprobadas, rankings y acceso a comunidades por modelo.',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       description: 'Ranking de motos mejor valoradas por reviews aprobadas de la comunidad MotoAtlas.',
-      name: `Motos mejor valoradas | ${siteName}`,
-      url: absoluteUrl('/motos-mejor-valoradas'),
+      name: `Comunidad MotoAtlas | Reviews y motos mejor valoradas`,
+      url: absoluteUrl('/comunidad'),
     },
-    title: `Motos mejor valoradas | ${siteName}`,
+    title: `Comunidad MotoAtlas | Reviews y motos mejor valoradas`,
   };
+}
+
+export function buildTopRatedSeoMetadata(): SeoMetadata {
+  return buildCommunityLandingSeoMetadata();
 }
 
 export function buildCompareSeoMetadata(bikes: readonly Bike[]): SeoMetadata {
@@ -245,7 +249,7 @@ export function getSitemapUrls(motorcycles: readonly Bike[]) {
   return [
     siteBaseUrl,
     `${siteBaseUrl}/buscador`,
-    `${siteBaseUrl}/motos-mejor-valoradas`,
+    `${siteBaseUrl}/comunidad`,
     `${siteBaseUrl}/metodologia`,
     `${siteBaseUrl}/fuentes-datos`,
     `${siteBaseUrl}/solicitar-modelo`,
