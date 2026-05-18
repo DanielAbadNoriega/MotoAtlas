@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, MouseEvent, useMemo, useState } from 'react';
 import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import type { BikeSegment } from '../../../types/bike';
 import './StaticInfoPages.scss';
@@ -268,6 +268,11 @@ function SourceCards({ cards }: { cards: readonly InfoCard[] }) {
 }
 
 function ArticlePage({ description, eyebrow, notice, sections, title, updatedLabel }: ArticlePageProps) {
+  const handleTocClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    event.preventDefault();
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <main className="static-info static-info--article" aria-labelledby="static-info-title">
       <header className="static-info__article-hero">
@@ -285,7 +290,13 @@ function ArticlePage({ description, eyebrow, notice, sections, title, updatedLab
           <h2>Índice</h2>
           <nav>
             {sections.map((section, index) => (
-              <a href={`#${section.id}`} key={section.id}>{String(index + 1).padStart(2, '0')} · {section.title}</a>
+              <a
+                href={`#${section.id}`}
+                key={section.id}
+                onClick={(event) => handleTocClick(event, section.id)}
+              >
+                {String(index + 1).padStart(2, '0')} · {section.title}
+              </a>
             ))}
           </nav>
         </aside>

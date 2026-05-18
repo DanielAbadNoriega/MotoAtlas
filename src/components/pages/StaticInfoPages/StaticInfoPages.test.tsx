@@ -44,6 +44,31 @@ describe('StaticInfoPages', () => {
     expect(screen.getByText(/no sustituye la verificación oficial/i)).toBeInTheDocument();
   });
 
+  it('navega por el índice legal sin romper la ruta hash actual', async () => {
+    const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    const user = userEvent.setup();
+
+    window.location.hash = '#/terminos';
+    const { rerender } = render(<TermsPage />);
+
+    await user.click(screen.getByRole('link', { name: /01 · Uso de MotoAtlas/i }));
+
+    expect(window.location.hash).toBe('#/terminos');
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+
+    window.location.hash = '#/privacidad';
+    rerender(<PrivacyPage />);
+
+    await user.click(screen.getByRole('link', { name: /01 · Datos que podemos recoger/i }));
+
+    expect(window.location.hash).toBe('#/privacidad');
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+
+    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
+
   it('valida campos obligatorios en Solicitar modelo', async () => {
     const user = userEvent.setup();
     render(<RequestModelPage />);
