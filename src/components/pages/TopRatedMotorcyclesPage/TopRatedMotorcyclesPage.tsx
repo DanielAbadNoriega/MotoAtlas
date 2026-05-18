@@ -203,7 +203,7 @@ function CommunityFeatureSections({
                 </div>
                 <p>“{review.comment}”</p>
                 <div>
-                  <span className="material-symbols-outlined" aria-hidden="true">star</span>
+                  <span className="top-rated__rating-star" aria-hidden="true">★</span>
                   <small>{formatReviewRating(review.rating)}/5</small>
                 </div>
               </article>

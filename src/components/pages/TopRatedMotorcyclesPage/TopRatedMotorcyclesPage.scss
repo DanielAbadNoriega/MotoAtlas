@@ -17,7 +17,6 @@
 
 .top-rated__hero {
   align-items: center;
-  border-bottom: 1px solid rgba($color-outline-variant, 0.3);
   display: grid;
   min-height: min(760px, calc(100vh - 80px));
   overflow: hidden;
@@ -631,10 +630,12 @@
     gap: 0.35rem;
     margin-top: 1rem;
 
-    .material-symbols-outlined {
+    .top-rated__rating-star {
       color: $color-accent;
+      font-family: inherit;
       font-size: 1rem;
-      font-variation-settings: 'FILL' 1;
+      line-height: 1;
+      text-shadow: 0 0 10px rgba($color-accent, 0.35);
     }
   }
 }

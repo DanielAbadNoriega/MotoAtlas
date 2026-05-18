@@ -182,4 +182,14 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(screen.getByRole('heading', { name: /Trending Near You/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Active Communities/i })).toBeInTheDocument();
   });
+
+  it('usa estrella real en las puntuaciones de Recent Reviews', async () => {
+    await renderPage();
+
+    const recentReview = screen.getAllByText(/Fantástica para viajar con equipaje/i)[0].closest('article');
+
+    expect(recentReview).not.toBeNull();
+    expect(within(recentReview as HTMLElement).queryByText('star')).not.toBeInTheDocument();
+    expect(within(recentReview as HTMLElement).getByText('★')).toBeInTheDocument();
+  });
 });
