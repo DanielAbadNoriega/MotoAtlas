@@ -89,6 +89,10 @@
     list-style: none;
     margin: 0;
     padding: 0;
+
+    &.footer__social-list  {
+        flex-direction: row;
+    }
   }
 
   a {
@@ -113,7 +117,6 @@
 
 .footer__social-list {
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
   gap: 1rem;
 
@@ -205,6 +208,9 @@
     padding-top: 2rem;
 
     .footer__social-list {
+      flex-wrap: wrap;
+      gap: 1rem;
+      flex-direction: row;
       a {
         padding: 0.65rem;
       }
