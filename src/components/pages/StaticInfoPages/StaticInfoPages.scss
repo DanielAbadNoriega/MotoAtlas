@@ -350,13 +350,11 @@
       radial-gradient(circle at center, rgba($color-accent, 0.16), transparent 24rem),
       repeating-radial-gradient(circle, transparent 0 2rem, rgba($color-outline-variant, 0.16) 2.05rem 2.08rem);
     content: '';
-    height: 36rem;
+    height: 100%;
+    width: 100%;
     opacity: 0.55;
     pointer-events: none;
     position: absolute;
-    right: -12rem;
-    top: 6rem;
-    width: 36rem;
   }
 
   > div,
