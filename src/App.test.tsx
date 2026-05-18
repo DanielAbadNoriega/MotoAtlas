@@ -151,7 +151,7 @@ describe('App navigation with mocked motorcycleService', () => {
 
   it.each([
     ['#/metodologia', /Datos técnicos con contexto/i, 'Metodología | MotoAtlas'],
-    ['#/fuentes-datos', /Transparencia antes que falsa precisión/i, 'Fuentes de datos | MotoAtlas'],
+    ['#/fuentes-datos', /Sabe de dónde viene cada dato/i, 'Fuentes de datos | MotoAtlas'],
     ['#/solicitar-modelo', /¿Falta una moto\?/i, 'Solicitar modelo | MotoAtlas'],
     ['#/privacidad', /^Privacidad$/i, 'Privacidad | MotoAtlas'],
     ['#/terminos', /Términos de uso/i, 'Términos de uso | MotoAtlas'],

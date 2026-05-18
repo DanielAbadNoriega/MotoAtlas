@@ -29,8 +29,13 @@ describe('StaticInfoPages', () => {
   it('renderiza fuentes de datos con bloque de transparencia', () => {
     render(<DataSourcesPage />);
 
-    expect(screen.getByRole('heading', { name: /Transparencia antes que falsa precisión/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Sabe de dónde viene cada dato/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Source Intelligence/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Data Architecture/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Confidence Index Protocol/i })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Explorar motos/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/Precio en euros con `price_source`/i)).toBeInTheDocument();
+    expect(screen.getByText(/Solo el contenido approved se muestra públicamente/i)).toBeInTheDocument();
     expect(screen.getByText(/verifica siempre la información con el fabricante o concesionario/i)).toBeInTheDocument();
   });
 

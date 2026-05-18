@@ -39,6 +39,28 @@ type FormState = Readonly<{
 
 type FormErrors = Partial<Record<keyof Pick<FormState, 'brand' | 'model' | 'year'>, string>>;
 
+type SourceOverviewCard = Readonly<{
+  accent?: 'primary' | 'accent' | 'muted';
+  badge: string;
+  icon: string;
+  text: string;
+  title: string;
+}>;
+
+type DataCategoryItem = Readonly<{
+  icon: string;
+  text: string;
+  title: string;
+}>;
+
+type ConfidenceTier = Readonly<{
+  label: string;
+  level: 'Alta' | 'Media' | 'Pendiente';
+  text: string;
+  title: string;
+  verifications: number;
+}>;
+
 const dataSourceCards = [
   {
     badge: 'api',
@@ -77,6 +99,100 @@ const dataSourceCards = [
   },
 ] satisfies readonly InfoCard[];
 
+const sourceOverviewCards = [
+  {
+    accent: 'accent',
+    badge: 'Prioridad',
+    icon: 'api',
+    title: 'API',
+    text: 'Integraciones externas normalizadas cuando existe clave, cobertura suficiente y validación estricta antes de entrar al catálogo.',
+  },
+  {
+    accent: 'primary',
+    badge: 'Curado',
+    icon: 'edit_document',
+    title: 'Manual',
+    text: 'Imágenes locales, descripciones, precios revisados y correcciones editoriales protegidas con locks y fuentes manual/user.',
+  },
+  {
+    badge: 'Calculado',
+    icon: 'calculate',
+    title: 'Estimado',
+    text: 'Puntuaciones de uso, pros/contras y fiabilidad inicial tratadas como estimación hasta tener señales reales suficientes.',
+  },
+  {
+    accent: 'accent',
+    badge: 'Comunidad',
+    icon: 'groups',
+    title: 'User',
+    text: 'Reviews, ratings y comentarios enviados por usuarios. Solo el contenido approved se muestra públicamente.',
+  },
+  {
+    accent: 'muted',
+    badge: 'Revisión',
+    icon: 'hourglass_top',
+    title: 'Pending',
+    text: 'Datos incompletos o placeholders controlados. Se muestran como pendientes de confirmar, nunca como verdad técnica.',
+  },
+] satisfies readonly SourceOverviewCard[];
+
+const dataArchitectureItems = [
+  {
+    icon: 'settings_input_component',
+    title: 'Specs técnicas',
+    text: 'Cilindrada, potencia, par, peso, altura de asiento, depósito y equipamiento base validados contra reglas estrictas.',
+  },
+  {
+    icon: 'payments',
+    title: 'Precio',
+    text: 'Precio en euros con `price_source`. Si vale 0, se considera pendiente de confirmar y no se presenta como precio real.',
+  },
+  {
+    icon: 'photo_camera',
+    title: 'Imágenes',
+    text: 'Imágenes locales optimizadas cuando existen. Si falta material real, se usa fallback técnico con overlay visible.',
+  },
+  {
+    icon: 'analytics',
+    title: 'Scores',
+    text: 'Uso ciudad, viaje, offroad, pasajero, principiante, sport y diversión con procedencia `scores_source`.',
+  },
+  {
+    icon: 'rate_review',
+    title: 'Reviews',
+    text: 'Opiniones de comunidad moderadas. Pending queda privado; approved alimenta comunidad y rankings.',
+  },
+  {
+    icon: 'shield',
+    title: 'Fiabilidad',
+    text: 'Reportes comunes, número de señales y puntuación de fiabilidad. Si no hay base suficiente, se marca como estimado.',
+  },
+] satisfies readonly DataCategoryItem[];
+
+const confidenceTiers = [
+  {
+    label: 'Mayor confianza',
+    level: 'Alta',
+    title: 'Dato revisado o protegido',
+    text: 'Contenido manual, imagen local real, descripción curada o dato API validado sin degradar información existente.',
+    verifications: 3,
+  },
+  {
+    label: 'Confianza media',
+    level: 'Media',
+    title: 'Dato normalizado y coherente',
+    text: 'Dato externo o estimado que pasa validación, pero puede necesitar contraste editorial antes de una decisión de compra.',
+    verifications: 2,
+  },
+  {
+    label: 'Revisión pendiente',
+    level: 'Pendiente',
+    title: 'Placeholder o señal incompleta',
+    text: 'Precio 0, imagen fallback, fiabilidad sin reportes o campo editorial vacío. Se conserva, pero marcado para revisión.',
+    verifications: 1,
+  },
+] satisfies readonly ConfidenceTier[];
+
 const methodologySections = [
   {
     id: 'que-es',
@@ -110,42 +226,6 @@ const methodologySections = [
       'Antes de comprar una moto, verifica siempre precio, potencia, peso, equipamiento y disponibilidad con fabricante o concesionario oficial.',
     ],
     callout: 'MotoAtlas prioriza transparencia sobre falsa precisión: si un dato es estimado o placeholder, debe tratarse como pendiente de revisión.',
-  },
-] satisfies readonly InfoSection[];
-
-const dataSourcesSections = [
-  {
-    id: 'externas',
-    title: 'Fuentes externas/API',
-    body: [
-      'MotoAtlas puede enriquecer datos desde APIs externas cuando existe cobertura. Esas respuestas se normalizan y validan antes de entrar en el catálogo.',
-      'No se nombran proveedores concretos ni se afirma origen fabricante si no está documentado dentro del proyecto.',
-    ],
-  },
-  {
-    id: 'manual',
-    title: 'Revisión manual y datos curados',
-    body: [
-      'Las imágenes locales, descripciones editoriales, precios revisados y correcciones manuales tienen prioridad frente a datos automáticos.',
-      'Los locks y las fuentes manual/user evitan que una importación futura sobrescriba contenido bueno por placeholders.',
-    ],
-  },
-  {
-    id: 'comunidad',
-    title: 'Datos de comunidad y ratings',
-    body: [
-      'Los ratings y reviews proceden de usuarios y se muestran únicamente cuando están approved.',
-      'Las opiniones de comunidad se separan de las especificaciones técnicas: una cosa es la ficha, otra la experiencia real de propietarios.',
-    ],
-  },
-  {
-    id: 'transparencia',
-    title: 'Transparencia y verificación',
-    body: [
-      'Los datos pueden contener errores o estar pendientes de revisión. Antes de comprar una moto, verifica siempre la información con el fabricante o concesionario.',
-      'Las imágenes pueden ser manuales, externas o placeholder técnico si falta material real optimizado.',
-    ],
-    callout: 'Fuente técnica no equivale a opinión de usuario. MotoAtlas separa procedencia, confianza y uso visual de cada dato.',
   },
 ] satisfies readonly InfoSection[];
 
@@ -265,6 +345,142 @@ function SourceCards({ cards }: { cards: readonly InfoCard[] }) {
         </article>
       ))}
     </div>
+  );
+}
+
+function SourceOverviewCards({ cards }: { cards: readonly SourceOverviewCard[] }) {
+  return (
+    <div className="static-info__source-grid">
+      {cards.map((card) => (
+        <article className={`static-info__source-card static-info__source-card--${card.accent ?? 'neutral'}`} key={card.title}>
+          <span className="material-symbols-outlined" aria-hidden="true">{card.icon}</span>
+          <div>
+            <h3>{card.title}</h3>
+            <small>{card.badge}</small>
+          </div>
+          <p>{card.text}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function DataArchitectureGrid({ items }: { items: readonly DataCategoryItem[] }) {
+  return (
+    <div className="static-info__architecture-grid">
+      {items.map((item) => (
+        <article key={item.title}>
+          <span className="material-symbols-outlined" aria-hidden="true">{item.icon}</span>
+          <div>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ConfidenceProtocol({ tiers }: { tiers: readonly ConfidenceTier[] }) {
+  return (
+    <div className="static-info__confidence-card">
+      {tiers.map((tier) => (
+        <article key={tier.title}>
+          <span>{tier.label}</span>
+          <div>
+            <small>{tier.level}</small>
+            <h3>{tier.title}</h3>
+            <p>{tier.text}</p>
+          </div>
+          <div aria-label={`${tier.verifications} niveles de verificación`}>
+            {Array.from({ length: tier.verifications }, (_, index) => (
+              <span className="material-symbols-outlined" aria-hidden="true" key={index}>verified</span>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function DataSourcesDetailedPage() {
+  return (
+    <main className="static-info static-info--sources" aria-labelledby="static-info-title">
+      <section className="static-info__source-hero">
+        <div className="static-info__source-hero-background" aria-hidden="true">
+          <img src={methodologyHeroImage} alt="" />
+          <span />
+        </div>
+        <div className="static-info__source-hero-content">
+          <span>Data transparency</span>
+          <h1 id="static-info-title">Sabe de dónde viene cada dato.</h1>
+          <p>
+            MotoAtlas combina fuentes técnicas, revisión manual, estimaciones controladas y comunidad para construir fichas útiles sin ocultar la procedencia.
+          </p>
+          <div aria-hidden="true">
+            <span>Integridad editorial</span>
+            <i />
+            <span>Pipeline validado</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="static-info__sources-section" aria-labelledby="source-intelligence-title">
+        <div className="static-info__sources-heading">
+          <h2 id="source-intelligence-title">Source Intelligence</h2>
+          <i aria-hidden="true" />
+        </div>
+        <SourceOverviewCards cards={sourceOverviewCards} />
+      </section>
+
+      <section className="static-info__sources-section static-info__sources-section--architecture" aria-labelledby="data-architecture-title">
+        <div className="static-info__sources-heading static-info__sources-heading--center">
+          <h2 id="data-architecture-title">Data Architecture</h2>
+          <p>Cómo clasificamos las señales que alimentan buscador, ficha, comparador, comunidad y rankings.</p>
+        </div>
+        <DataArchitectureGrid items={dataArchitectureItems} />
+      </section>
+
+      <section className="static-info__sources-section" aria-labelledby="confidence-protocol-title">
+        <h2 className="static-info__confidence-title" id="confidence-protocol-title">Confidence Index Protocol</h2>
+        <ConfidenceProtocol tiers={confidenceTiers} />
+      </section>
+
+      <section className="static-info__source-flow" aria-label="Datos pendientes y flujo comunitario">
+        <article>
+          <span>Protocol exclusion</span>
+          <h2>¿Por qué un dato queda pendiente?</h2>
+          <p>
+            Algunos valores se marcan como pendientes cuando MotoAtlas aún no tiene confianza suficiente para tratarlos como hecho técnico.
+            Preferimos transparencia antes que completar una ficha con falsa precisión.
+          </p>
+          <ul>
+            <li>Precio nuevo sin confirmación editorial.</li>
+            <li>Imagen real todavía no optimizada localmente.</li>
+            <li>Fiabilidad sin reportes o señales suficientes.</li>
+          </ul>
+        </article>
+
+        <article>
+          <h2>Community Validation Loop</h2>
+          <ol>
+            <li><span>Submitted</span><p>Un usuario envía una review o dato de experiencia.</p></li>
+            <li><span>Pending review</span><p>La señal queda pendiente de moderación y contraste.</p></li>
+            <li><span>Approved</span><p>Solo lo aprobado se muestra públicamente.</p></li>
+            <li><span>Public record</span><p>La señal alimenta comunidad, rankings y contexto del modelo.</p></li>
+          </ol>
+        </article>
+      </section>
+
+      <section className="static-info__source-disclaimer" aria-labelledby="source-disclaimer-title">
+        <span className="material-symbols-outlined" aria-hidden="true">gavel</span>
+        <h2 id="source-disclaimer-title">Aviso técnico</h2>
+        <p>
+          Las especificaciones pueden variar por mercado, año, versión, normativa o packs opcionales. Aunque MotoAtlas aplica validación estricta,
+          verifica siempre la información con el fabricante o concesionario antes de comprar una moto.
+        </p>
+      </section>
+    </main>
   );
 }
 
@@ -401,15 +617,7 @@ export function DataMethodologyPage() {
 }
 
 export function DataSourcesPage() {
-  return (
-    <TechnicalLandingPage
-      eyebrow="Fuentes de datos"
-      title="Transparencia antes que falsa precisión."
-      description="De dónde pueden venir los datos de MotoAtlas, cómo se clasifican y qué debe verificarse antes de tomar una decisión de compra."
-      cards={dataSourceCards.slice(0, 4)}
-      sections={dataSourcesSections}
-    />
-  );
+  return <DataSourcesDetailedPage />;
 }
 
 export function PrivacyPage() {
