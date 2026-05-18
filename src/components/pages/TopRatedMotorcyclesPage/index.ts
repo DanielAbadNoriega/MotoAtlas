@@ -1,0 +1,1 @@
+export { TopRatedMotorcyclesPage } from './TopRatedMotorcyclesPage';

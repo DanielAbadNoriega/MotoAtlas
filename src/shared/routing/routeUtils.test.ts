@@ -9,6 +9,7 @@ import {
   getComparatorSelectionFromRoute,
   getSearchHashWithText,
   getSearchTextFromRoute,
+  isTopRatedRoute,
 } from './routeUtils';
 
 describe('routeUtils SEO routes', () => {
@@ -30,6 +31,13 @@ describe('routeUtils SEO routes', () => {
       'test-bmw-f-900-gs',
       'test-aprilia-tuareg-660',
     ]);
+  });
+
+
+  it('detecta la ruta de motos mejor valoradas', () => {
+    expect(isTopRatedRoute('#/motos-mejor-valoradas')).toBe(true);
+    expect(isTopRatedRoute('/motos-mejor-valoradas')).toBe(true);
+    expect(isTopRatedRoute('#/motos/test-bmw-f-900-gs')).toBe(false);
   });
 
   it('genera y lee rutas de búsqueda desde la home', () => {

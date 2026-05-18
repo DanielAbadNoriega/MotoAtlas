@@ -5,6 +5,7 @@ import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
 import { MotorcycleCommunityPage } from './components/pages/MotorcycleCommunityPage';
 import { SearchPage } from './components/pages/SearchPage';
+import { TopRatedMotorcyclesPage } from './components/pages/TopRatedMotorcyclesPage';
 import { FeaturedBikes } from './components/sections/FeaturedBikes';
 import { Hero } from './components/sections/Hero';
 import { LatestNews } from './components/sections/LatestNews';
@@ -24,8 +25,9 @@ import {
   isCommunityRoute,
   isComparatorRoute,
   isSearchRoute,
+  isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildBikeSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildBikeSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -71,6 +73,7 @@ export function App() {
   const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
   const communityBike = communityMotorcycleId ? findMotorcycleById(communityMotorcycleId) : undefined;
   const isSearchPage = isSearchRoute(route);
+  const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
   const routeComparatorSelection = getComparatorSelectionFromRoute(route, motorcycles);
@@ -108,6 +111,11 @@ export function App() {
   }, [route]);
 
   useEffect(() => {
+    if (isTopRatedPage) {
+      applySeoMetadata(buildTopRatedSeoMetadata());
+      return;
+    }
+
     if (isCommunityPage && communityBike) {
       applySeoMetadata(buildCommunitySeoMetadata(communityBike));
       return;
@@ -128,7 +136,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isCommunityPage, isComparatorPage]);
+  }, [communityBike, comparatorBikes, detailBike, isCommunityPage, isComparatorPage, isTopRatedPage]);
 
   return (
     <div className="app">
@@ -146,6 +154,8 @@ export function App() {
         <BikeDetailPage bike={detailBike} motorcycles={motorcycles} />
       ) : isSearchPage ? (
         <SearchPage motorcycles={motorcycles} routeHash={route} />
+      ) : isTopRatedPage ? (
+        <TopRatedMotorcyclesPage motorcycles={motorcycles} />
       ) : (
         <HomePage />
       )}

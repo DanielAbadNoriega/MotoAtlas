@@ -6,6 +6,7 @@ import {
   buildBikeSeoMetadata,
   buildCommunitySeoMetadata,
   buildCompareSeoMetadata,
+  buildTopRatedSeoMetadata,
   buildRobotsTxt,
   buildSitemapXml,
   getSitemapUrls,
@@ -54,6 +55,16 @@ describe('seoUtils', () => {
     expect(metadata.jsonLd).toMatchObject({ '@type': 'CollectionPage' });
   });
 
+
+  it('genera meta SEO para motos mejor valoradas', () => {
+    const metadata = buildTopRatedSeoMetadata();
+
+    expect(metadata.title).toBe('Motos mejor valoradas | MotoAtlas');
+    expect(metadata.description).toContain('motos mejor valoradas');
+    expect(metadata.canonicalUrl).toContain('/motos-mejor-valoradas');
+    expect(metadata.jsonLd).toMatchObject({ '@type': 'CollectionPage' });
+  });
+
   it('aplica meta tags, canonical y JSON-LD al documento', () => {
     applySeoMetadata(buildCompareSeoMetadata(bikeFixtures.slice(0, 2)));
 
@@ -69,6 +80,7 @@ describe('seoUtils', () => {
     const sitemap = buildSitemapXml(urls);
 
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/motos/bmw-f-900-gs']));
+    expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/motos-mejor-valoradas']));
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/comunidad/test-bmw-f-900-gs']));
     expect(sitemap).toContain('<urlset');
     expect(buildRobotsTxt()).toContain('Sitemap: https://motoatlas.com/sitemap.xml');

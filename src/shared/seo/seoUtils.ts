@@ -137,6 +137,21 @@ export function buildCommunitySeoMetadata(bike: Bike): SeoMetadata {
   };
 }
 
+export function buildTopRatedSeoMetadata(): SeoMetadata {
+  return {
+    canonicalUrl: absoluteUrl('/motos-mejor-valoradas'),
+    description: 'Descubre las motos mejor valoradas por la comunidad MotoAtlas, con ratings, reviews, comparativas y acceso a fichas técnicas.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      description: 'Ranking de motos mejor valoradas por reviews aprobadas de la comunidad MotoAtlas.',
+      name: `Motos mejor valoradas | ${siteName}`,
+      url: absoluteUrl('/motos-mejor-valoradas'),
+    },
+    title: `Motos mejor valoradas | ${siteName}`,
+  };
+}
+
 export function buildCompareSeoMetadata(bikes: readonly Bike[]): SeoMetadata {
   const names = bikes.map((bike) => `${bike.brand} ${bike.model}`);
   const title = `${names.join(' vs ')} | Comparador MotoAtlas`;
@@ -183,7 +198,7 @@ export function getSitemapUrls(motorcycles: readonly Bike[]) {
     selectedBikes.slice(index + 1).map((otherBike) => absoluteUrl(getCompareCanonicalPath([bike, otherBike]))),
   );
 
-  return [siteBaseUrl, `${siteBaseUrl}/buscador`, ...bikeUrls, ...communityUrls, ...compareUrls];
+  return [siteBaseUrl, `${siteBaseUrl}/buscador`, `${siteBaseUrl}/motos-mejor-valoradas`, ...bikeUrls, ...communityUrls, ...compareUrls];
 }
 
 export function buildSitemapXml(urls: readonly string[]) {

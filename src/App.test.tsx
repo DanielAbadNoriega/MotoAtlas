@@ -147,6 +147,16 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(await screen.findByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
   });
 
+
+  it('renderiza la landing de motos mejor valoradas desde la ruta del footer', async () => {
+    window.location.hash = '#/motos-mejor-valoradas';
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /Motos mejor valoradas/i })).toBeInTheDocument();
+    expect(document.title).toBe('Motos mejor valoradas | MotoAtlas');
+  });
+
   it('renders community page from a motorcycle route', async () => {
     window.location.hash = '#/comunidad/test-bmw-f-900-gs';
 

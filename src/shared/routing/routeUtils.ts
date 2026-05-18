@@ -142,6 +142,11 @@ export function isCommunityRoute(route: string) {
   return /^\/comunidad(\/|$)/.test(path);
 }
 
+export function isTopRatedRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return /^\/motos-mejor-valoradas(\/|$)/.test(path);
+}
+
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {
   const queryIds = getQueryParamIds(route);
   const slug = getCompareSlugFromRoute(route);
