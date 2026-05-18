@@ -50,4 +50,14 @@ describe('Footer', () => {
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     }
   });
+
+  it('mantiene las redes como enlaces accesibles sin texto visible y muestra un único copyright', () => {
+    render(<Footer />);
+
+    expect(screen.queryByText('TikTok')).not.toBeInTheDocument();
+    expect(screen.queryByText('Instagram')).not.toBeInTheDocument();
+    expect(screen.queryByText('YouTube')).not.toBeInTheDocument();
+    expect(screen.queryByText('Facebook')).not.toBeInTheDocument();
+    expect(screen.getAllByText('© 2026 MotoAtlas. Todos los derechos reservados.')).toHaveLength(1);
+  });
 });

@@ -19,8 +19,20 @@ export function getReviewAggregate(reviews: readonly Pick<MotorcycleReview, 'rat
   };
 }
 
-export function formatReviewAggregate({ averageRating, reviewCount }: ReviewAggregate) {
-  return reviewCount === 0 ? 'Sin reviews aprobadas' : `${averageRating.toFixed(1)}/5 · ${reviewCount} reviews`;
+export function formatReviewRating(value: number) {
+  const roundedValue = Math.round(value * 10) / 10;
+  return Number.isInteger(roundedValue) ? String(roundedValue) : roundedValue.toFixed(1);
+}
+
+export function formatReviewAggregate(aggregate?: Partial<ReviewAggregate> | null) {
+  const reviewCount = aggregate?.reviewCount ?? 0;
+  const averageRating = aggregate?.averageRating;
+
+  if (reviewCount === 0 || typeof averageRating !== 'number' || !Number.isFinite(averageRating)) {
+    return 'Sin reviews aprobadas';
+  }
+
+  return `${formatReviewRating(averageRating)}/5 · ${reviewCount} reviews`;
 }
 
 export function getReviewUserName(review: Pick<MotorcycleReview, 'userName'>) {

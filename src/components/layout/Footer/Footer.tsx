@@ -10,7 +10,6 @@ export function Footer() {
             {brand.name}
           </a>
           <p>{footerContent.brandDescription}</p>
-          <small className="footer__copyright footer__copyright--desktop">{footerContent.copyright}</small>
         </section>
 
         <div className="footer__columns" aria-label="Enlaces del pie de página">
@@ -36,7 +35,6 @@ export function Footer() {
                     <span className="material-symbols-outlined" aria-hidden="true">
                       {action.icon}
                     </span>
-                    <span>{action.label}</span>
                   </a>
                 </li>
               ))}
@@ -44,7 +42,7 @@ export function Footer() {
           </nav>
         </div>
 
-        <small className="footer__copyright footer__copyright--mobile">{footerContent.copyright}</small>
+        <small className="footer__copyright">{footerContent.copyright}</small>
       </div>
     </footer>
   );

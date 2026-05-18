@@ -1,0 +1,188 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.motorcycle-review-card {
+  @include glass-hud;
+
+  border-radius: $radius-xl;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+  min-width: 0;
+  overflow: hidden;
+  padding: 1.25rem;
+  position: relative;
+  scroll-snap-align: start;
+
+  &::after {
+    background: rgba($color-accent, 0.08);
+    border-radius: 999px;
+    content: '';
+    filter: blur(40px);
+    height: 7rem;
+    pointer-events: none;
+    position: absolute;
+    right: -2rem;
+    top: -2rem;
+    width: 7rem;
+  }
+
+  > header {
+    align-items: start;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  > header > div:first-child {
+    align-items: center;
+    display: flex;
+    gap: 0.8rem;
+    min-width: 0;
+  }
+
+  > header > div:last-child {
+    align-items: end;
+    display: grid;
+    justify-items: end;
+  }
+
+  h3 {
+    color: white;
+    font-family: $font-headline;
+    font-size: 1rem;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  small,
+  dt,
+  > header > div:last-child > strong,
+  &__pros-cons strong {
+    @include label-caps;
+
+    color: $color-outline;
+    font-size: 0.62rem;
+  }
+
+  > p {
+    color: $color-on-surface-variant;
+    font-size: 0.98rem;
+    font-style: italic;
+    line-height: 1.7;
+    margin: 0 0 1.2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  dl {
+    border-top: 1px solid rgba($color-outline-variant, 0.2);
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding-top: 1rem;
+  }
+
+  dd {
+    color: white;
+    margin: 0.25rem 0 0;
+  }
+}
+
+.motorcycle-review-card--full {
+  flex: 0 0 min(27rem, calc(100vw - 3rem));
+}
+
+.motorcycle-review-card--compact {
+  flex: 1 1 20rem;
+}
+
+.motorcycle-review-card__avatar {
+  align-items: center;
+  background: rgba($color-accent, 0.18);
+  border: 1px solid rgba($color-accent, 0.34);
+  border-radius: 999px;
+  color: $color-accent;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: $font-headline;
+  font-weight: 800;
+  height: 2.5rem;
+  justify-content: center;
+  position: relative;
+  width: 2.5rem;
+
+  strong {
+    color: $color-accent;
+    font-size: 0.72rem;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.motorcycle-review-card__user-icon {
+  fill: currentColor;
+  height: 1.55rem;
+  opacity: 0.22;
+  position: absolute;
+  width: 1.55rem;
+}
+
+.motorcycle-review-card__stars {
+  display: inline-flex;
+  gap: 0.1rem;
+
+  .material-symbols-outlined {
+    color: rgba($color-on-surface-variant, 0.32);
+    font-size: 1rem;
+  }
+
+  [data-filled='true'] {
+    color: $color-accent;
+  }
+}
+
+.motorcycle-review-card__verified-badge {
+  @include label-caps;
+
+  align-items: center;
+  color: $color-accent;
+  display: inline-flex;
+  font-size: 0.58rem;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+
+  .material-symbols-outlined {
+    font-size: 0.95rem;
+  }
+}
+
+.motorcycle-review-card__pros-cons {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+
+  ul {
+    color: $color-on-surface-variant;
+    line-height: 1.6;
+    margin: 0.5rem 0 0;
+    padding-left: 1.1rem;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .motorcycle-review-card {
+    > header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    dl,
+    &__pros-cons {
+      grid-template-columns: 1fr;
+    }
+  }
+}

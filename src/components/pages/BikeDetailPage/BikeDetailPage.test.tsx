@@ -173,4 +173,33 @@ describe('BikeDetailPage', () => {
 
     expect(screen.getByRole('link', { name: /Ver reviews/i })).toHaveAttribute('href', `#/comunidad/${bikeFixtures[0].id}`);
   });
+
+  it('renderiza “Ver reviews” en el hero sin romper CTAs existentes', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const heroActions = screen.getByRole('group', { name: /Acciones principales de la ficha/i });
+
+    expect(within(heroActions).getByRole('link', { name: /Ver reviews/i })).toHaveAttribute(
+      'href',
+      `#/comunidad/${bikeFixtures[0].id}`,
+    );
+    expect(within(heroActions).getByRole('link', { name: /Ver más motos/i })).toHaveAttribute('href', '#/buscador?browse=1');
+  });
+
+  it('muestra Página oficial solo si la moto trae officialUrl', () => {
+    const bikeWithOfficialUrl = {
+      ...bikeFixtures[0],
+      officialUrl: 'https://www.bmw-motorrad.es/',
+    } satisfies Bike;
+
+    const { rerender } = render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+    expect(screen.queryByRole('link', { name: /Página oficial/i })).not.toBeInTheDocument();
+
+    rerender(<BikeDetailPage bike={bikeWithOfficialUrl} motorcycles={[bikeWithOfficialUrl, ...bikeFixtures.slice(1)]} />);
+
+    const officialLink = screen.getByRole('link', { name: /Página oficial/i });
+    expect(officialLink).toHaveAttribute('href', 'https://www.bmw-motorrad.es/');
+    expect(officialLink).toHaveAttribute('target', '_blank');
+    expect(officialLink).toHaveAttribute('rel', 'noopener noreferrer');
+  });
 });

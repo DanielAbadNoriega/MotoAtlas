@@ -31,6 +31,7 @@ type MotorcycleRow = Readonly<{
   fuel_tank_liters: number;
   price_eur: number;
   image_url: string;
+  official_url?: string | null;
   image_locked?: boolean;
   description: string;
   description_locked?: boolean;
@@ -119,6 +120,7 @@ function mapMotorcycleRow(row: MotorcycleRow): Bike {
     fuelTankLiters: toNumber(row.fuel_tank_liters),
     priceEur: toNumber(row.price_eur),
     imageUrl: row.image_url,
+    officialUrl: row.official_url ?? null,
     imageLocked: Boolean(row.image_locked),
     description: row.description,
     descriptionLocked: Boolean(row.description_locked),

@@ -809,6 +809,28 @@
 }
 
 @media (max-width: $breakpoint-tablet) {
+  .comparison-detail__duel--three {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    .comparison-detail__vs {
+      grid-row: auto;
+      width: 4.75rem;
+      height: 4.75rem;
+      font-size: 1.45rem;
+    }
+
+    .comparison-detail__hero-bike,
+    .comparison-detail__hero-bike--center,
+    .comparison-detail__hero-bike--right {
+      text-align: left;
+    }
+
+    .comparison-detail__hero-bike-actions {
+      justify-content: flex-start;
+    }
+  }
+
   .comparison-detail__vote,
   .comparison-detail__pros-cons {
     grid-template-columns: 1fr;
@@ -836,6 +858,11 @@
 
   .comparison-detail__duel {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .comparison-detail__duel--three {
+    grid-template-columns: 1fr;
   }
 
   .comparison-detail__hero-bike--right {
@@ -851,6 +878,28 @@
 
   .comparison-detail__hero-bike .motorcycle-image {
     height: 16rem;
+  }
+
+  .comparison-detail__duel--three .comparison-detail__vs {
+    grid-row: auto;
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.3rem;
+    margin-block: 0.25rem;
+  }
+
+  .comparison-detail__duel--three .comparison-detail__hero-bike .motorcycle-image {
+    height: 14rem;
+  }
+
+  .comparison-detail__hero-bike-actions {
+    width: 100%;
+
+    a,
+    button {
+      flex: 1 1 8rem;
+      text-align: center;
+    }
   }
 
   .comparison-detail__actions,

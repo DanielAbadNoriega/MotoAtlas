@@ -59,11 +59,23 @@ describe('ComparePage', () => {
   it('allows comparing three motorcycles', () => {
     render(<ComparePage bikes={bikeFixtures.slice(0, 3)} motorcycles={bikeFixtures} />);
 
+    const duel = screen.getByLabelText('Duelo de motos seleccionadas');
+
     expect(screen.getByRole('heading', { name: /Comparativa de 3 motos/i })).toBeInTheDocument();
-    expect(screen.getAllByRole('heading', { name: /BMW F 900 GS/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('heading', { name: /Aprilia Tuareg 660/i }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('heading', { name: /Yamaha MT-09/i }).length).toBeGreaterThan(0);
+    expect(within(duel).getByRole('heading', { name: /BMW F 900 GS/i })).toBeInTheDocument();
+    expect(within(duel).getByRole('heading', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(within(duel).getByRole('heading', { name: /Yamaha MT-09/i })).toBeInTheDocument();
     expect(screen.getByText(/3 motos seleccionadas/i)).toBeInTheDocument();
+  });
+
+  it('mantiene acciones legibles para cada moto en una comparación de 3', () => {
+    render(<ComparePage bikes={bikeFixtures.slice(0, 3)} motorcycles={bikeFixtures} />);
+
+    const duel = screen.getByLabelText('Duelo de motos seleccionadas');
+
+    expect(within(duel).getAllByRole('link', { name: /Ver ficha de/i })).toHaveLength(3);
+    expect(within(duel).getAllByRole('button', { name: /Quitar .* de la comparativa/i })).toHaveLength(3);
+    expect(screen.getAllByRole('button', { name: /^Votar /i })).toHaveLength(1);
   });
 
   it('warns when query params included more than 3 motorcycles', () => {

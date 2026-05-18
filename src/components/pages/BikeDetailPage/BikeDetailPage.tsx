@@ -5,8 +5,9 @@ import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compar
 import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
-import { formatReviewAggregate, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
+import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { ReviewModal } from '../../reviews/ReviewModal';
+import { MotorcycleReviewCard } from '../../reviews/MotorcycleReviewCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './BikeDetailPage.scss';
 
@@ -268,10 +269,18 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
             </div>
           </div>
 
-          <div className="bike-detail__actions">
+          <div className="bike-detail__actions" role="group" aria-label="Acciones principales de la ficha">
             <a className="button button--primary" href={getCompareSearchHash(bike)}>
               Añadir al comparador
             </a>
+            <a className="button button--ghost" href={`#/comunidad/${bike.id}`}>
+              Ver reviews
+            </a>
+            {bike.officialUrl ? (
+              <a className="button button--ghost" href={bike.officialUrl} target="_blank" rel="noopener noreferrer">
+                Página oficial
+              </a>
+            ) : null}
             <a className="button button--ghost" href={getBrowseSearchHash()}>
               Ver más motos
             </a>
@@ -440,9 +449,6 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
           <strong>{formatReviewAggregate(reviewAggregate)}</strong>
           <div className="bike-detail__review-actions">
-            <a className="button button--ghost" href={`#/comunidad/${bike.id}`}>
-              Ver reviews
-            </a>
             <button className="button button--primary" type="button" onClick={() => setIsReviewModalOpen(true)}>
               Escribir review
             </button>
@@ -452,22 +458,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
         <div className="bike-detail__approved-reviews" aria-live="polite">
           {reviews.length > 0 ? (
             reviews.map((review) => (
-              <article key={review.id}>
-                <header>
-                  <div className="bike-detail__review-author">
-                    <span aria-hidden="true" className="material-symbols-outlined">person</span>
-                    <strong>{getReviewUserName(review)}</strong>
-                  </div>
-                  <span>{review.rating}/5</span>
-                </header>
-                {isReviewVerified(review) ? (
-                  <small className="bike-detail__review-verified">
-                    <span className="material-symbols-outlined" aria-hidden="true">verified</span>
-                    Review verificada
-                  </small>
-                ) : null}
-                <p>{review.comment}</p>
-              </article>
+              <MotorcycleReviewCard key={review.id} review={review} variant="compact" />
             ))
           ) : (
             <p>Sin reviews aprobadas todavía.</p>

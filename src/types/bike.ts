@@ -75,6 +75,7 @@ export type Bike = Readonly<{
   fuelTankLiters: number;
   priceEur: number;
   imageUrl: string;
+  officialUrl?: string | null;
   imageLocked?: boolean;
   description: string;
   descriptionLocked?: boolean;

@@ -1,0 +1,1 @@
+export { MotorcycleReviewCard } from './MotorcycleReviewCard';

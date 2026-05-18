@@ -182,7 +182,10 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
           </p>
         ) : null}
 
-        <div className={hasThreeBikes ? 'comparison-detail__duel comparison-detail__duel--three' : 'comparison-detail__duel'}>
+        <div
+          className={hasThreeBikes ? 'comparison-detail__duel comparison-detail__duel--three' : 'comparison-detail__duel'}
+          aria-label="Duelo de motos seleccionadas"
+        >
           {comparison.entries.map((entry, index) => (
             <Fragment key={entry.bike.id}>
               <article

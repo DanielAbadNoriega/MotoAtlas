@@ -3,14 +3,14 @@ import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   getApprovedReviewsByMotorcycleId,
   type MotorcycleReview,
-  type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
-import { formatReviewAggregate, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
-import { getInitialsSafe, getTopCommunityItemsSafe, getMostCommonRidingStyleSafe, normalizeRidingStyleSafe } from '../../../shared/reviews/communityUtils';
+import { formatReviewAggregate, formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { getTopCommunityItemsSafe, getMostCommonRidingStyleSafe } from '../../../shared/reviews/communityUtils';
 import type { Bike } from '../../../types/bike';
 import { ReviewModal } from '../../reviews/ReviewModal';
+import { MotorcycleReviewCard } from '../../reviews/MotorcycleReviewCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './MotorcycleCommunityPage.scss';
 
@@ -26,20 +26,6 @@ type CommunityMetric = Readonly<{
 }>;
 
 const numberFormatter = new Intl.NumberFormat('es-ES');
-const dateFormatter = new Intl.DateTimeFormat('es-ES', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-});
-
-const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
-  ciudad: 'Ciudad',
-  deportivo: 'Deportivo',
-  diario: 'Diario',
-  offroad: 'Off-road',
-  pasajero: 'Pasajero',
-  viaje: 'Viaje',
-};
 
 function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
   return (reviews ?? []).filter((review) => review?.status === 'approved');
@@ -64,20 +50,6 @@ function getStarDistribution(reviews: readonly MotorcycleReview[]) {
 
 function getMostCommonRidingStyle(reviews: readonly MotorcycleReview[]) {
   return getMostCommonRidingStyleSafe(reviews);
-}
-
-function getInitials(name: string) {
-  return getInitialsSafe(name);
-}
-
-function formatDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Fecha pendiente';
-  }
-
-  return dateFormatter.format(date);
 }
 
 function getTopCommunityItems(reviews: readonly MotorcycleReview[], field: 'pros' | 'cons') {
@@ -227,7 +199,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             <p>Opiniones reales, problemas comunes y experiencia de propietarios de {bikeName}.</p>
           </div>
           <div className="motorcycle-community__hero-rating" aria-label="Resumen de rating">
-            <strong>{aggregate.reviewCount > 0 ? aggregate.averageRating.toFixed(1) : 'N/D'}</strong>
+            <strong>{aggregate.reviewCount > 0 ? formatReviewRating(aggregate.averageRating) : 'N/D'}</strong>
             <div>
               <RatingStars rating={Math.round(aggregate.averageRating)} />
               <span>{numberFormatter.format(aggregate.reviewCount)} reviews aprobadas</span>
@@ -360,73 +332,9 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             {reviews.length > 0 ? (
               <div ref={reviewSliderRef} className="motorcycle-community__review-viewport" role="region" aria-label="Verified owner reports">
                 <div className="motorcycle-community__review-list" role="list">
-                {reviews.map((review) => {
-                  const userName = getReviewUserName(review);
-
-                  return (
-                    <article className="motorcycle-community__review-card" key={review.id} role="listitem">
-                      <header>
-                        <div>
-                          <span className="motorcycle-community__review-avatar" aria-hidden="true">
-                            <span className="material-symbols-outlined">person</span>
-                            <strong>{getInitials(userName)}</strong>
-                          </span>
-                          <div>
-                            <h3>{userName}</h3>
-                            <small>
-                              {ridingStyleLabels[(review.ridingStyle ?? 'diario') as keyof typeof ridingStyleLabels]} · {formatDate(review.createdAt ?? '')}
-                            </small>
-                            {isReviewVerified(review) ? (
-                              <span className="motorcycle-community__verified-badge">
-                                <span className="material-symbols-outlined" aria-hidden="true">verified</span>
-                                Review verificada
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                        <div>
-                          <RatingStars rating={review.rating} />
-                          <strong>{review.rating}/5</strong>
-                        </div>
-                      </header>
-                      <p>{(review.comment ?? '').toString().trim() || '—'}</p>
-                      <dl>
-                        <div>
-                          <dt>Propiedad</dt>
-                          <dd>{review.ownershipMonths === null ? 'N/D' : `${review.ownershipMonths} meses`}</dd>
-                        </div>
-                        <div>
-                          <dt>Kilómetros</dt>
-                          <dd>{review.kilometers === null ? 'N/D' : `${numberFormatter.format(review.kilometers)} km`}</dd>
-                        </div>
-                      </dl>
-                      {review.pros.length > 0 || review.cons.length > 0 ? (
-                        <div className="motorcycle-community__review-pros-cons">
-                          {((review.pros ?? []) as readonly string[]).length > 0 ? (
-                            <div>
-                              <strong>Pros</strong>
-                              <ul>
-                                {((review.pros ?? []) as readonly any[]).map((pro, idx) => (
-                                  <li key={String(pro) || String(idx)}>{String(pro)}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          ) : null}
-                          {((review.cons ?? []) as readonly string[]).length > 0 ? (
-                            <div>
-                              <strong>Contras</strong>
-                              <ul>
-                                {((review.cons ?? []) as readonly any[]).map((con, idx) => (
-                                  <li key={String(con) || String(idx)}>{String(con)}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
+                  {reviews.map((review) => (
+                    <MotorcycleReviewCard key={review.id} review={review} />
+                  ))}
                 </div>
               </div>
             ) : (
