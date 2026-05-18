@@ -127,6 +127,26 @@ export function getCommunityMotorcycleIdFromRoute(route: string, motorcycles: re
   return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
 }
 
+
+export type StaticInfoRouteKey = 'metodologia' | 'fuentes-datos' | 'solicitar-modelo' | 'privacidad' | 'terminos';
+
+const staticInfoRoutePaths: Record<StaticInfoRouteKey, string> = {
+  metodologia: '/metodologia',
+  'fuentes-datos': '/fuentes-datos',
+  'solicitar-modelo': '/solicitar-modelo',
+  privacidad: '/privacidad',
+  terminos: '/terminos',
+};
+
+export function getStaticInfoRouteKey(route: string): StaticInfoRouteKey | undefined {
+  const { path } = routeToPathAndSearch(route);
+  return (Object.entries(staticInfoRoutePaths) as [StaticInfoRouteKey, string][]).find(([, routePath]) => path === routePath)?.[0];
+}
+
+export function getStaticInfoCanonicalPath(routeKey: StaticInfoRouteKey) {
+  return staticInfoRoutePaths[routeKey];
+}
+
 export function isSearchRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return /^\/(buscador|catalogo)(\/|$)/.test(path);

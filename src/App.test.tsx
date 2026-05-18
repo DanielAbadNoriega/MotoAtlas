@@ -148,6 +148,22 @@ describe('App navigation with mocked motorcycleService', () => {
   });
 
 
+
+  it.each([
+    ['#/metodologia', /Datos técnicos con contexto/i, 'Metodología | MotoAtlas'],
+    ['#/fuentes-datos', /Transparencia antes que falsa precisión/i, 'Fuentes de datos | MotoAtlas'],
+    ['#/solicitar-modelo', /¿Falta una moto\?/i, 'Solicitar modelo | MotoAtlas'],
+    ['#/privacidad', /^Privacidad$/i, 'Privacidad | MotoAtlas'],
+    ['#/terminos', /Términos de uso/i, 'Términos de uso | MotoAtlas'],
+  ])('renderiza la ruta informativa %s', async (hash, heading, expectedTitle) => {
+    window.location.hash = hash;
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(document.title).toBe(expectedTitle);
+  });
+
   it('renderiza la landing de motos mejor valoradas desde la ruta del footer', async () => {
     window.location.hash = '#/motos-mejor-valoradas';
 

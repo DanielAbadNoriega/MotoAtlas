@@ -5,6 +5,13 @@ import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
 import { MotorcycleCommunityPage } from './components/pages/MotorcycleCommunityPage';
 import { SearchPage } from './components/pages/SearchPage';
+import {
+  DataMethodologyPage,
+  DataSourcesPage,
+  PrivacyPage,
+  RequestModelPage,
+  TermsPage,
+} from './components/pages/StaticInfoPages';
 import { TopRatedMotorcyclesPage } from './components/pages/TopRatedMotorcyclesPage';
 import { FeaturedBikes } from './components/sections/FeaturedBikes';
 import { Hero } from './components/sections/Hero';
@@ -22,12 +29,13 @@ import {
   getCommunityMotorcycleIdFromRoute,
   getComparatorSelectionFromRoute,
   getCurrentAppRoute,
+  getStaticInfoRouteKey,
   isCommunityRoute,
   isComparatorRoute,
   isSearchRoute,
   isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildBikeSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildBikeSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -72,6 +80,7 @@ export function App() {
   const findMotorcycleById = (id: Bike['id']) => motorcycles.find((bike) => bike.id === id);
   const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
   const communityBike = communityMotorcycleId ? findMotorcycleById(communityMotorcycleId) : undefined;
+  const staticInfoRouteKey = getStaticInfoRouteKey(route);
   const isSearchPage = isSearchRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
@@ -111,6 +120,11 @@ export function App() {
   }, [route]);
 
   useEffect(() => {
+    if (staticInfoRouteKey) {
+      applySeoMetadata(buildStaticInfoSeoMetadata(staticInfoRouteKey));
+      return;
+    }
+
     if (isTopRatedPage) {
       applySeoMetadata(buildTopRatedSeoMetadata());
       return;
@@ -136,7 +150,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isCommunityPage, isComparatorPage, isTopRatedPage]);
+  }, [communityBike, comparatorBikes, detailBike, isCommunityPage, isComparatorPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <div className="app">
@@ -156,6 +170,16 @@ export function App() {
         <SearchPage motorcycles={motorcycles} routeHash={route} />
       ) : isTopRatedPage ? (
         <TopRatedMotorcyclesPage motorcycles={motorcycles} />
+      ) : staticInfoRouteKey === 'metodologia' ? (
+        <DataMethodologyPage />
+      ) : staticInfoRouteKey === 'fuentes-datos' ? (
+        <DataSourcesPage />
+      ) : staticInfoRouteKey === 'solicitar-modelo' ? (
+        <RequestModelPage />
+      ) : staticInfoRouteKey === 'privacidad' ? (
+        <PrivacyPage />
+      ) : staticInfoRouteKey === 'terminos' ? (
+        <TermsPage />
       ) : (
         <HomePage />
       )}

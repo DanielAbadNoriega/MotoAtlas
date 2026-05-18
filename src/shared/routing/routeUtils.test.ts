@@ -8,6 +8,8 @@ import {
   getComparatorHashFromBikes,
   getComparatorSelectionFromRoute,
   getSearchHashWithText,
+  getStaticInfoCanonicalPath,
+  getStaticInfoRouteKey,
   getSearchTextFromRoute,
   isTopRatedRoute,
 } from './routeUtils';
@@ -33,6 +35,16 @@ describe('routeUtils SEO routes', () => {
     ]);
   });
 
+
+
+  it('detecta rutas informativas del footer', () => {
+    expect(getStaticInfoRouteKey('#/metodologia')).toBe('metodologia');
+    expect(getStaticInfoRouteKey('/fuentes-datos')).toBe('fuentes-datos');
+    expect(getStaticInfoRouteKey('#/solicitar-modelo')).toBe('solicitar-modelo');
+    expect(getStaticInfoRouteKey('#/privacidad')).toBe('privacidad');
+    expect(getStaticInfoRouteKey('#/terminos')).toBe('terminos');
+    expect(getStaticInfoCanonicalPath('privacidad')).toBe('/privacidad');
+  });
 
   it('detecta la ruta de motos mejor valoradas', () => {
     expect(isTopRatedRoute('#/motos-mejor-valoradas')).toBe(true);

@@ -7,6 +7,8 @@ import {
   getCommunityCanonicalPath,
   getCompareCanonicalPath,
   getCompareSeoSlug,
+  getStaticInfoCanonicalPath,
+  type StaticInfoRouteKey,
 } from '../routing/routeUtils';
 import { getReviewAggregate } from '../reviews/reviewUtils';
 
@@ -137,6 +139,48 @@ export function buildCommunitySeoMetadata(bike: Bike): SeoMetadata {
   };
 }
 
+
+const staticInfoSeoContent: Record<StaticInfoRouteKey, Pick<SeoMetadata, 'description' | 'title'>> = {
+  metodologia: {
+    title: `Metodología | ${siteName}`,
+    description: 'Cómo MotoAtlas clasifica datos técnicos, manuales, estimados, placeholder y señales de comunidad.',
+  },
+  'fuentes-datos': {
+    title: `Fuentes de datos | ${siteName}`,
+    description: 'Transparencia sobre fuentes externas, revisión manual, datos de comunidad, imágenes y ratings en MotoAtlas.',
+  },
+  'solicitar-modelo': {
+    title: `Solicitar modelo | ${siteName}`,
+    description: 'Solicita una moto que todavía no está en el catálogo técnico de MotoAtlas.',
+  },
+  privacidad: {
+    title: `Privacidad | ${siteName}`,
+    description: 'Política básica de privacidad de MotoAtlas: reviews, alias, almacenamiento local y servicios externos.',
+  },
+  terminos: {
+    title: `Términos de uso | ${siteName}`,
+    description: 'Términos básicos para utilizar MotoAtlas, sus datos técnicos, comparativas y comunidad.',
+  },
+};
+
+export function buildStaticInfoSeoMetadata(routeKey: StaticInfoRouteKey): SeoMetadata {
+  const content = staticInfoSeoContent[routeKey];
+  const canonicalPath = getStaticInfoCanonicalPath(routeKey);
+
+  return {
+    canonicalUrl: absoluteUrl(canonicalPath),
+    description: content.description,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      description: content.description,
+      name: content.title,
+      url: absoluteUrl(canonicalPath),
+    },
+    title: content.title,
+  };
+}
+
 export function buildTopRatedSeoMetadata(): SeoMetadata {
   return {
     canonicalUrl: absoluteUrl('/motos-mejor-valoradas'),
@@ -198,7 +242,19 @@ export function getSitemapUrls(motorcycles: readonly Bike[]) {
     selectedBikes.slice(index + 1).map((otherBike) => absoluteUrl(getCompareCanonicalPath([bike, otherBike]))),
   );
 
-  return [siteBaseUrl, `${siteBaseUrl}/buscador`, `${siteBaseUrl}/motos-mejor-valoradas`, ...bikeUrls, ...communityUrls, ...compareUrls];
+  return [
+    siteBaseUrl,
+    `${siteBaseUrl}/buscador`,
+    `${siteBaseUrl}/motos-mejor-valoradas`,
+    `${siteBaseUrl}/metodologia`,
+    `${siteBaseUrl}/fuentes-datos`,
+    `${siteBaseUrl}/solicitar-modelo`,
+    `${siteBaseUrl}/privacidad`,
+    `${siteBaseUrl}/terminos`,
+    ...bikeUrls,
+    ...communityUrls,
+    ...compareUrls,
+  ];
 }
 
 export function buildSitemapXml(urls: readonly string[]) {

@@ -31,6 +31,17 @@ describe('Footer', () => {
     expect(screen.getByRole('link', { name: 'Motos mejor valoradas' })).toHaveAttribute('href', '#/motos-mejor-valoradas');
   });
 
+
+  it('incluye las rutas de Datos y Legal enlazadas desde el footer', () => {
+    render(<Footer />);
+
+    expect(screen.getByRole('link', { name: 'Metodología' })).toHaveAttribute('href', '#/metodologia');
+    expect(screen.getByRole('link', { name: 'Fuentes de datos' })).toHaveAttribute('href', '#/fuentes-datos');
+    expect(screen.getByRole('link', { name: 'Solicitar modelo' })).toHaveAttribute('href', '#/solicitar-modelo');
+    expect(screen.getByRole('link', { name: 'Privacidad' })).toHaveAttribute('href', '#/privacidad');
+    expect(screen.getByRole('link', { name: 'Términos' })).toHaveAttribute('href', '#/terminos');
+  });
+
   it('no renderiza idioma global ni share global', () => {
     render(<Footer />);
 
