@@ -183,6 +183,19 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://motoatlas.com/comunidad');
   });
 
+  it.each([
+    ['#/login', /Iniciar sesión/i, 'Iniciar sesión | MotoAtlas'],
+    ['#/registro', /Crear cuenta/i, 'Crear cuenta | MotoAtlas'],
+    ['#/cuenta', /Inicia sesión para ver Mi cuenta/i, 'Mi cuenta | MotoAtlas'],
+  ])('renderiza la ruta de auth %s', async (hash, heading, expectedTitle) => {
+    window.location.hash = hash;
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(document.title).toBe(expectedTitle);
+  });
+
   it('renders community page from a motorcycle route', async () => {
     window.location.hash = '#/comunidad/test-bmw-f-900-gs';
 

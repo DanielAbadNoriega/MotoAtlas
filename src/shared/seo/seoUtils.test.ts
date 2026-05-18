@@ -3,6 +3,7 @@ import { bikeFixtures } from '../../test/fixtures/bikes';
 import {
   applySeoMetadata,
   buildBikeJsonLd,
+  buildAuthSeoMetadata,
   buildBikeSeoMetadata,
   buildCommunityLandingSeoMetadata,
   buildCommunitySeoMetadata,
@@ -81,6 +82,15 @@ describe('seoUtils', () => {
 
   it('mantiene motos mejor valoradas como alias SEO de comunidad', () => {
     expect(buildTopRatedSeoMetadata()).toMatchObject(buildCommunityLandingSeoMetadata());
+  });
+
+  it('genera meta SEO para login, registro y cuenta', () => {
+    expect(buildAuthSeoMetadata('login')).toMatchObject({
+      title: 'Iniciar sesión | MotoAtlas',
+      canonicalUrl: 'https://motoatlas.com/login',
+    });
+    expect(buildAuthSeoMetadata('registro').title).toBe('Crear cuenta | MotoAtlas');
+    expect(buildAuthSeoMetadata('cuenta').description).toContain('Gestiona tu cuenta');
   });
 
   it('aplica meta tags, canonical y JSON-LD al documento', () => {

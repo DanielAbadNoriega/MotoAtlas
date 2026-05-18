@@ -200,6 +200,39 @@ export function buildTopRatedSeoMetadata(): SeoMetadata {
   return buildCommunityLandingSeoMetadata();
 }
 
+export function buildAuthSeoMetadata(route: 'login' | 'registro' | 'cuenta'): SeoMetadata {
+  const content = {
+    login: {
+      canonicalPath: '/login',
+      title: `Iniciar sesión | ${siteName}`,
+      description: 'Inicia sesión en MotoAtlas para gestionar tu cuenta, futuras reviews y aportaciones.',
+    },
+    registro: {
+      canonicalPath: '/registro',
+      title: `Crear cuenta | ${siteName}`,
+      description: 'Crea una cuenta en MotoAtlas para preparar reviews asociadas y futuras aportaciones.',
+    },
+    cuenta: {
+      canonicalPath: '/cuenta',
+      title: `Mi cuenta | ${siteName}`,
+      description: 'Gestiona tu cuenta de MotoAtlas, identidad, futuras reviews y solicitudes de modelos.',
+    },
+  }[route];
+
+  return {
+    canonicalUrl: absoluteUrl(content.canonicalPath),
+    description: content.description,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      description: content.description,
+      name: content.title,
+      url: absoluteUrl(content.canonicalPath),
+    },
+    title: content.title,
+  };
+}
+
 export function buildCompareSeoMetadata(bikes: readonly Bike[]): SeoMetadata {
   const names = bikes.map((bike) => `${bike.brand} ${bike.model}`);
   const title = `${names.join(' vs ')} | Comparador MotoAtlas`;

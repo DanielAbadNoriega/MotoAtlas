@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { AuthProvider } from './features/auth';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
+import { AccountPage } from './components/pages/AccountPage';
+import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
 import { MotorcycleCommunityPage } from './components/pages/MotorcycleCommunityPage';
@@ -30,12 +33,15 @@ import {
   getComparatorSelectionFromRoute,
   getCurrentAppRoute,
   getStaticInfoRouteKey,
+  isAccountRoute,
   isCommunityRoute,
   isComparatorRoute,
+  isLoginRoute,
+  isRegisterRoute,
   isSearchRoute,
   isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -82,6 +88,9 @@ export function App() {
   const communityBike = communityMotorcycleId ? findMotorcycleById(communityMotorcycleId) : undefined;
   const staticInfoRouteKey = getStaticInfoRouteKey(route);
   const isSearchPage = isSearchRoute(route);
+  const isLoginPage = isLoginRoute(route);
+  const isRegisterPage = isRegisterRoute(route);
+  const isAccountPage = isAccountRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
@@ -121,6 +130,21 @@ export function App() {
   }, [route]);
 
   useEffect(() => {
+    if (isLoginPage) {
+      applySeoMetadata(buildAuthSeoMetadata('login'));
+      return;
+    }
+
+    if (isRegisterPage) {
+      applySeoMetadata(buildAuthSeoMetadata('registro'));
+      return;
+    }
+
+    if (isAccountPage) {
+      applySeoMetadata(buildAuthSeoMetadata('cuenta'));
+      return;
+    }
+
     if (staticInfoRouteKey) {
       applySeoMetadata(buildStaticInfoSeoMetadata(staticInfoRouteKey));
       return;
@@ -156,12 +180,19 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isCommunityLandingPage, isCommunityPage, isComparatorPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isCommunityLandingPage, isCommunityPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
-    <div className="app">
+    <AuthProvider>
+      <div className="app">
       <Navbar />
-      {isComparatorPage ? (
+      {isLoginPage ? (
+        <AuthPage mode="login" />
+      ) : isRegisterPage ? (
+        <AuthPage mode="register" />
+      ) : isAccountPage ? (
+        <AccountPage />
+      ) : isComparatorPage ? (
         <ComparatorPage
           bikes={comparatorBikes}
           ignoredBikeCount={routeComparatorSelection.ignoredIds.length}
@@ -193,6 +224,7 @@ export function App() {
       )}
       <ScrollToTopButton />
       <Footer />
-    </div>
+      </div>
+    </AuthProvider>
   );
 }

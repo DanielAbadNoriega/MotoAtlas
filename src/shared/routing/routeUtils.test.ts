@@ -11,6 +11,9 @@ import {
   getStaticInfoCanonicalPath,
   getStaticInfoRouteKey,
   getSearchTextFromRoute,
+  isAccountRoute,
+  isLoginRoute,
+  isRegisterRoute,
   isTopRatedRoute,
 } from './routeUtils';
 
@@ -44,6 +47,14 @@ describe('routeUtils SEO routes', () => {
     expect(getStaticInfoRouteKey('#/privacidad')).toBe('privacidad');
     expect(getStaticInfoRouteKey('#/terminos')).toBe('terminos');
     expect(getStaticInfoCanonicalPath('privacidad')).toBe('/privacidad');
+  });
+
+  it('detecta rutas de autenticación y cuenta', () => {
+    expect(isLoginRoute('#/login')).toBe(true);
+    expect(isRegisterRoute('/registro')).toBe(true);
+    expect(isAccountRoute('#/cuenta')).toBe(true);
+    expect(isAccountRoute('#/perfil')).toBe(true);
+    expect(isLoginRoute('#/cuenta')).toBe(false);
   });
 
   it('detecta la ruta de motos mejor valoradas', () => {

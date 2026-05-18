@@ -167,6 +167,21 @@ export function isTopRatedRoute(route: string) {
   return /^\/motos-mejor-valoradas(\/|$)/.test(path);
 }
 
+export function isLoginRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === '/login';
+}
+
+export function isRegisterRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === '/registro';
+}
+
+export function isAccountRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === '/cuenta' || path === '/perfil';
+}
+
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {
   const queryIds = getQueryParamIds(route);
   const slug = getCompareSlugFromRoute(route);

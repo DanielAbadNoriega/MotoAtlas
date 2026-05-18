@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { brand, navActions, siteA11y } from '../../../data/site';
+import { useAuth } from '../../../features/auth';
 import { getCurrentAppRoute, routeToPathAndSearch } from '../../../shared/routing/routeUtils';
 import {
   compareQueueChangeEventName,
@@ -94,7 +95,7 @@ function isRouteActive(route: string, itemId: NavigationItem['id']) {
     return /^\/comunidad(\/|$)/.test(path);
   }
 
-  return path === '/perfil';
+  return path === '/cuenta' || path === '/perfil' || path === '/login' || path === '/registro';
 }
 
 function NavIcon({ icon }: { icon: string }) {
@@ -129,13 +130,26 @@ function DesktopNav({ compareHref, route }: { compareHref: `#${string}`; route: 
 
 function DrawerNav({ compareHref, isOpen, onClose, route }: { compareHref: `#${string}`; isOpen: boolean; onClose: () => void; route: string }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const { isAuthenticated, signOut } = useAuth();
   const drawerItems = useMemo(
     () => [
       ...getNavigationItems(compareHref),
-      { id: 'profile', icon: 'account_circle', label: 'Perfil', href: '#/perfil' },
+      {
+        id: 'profile',
+        icon: 'account_circle',
+        label: isAuthenticated ? 'Mi cuenta' : 'Iniciar sesión',
+        href: isAuthenticated ? '#/cuenta' : '#/login',
+      },
     ] satisfies readonly NavigationItem[],
-    [compareHref],
+    [compareHref, isAuthenticated],
   );
+
+  const handleSignOut = () => {
+    void signOut().finally(() => {
+      onClose();
+      window.location.hash = '#/';
+    });
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -182,6 +196,12 @@ function DrawerNav({ compareHref, isOpen, onClose, route }: { compareHref: `#${s
               <NavIcon icon="chevron_right" />
             </a>
           ))}
+          {isAuthenticated ? (
+            <button className="navbar__drawer-signout" type="button" onClick={handleSignOut}>
+              <NavIcon icon="logout" />
+              <span>Cerrar sesión</span>
+            </button>
+          ) : null}
         </nav>
       </aside>
     </div>
@@ -207,9 +227,18 @@ export function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const route = useCurrentRoute();
   const compareHref = useCompareHref();
+  const { isAuthenticated, profile, signOut, user } = useAuth();
+  const accountLabel = profile?.displayName?.trim() || user?.email || 'Mi cuenta';
+  const accountHref = isAuthenticated ? '#/cuenta' : '#/login';
 
   const openSearch = () => {
     window.location.hash = '#/buscador';
+  };
+
+  const handleSignOut = () => {
+    void signOut().finally(() => {
+      window.location.hash = '#/';
+    });
   };
 
   useEffect(() => {
@@ -230,10 +259,17 @@ export function Navbar() {
             <button className="navbar__mobile-icon" type="button" onClick={openSearch} aria-label="Abrir buscador">
               <NavIcon icon="search" />
             </button>
-            <a className="navbar__signin" href="#/perfil">
-              <NavIcon icon="account_circle" />
-              <span>{navActions.signInLabel}</span>
-            </a>
+            <div className="navbar__account">
+              <a className="navbar__signin" href={accountHref}>
+                <NavIcon icon="account_circle" />
+                <span>{isAuthenticated ? accountLabel : navActions.signInLabel}</span>
+              </a>
+              {isAuthenticated ? (
+                <button className="navbar__signout" type="button" onClick={handleSignOut}>
+                  Cerrar sesión
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <button
@@ -251,7 +287,7 @@ export function Navbar() {
             <button className="navbar__mobile-icon" type="button" onClick={openSearch} aria-label={navActions.searchLabel}>
               <NavIcon icon="search" />
             </button>
-            <a className="navbar__mobile-icon" href="#/perfil" aria-label={navActions.profileLabel}>
+            <a className="navbar__mobile-icon" href={accountHref} aria-label={isAuthenticated ? 'Mi cuenta' : navActions.signInLabel}>
               <NavIcon icon="account_circle" />
             </a>
           </div>

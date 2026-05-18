@@ -389,3 +389,42 @@ $navbar-desktop-min: 991px;
     }
   }
 }
+
+.navbar__account {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.6rem;
+}
+
+.navbar__signout,
+.navbar__drawer-signout {
+  @include label-caps;
+
+  align-items: center;
+  background: rgba($color-surface-lowest, 0.42);
+  border: 1px solid rgba($color-outline-variant, 0.42);
+  border-radius: $radius-lg;
+  color: $color-on-surface-variant;
+  display: inline-flex;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.65rem 0.8rem;
+  transition:
+    background $transition-base,
+    border-color $transition-base,
+    color $transition-base;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba($color-error, 0.1);
+    border-color: rgba($color-error, 0.45);
+    color: $color-error;
+    outline: 0;
+  }
+}
+
+.navbar__drawer-signout {
+  justify-content: flex-start;
+  margin-top: 0.5rem;
+  width: 100%;
+}

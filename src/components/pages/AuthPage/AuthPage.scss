@@ -1,0 +1,188 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.auth-page {
+  @include container;
+  @include section-spacing;
+
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: calc(100dvh - 80px);
+  position: relative;
+
+  &::before {
+    background:
+      radial-gradient(circle at 20% 15%, rgba($color-accent-container, 0.18), transparent 28rem),
+      linear-gradient(135deg, rgba($color-surface-lowest, 0.8), rgba($color-surface, 0.96));
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+  }
+}
+
+.auth-page__panel {
+  @include glass-panel;
+
+  border-radius: $radius-xl;
+  box-shadow: $shadow-glass;
+  display: grid;
+  gap: 1.25rem;
+  max-width: 480px;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  width: min(100%, 480px);
+}
+
+.auth-page__panel--success {
+  text-align: center;
+}
+
+.auth-page__intro {
+  display: grid;
+  gap: 0.55rem;
+
+  h1 {
+    @include headline-lg;
+
+    color: $color-on-surface;
+    margin: 0;
+  }
+
+  p {
+    color: rgba($color-on-surface-variant, 0.86);
+    line-height: 1.65;
+    margin: 0;
+  }
+}
+
+.auth-page__eyebrow {
+  @include label-caps;
+
+  color: $color-accent-container;
+}
+
+.auth-page__alert,
+.auth-page__success {
+  border-radius: $radius-lg;
+  padding: 0.9rem 1rem;
+}
+
+.auth-page__alert {
+  background: rgba($color-error, 0.12);
+  border: 1px solid rgba($color-error, 0.35);
+  color: $color-error;
+}
+
+.auth-page__success {
+  align-items: center;
+  background: rgba($color-accent-container, 0.1);
+  border: 1px solid rgba($color-accent-container, 0.35);
+  color: $color-on-surface;
+  display: grid;
+  gap: 0.5rem;
+
+  a {
+    color: $color-accent-container;
+    font-weight: 800;
+  }
+}
+
+.auth-page__form {
+  display: grid;
+  gap: 1rem;
+
+  label {
+    @include label-caps;
+
+    color: $color-on-surface-variant;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  input {
+    background: rgba($color-surface-lowest, 0.78);
+    border: 1px solid rgba($color-outline-variant, 0.7);
+    border-radius: $radius-lg;
+    color: $color-on-surface;
+    font: 600 0.95rem/1.2 $font-mono;
+    min-height: 48px;
+    padding: 0.9rem 1rem;
+
+    &:focus {
+      border-color: $color-accent-container;
+      outline: 2px solid rgba($color-accent-container, 0.28);
+    }
+
+    &[aria-invalid='true'] {
+      border-color: $color-error;
+    }
+  }
+
+  span,
+  small {
+    font-family: $font-body;
+    font-size: 0.78rem;
+    letter-spacing: 0;
+    line-height: 1.4;
+    text-transform: none;
+  }
+
+  span {
+    color: $color-error;
+  }
+
+  small {
+    color: rgba($color-on-surface-variant, 0.72);
+  }
+}
+
+.auth-page__primary {
+  align-items: center;
+  background: $color-accent-container;
+  border: 1px solid $color-accent-container;
+  border-radius: $radius-lg;
+  color: white;
+  display: inline-flex;
+  font-family: $font-headline;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.9rem 1.2rem;
+  text-transform: uppercase;
+  transition: filter $transition-base, transform $transition-fast;
+
+  &:hover,
+  &:focus-visible {
+    filter: brightness(1.1);
+    outline: 0;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+}
+
+.auth-page__switch {
+  color: $color-on-surface-variant;
+  margin: 0;
+  text-align: center;
+
+  a {
+    color: $color-accent-container;
+    font-weight: 800;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .auth-page {
+    min-height: calc(100dvh - 64px);
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+}

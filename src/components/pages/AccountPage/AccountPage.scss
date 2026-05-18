@@ -1,0 +1,168 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.account-page {
+  @include container;
+  @include section-spacing;
+
+  display: grid;
+  gap: 2rem;
+}
+
+.account-page__hero {
+  @include glass-panel;
+
+  align-items: end;
+  background:
+    radial-gradient(circle at top right, rgba($color-accent-container, 0.16), transparent 18rem),
+    rgba($color-surface-low, 0.78);
+  border-radius: $radius-xl;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  min-height: 280px;
+  padding: clamp(1.5rem, 4vw, 3rem);
+
+  span {
+    @include label-caps;
+
+    color: $color-accent-container;
+  }
+
+  h1 {
+    @include headline-xl;
+
+    color: $color-on-surface;
+    margin: 0.35rem 0;
+  }
+
+  p {
+    color: rgba($color-on-surface-variant, 0.82);
+    line-height: 1.65;
+    margin: 0;
+    max-width: 36rem;
+  }
+}
+
+.account-page__hero--empty {
+  align-items: start;
+  display: grid;
+  justify-items: start;
+}
+
+.account-page__button {
+  align-items: center;
+  background: $color-accent-container;
+  border: 1px solid $color-accent-container;
+  border-radius: $radius-lg;
+  color: white;
+  display: inline-flex;
+  font-family: $font-headline;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  text-transform: uppercase;
+}
+
+.account-page__button--ghost {
+  background: rgba($color-surface-lowest, 0.42);
+  border-color: rgba($color-outline-variant, 0.65);
+  color: $color-on-surface;
+}
+
+.account-page__alert {
+  background: rgba($color-error, 0.12);
+  border: 1px solid rgba($color-error, 0.35);
+  border-radius: $radius-lg;
+  color: $color-error;
+  margin: 0;
+  padding: 1rem;
+}
+
+.account-page__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1.1fr) repeat(2, minmax(0, 1fr));
+}
+
+.account-page__card {
+  @include glass-panel;
+
+  border-radius: $radius-xl;
+  display: grid;
+  gap: 1rem;
+  padding: 1.4rem;
+
+  > .material-symbols-outlined {
+    color: $color-accent-container;
+    font-size: 2.4rem;
+  }
+
+  h2 {
+    @include headline-md;
+
+    color: $color-on-surface;
+    margin: 0;
+  }
+
+  p,
+  small {
+    color: rgba($color-on-surface-variant, 0.82);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  a {
+    color: $color-accent-container;
+    font-weight: 800;
+  }
+
+  dl {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+  }
+
+  div {
+    border-top: 1px solid rgba($color-outline-variant, 0.35);
+    display: grid;
+    gap: 0.25rem;
+    padding-top: 0.75rem;
+  }
+
+  dt,
+  .account-page__counter {
+    @include label-caps;
+
+    color: $color-on-surface-variant;
+  }
+
+  dd {
+    color: $color-on-surface;
+    font-family: $font-mono;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.account-page__card--placeholder {
+  align-content: start;
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .account-page__hero {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .account-page__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .account-page {
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+}
