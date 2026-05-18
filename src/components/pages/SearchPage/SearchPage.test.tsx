@@ -11,6 +11,10 @@ import { AdvancedFilters, BikeResultCard, CompareDrawer, SearchPage } from './Se
 
 const realMotorcycles = realMotorcycleSeed as readonly Bike[];
 
+function realMotorcycleCountBySegment(segment: Bike['segment']) {
+  return realMotorcycles.filter((motorcycle) => motorcycle.segment === segment).length;
+}
+
 function renderSearchPage() {
   return render(<SearchPage motorcycles={bikeFixtures} routeHash="#/buscador?browse=1" />);
 }
@@ -144,10 +148,10 @@ describe('SearchPage', () => {
     expect(screen.getByText(/Solo puedes seleccionar hasta 3 motos/i)).toBeInTheDocument();
   });
 
-  it('renders the 20 current JSON motorcycles', () => {
+  it('renders the current JSON motorcycles', () => {
     renderRealSearchPage();
 
-    expect(screen.getByRole('heading', { name: /20 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(`${realMotorcycles.length} resultados encontrados`, 'i') })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /F 900 GS/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /R 1300 GS/i })).toBeInTheDocument();
   });
@@ -158,7 +162,7 @@ describe('SearchPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Trail' }));
 
-    expect(screen.getByRole('heading', { name: /9 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(`${realMotorcycleCountBySegment('trail')} resultados encontrados`, 'i') })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Ténéré 700/i })).toBeInTheDocument();
   });
 
@@ -168,7 +172,7 @@ describe('SearchPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Naked' }));
 
-    expect(screen.getByRole('heading', { name: /6 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(`${realMotorcycleCountBySegment('naked')} resultados encontrados`, 'i') })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /MT-07/i })).toBeInTheDocument();
   });
 
@@ -178,7 +182,7 @@ describe('SearchPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Sport Touring' }));
 
-    expect(screen.getByRole('heading', { name: /5 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(`${realMotorcycleCountBySegment('sport-touring')} resultados encontrados`, 'i') })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Tracer 9 GT/i })).toBeInTheDocument();
   });
 

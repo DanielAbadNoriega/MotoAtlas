@@ -1,6 +1,3 @@
--- MotoAtlas Supabase schema
--- Run this in Supabase SQL Editor.
-
 create extension if not exists pgcrypto;
 
 do $$
@@ -206,7 +203,7 @@ create table if not exists public.motorcycle_reviews (
   cons text[] not null default '{}',
   source text not null default 'user' check (source in ('user', 'mock', 'seed', 'import')),
   verified boolean not null default false,
-  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'hidden')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -220,6 +217,13 @@ alter table if exists public.motorcycle_reviews
 
 alter table if exists public.motorcycle_reviews
   add column if not exists source text not null default 'user' check (source in ('user', 'mock', 'seed', 'import'));
+
+alter table if exists public.motorcycle_reviews
+  drop constraint if exists motorcycle_reviews_status_check;
+
+alter table if exists public.motorcycle_reviews
+  add constraint motorcycle_reviews_status_check
+  check (status in ('pending', 'approved', 'rejected', 'hidden'));
 
 create index if not exists motorcycle_reviews_motorcycle_id_idx on public.motorcycle_reviews (motorcycle_id);
 create index if not exists motorcycle_reviews_status_idx on public.motorcycle_reviews (status);

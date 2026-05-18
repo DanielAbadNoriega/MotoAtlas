@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createReview } from '../../../services/motorcycleReviewService';
@@ -12,8 +12,8 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
 const createReviewMock = vi.mocked(createReview);
 
 function renderModal(onClose = vi.fn()) {
-  render(<ReviewModal isOpen motorcycle={bikeFixtures[0]} onClose={onClose} />);
-  return { onClose };
+  const renderResult = render(<ReviewModal isOpen motorcycle={bikeFixtures[0]} onClose={onClose} />);
+  return { ...renderResult, onClose };
 }
 
 describe('ReviewModal', () => {
@@ -58,6 +58,14 @@ describe('ReviewModal', () => {
     const { onClose } = renderModal();
 
     await user.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('cierra al hacer click fuera si no está enviando', () => {
+    const { container, onClose } = renderModal();
+
+    fireEvent.mouseDown(container.firstElementChild as Element);
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -128,6 +136,23 @@ describe('ReviewModal', () => {
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 
+  it('valida que meses y kilómetros no sean negativos', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.type(screen.getByLabelText(/Alias/i), 'MoteroDiario');
+    await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
+    fireEvent.change(screen.getByLabelText(/Tiempo con la moto \(meses\)/i), { target: { value: '-1' } });
+    fireEvent.change(screen.getByLabelText(/Kilómetros recorridos/i), { target: { value: '-10' } });
+    await user.click(screen.getByRole('button', { name: 'Diario' }));
+    await user.type(screen.getByLabelText(/Comentario detallado/i), 'Uso diario correcto.');
+    await user.click(screen.getByRole('button', { name: /Enviar review/i }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Revisa los campos obligatorios antes de enviar.');
+    expect(screen.getAllByText('Debe ser un número mayor o igual que 0.')).toHaveLength(2);
+    expect(createReviewMock).not.toHaveBeenCalled();
+  });
+
   it('envía una review válida con motorcycle_id correcto y muestra éxito', async () => {
     const user = userEvent.setup();
     renderModal();
@@ -156,6 +181,7 @@ describe('ReviewModal', () => {
         cons: ['Precio alto'],
       }),
     );
+    expect(createReviewMock.mock.calls[0][0]).not.toHaveProperty('verified');
     expect(await screen.findByRole('heading', { name: /Review enviada/i })).toBeInTheDocument();
     expect(screen.getByText(/Gracias. Tu opinión se revisará antes de publicarse/i)).toBeInTheDocument();
   });

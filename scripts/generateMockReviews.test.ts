@@ -15,8 +15,10 @@ describe('generateMockReviews', () => {
     expect(styles.size).toBeGreaterThanOrEqual(3)
 
     const allowed = new Set(['ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario'])
+    const allowedStatuses = new Set(['pending', 'approved', 'rejected'])
     for (const r of reviews) {
       expect(allowed.has(r.riding_style)).toBe(true)
+      expect(allowedStatuses.has(r.status)).toBe(true)
     }
 
     const nonEmptyComments = reviews.filter((r) => typeof r.comment === 'string' && r.comment.trim().length > 0)
@@ -34,7 +36,7 @@ describe('generateMockReviews', () => {
 
     // all generated reviews must be marked as mock
     for (const r of reviews) {
-      expect(r.source === 'mock' || r.source === undefined || r.source === null).toBe(true)
+      expect(r.source).toBe('mock')
     }
   })
 
@@ -52,6 +54,9 @@ describe('generateMockReviews', () => {
       expect(row).toHaveProperty('status')
       expect(typeof row.rating).toBe('number')
       expect(row.source).toBe('mock')
+      expect(['pending', 'approved', 'rejected']).toContain(row.status)
+      expect(['ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario']).toContain(row.riding_style)
+      expect(typeof row.verified).toBe('boolean')
     }
   })
 })

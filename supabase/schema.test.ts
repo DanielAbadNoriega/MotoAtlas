@@ -29,4 +29,8 @@ describe('Supabase motorcycle_reviews RLS schema', () => {
     expect(schemaSql).toContain('verified boolean not null default false');
     expect(schemaSql).toContain('add column if not exists verified boolean not null default false');
   });
+
+  it('permite hidden como estado de moderación no público', () => {
+    expect(schemaSql).toContain("status in ('pending', 'approved', 'rejected', 'hidden')");
+  });
 });

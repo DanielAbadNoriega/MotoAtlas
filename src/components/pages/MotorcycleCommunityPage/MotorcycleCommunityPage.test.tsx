@@ -3,6 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
+import {
+  createApprovedReviewFixture,
+  createHiddenReviewFixture,
+  createRejectedReviewFixture,
+  createReviewFixture,
+  createReviewFixtures,
+} from '../../../test/fixtures/reviews';
 import { MotorcycleCommunityPage } from './MotorcycleCommunityPage';
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
@@ -113,6 +120,41 @@ describe('MotorcycleCommunityPage', () => {
     expect(screen.getByText('Usuario MotoAtlas')).toBeInTheDocument();
   });
 
+  it('no muestra reviews rejected ni hidden aunque lleguen por error del servicio', async () => {
+    getApprovedReviewsMock.mockResolvedValue([
+      createApprovedReviewFixture({ comment: 'Review visible aprobada.' }),
+      createRejectedReviewFixture({ comment: 'Review rechazada privada.' }),
+      createHiddenReviewFixture({ comment: 'Review oculta privada.' }),
+    ]);
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    expect(await screen.findByText('Review visible aprobada.')).toBeInTheDocument();
+    expect(screen.queryByText('Review rechazada privada.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Review oculta privada.')).not.toBeInTheDocument();
+  });
+
+  it('no rompe con reviews incompletas y usa fallbacks seguros', async () => {
+    getApprovedReviewsMock.mockResolvedValue([
+      createReviewFixture({
+        comment: 'Review con campos parciales.',
+        cons: [],
+        createdAt: 'fecha-invalida',
+        kilometers: null,
+        ownershipMonths: null,
+        pros: [],
+        userName: '',
+      }),
+    ]);
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    expect(await screen.findByText('Review con campos parciales.')).toBeInTheDocument();
+    expect(screen.getByText('Usuario MotoAtlas')).toBeInTheDocument();
+    expect(screen.getByText(/Fecha pendiente/)).toBeInTheDocument();
+    expect(screen.getAllByText('N/D').length).toBeGreaterThan(0);
+  });
+
   it('no muestra badge verificado cuando la review no trae verificación real', async () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
@@ -175,6 +217,17 @@ describe('MotorcycleCommunityPage', () => {
     expect(within(slider).getByText('Muy equilibrada, aunque alta para ciudad.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ver reviews anteriores/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ver más reviews/i })).toBeInTheDocument();
+  });
+
+  it('el listado horizontal no crashea con muchas reviews aprobadas', async () => {
+    getApprovedReviewsMock.mockResolvedValue(createReviewFixtures(12));
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const slider = await screen.findByRole('region', { name: /Verified owner reports/i });
+
+    expect(within(slider).getByText('Review aprobada 1')).toBeInTheDocument();
+    expect(within(slider).getByText('Review aprobada 12')).toBeInTheDocument();
   });
 
   it('mantiene navegación hacia ficha y comparador', async () => {

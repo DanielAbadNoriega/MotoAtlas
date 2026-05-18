@@ -53,6 +53,7 @@ describe('motorcycleReviewService', () => {
       rating: 5,
       status: 'pending',
       userName: 'Dani',
+      verified: false,
     });
     expect(fetchMock).toHaveBeenCalledWith(
       'https://example.supabase.co/rest/v1/motorcycle_reviews',
@@ -63,6 +64,7 @@ describe('motorcycleReviewService', () => {
     );
     expect(fetchMock.mock.calls[0][1].body).toContain('"riding_style":"viaje"');
     expect(fetchMock.mock.calls[0][1].body).toContain('"user_name":"Dani"');
+    expect(fetchMock.mock.calls[0][1].body).not.toContain('"verified"');
   });
 
   it('envía headers Supabase correctos para inserción pública sin leer la fila pending', async () => {
@@ -89,6 +91,7 @@ describe('motorcycleReviewService', () => {
       'Content-Type': 'application/json',
       Prefer: 'return=minimal',
     });
+    expect(requestInit.headers).not.toMatchObject({ Prefer: 'return=representation' });
   });
 
   it('propaga un error Supabase legible si RLS rechaza el insert', async () => {
