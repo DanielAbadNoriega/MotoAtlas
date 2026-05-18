@@ -1,29 +1,50 @@
 import { brand, footerContent } from '../../../data/site';
-import { IconButton } from '../../ui/IconButton';
 import './Footer.scss';
 
 export function Footer() {
   return (
-    <footer className="footer" id="comunidad" aria-label={footerContent.ariaLabel}>
+    <footer className="footer" aria-label={footerContent.ariaLabel}>
       <div className="footer__inner">
-        <div className="footer__brand-block">
-          <strong>{brand.name}</strong>
-          <p>{footerContent.copyright}</p>
+        <section className="footer__brand-block" aria-label="MotoAtlas">
+          <a className="footer__brand" href={brand.homeHref} aria-label={brand.homeAriaLabel}>
+            {brand.name}
+          </a>
+          <p>{footerContent.brandDescription}</p>
+          <small className="footer__copyright footer__copyright--desktop">{footerContent.copyright}</small>
+        </section>
+
+        <div className="footer__columns" aria-label="Enlaces del pie de página">
+          {footerContent.columns.map((column) => (
+            <nav className="footer__column" aria-label={column.title} key={column.title}>
+              <h2>{column.title}</h2>
+              <ul>
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <a href={link.href}>{link.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+
+          <nav className="footer__column footer__column--social" aria-label="Social">
+            <h2>Social</h2>
+            <ul className="footer__social-list">
+              {footerContent.socialActions.map((action) => (
+                <li key={action.label}>
+                  <a href={action.href} target="_blank" rel="noopener noreferrer" aria-label={`MotoAtlas en ${action.label}`}>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      {action.icon}
+                    </span>
+                    <span>{action.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
 
-        <nav className="footer__links" aria-label={footerContent.secondaryNavLabel}>
-          {footerContent.links.map((link) => (
-            <a href={link.href} key={link.label}>
-              {link.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="footer__social" aria-label={footerContent.socialLabel}>
-          {footerContent.socialActions.map((action) => (
-            <IconButton icon={action.icon} label={action.label} key={action.icon} />
-          ))}
-        </div>
+        <small className="footer__copyright footer__copyright--mobile">{footerContent.copyright}</small>
       </div>
     </footer>
   );

@@ -31,18 +31,39 @@ export const navActions = {
 } satisfies NavActionContent;
 
 export const footerContent = {
-  ariaLabel: 'Comunidad MotoAtlas',
-  secondaryNavLabel: 'Enlaces secundarios',
-  socialLabel: 'Acciones sociales',
-  copyright: '© 2026 MotoAtlas. Registro de ingeniería de alto rendimiento.',
-  links: [
-    { label: 'Privacidad', href: '#top' },
-    { label: 'Términos', href: '#top' },
-    { label: 'Especificaciones técnicas', href: '#top' },
-    { label: 'Soporte', href: '#top' },
+  ariaLabel: 'Pie de página de MotoAtlas',
+  brandDescription: 'Registro técnico de motos, comparativas y comunidad.',
+  copyright: '© 2026 MotoAtlas. Todos los derechos reservados.',
+  columns: [
+    {
+      title: 'Explorar',
+      links: [
+        { label: 'Buscador', href: '#/buscador' },
+        { label: 'Comparador', href: '#/comparador' },
+        { label: 'Comunidad', href: '#/comunidad' },
+        { label: 'Motos mejor valoradas', href: '#/motos-mejor-valoradas' },
+      ],
+    },
+    {
+      title: 'Datos',
+      links: [
+        { label: 'Metodología', href: '#/metodologia' },
+        { label: 'Fuentes de datos', href: '#/fuentes-datos' },
+        { label: 'Solicitar modelo', href: '#/solicitar-modelo' },
+      ],
+    },
+    {
+      title: 'Legal',
+      links: [
+        { label: 'Privacidad', href: '#/privacidad' },
+        { label: 'Términos', href: '#/terminos' },
+      ],
+    },
   ],
   socialActions: [
-    { label: 'Cambiar idioma', icon: 'language' },
-    { label: 'Compartir MotoAtlas', icon: 'share' },
+    { label: 'TikTok', href: 'https://www.tiktok.com/', icon: 'brand_awareness' },
+    { label: 'Instagram', href: 'https://www.instagram.com/', icon: 'photo_camera' },
+    { label: 'YouTube', href: 'https://www.youtube.com/', icon: 'play_circle' },
+    { label: 'Facebook', href: 'https://www.facebook.com/', icon: 'public' },
   ],
 } satisfies FooterContent;

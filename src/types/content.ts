@@ -3,10 +3,14 @@ export type AnchorHref = `#${string}`;
 export type MaterialIconName =
   | 'account_circle'
   | 'arrow_forward'
+  | 'brand_awareness'
   | 'check_circle'
   | 'fact_check'
   | 'language'
   | 'menu'
+  | 'photo_camera'
+  | 'play_circle'
+  | 'public'
   | 'search'
   | 'share'
   | 'warning';
@@ -39,17 +43,22 @@ export type FooterLink = Readonly<{
   href: AnchorHref;
 }>;
 
+export type FooterColumn = Readonly<{
+  title: string;
+  links: readonly FooterLink[];
+}>;
+
 export type FooterSocialAction = Readonly<{
   label: string;
-  icon: Extract<MaterialIconName, 'language' | 'share'>;
+  href: `https://${string}`;
+  icon: Extract<MaterialIconName, 'brand_awareness' | 'photo_camera' | 'play_circle' | 'public'>;
 }>;
 
 export type FooterContent = Readonly<{
   ariaLabel: string;
-  secondaryNavLabel: string;
-  socialLabel: string;
+  brandDescription: string;
   copyright: string;
-  links: readonly FooterLink[];
+  columns: readonly FooterColumn[];
   socialActions: readonly FooterSocialAction[];
 }>;
 
