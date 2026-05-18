@@ -194,6 +194,21 @@ Genera:
 
 Los meta tags, canonical, Open Graph y JSON-LD viven centralizados en `src/shared/seo/seoUtils.ts`.
 
+### Flujo seguro de importación de motos
+
+El pipeline recomendado es:
+
+```bash
+npm run fetch:motos
+npm run merge:motos
+# revisar data/import/motorcycles.merged.json y data/import/motorcycles.merge-report.json
+npm run merge:motos -- --apply
+npm run import:motos:check
+npm run import:motos
+```
+
+`fetch:motos` y `merge:motos` no importan a Supabase. `merge:motos` tampoco sobrescribe `data/import/motorcycles.json` salvo que uses `--apply`. Revisa siempre el reporte: los warnings no bloquean, pero indican revisión manual necesaria. Más detalle en `docs/motorcycle-import-workflow.md`.
+
 ### Reviews sin login
 
 Las reviews entran como `pending` por defecto y solo se muestran cuando están `approved`.

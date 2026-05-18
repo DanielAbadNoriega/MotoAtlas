@@ -19,14 +19,15 @@
     "normalize:images:check": "tsx scripts/normalizeMotorcycleImages.ts --dry-run",
     "sync:images": "tsx scripts/syncMotorcycleImages.ts",
     "sync:images:check": "tsx scripts/syncMotorcycleImages.ts --dry-run",
-    "seo:sitemap": "tsx scripts/generateSeoFiles.ts"
-    ,
+    "seo:sitemap": "tsx scripts/generateSeoFiles.ts",
     "generate:mock-reviews": "tsx scripts/generateMockReviews.ts",
     "import:mock-reviews": "tsx scripts/importMockReviews.ts --dry-run",
     "mock:reviews:generate": "tsx scripts/generateMockReviews.ts",
     "mock:reviews:import": "tsx scripts/importMockReviews.ts",
     "mock:reviews:clear": "tsx scripts/clearMockReviews.ts --dry-run",
-    "mock:reviews:clear:apply": "tsx scripts/clearMockReviews.ts --apply"
+    "mock:reviews:clear:apply": "tsx scripts/clearMockReviews.ts --apply",
+    "merge:motos": "tsx scripts/mergeGeneratedMotorcycles.ts",
+    "merge:motos:apply": "tsx scripts/mergeGeneratedMotorcycles.ts --apply"
   },
   "dependencies": {
     "react": "^19.2.6",

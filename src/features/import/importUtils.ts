@@ -9,7 +9,10 @@ import type { MotorcycleSeed, MotorcycleUpsertPayload, SupabaseMotorcycleClient 
 
 export const importPaths = {
   existingMotorcyclesFileUrl: new URL('../../../data/import/motorcycles.json', import.meta.url),
+  fetchReportFileUrl: new URL('../../../data/import/motorcycles.fetch-report.json', import.meta.url),
   generatedMotorcyclesFileUrl: new URL('../../../data/import/motorcycles.generated.json', import.meta.url),
+  mergeReportFileUrl: new URL('../../../data/import/motorcycles.merge-report.json', import.meta.url),
+  mergedMotorcyclesFileUrl: new URL('../../../data/import/motorcycles.merged.json', import.meta.url),
   motorcyclesFileUrl: new URL('../../../data/import/motorcycles.json', import.meta.url),
   repairReportFileUrl: new URL('../../../data/import/motorcycles.repair-report.json', import.meta.url),
   repairedMotorcyclesFileUrl: new URL('../../../data/import/motorcycles.repaired.json', import.meta.url),

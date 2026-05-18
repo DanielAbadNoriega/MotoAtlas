@@ -1,0 +1,4446 @@
+{
+  "added": [
+    {
+      "brand": "Ducati",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "year": 2024
+    },
+    {
+      "brand": "Aprilia",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "year": 2024
+    },
+    {
+      "brand": "Aprilia",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "year": 2024
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "year": 2024
+    }
+  ],
+  "discarded": [],
+  "duplicates": [],
+  "generatedAt": "2026-05-18T10:12:07.254Z",
+  "kept": [
+    {
+      "brand": "BMW",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "year": 2024
+    },
+    {
+      "brand": "BMW",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "year": 2024
+    },
+    {
+      "brand": "Aprilia",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "year": 2024
+    },
+    {
+      "brand": "CFMoto",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "year": 2025
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "year": 2024
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "year": 2024
+    },
+    {
+      "brand": "KTM",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "year": 2024
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "year": 2024
+    },
+    {
+      "brand": "Triumph",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "year": 2024
+    },
+    {
+      "brand": "BMW",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "year": 2024
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "year": 2024
+    }
+  ],
+  "nonDegradedFields": [
+    {
+      "brand": "BMW",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "BMW",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "Yamaha",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "Honda",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "Ducati",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "Triumph",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "Kawasaki",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "Suzuki",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "Suzuki",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    },
+    {
+      "brand": "CFMoto",
+      "existingValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "field": "imageUrl",
+      "generatedValue": "https://placehold.co/1200x800/151515/e4002b?text=MotoAtlas+sin+imagen",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Imagen local real encontrada en public/images/motorcycles; placeholder existente descartado."
+    }
+  ],
+  "placeholderWarnings": [
+    {
+      "brand": "BMW",
+      "field": "priceEur",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "description",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "BMW",
+      "field": "pros",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "cons",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reportCount",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "CFMoto",
+      "field": "priceEur",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "CFMoto",
+      "field": "description",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "CFMoto",
+      "field": "pros",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "CFMoto",
+      "field": "cons",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "CFMoto",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "CFMoto",
+      "field": "reliabilityReports.reportCount",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "priceEur",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "description",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Suzuki",
+      "field": "pros",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "cons",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reportCount",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "priceEur",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "description",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Ducati",
+      "field": "pros",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "cons",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reportCount",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "KTM",
+      "field": "priceEur",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "KTM",
+      "field": "description",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "KTM",
+      "field": "pros",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "KTM",
+      "field": "cons",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "KTM",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "KTM",
+      "field": "reliabilityReports.reportCount",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "priceEur",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "description",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Yamaha",
+      "field": "pros",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "cons",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reportCount",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "priceEur",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "description",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Honda",
+      "field": "pros",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "cons",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reportCount",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "priceEur",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "description",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "pros",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "cons",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reportCount",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "priceEur",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "description",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Suzuki",
+      "field": "pros",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "cons",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reportCount",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Triumph",
+      "field": "priceEur",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Triumph",
+      "field": "description",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Triumph",
+      "field": "pros",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Triumph",
+      "field": "cons",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Triumph",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Triumph",
+      "field": "reliabilityReports.reportCount",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "priceEur",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "description",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Yamaha",
+      "field": "pros",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "cons",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reportCount",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "priceEur",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "description",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "BMW",
+      "field": "pros",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "cons",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reportCount",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "priceEur",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "description",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "pros",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "cons",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reportCount",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "priceEur",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "description",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Ducati",
+      "field": "pros",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "cons",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reportCount",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "priceEur",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "description",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Honda",
+      "field": "pros",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "cons",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reportCount",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "priceEur",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "imageUrl",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Ducati",
+      "field": "description",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Ducati",
+      "field": "pros",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "cons",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reportCount",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "priceEur",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "imageUrl",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "description",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Aprilia",
+      "field": "pros",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "cons",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reportCount",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "priceEur",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "imageUrl",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "description",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Aprilia",
+      "field": "pros",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "cons",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reportCount",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "priceEur",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "imageUrl",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "description",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "pros",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "cons",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reportCount",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "priceEur",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "imageUrl",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "description",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Suzuki",
+      "field": "pros",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "cons",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reportCount",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Report count sin datos.",
+      "value": 0
+    }
+  ],
+  "protectedFields": [
+    {
+      "brand": "BMW",
+      "existingValue": "/images/motorcycles/bmw-f-900-gs-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/bmw-f-900-gs-2024.webp",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "BMW",
+      "existingValue": "Trail media-alta con mucho par, electrónica moderna y enfoque mixto entre viaje rápido y pista sencilla.",
+      "field": "description",
+      "generatedValue": "Trail media-alta con mucho par, electrónica moderna y enfoque mixto entre viaje rápido y pista sencilla.",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Descripción existente bloqueada o ya curada; no se reemplaza por datos generados."
+    },
+    {
+      "brand": "Yamaha",
+      "existingValue": "/images/motorcycles/yamaha-tenere-700-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/yamaha-tenere-700-2024.webp",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Yamaha",
+      "existingValue": "Trail sencilla, robusta y muy popular para aventura real, con menos electrónica y más foco en fiabilidad.",
+      "field": "description",
+      "generatedValue": "Trail sencilla, robusta y muy popular para aventura real, con menos electrónica y más foco en fiabilidad.",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Descripción existente bloqueada o ya curada; no se reemplaza por datos generados."
+    },
+    {
+      "brand": "Yamaha",
+      "existingValue": "/images/motorcycles/yamaha-mt-07-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/yamaha-mt-07-2024.webp",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Honda",
+      "existingValue": "/images/motorcycles/honda-xl750-transalp-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/honda-xl750-transalp-2024.webp",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Honda",
+      "existingValue": "Trail polivalente de media cilindrada, cómoda para carretera y suficientemente capaz en pistas fáciles.",
+      "field": "description",
+      "generatedValue": "Trail polivalente de media cilindrada, cómoda para carretera y suficientemente capaz en pistas fáciles.",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Descripción existente bloqueada o ya curada; no se reemplaza por datos generados."
+    },
+    {
+      "brand": "Honda",
+      "existingValue": "/images/motorcycles/honda-africa-twin-1100-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/honda-africa-twin-1100-2024.webp",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Honda",
+      "existingValue": "Trail viajera de gran cilindrada, cómoda, fiable y con electrónica madura para viajes largos y pistas.",
+      "field": "description",
+      "generatedValue": "Trail viajera de gran cilindrada, cómoda, fiable y con electrónica madura para viajes largos y pistas.",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Descripción existente bloqueada o ya curada; no se reemplaza por datos generados."
+    },
+    {
+      "brand": "Honda",
+      "existingValue": "/images/motorcycles/honda-cb750-hornet-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/honda-cb750-hornet-2024.webp",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Ducati",
+      "existingValue": "/images/motorcycles/ducati-desertx-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/ducati-desertx-2024.webp",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Aprilia",
+      "existingValue": "/images/motorcycles/aprilia-tuareg-660-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/aprilia-tuareg-660-2024.webp",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Aprilia",
+      "existingValue": "Trail ligera y muy campera, con electrónica completa y un carácter más rally que turístico.",
+      "field": "description",
+      "generatedValue": "Trail ligera y muy campera, con electrónica completa y un carácter más rally que turístico.",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Descripción existente bloqueada o ya curada; no se reemplaza por datos generados."
+    },
+    {
+      "brand": "KTM",
+      "existingValue": "/images/motorcycles/ktm-890-adventure-r-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/ktm-890-adventure-r-2024.webp",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Imagen local real existente conservada."
+    },
+    {
+      "brand": "Kawasaki",
+      "existingValue": "/images/motorcycles/kawasaki-z900-2024.webp",
+      "field": "imageUrl",
+      "generatedValue": "/images/motorcycles/kawasaki-z900-2024.webp",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Imagen local real existente conservada."
+    }
+  ],
+  "suspiciousDataWarnings": [
+    {
+      "brand": "BMW",
+      "field": "scoresSource",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "prosConsSource",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilitySource",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "features",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "BMW",
+      "field": "scoresSource",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "prosConsSource",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilitySource",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "features",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Yamaha",
+      "field": "scoresSource",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "prosConsSource",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilitySource",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "scoresSource",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "prosConsSource",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilitySource",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "features",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "CFMoto",
+      "field": "scoresSource",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "prosConsSource",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "reliabilitySource",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "segment",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "El nombre/modelo apunta a trail/adventure, pero el segmento generado es naked.",
+      "value": "naked"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "features",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Suzuki",
+      "field": "scoresSource",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "prosConsSource",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilitySource",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "wetWeightKg",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Peso muy alto para trail/adventure; revisar posible dato erróneo.",
+      "value": 277
+    },
+    {
+      "brand": "Ducati",
+      "field": "features",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Ducati",
+      "field": "scoresSource",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "prosConsSource",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilitySource",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "KTM",
+      "field": "features",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "KTM",
+      "field": "scoresSource",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "KTM",
+      "field": "prosConsSource",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "KTM",
+      "field": "reliabilitySource",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "features",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Yamaha",
+      "field": "scoresSource",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "prosConsSource",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilitySource",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "features",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "features",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "scoresSource",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "prosConsSource",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilitySource",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "features",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Suzuki",
+      "field": "scoresSource",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "prosConsSource",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilitySource",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "powerHp",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Potencia muy alta para el segmento; revisar posible dato erróneo.",
+      "value": 198.5
+    },
+    {
+      "brand": "Triumph",
+      "field": "features",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Triumph",
+      "field": "scoresSource",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Triumph",
+      "field": "prosConsSource",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Triumph",
+      "field": "reliabilitySource",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "features",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Yamaha",
+      "field": "scoresSource",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "prosConsSource",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilitySource",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "features",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "BMW",
+      "field": "scoresSource",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "prosConsSource",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilitySource",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "features",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "scoresSource",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "prosConsSource",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilitySource",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "features",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Ducati",
+      "field": "scoresSource",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "prosConsSource",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilitySource",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "features",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "features",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Ducati",
+      "field": "scoresSource",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "prosConsSource",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilitySource",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "features",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Aprilia",
+      "field": "scoresSource",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "prosConsSource",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilitySource",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "features",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Aprilia",
+      "field": "scoresSource",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "prosConsSource",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilitySource",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "features",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "scoresSource",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "prosConsSource",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilitySource",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "features",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Suzuki",
+      "field": "scoresSource",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "prosConsSource",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilitySource",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    }
+  ],
+  "summary": {
+    "added": 5,
+    "discarded": 0,
+    "existing": 20,
+    "final": 25,
+    "generated": 25,
+    "kept": 20,
+    "updatableButNotModified": 20,
+    "warnings": 224
+  },
+  "updatableButNotModified": [
+    {
+      "brand": "BMW",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "year": 2024
+    },
+    {
+      "brand": "BMW",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "year": 2024
+    },
+    {
+      "brand": "BMW",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "year": 2024
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "year": 2024
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "year": 2024
+    },
+    {
+      "brand": "Aprilia",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "year": 2024
+    },
+    {
+      "brand": "KTM",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "year": 2024
+    },
+    {
+      "brand": "Triumph",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "year": 2024
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "year": 2024
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "year": 2024
+    },
+    {
+      "brand": "CFMoto",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "year": 2025
+    }
+  ],
+  "warnings": [
+    {
+      "brand": "BMW",
+      "field": "priceEur",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "description",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "BMW",
+      "field": "pros",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "cons",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reportCount",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "CFMoto",
+      "field": "priceEur",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "CFMoto",
+      "field": "description",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "CFMoto",
+      "field": "pros",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "CFMoto",
+      "field": "cons",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "CFMoto",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "CFMoto",
+      "field": "reliabilityReports.reportCount",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "priceEur",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "description",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Suzuki",
+      "field": "pros",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "cons",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reportCount",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "priceEur",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "description",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Ducati",
+      "field": "pros",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "cons",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reportCount",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "KTM",
+      "field": "priceEur",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "KTM",
+      "field": "description",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "KTM",
+      "field": "pros",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "KTM",
+      "field": "cons",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "KTM",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "KTM",
+      "field": "reliabilityReports.reportCount",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "priceEur",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "description",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Yamaha",
+      "field": "pros",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "cons",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reportCount",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "priceEur",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "description",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Honda",
+      "field": "pros",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "cons",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reportCount",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "priceEur",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "description",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "pros",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "cons",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reportCount",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "priceEur",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "description",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Suzuki",
+      "field": "pros",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "cons",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reportCount",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Triumph",
+      "field": "priceEur",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Triumph",
+      "field": "description",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Triumph",
+      "field": "pros",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Triumph",
+      "field": "cons",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Triumph",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Triumph",
+      "field": "reliabilityReports.reportCount",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "priceEur",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "description",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Yamaha",
+      "field": "pros",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "cons",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilityReports.reportCount",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "priceEur",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "description",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "BMW",
+      "field": "pros",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "cons",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilityReports.reportCount",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "priceEur",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "description",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "pros",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "cons",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reportCount",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "priceEur",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "description",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Ducati",
+      "field": "pros",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "cons",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reportCount",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "priceEur",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "description",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Honda",
+      "field": "pros",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "cons",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilityReports.reportCount",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "priceEur",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "imageUrl",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Ducati",
+      "field": "description",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Ducati",
+      "field": "pros",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "cons",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilityReports.reportCount",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "priceEur",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "imageUrl",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "description",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Aprilia",
+      "field": "pros",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "cons",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reportCount",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "priceEur",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "imageUrl",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "description",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Aprilia",
+      "field": "pros",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "cons",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilityReports.reportCount",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "priceEur",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "imageUrl",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "description",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "pros",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "cons",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilityReports.reportCount",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "priceEur",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Precio pendiente de revisión manual.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "imageUrl",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Imagen placeholder o externa de placehold detectada.",
+      "value": "/images/placeholders/motorcycle-technical-pending.jpg"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "description",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Descripción placeholder pendiente de revisión editorial.",
+      "value": "Sin descripción disponible. Datos pendientes de revisión manual en MotoAtlas."
+    },
+    {
+      "brand": "Suzuki",
+      "field": "pros",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Pros vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "cons",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Contras vacíos pendientes de revisión editorial.",
+      "value": []
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reliabilityScore",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Fiabilidad sin datos comunitarios/editoriales.",
+      "value": 0
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilityReports.reportCount",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Report count sin datos.",
+      "value": 0
+    },
+    {
+      "brand": "BMW",
+      "field": "scoresSource",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "prosConsSource",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilitySource",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "features",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "BMW",
+      "field": "scoresSource",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "prosConsSource",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilitySource",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "features",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Yamaha",
+      "field": "scoresSource",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "prosConsSource",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilitySource",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "scoresSource",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "prosConsSource",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilitySource",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "features",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "CFMoto",
+      "field": "scoresSource",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "prosConsSource",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "reliabilitySource",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "CFMoto",
+      "field": "segment",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "reason": "El nombre/modelo apunta a trail/adventure, pero el segmento generado es naked.",
+      "value": "naked"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "features",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Suzuki",
+      "field": "scoresSource",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "prosConsSource",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilitySource",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "wetWeightKg",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "reason": "Peso muy alto para trail/adventure; revisar posible dato erróneo.",
+      "value": 277
+    },
+    {
+      "brand": "Ducati",
+      "field": "features",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Ducati",
+      "field": "scoresSource",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "prosConsSource",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilitySource",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "KTM",
+      "field": "features",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "KTM",
+      "field": "scoresSource",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "KTM",
+      "field": "prosConsSource",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "KTM",
+      "field": "reliabilitySource",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "features",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Yamaha",
+      "field": "scoresSource",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "prosConsSource",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilitySource",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "features",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "features",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "scoresSource",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "prosConsSource",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilitySource",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "features",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Suzuki",
+      "field": "scoresSource",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "prosConsSource",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilitySource",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "powerHp",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "reason": "Potencia muy alta para el segmento; revisar posible dato erróneo.",
+      "value": 198.5
+    },
+    {
+      "brand": "Triumph",
+      "field": "features",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Triumph",
+      "field": "scoresSource",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Triumph",
+      "field": "prosConsSource",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Triumph",
+      "field": "reliabilitySource",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "features",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Yamaha",
+      "field": "scoresSource",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "prosConsSource",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Yamaha",
+      "field": "reliabilitySource",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "features",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "BMW",
+      "field": "scoresSource",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "prosConsSource",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "BMW",
+      "field": "reliabilitySource",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "features",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "scoresSource",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "prosConsSource",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilitySource",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "features",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Ducati",
+      "field": "scoresSource",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "prosConsSource",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilitySource",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "features",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Honda",
+      "field": "scoresSource",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "prosConsSource",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Honda",
+      "field": "reliabilitySource",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "features",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Ducati",
+      "field": "scoresSource",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "prosConsSource",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Ducati",
+      "field": "reliabilitySource",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "features",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Aprilia",
+      "field": "scoresSource",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "prosConsSource",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilitySource",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "features",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Aprilia",
+      "field": "scoresSource",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "prosConsSource",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Aprilia",
+      "field": "reliabilitySource",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "features",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "scoresSource",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "prosConsSource",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Kawasaki",
+      "field": "reliabilitySource",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "features",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Todo el equipamiento está en false; revisar si es ausencia real o falta de datos.",
+      "value": {
+        "absCornering": false,
+        "cruiseControl": false,
+        "heatedGrips": false,
+        "quickshifter": false,
+        "ridingModes": false,
+        "tractionControl": false,
+        "tubelessWheels": false
+      }
+    },
+    {
+      "brand": "Suzuki",
+      "field": "scoresSource",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Puntuaciones estimadas; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "prosConsSource",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Pros/contras estimados; revisar manualmente.",
+      "value": "estimated"
+    },
+    {
+      "brand": "Suzuki",
+      "field": "reliabilitySource",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "reason": "Fiabilidad estimada; revisar manualmente.",
+      "value": "estimated"
+    }
+  ]
+}

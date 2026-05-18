@@ -1,0 +1,3299 @@
+{
+  "failedCount": 55,
+  "failedMotorcycles": [
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "BMW",
+      "model": "R 1250 RT",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "BMW",
+      "model": "S 1000 XR",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "BMW",
+      "model": "F 800 GS",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "BMW",
+      "model": "R 12 nineT",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "BMW",
+      "model": "G 310 GS",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Yamaha",
+      "model": "Ténéré 700 World Rally",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Yamaha",
+      "model": "MT-09",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Yamaha",
+      "model": "MT-10",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Yamaha",
+      "model": "Tracer 7",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Yamaha",
+      "model": "XSR700",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Honda",
+      "model": "CB500X",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Honda",
+      "model": "NX500",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Honda",
+      "model": "CB1000R",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Honda",
+      "model": "CL500",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Ducati",
+      "model": "Multistrada V4",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Ducati",
+      "model": "Streetfighter V2",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Ducati",
+      "model": "Scrambler Icon",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Ducati",
+      "model": "Supersport 950",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Ducati",
+      "model": "Hypermotard 950",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Aprilia",
+      "model": "RS 660",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Aprilia",
+      "model": "Tuono V4",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "KTM",
+      "model": "790 Adventure",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "KTM",
+      "model": "1290 Super Adventure S",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "KTM",
+      "model": "390 Adventure",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "KTM",
+      "model": "690 Enduro R",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "KTM",
+      "model": "390 Duke",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "KTM",
+      "model": "990 Duke",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Triumph",
+      "model": "Tiger 900 Rally Pro",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Triumph",
+      "model": "Tiger 900 GT Pro",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Triumph",
+      "model": "Tiger 1200 Rally Pro",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Triumph",
+      "model": "Speed Triple 1200 RS",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Triumph",
+      "model": "Trident 660",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Triumph",
+      "model": "Scrambler 900",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Triumph",
+      "model": "Bonneville T120",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Kawasaki",
+      "model": "Z650",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Kawasaki",
+      "model": "Versys 1000",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Kawasaki",
+      "model": "Ninja 1000SX",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Kawasaki",
+      "model": "KLR650",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Kawasaki",
+      "model": "Eliminator 500",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Suzuki",
+      "model": "V-Strom 1050DE",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Suzuki",
+      "model": "GSX-8R",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Suzuki",
+      "model": "Katana",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Suzuki",
+      "model": "SV650",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Suzuki",
+      "model": "DR-Z400S",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "CFMoto",
+      "model": "800MT Explore",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "CFMoto",
+      "model": "700MT",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "CFMoto",
+      "model": "450MT",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "CFMoto",
+      "model": "650GT",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "CFMoto",
+      "model": "800NK",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "CFMoto",
+      "model": "450NK",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "CFMoto",
+      "model": "450SR",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Moto Guzzi",
+      "model": "V85 TT",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Moto Guzzi",
+      "model": "V100 Mandello",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Royal Enfield",
+      "model": "Himalayan 450",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    },
+    {
+      "errors": [
+        {
+          "field": "displacement_cc",
+          "message": "displacement_cc es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "power_hp es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "torque_nm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "wet_weight_kg es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "seat_height_mm es obligatorio y debe ser numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "fuel_tank_liters es obligatorio y debe ser numérico."
+        }
+      ],
+      "make": "Royal Enfield",
+      "model": "Interceptor 650",
+      "warnings": [
+        {
+          "field": "price_eur",
+          "message": "Precio ausente: se usa 0 como placeholder hasta revisión manual."
+        },
+        {
+          "field": "image_url",
+          "message": "Imagen ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "description",
+          "message": "Descripción ausente: se usa placeholder controlado."
+        },
+        {
+          "field": "use_scores",
+          "message": "Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento."
+        },
+        {
+          "field": "displacement_cc",
+          "message": "Cilindrada ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "fuel_tank_liters",
+          "message": "Depósito ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "power_hp",
+          "message": "Potencia ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "seat_height_mm",
+          "message": "Altura de asiento ausente o inválida: no se aplica placeholder numérico."
+        },
+        {
+          "field": "torque_nm",
+          "message": "Par ausente o inválido: no se aplica placeholder numérico."
+        },
+        {
+          "field": "wet_weight_kg",
+          "message": "Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+        }
+      ],
+      "year": 2024
+    }
+  ],
+  "generatedAt": "2026-05-18T09:35:23.954Z",
+  "generatedCount": 25,
+  "generatedMotorcycles": [
+    {
+      "brand": "BMW",
+      "id": "bmw-f-900-gs-2024",
+      "model": "F 900 GS",
+      "year": 2024
+    },
+    {
+      "brand": "BMW",
+      "id": "bmw-r-1300-gs-2024",
+      "model": "R 1300 GS",
+      "year": 2024
+    },
+    {
+      "brand": "BMW",
+      "id": "bmw-f-900-xr-2024",
+      "model": "F 900 XR",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-tenere-700-2024",
+      "model": "Ténéré 700",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-mt-07-2024",
+      "model": "MT-07",
+      "year": 2024
+    },
+    {
+      "brand": "Yamaha",
+      "id": "yamaha-tracer-9-gt-2024",
+      "model": "Tracer 9 GT",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-xl750-transalp-2024",
+      "model": "XL750 Transalp",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-africa-twin-1100-2024",
+      "model": "Africa Twin 1100",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-cb750-hornet-2024",
+      "model": "CB750 Hornet",
+      "year": 2024
+    },
+    {
+      "brand": "Honda",
+      "id": "honda-nt1100-2024",
+      "model": "NT1100",
+      "year": 2024
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-desertx-2024",
+      "model": "DesertX",
+      "year": 2024
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-multistrada-v2-2024",
+      "model": "Multistrada V2",
+      "year": 2024
+    },
+    {
+      "brand": "Ducati",
+      "id": "ducati-monster-2024",
+      "model": "Monster",
+      "year": 2024
+    },
+    {
+      "brand": "Aprilia",
+      "id": "aprilia-tuareg-660-2024",
+      "model": "Tuareg 660",
+      "year": 2024
+    },
+    {
+      "brand": "Aprilia",
+      "id": "aprilia-tuono-660-2024",
+      "model": "Tuono 660",
+      "year": 2024
+    },
+    {
+      "brand": "Aprilia",
+      "id": "aprilia-rsv4-2024",
+      "model": "RSV4",
+      "year": 2024
+    },
+    {
+      "brand": "KTM",
+      "id": "ktm-890-adventure-r-2024",
+      "model": "890 Adventure R",
+      "year": 2024
+    },
+    {
+      "brand": "Triumph",
+      "id": "triumph-street-triple-765-r-2024",
+      "model": "Street Triple 765 R",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-z900-2024",
+      "model": "Z900",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-versys-650-2024",
+      "model": "Versys 650",
+      "year": 2024
+    },
+    {
+      "brand": "Kawasaki",
+      "id": "kawasaki-ninja-650-2024",
+      "model": "Ninja 650",
+      "year": 2024
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-v-strom-800de-2024",
+      "model": "V-Strom 800DE",
+      "year": 2024
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-gsx-8s-2024",
+      "model": "GSX-8S",
+      "year": 2024
+    },
+    {
+      "brand": "Suzuki",
+      "id": "suzuki-hayabusa-2024",
+      "model": "Hayabusa",
+      "year": 2024
+    },
+    {
+      "brand": "CFMoto",
+      "id": "cfmoto-800mt-x-2025",
+      "model": "800MT-X",
+      "year": 2025
+    }
+  ],
+  "totalSeedsRead": 80,
+  "uniqueSeeds": 80,
+  "warnings": [
+    "BMW R 1250 RT 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "BMW R 1250 RT 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "BMW R 1250 RT 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "BMW R 1250 RT 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "BMW R 1250 RT 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "BMW R 1250 RT 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "BMW S 1000 XR 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "BMW S 1000 XR 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "BMW S 1000 XR 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "BMW S 1000 XR 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "BMW S 1000 XR 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "BMW S 1000 XR 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "BMW F 800 GS 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "BMW F 800 GS 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "BMW F 800 GS 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "BMW F 800 GS 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "BMW F 800 GS 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "BMW R 12 nineT 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "BMW R 12 nineT 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "BMW R 12 nineT 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "BMW R 12 nineT 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "BMW R 12 nineT 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "BMW R 12 nineT 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "BMW G 310 GS 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "BMW G 310 GS 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "BMW G 310 GS 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "BMW G 310 GS 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "BMW G 310 GS 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "BMW G 310 GS 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "BMW G 310 GS 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Yamaha Ténéré 700 World Rally 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Yamaha Ténéré 700 World Rally 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Yamaha Ténéré 700 World Rally 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Yamaha Ténéré 700 World Rally 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Yamaha Ténéré 700 World Rally 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha Ténéré 700 World Rally 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha MT-09 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Yamaha MT-09 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Yamaha MT-09 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Yamaha MT-09 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Yamaha MT-09 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha MT-09 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha MT-10 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Yamaha MT-10 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Yamaha MT-10 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Yamaha MT-10 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Yamaha MT-10 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha MT-10 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha Tracer 7 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Yamaha Tracer 7 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Yamaha Tracer 7 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Yamaha Tracer 7 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Yamaha Tracer 7 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Yamaha Tracer 7 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha Tracer 7 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Yamaha Tracer 7 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha Tracer 7 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha Tracer 7 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Yamaha Tracer 7 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Yamaha XSR700 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Yamaha XSR700 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Yamaha XSR700 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Yamaha XSR700 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Yamaha XSR700 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Yamaha XSR700 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Honda XL750 Transalp 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Honda Africa Twin 1100 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Honda CB500X 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Honda CB500X 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Honda CB500X 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Honda CB500X 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Honda CB500X 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Honda CB500X 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Honda CB500X 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Honda CB500X 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Honda CB500X 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Honda CB500X 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Honda CB500X 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Honda NX500 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Honda NX500 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Honda NX500 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Honda NX500 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Honda NX500 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Honda NX500 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Honda NX500 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Honda NX500 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Honda NX500 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Honda NX500 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Honda NX500 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Honda CB1000R 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Honda CB1000R 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Honda CB1000R 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Honda CB1000R 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Honda CB1000R 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Honda CB1000R 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Honda CL500 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Honda CL500 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Honda CL500 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Honda CL500 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Honda CL500 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Honda CL500 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Honda CL500 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Ducati Multistrada V4 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Ducati Multistrada V4 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Ducati Multistrada V4 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Ducati Multistrada V4 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Ducati Multistrada V4 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Ducati Monster 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Ducati Monster 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Ducati Monster 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Ducati Monster 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Ducati Streetfighter V2 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Ducati Streetfighter V2 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Ducati Streetfighter V2 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Ducati Streetfighter V2 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Ducati Streetfighter V2 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Ducati Streetfighter V2 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Ducati Scrambler Icon 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Ducati Scrambler Icon 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Ducati Scrambler Icon 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Ducati Scrambler Icon 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Ducati Scrambler Icon 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Ducati Scrambler Icon 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Ducati Supersport 950 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Ducati Supersport 950 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Ducati Supersport 950 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Ducati Supersport 950 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Ducati Supersport 950 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Ducati Hypermotard 950 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Ducati Hypermotard 950 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Ducati Hypermotard 950 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Ducati Hypermotard 950 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Ducati Hypermotard 950 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Ducati Hypermotard 950 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Aprilia RS 660 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Aprilia RS 660 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Aprilia RS 660 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Aprilia RS 660 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Aprilia RS 660 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Aprilia Tuono 660 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Aprilia Tuono 660 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Aprilia Tuono 660 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Aprilia Tuono 660 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Aprilia Tuono V4 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Aprilia Tuono V4 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Aprilia Tuono V4 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Aprilia Tuono V4 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Aprilia Tuono V4 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Aprilia Tuono V4 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Aprilia RSV4 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Aprilia RSV4 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Aprilia RSV4 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Aprilia RSV4 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "KTM 790 Adventure 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "KTM 790 Adventure 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "KTM 790 Adventure 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "KTM 790 Adventure 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "KTM 790 Adventure 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 790 Adventure 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 790 Adventure 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "KTM 1290 Super Adventure S 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "KTM 1290 Super Adventure S 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "KTM 1290 Super Adventure S 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "KTM 1290 Super Adventure S 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "KTM 1290 Super Adventure S 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 1290 Super Adventure S 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "KTM 390 Adventure 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "KTM 390 Adventure 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "KTM 390 Adventure 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "KTM 390 Adventure 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "KTM 390 Adventure 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 390 Adventure 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 390 Adventure 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "KTM 690 Enduro R 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "KTM 690 Enduro R 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "KTM 690 Enduro R 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "KTM 690 Enduro R 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "KTM 690 Enduro R 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 690 Enduro R 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "KTM 390 Duke 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "KTM 390 Duke 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "KTM 390 Duke 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "KTM 390 Duke 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "KTM 390 Duke 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 390 Duke 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 390 Duke 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "KTM 990 Duke 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "KTM 990 Duke 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "KTM 990 Duke 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "KTM 990 Duke 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "KTM 990 Duke 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 990 Duke 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "KTM 990 Duke 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Triumph Tiger 900 Rally Pro 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Triumph Tiger 900 Rally Pro 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Triumph Tiger 900 Rally Pro 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Triumph Tiger 900 Rally Pro 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Triumph Tiger 900 Rally Pro 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Triumph Tiger 900 GT Pro 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Triumph Tiger 900 GT Pro 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Triumph Tiger 900 GT Pro 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Triumph Tiger 900 GT Pro 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Triumph Tiger 900 GT Pro 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Triumph Tiger 900 GT Pro 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Triumph Tiger 1200 Rally Pro 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Triumph Tiger 1200 Rally Pro 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Triumph Tiger 1200 Rally Pro 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Triumph Tiger 1200 Rally Pro 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Triumph Tiger 1200 Rally Pro 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Triumph Tiger 1200 Rally Pro 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Triumph Speed Triple 1200 RS 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Triumph Speed Triple 1200 RS 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Triumph Speed Triple 1200 RS 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Triumph Speed Triple 1200 RS 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Triumph Speed Triple 1200 RS 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Triumph Trident 660 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Triumph Trident 660 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Triumph Trident 660 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Triumph Trident 660 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Triumph Trident 660 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Triumph Scrambler 900 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Triumph Scrambler 900 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Triumph Scrambler 900 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Triumph Scrambler 900 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Triumph Scrambler 900 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Triumph Bonneville T120 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Triumph Bonneville T120 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Triumph Bonneville T120 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Triumph Bonneville T120 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Triumph Bonneville T120 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Triumph Bonneville T120 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Z650 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Kawasaki Z650 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Kawasaki Z650 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Kawasaki Z650 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Kawasaki Z650 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Z650 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Versys 1000 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Kawasaki Versys 1000 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Kawasaki Versys 1000 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Kawasaki Versys 1000 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Kawasaki Versys 1000 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Ninja 1000SX 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Kawasaki Ninja 1000SX 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Kawasaki Ninja 1000SX 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Kawasaki Ninja 1000SX 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Kawasaki Ninja 1000SX 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Ninja 650 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Kawasaki Ninja 650 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Kawasaki Ninja 650 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Kawasaki Ninja 650 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Kawasaki KLR650 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Kawasaki KLR650 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Kawasaki KLR650 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Kawasaki KLR650 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Kawasaki KLR650 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Kawasaki KLR650 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki KLR650 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Kawasaki KLR650 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki KLR650 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki KLR650 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Kawasaki KLR650 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Kawasaki Eliminator 500 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Kawasaki Eliminator 500 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Kawasaki Eliminator 500 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Kawasaki Eliminator 500 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Kawasaki Eliminator 500 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Kawasaki Eliminator 500 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Eliminator 500 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Kawasaki Eliminator 500 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Eliminator 500 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Kawasaki Eliminator 500 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Kawasaki Eliminator 500 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Suzuki V-Strom 1050DE 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Suzuki V-Strom 1050DE 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Suzuki V-Strom 1050DE 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Suzuki V-Strom 1050DE 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Suzuki V-Strom 1050DE 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki V-Strom 1050DE 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki GSX-8R 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Suzuki GSX-8R 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Suzuki GSX-8R 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Suzuki GSX-8R 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Suzuki GSX-8R 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki GSX-8R 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Suzuki Katana 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Suzuki Katana 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Suzuki Katana 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Suzuki Katana 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Suzuki Katana 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki Katana 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki SV650 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Suzuki SV650 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Suzuki SV650 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Suzuki SV650 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Suzuki SV650 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Suzuki SV650 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki SV650 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Suzuki SV650 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki SV650 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki SV650 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Suzuki SV650 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Suzuki DR-Z400S 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Suzuki DR-Z400S 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Suzuki DR-Z400S 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Suzuki DR-Z400S 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Suzuki DR-Z400S 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki DR-Z400S 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Suzuki DR-Z400S 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Suzuki Hayabusa 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Suzuki Hayabusa 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Suzuki Hayabusa 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Suzuki Hayabusa 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 800MT-X 2025: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 800MT Explore 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 800MT Explore 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "CFMoto 800MT Explore 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "CFMoto 800MT Explore 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "CFMoto 800MT Explore 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 800MT Explore 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 800MT Explore 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 800MT Explore 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 800MT Explore 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 800MT Explore 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 800MT Explore 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 700MT 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 700MT 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "CFMoto 700MT 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "CFMoto 700MT 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "CFMoto 700MT 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 700MT 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 700MT 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 700MT 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 700MT 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 700MT 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 700MT 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450MT 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 450MT 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "CFMoto 450MT 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "CFMoto 450MT 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "CFMoto 450MT 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 450MT 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450MT 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450MT 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450MT 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450MT 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450MT 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 650GT 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 650GT 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "CFMoto 650GT 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "CFMoto 650GT 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "CFMoto 650GT 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 650GT 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 650GT 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 650GT 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 650GT 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 650GT 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 650GT 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 800NK 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 800NK 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "CFMoto 800NK 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "CFMoto 800NK 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "CFMoto 800NK 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 800NK 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 800NK 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 800NK 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 800NK 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 800NK 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 800NK 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450NK 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 450NK 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "CFMoto 450NK 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "CFMoto 450NK 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "CFMoto 450NK 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 450NK 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450NK 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450NK 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450NK 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450NK 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450NK 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450SR 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "CFMoto 450SR 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "CFMoto 450SR 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "CFMoto 450SR 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "CFMoto 450SR 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "CFMoto 450SR 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450SR 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450SR 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450SR 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "CFMoto 450SR 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "CFMoto 450SR 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Moto Guzzi V85 TT 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Moto Guzzi V85 TT 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Moto Guzzi V85 TT 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Moto Guzzi V85 TT 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Moto Guzzi V85 TT 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Moto Guzzi V85 TT 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Moto Guzzi V100 Mandello 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Moto Guzzi V100 Mandello 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Moto Guzzi V100 Mandello 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Moto Guzzi V100 Mandello 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Moto Guzzi V100 Mandello 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Moto Guzzi V100 Mandello 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Royal Enfield Himalayan 450 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Royal Enfield Himalayan 450 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Royal Enfield Himalayan 450 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Royal Enfield Himalayan 450 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Royal Enfield Himalayan 450 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Royal Enfield Himalayan 450 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Royal Enfield Himalayan 450 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Royal Enfield Himalayan 450 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Royal Enfield Himalayan 450 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Royal Enfield Himalayan 450 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Royal Enfield Himalayan 450 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico.",
+    "Royal Enfield Interceptor 650 2024: API Ninjas no devolvió resultados; se usa JSON existente/placeholder.",
+    "Royal Enfield Interceptor 650 2024 · price_eur: Precio ausente: se usa 0 como placeholder hasta revisión manual.",
+    "Royal Enfield Interceptor 650 2024 · image_url: Imagen ausente: se usa placeholder controlado.",
+    "Royal Enfield Interceptor 650 2024 · description: Descripción ausente: se usa placeholder controlado.",
+    "Royal Enfield Interceptor 650 2024 · use_scores: Puntuaciones de uso ausentes: se usan puntuaciones estimadas por segmento.",
+    "Royal Enfield Interceptor 650 2024 · displacement_cc: Cilindrada ausente o inválida: no se aplica placeholder numérico.",
+    "Royal Enfield Interceptor 650 2024 · fuel_tank_liters: Depósito ausente o inválido: no se aplica placeholder numérico.",
+    "Royal Enfield Interceptor 650 2024 · power_hp: Potencia ausente o inválida: no se aplica placeholder numérico.",
+    "Royal Enfield Interceptor 650 2024 · seat_height_mm: Altura de asiento ausente o inválida: no se aplica placeholder numérico.",
+    "Royal Enfield Interceptor 650 2024 · torque_nm: Par ausente o inválido: no se aplica placeholder numérico.",
+    "Royal Enfield Interceptor 650 2024 · wet_weight_kg: Peso en orden de marcha ausente o inválido: no se aplica placeholder numérico."
+  ]
+}
