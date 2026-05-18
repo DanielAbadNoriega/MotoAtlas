@@ -187,8 +187,10 @@ drop policy if exists "Public motorcycles are readable" on public.motorcycles;
 create policy "Public motorcycles are readable"
 on public.motorcycles
 for select
-to anon
+to anon, authenticated
 using (true);
+
+grant select on public.motorcycles to anon, authenticated;
 
 create table if not exists public.motorcycle_reviews (
   id uuid primary key default gen_random_uuid(),
@@ -240,14 +242,15 @@ drop policy if exists "Approved motorcycle reviews are readable" on public.motor
 create policy "Approved motorcycle reviews are readable"
 on public.motorcycle_reviews
 for select
-to anon
+to anon, authenticated
 using (status = 'approved');
 
+drop policy if exists "Public can insert pending motorcycle reviews" on public.motorcycle_reviews;
 drop policy if exists "Public motorcycle reviews can be created" on public.motorcycle_reviews;
 create policy "Public motorcycle reviews can be created"
 on public.motorcycle_reviews
 for insert
-to anon
+to anon, authenticated
 with check (
   status = 'pending'
   and motorcycle_id is not null
@@ -259,8 +262,8 @@ with check (
   and source = 'user'
 );
 
-grant select on public.motorcycle_reviews to anon;
-grant insert on public.motorcycle_reviews to anon;
+grant select on public.motorcycle_reviews to anon, authenticated;
+grant insert on public.motorcycle_reviews to anon, authenticated;
 
 notify pgrst, 'reload schema';
 
@@ -328,7 +331,11 @@ to authenticated
 using (auth.uid() = id)
 with check (auth.uid() = id);
 
-grant select, insert on public.user_profiles to authenticated;
+revoke all on table public.user_profiles from anon;
+revoke all on table public.user_profiles from authenticated;
+
+grant select on table public.user_profiles to authenticated;
+grant insert (id, display_name, avatar_url) on public.user_profiles to authenticated;
 grant update (display_name, avatar_url) on public.user_profiles to authenticated;
 
 notify pgrst, 'reload schema';
