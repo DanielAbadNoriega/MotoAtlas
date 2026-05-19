@@ -14,6 +14,7 @@ vi.mock('./services/motorcycleService', () => ({
 vi.mock('./services/motorcycleReviewService', () => ({
   createReview: vi.fn(),
   getApprovedReviewsByMotorcycleId: vi.fn(),
+  getReviewsByUserId: vi.fn(),
 }));
 
 const getMotorcyclesMock = vi.mocked(getMotorcycles);
@@ -187,6 +188,7 @@ describe('App navigation with mocked motorcycleService', () => {
     ['#/login', /Iniciar sesión/i, 'Iniciar sesión | MotoAtlas'],
     ['#/registro', /Crear cuenta/i, 'Crear cuenta | MotoAtlas'],
     ['#/cuenta', /Inicia sesión para ver Mi cuenta/i, 'Mi cuenta | MotoAtlas'],
+    ['#/cuenta/reviews', /Inicia sesión para ver tus reviews/i, 'Mis reviews | MotoAtlas'],
     ['#/cuenta/solicitudes', /Inicia sesión para ver tus solicitudes/i, 'Mis solicitudes | MotoAtlas'],
   ])('renderiza la ruta de auth %s', async (hash, heading, expectedTitle) => {
     window.location.hash = hash;

@@ -35,6 +35,17 @@ Filtros disponibles:
 
 Limitación actual: la tendencia no usa una serie temporal real; es una señal simple basada en rating y volumen de reviews. No se muestran reviews `pending`, `rejected` ni `hidden`.
 
+## Mi cuenta — Reviews
+
+La ruta `#/cuenta/reviews` muestra todas las reviews asociadas al usuario autenticado.
+
+- carga reviews propias mediante RLS y token de sesión.
+- filtra en cliente por marca/modelo, estado y uso principal.
+- ordena por fecha, rating o kilómetros.
+- pagina en frontend a 5 reviews por página.
+- usa `AccountReviewsEmptyState` para el estado “sin resultados” con radar CSS y soporte `prefers-reduced-motion`.
+- edición, borrado/retirada y panel admin quedan pendientes.
+
 
 ## Páginas de Datos y Legal
 

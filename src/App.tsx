@@ -3,6 +3,7 @@ import { AuthProvider } from './features/auth';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { AccountPage } from './components/pages/AccountPage';
+import { AccountReviewsPage } from './components/pages/AccountReviewsPage';
 import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
@@ -34,6 +35,7 @@ import {
   getComparatorSelectionFromRoute,
   getCurrentAppRoute,
   getStaticInfoRouteKey,
+  isAccountReviewsRoute,
   isAccountRoute,
   isAccountRequestsRoute,
   isCommunityRoute,
@@ -93,6 +95,7 @@ export function App() {
   const isLoginPage = isLoginRoute(route);
   const isRegisterPage = isRegisterRoute(route);
   const isAccountPage = isAccountRoute(route);
+  const isAccountReviewsPage = isAccountReviewsRoute(route);
   const isAccountRequestsPage = isAccountRequestsRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
@@ -148,6 +151,11 @@ export function App() {
       return;
     }
 
+    if (isAccountReviewsPage) {
+      applySeoMetadata(buildAuthSeoMetadata('cuenta-reviews'));
+      return;
+    }
+
     if (isAccountPage) {
       applySeoMetadata(buildAuthSeoMetadata('cuenta'));
       return;
@@ -188,7 +196,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isAccountRequestsPage, isCommunityLandingPage, isCommunityPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isCommunityLandingPage, isCommunityPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -198,6 +206,8 @@ export function App() {
         <AuthPage mode="login" />
       ) : isRegisterPage ? (
         <AuthPage mode="register" />
+      ) : isAccountReviewsPage ? (
+        <AccountReviewsPage />
       ) : isAccountRequestsPage ? (
         <AccountRequestsPage />
       ) : isAccountPage ? (

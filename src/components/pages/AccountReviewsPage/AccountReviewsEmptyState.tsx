@@ -1,10 +1,18 @@
 import './AccountReviewsEmptyState.scss';
 
 type AccountReviewsEmptyStateProps = Readonly<{
+  actionLabel?: string;
+  description?: string;
   onClearFilters?: () => void;
+  title?: string;
 }>;
 
-export function AccountReviewsEmptyState({ onClearFilters }: AccountReviewsEmptyStateProps) {
+export function AccountReviewsEmptyState({
+  actionLabel = 'Limpiar filtros',
+  description = 'Prueba a cambiar los filtros para encontrar lo que necesitas.',
+  onClearFilters,
+  title = 'No hay reviews con estos filtros',
+}: AccountReviewsEmptyStateProps) {
   return (
     <section className="account-reviews-empty" aria-labelledby="account-reviews-empty-title">
       <div className="account-reviews-empty__visual" aria-hidden="true" data-testid="reviews-empty-radar">
@@ -22,11 +30,11 @@ export function AccountReviewsEmptyState({ onClearFilters }: AccountReviewsEmpty
       </div>
 
       <div className="account-reviews-empty__content">
-        <h2 id="account-reviews-empty-title">No hay reviews con estos filtros</h2>
-        <p>Prueba a cambiar los filtros para encontrar lo que necesitas.</p>
+        <h2 id="account-reviews-empty-title">{title}</h2>
+        <p>{description}</p>
         {onClearFilters ? (
           <button className="account-reviews-empty__action" type="button" onClick={onClearFilters}>
-            Limpiar filtros
+            {actionLabel}
           </button>
         ) : null}
       </div>
