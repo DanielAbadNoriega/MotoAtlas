@@ -81,7 +81,7 @@ describe('AuthPage', () => {
     expect(signUpMock).not.toHaveBeenCalled();
   });
 
-  it('crea cuenta con alias y muestra success state', async () => {
+  it('envía registro con alias y muestra mensaje neutro seguro', async () => {
     const user = userEvent.setup();
     render(<AuthPage mode="register" />);
 
@@ -92,7 +92,11 @@ describe('AuthPage', () => {
     await user.click(screen.getByRole('button', { name: /Crear cuenta/i }));
 
     expect(signUpMock).toHaveBeenCalledWith({ displayName: 'MotoViajero', email: 'new@motoatlas.com', password: 'secret123' });
-    expect(await screen.findByRole('status')).toHaveTextContent(/Cuenta creada/i);
+    const status = await screen.findByRole('status');
+
+    expect(status).toHaveTextContent('Si los datos son válidos, recibirás un correo con las instrucciones para continuar.');
+    expect(status).not.toHaveTextContent(/Cuenta creada|Usuario creado|Tu cuenta se ha creado/i);
+    expect(status).not.toHaveTextContent(/email ya existe/i);
   });
 
   it('muestra errores del servicio', async () => {

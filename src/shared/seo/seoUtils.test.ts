@@ -91,6 +91,11 @@ describe('seoUtils', () => {
     });
     expect(buildAuthSeoMetadata('registro').title).toBe('Crear cuenta | MotoAtlas');
     expect(buildAuthSeoMetadata('cuenta').description).toContain('Gestiona tu cuenta');
+    expect(buildAuthSeoMetadata('cuenta-solicitudes')).toMatchObject({
+      title: 'Mis solicitudes | MotoAtlas',
+      canonicalUrl: 'https://motoatlas.com/cuenta/solicitudes',
+      description: 'Consulta las solicitudes de modelos que has enviado a MotoAtlas.',
+    });
   });
 
   it('aplica meta tags, canonical y JSON-LD al documento', () => {
@@ -115,6 +120,7 @@ describe('seoUtils', () => {
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/solicitar-modelo']));
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/privacidad']));
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/terminos']));
+    expect(urls).not.toContain('https://motoatlas.com/cuenta/solicitudes');
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/comunidad/test-bmw-f-900-gs']));
     expect(sitemap).toContain('<urlset');
     expect(buildRobotsTxt()).toContain('Sitemap: https://motoatlas.com/sitemap.xml');

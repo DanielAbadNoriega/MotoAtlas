@@ -969,6 +969,15 @@
     text-transform: none;
   }
 
+  label > small {
+    color: rgba($color-on-surface-variant, 0.72);
+    font-family: $font-body;
+    font-size: 0.86rem;
+    letter-spacing: 0;
+    line-height: 1.45;
+    text-transform: none;
+  }
+
   button {
     justify-self: end;
     min-width: 14rem;

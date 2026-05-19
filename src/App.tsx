@@ -3,6 +3,7 @@ import { AuthProvider } from './features/auth';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { AccountPage } from './components/pages/AccountPage';
+import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
@@ -34,6 +35,7 @@ import {
   getCurrentAppRoute,
   getStaticInfoRouteKey,
   isAccountRoute,
+  isAccountRequestsRoute,
   isCommunityRoute,
   isComparatorRoute,
   isLoginRoute,
@@ -91,6 +93,7 @@ export function App() {
   const isLoginPage = isLoginRoute(route);
   const isRegisterPage = isRegisterRoute(route);
   const isAccountPage = isAccountRoute(route);
+  const isAccountRequestsPage = isAccountRequestsRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
@@ -140,6 +143,11 @@ export function App() {
       return;
     }
 
+    if (isAccountRequestsPage) {
+      applySeoMetadata(buildAuthSeoMetadata('cuenta-solicitudes'));
+      return;
+    }
+
     if (isAccountPage) {
       applySeoMetadata(buildAuthSeoMetadata('cuenta'));
       return;
@@ -180,7 +188,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isCommunityLandingPage, isCommunityPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isAccountRequestsPage, isCommunityLandingPage, isCommunityPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -190,6 +198,8 @@ export function App() {
         <AuthPage mode="login" />
       ) : isRegisterPage ? (
         <AuthPage mode="register" />
+      ) : isAccountRequestsPage ? (
+        <AccountRequestsPage />
       ) : isAccountPage ? (
         <AccountPage />
       ) : isComparatorPage ? (

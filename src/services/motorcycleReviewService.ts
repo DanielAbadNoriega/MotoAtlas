@@ -1,5 +1,6 @@
-export type MotorcycleReviewStatus = 'pending' | 'approved' | 'rejected';
+export type MotorcycleReviewStatus = 'pending' | 'approved' | 'rejected' | 'hidden';
 export type MotorcycleReviewRidingStyle = 'ciudad' | 'viaje' | 'offroad' | 'deportivo' | 'pasajero' | 'diario';
+export type MotorcycleReviewSource = 'user' | 'mock' | 'seed' | 'import';
 
 export type MotorcycleReviewInput = Readonly<{
   motorcycleId: string;
@@ -13,9 +14,16 @@ export type MotorcycleReviewInput = Readonly<{
   cons?: readonly string[];
 }>;
 
+export type CreateReviewAuthContext = Readonly<{
+  userId: string;
+  accessToken: string;
+}>;
+
 export type MotorcycleReview = Readonly<{
   id: string;
   motorcycleId: string;
+  userId?: string | null;
+  motorcycle?: MotorcycleReviewMotorcycle | null;
   userName: string;
   rating: number;
   ridingStyle: MotorcycleReviewRidingStyle;
@@ -26,13 +34,32 @@ export type MotorcycleReview = Readonly<{
   cons: readonly string[];
   verified: boolean;
   status: MotorcycleReviewStatus;
+  source?: MotorcycleReviewSource;
   createdAt: string;
   updatedAt: string;
+}>;
+
+export type MotorcycleReviewMotorcycle = Readonly<{
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  imageUrl: string;
+}>;
+
+type MotorcycleReviewMotorcycleRow = Readonly<{
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  image_url: string;
 }>;
 
 type MotorcycleReviewRow = Readonly<{
   id: string;
   motorcycle_id: string;
+  user_id?: string | null;
+  motorcycles?: MotorcycleReviewMotorcycleRow | null;
   user_name: string;
   rating: number;
   riding_style?: MotorcycleReviewRidingStyle;
@@ -43,6 +70,7 @@ type MotorcycleReviewRow = Readonly<{
   cons: readonly string[] | null;
   verified?: boolean | null;
   status: MotorcycleReviewStatus;
+  source?: MotorcycleReviewSource | null;
   created_at: string;
   updated_at: string;
 }>;
@@ -104,10 +132,41 @@ function assertValidReview(input: MotorcycleReviewInput) {
   }
 }
 
+function normalizeAuthContext(authContext: CreateReviewAuthContext | undefined) {
+  const userId = authContext?.userId.trim();
+  const accessToken = authContext?.accessToken.trim();
+
+  if (!userId && !accessToken) {
+    return null;
+  }
+
+  if (!userId || !accessToken) {
+    throw new Error('userId y accessToken son obligatorios para reviews autenticadas.');
+  }
+
+  return { accessToken, userId };
+}
+
+function mapMotorcycleRow(row: MotorcycleReviewMotorcycleRow | null | undefined): MotorcycleReviewMotorcycle | null {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    brand: row.brand,
+    model: row.model,
+    year: row.year,
+    imageUrl: row.image_url,
+  };
+}
+
 function mapReviewRow(row: MotorcycleReviewRow): MotorcycleReview {
   return {
     id: row.id,
     motorcycleId: row.motorcycle_id,
+    userId: row.user_id ?? null,
+    motorcycle: mapMotorcycleRow(row.motorcycles),
     userName: row.user_name,
     rating: row.rating,
     ridingStyle: row.riding_style ?? 'diario',
@@ -118,14 +177,18 @@ function mapReviewRow(row: MotorcycleReviewRow): MotorcycleReview {
     cons: row.cons ?? [],
     verified: row.verified === true,
     status: row.status,
+    source: row.source ?? 'user',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }
 
-function buildReviewPayload(input: MotorcycleReviewInput) {
+function buildReviewPayload(input: MotorcycleReviewInput, authContext?: CreateReviewAuthContext) {
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+
   return {
     motorcycle_id: input.motorcycleId,
+    user_id: normalizedAuthContext?.userId ?? null,
     user_name: input.userName.trim(),
     rating: input.rating,
     riding_style: input.ridingStyle,
@@ -134,6 +197,8 @@ function buildReviewPayload(input: MotorcycleReviewInput) {
     comment: input.comment.trim(),
     pros: normalizeTextArray(input.pros),
     cons: normalizeTextArray(input.cons),
+    source: 'user' as const,
+    verified: false,
     status: 'pending' as const satisfies MotorcycleReviewStatus,
   };
 }
@@ -158,6 +223,7 @@ function mapPendingPayloadToReview(payload: ReviewPayload): MotorcycleReview {
   return {
     id: '',
     motorcycleId: payload.motorcycle_id,
+    userId: payload.user_id,
     userName: payload.user_name,
     rating: payload.rating,
     ridingStyle: payload.riding_style,
@@ -168,21 +234,23 @@ function mapPendingPayloadToReview(payload: ReviewPayload): MotorcycleReview {
     cons: payload.cons,
     verified: false,
     status: payload.status,
+    source: payload.source,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
 }
 
-export async function createReview(input: MotorcycleReviewInput): Promise<MotorcycleReview> {
+export async function createReview(input: MotorcycleReviewInput, authContext?: CreateReviewAuthContext): Promise<MotorcycleReview> {
   assertValidReview(input);
   const config = getSupabaseConfig();
-  const payload = buildReviewPayload(input);
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+  const payload = buildReviewPayload(input, normalizedAuthContext ?? undefined);
   const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews`, {
     body: JSON.stringify(payload),
     headers: {
       Accept: 'application/json',
       apikey: config.supabaseAnonKey,
-      Authorization: `Bearer ${config.supabaseAnonKey}`,
+      Authorization: `Bearer ${normalizedAuthContext?.accessToken ?? config.supabaseAnonKey}`,
       'Content-Type': 'application/json',
       Prefer: 'return=minimal',
     },
@@ -210,6 +278,30 @@ export async function getApprovedReviewsByMotorcycleId(motorcycleId: string): Pr
       Accept: 'application/json',
       apikey: config.supabaseAnonKey,
       Authorization: `Bearer ${config.supabaseAnonKey}`,
+    },
+  });
+  const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);
+
+  return rows.map(mapReviewRow);
+}
+
+export async function getReviewsByUserId(authContext?: CreateReviewAuthContext | null): Promise<readonly MotorcycleReview[]> {
+  if (!authContext?.userId.trim()) {
+    return [];
+  }
+
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    order: 'created_at.desc',
+    select: 'id,motorcycle_id,user_id,user_name,rating,riding_style,ownership_months,kilometers,comment,pros,cons,status,verified,source,created_at,updated_at,motorcycles(id,brand,model,year,image_url)',
+    user_id: `eq.${normalizedAuthContext?.userId}`,
+  });
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews?${params.toString()}`, {
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${normalizedAuthContext?.accessToken}`,
     },
   });
   const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);

@@ -200,7 +200,7 @@ export function buildTopRatedSeoMetadata(): SeoMetadata {
   return buildCommunityLandingSeoMetadata();
 }
 
-export function buildAuthSeoMetadata(route: 'login' | 'registro' | 'cuenta'): SeoMetadata {
+export function buildAuthSeoMetadata(route: 'login' | 'registro' | 'cuenta' | 'cuenta-solicitudes'): SeoMetadata {
   const content = {
     login: {
       canonicalPath: '/login',
@@ -216,6 +216,11 @@ export function buildAuthSeoMetadata(route: 'login' | 'registro' | 'cuenta'): Se
       canonicalPath: '/cuenta',
       title: `Mi cuenta | ${siteName}`,
       description: 'Gestiona tu cuenta de MotoAtlas, identidad, futuras reviews y solicitudes de modelos.',
+    },
+    'cuenta-solicitudes': {
+      canonicalPath: '/cuenta/solicitudes',
+      title: `Mis solicitudes | ${siteName}`,
+      description: 'Consulta las solicitudes de modelos que has enviado a MotoAtlas.',
     },
   }[route];
 

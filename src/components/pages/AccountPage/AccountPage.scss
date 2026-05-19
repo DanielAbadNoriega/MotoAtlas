@@ -278,6 +278,44 @@
   }
 }
 
+.account-page__quick-links {
+  @include glass-panel;
+
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+
+  a {
+    @include label-caps;
+
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $radius-md;
+    color: rgba($color-on-surface-variant, 0.82);
+    display: block;
+    padding: 0.75rem;
+    text-align: left;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-accent-container, 0.1);
+      border-color: rgba($color-accent-container, 0.28);
+      color: $color-on-surface;
+      outline: 0;
+    }
+  }
+}
+
+.account-page__quick-link--active {
+  background: rgba($color-accent-container, 0.14) !important;
+  border-color: rgba($color-accent-container, 0.38) !important;
+  color: $color-on-surface !important;
+}
+
 .account-page__section {
   display: grid;
   gap: 1rem;
@@ -309,6 +347,37 @@
 
     color: rgba($color-on-surface-variant, 0.78);
   }
+}
+
+.account-page__section-actions {
+  align-items: flex-end;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: end;
+
+  span {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.78);
+  }
+
+  a {
+    color: $color-accent-container;
+    font-family: $font-headline;
+    font-size: 0.86rem;
+    font-weight: 800;
+  }
+}
+
+.account-page__section-link-button {
+  background:
+    linear-gradient(135deg, rgba($color-error, 0.14), rgba($color-accent-container, 0.1)),
+    rgba($color-surface-container-highest, 0.62);
+  border: 1px solid rgba($color-error, 0.28);
+  border-radius: $radius-lg;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  color: $color-on-surface !important;
+  padding: 0.62rem 0.85rem;
 }
 
 .account-page__empty-state {
@@ -354,10 +423,237 @@
   }
 }
 
+.account-page__empty-state--compact {
+  min-height: 100%;
+  padding: 1.5rem;
+}
+
+.account-page__empty-state--error {
+  border-color: rgba($color-error, 0.52);
+
+  .account-page__empty-icon,
+  h3 {
+    color: $color-error;
+  }
+}
+
+.account-page__reviews-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-page__review-card,
+.account-page__request-cta-card {
+  background:
+    radial-gradient(circle at top right, rgba($color-on-surface, 0.1), transparent 18rem),
+    rgba($color-surface-container, 0.86);
+  border: 1px solid rgba($color-outline-variant, 0.68);
+  border-radius: $radius-xl;
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.account-page__requests-summary-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.account-page__request-cta-card {
+  align-content: center;
+  align-items: center;
+  border-style: dashed;
+  border-width: 2px;
+  color: inherit;
+  cursor: pointer;
+  justify-content: center;
+  justify-items: center;
+  min-height: 100%;
+  overflow: hidden;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background $transition-base,
+    border-color $transition-base,
+    box-shadow $transition-base,
+    transform $transition-fast;
+
+  > .material-symbols-outlined {
+    align-items: center;
+    background:
+      radial-gradient(circle at 35% 20%, rgba($color-on-surface, 0.08), transparent 58%),
+      rgba($color-surface-container-high, 0.92);
+    border: 1px solid rgba($color-outline-variant, 0.72);
+    border-radius: 50%;
+    color: rgba($color-on-surface-variant, 0.78);
+    display: inline-flex;
+    font-size: 2.4rem;
+    height: 4rem;
+    justify-content: center;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+    width: 4rem;
+  }
+
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 0;
+    transition: color $transition-base;
+  }
+
+  p {
+    color: rgba($color-on-surface-variant, 0.82);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 20rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background:
+      radial-gradient(circle at 50% 0%, rgba($color-error, 0.16), transparent 16rem),
+      rgba($color-surface-container-high, 0.82);
+    border-color: rgba($color-error, 0.58);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+    outline: 0;
+    transform: translateY(-2px);
+
+    > .material-symbols-outlined {
+      background: rgba($color-error, 0.18);
+      border-color: rgba($color-error, 0.42);
+      color: $color-on-surface;
+      transform: scale(1.04);
+    }
+
+    h3 {
+      color: $color-on-surface;
+    }
+  }
+
+  &:focus-visible {
+    box-shadow:
+      0 18px 48px rgba(0, 0, 0, 0.32),
+      0 0 0 3px rgba($color-error, 0.28);
+  }
+}
+
+.account-page__review-main {
+  display: grid;
+  gap: 0.55rem;
+
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  p {
+    color: rgba($color-on-surface-variant, 0.86);
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.account-page__status {
+  @include label-caps;
+
+  border: 1px solid rgba($color-outline-variant, 0.58);
+  border-radius: 999px;
+  color: $color-on-surface-variant;
+  justify-self: start;
+  padding: 0.4rem 0.65rem;
+}
+
+.account-page__status--approved {
+  background: rgba(#48d597, 0.12);
+  border-color: rgba(#48d597, 0.36);
+  color: #9af0c4;
+}
+
+.account-page__status--pending {
+  background: rgba($color-accent-container, 0.12);
+  border-color: rgba($color-accent-container, 0.36);
+  color: $color-on-surface;
+}
+
+.account-page__status--reviewed {
+  background: rgba($color-outline, 0.12);
+  border-color: rgba($color-outline, 0.34);
+  color: rgba($color-on-surface-variant, 0.95);
+}
+
+.account-page__status--rejected,
+.account-page__status--hidden {
+  background: rgba($color-error, 0.1);
+  border-color: rgba($color-error, 0.36);
+  color: $color-error;
+}
+
+.account-page__review-meta {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+
+  div {
+    border-top: 1px solid rgba($color-outline-variant, 0.42);
+    display: grid;
+    gap: 0.25rem;
+    padding-top: 0.75rem;
+  }
+
+  dt {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.68);
+    font-size: 0.62rem;
+  }
+
+  dd {
+    color: $color-on-surface;
+    font-weight: 700;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.account-page__review-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  justify-content: flex-end;
+
+  span {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.66);
+    margin-right: auto;
+  }
+
+  a {
+    color: $color-accent-container;
+    font-family: $font-headline;
+    font-weight: 800;
+  }
+}
 
 @media (max-width: $breakpoint-tablet) {
   .account-page__dashboard {
     grid-template-columns: 1fr;
+  }
+
+  .account-page__requests-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .account-page__hero-content {
@@ -387,5 +683,18 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .account-page__section-actions {
+    align-items: flex-start;
+    justify-items: start;
+  }
+
+  .account-page__review-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .account-page__requests-summary-grid {
+    grid-template-columns: 1fr;
   }
 }

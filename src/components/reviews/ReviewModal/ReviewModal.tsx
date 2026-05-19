@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { getBikeDisplayName } from '../../../data/bikes';
+import { useAuth } from '../../../features/auth';
 import { createReview, type MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
 import { segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import type { Bike } from '../../../types/bike';
@@ -48,6 +49,7 @@ function getFieldClass(hasError: boolean) {
 }
 
 export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
+  const { isAuthenticated, profile, session, user } = useAuth();
   const [rating, setRating] = useState(0);
   const [ridingStyle, setRidingStyle] = useState<MotorcycleReviewRidingStyle | ''>('');
   const [status, setStatus] = useState<ReviewModalStatus>('idle');
@@ -59,6 +61,10 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
   const isSubmitting = status === 'submitting';
   const bikeName = getBikeDisplayName(motorcycle);
+  const profileAlias = profile?.displayName?.trim() ?? '';
+  const reviewAuthContext = isAuthenticated && user?.id && session?.access_token
+    ? { accessToken: session.access_token, userId: user.id }
+    : undefined;
 
   const resetModal = () => {
     setRating(0);
@@ -154,17 +160,20 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
     setStatus('submitting');
 
     try {
-      await createReview({
-        motorcycleId: motorcycle.id,
-        userName: String(formData.get('user_name') ?? '').trim(),
-        rating,
-        ridingStyle,
-        ownershipMonths: parseOptionalPositiveNumber(formData.get('ownership_months')),
-        kilometers: parseOptionalPositiveNumber(formData.get('kilometers')),
-        comment: String(formData.get('comment') ?? ''),
-        pros: splitReviewList(formData.get('pros')),
-        cons: splitReviewList(formData.get('cons')),
-      });
+      await createReview(
+        {
+          motorcycleId: motorcycle.id,
+          userName: String(formData.get('user_name') ?? '').trim(),
+          rating,
+          ridingStyle,
+          ownershipMonths: parseOptionalPositiveNumber(formData.get('ownership_months')),
+          kilometers: parseOptionalPositiveNumber(formData.get('kilometers')),
+          comment: String(formData.get('comment') ?? ''),
+          pros: splitReviewList(formData.get('pros')),
+          cons: splitReviewList(formData.get('cons')),
+        },
+        reviewAuthContext,
+      );
       setStatus('success');
       setErrors({});
       formRef.current?.reset();
@@ -241,9 +250,12 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
               <label className={getFieldClass(Boolean(errors.userName))} htmlFor="review-modal-user-name">
                 <span>Alias</span>
-                <input id="review-modal-user-name" name="user_name" autoComplete="nickname" placeholder="Ej. MoteroViajero" type="text" />
+                <input id="review-modal-user-name" name="user_name" autoComplete="nickname" defaultValue={profileAlias} placeholder="Ej. MoteroViajero" type="text" />
                 {errors.userName ? <small>{errors.userName}</small> : null}
               </label>
+              {reviewAuthContext ? (
+                <p className="review-modal__account-note">Tu review quedará asociada a tu cuenta. Tu alias será el nombre visible.</p>
+              ) : null}
 
               <fieldset className={errors.rating ? 'review-modal__rating review-modal__rating--error' : 'review-modal__rating'}>
                 <legend>Valoración general</legend>

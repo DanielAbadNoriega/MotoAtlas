@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createReview, getApprovedReviewsByMotorcycleId } from './motorcycleReviewService';
+import { createReview, getApprovedReviewsByMotorcycleId, getReviewsByUserId } from './motorcycleReviewService';
 
 const reviewRow = {
   id: 'review-1',
   motorcycle_id: 'bmw-f-900-gs-2024',
+  user_id: null,
   user_name: 'Dani',
   rating: 5,
   riding_style: 'viaje',
@@ -13,13 +14,38 @@ const reviewRow = {
   pros: ['Motor lleno'],
   cons: ['Precio alto'],
   status: 'pending',
+  source: 'user',
   created_at: '2026-05-14T10:00:00.000Z',
   updated_at: '2026-05-14T10:00:00.000Z',
+  motorcycles: {
+    id: 'bmw-f-900-gs-2024',
+    brand: 'BMW',
+    model: 'F 900 GS',
+    year: 2024,
+    image_url: '/images/motorcycles/bmw-f-900-gs-2024.webp',
+  },
 };
+
+const validReviewInput = {
+  motorcycleId: 'bmw-f-900-gs-2024',
+  userName: 'Dani',
+  rating: 5,
+  ridingStyle: 'viaje',
+  ownershipMonths: 12,
+  kilometers: 8500,
+  comment: 'Muy completa para viajar y pistas fáciles.',
+  pros: ['Motor lleno'],
+  cons: ['Precio alto'],
+} as const;
 
 function stubSupabaseEnv() {
   vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
   vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'anon-key');
+}
+
+function getLastPayload(fetchMock: ReturnType<typeof vi.fn>) {
+  const lastCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
+  return JSON.parse(String(lastCall?.[1]?.body));
 }
 
 describe('motorcycleReviewService', () => {
@@ -36,22 +62,13 @@ describe('motorcycleReviewService', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const review = await createReview({
-      motorcycleId: 'bmw-f-900-gs-2024',
-      userName: 'Dani',
-      rating: 5,
-      ridingStyle: 'viaje',
-      ownershipMonths: 12,
-      kilometers: 8500,
-      comment: 'Muy completa para viajar y pistas fáciles.',
-      pros: ['Motor lleno'],
-      cons: ['Precio alto'],
-    });
+    const review = await createReview(validReviewInput);
 
     expect(review).toMatchObject({
       motorcycleId: 'bmw-f-900-gs-2024',
       rating: 5,
       status: 'pending',
+      userId: null,
       userName: 'Dani',
       verified: false,
     });
@@ -62,9 +79,14 @@ describe('motorcycleReviewService', () => {
         body: expect.stringContaining('"status":"pending"'),
       }),
     );
-    expect(fetchMock.mock.calls[0][1].body).toContain('"riding_style":"viaje"');
-    expect(fetchMock.mock.calls[0][1].body).toContain('"user_name":"Dani"');
-    expect(fetchMock.mock.calls[0][1].body).not.toContain('"verified"');
+    expect(getLastPayload(fetchMock)).toMatchObject({
+      riding_style: 'viaje',
+      source: 'user',
+      status: 'pending',
+      user_id: null,
+      user_name: 'Dani',
+      verified: false,
+    });
   });
 
   it('envía headers Supabase correctos para inserción pública sin leer la fila pending', async () => {
@@ -92,6 +114,78 @@ describe('motorcycleReviewService', () => {
       Prefer: 'return=minimal',
     });
     expect(requestInit.headers).not.toMatchObject({ Prefer: 'return=representation' });
+  });
+
+  it('envía user_id correcto y token de sesión para una review autenticada', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const review = await createReview(validReviewInput, {
+      accessToken: 'session-token',
+      userId: 'user-123',
+    });
+
+    const [, requestInit] = fetchMock.mock.calls[0];
+
+    expect(review).toMatchObject({
+      status: 'pending',
+      userId: 'user-123',
+      verified: false,
+    });
+    expect(requestInit.headers).toMatchObject({
+      Authorization: 'Bearer session-token',
+      apikey: 'anon-key',
+      Prefer: 'return=minimal',
+    });
+    expect(getLastPayload(fetchMock)).toMatchObject({
+      source: 'user',
+      status: 'pending',
+      user_id: 'user-123',
+      verified: false,
+    });
+  });
+
+  it('ignora campos externos que intentarían sobrescribir moderation/source/user_id', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createReview(
+      {
+        ...validReviewInput,
+        source: 'seed',
+        status: 'approved',
+        userId: 'other-user',
+        verified: true,
+      } as never,
+      {
+        accessToken: 'session-token',
+        userId: 'user-123',
+      },
+    );
+
+    expect(getLastPayload(fetchMock)).toMatchObject({
+      source: 'user',
+      status: 'pending',
+      user_id: 'user-123',
+      verified: false,
+    });
+  });
+
+  it('rechaza contexto autenticado incompleto antes de llamar a red', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createReview(validReviewInput, { accessToken: 'session-token', userId: '   ' })).rejects.toThrow(
+      'userId y accessToken son obligatorios para reviews autenticadas',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('propaga un error Supabase legible si RLS rechaza el insert', async () => {
@@ -169,5 +263,75 @@ describe('motorcycleReviewService', () => {
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/rest/v1/motorcycle_reviews?'), expect.any(Object));
     expect(fetchMock.mock.calls[0][0]).toContain('status=eq.approved');
     expect(fetchMock.mock.calls[0][0]).toContain('motorcycle_id=eq.bmw-f-900-gs-2024');
+  });
+
+  it('consulta reviews propias por user_id con token autenticado', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([{ ...reviewRow, user_id: 'user-123', status: 'hidden' }]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const reviews = await getReviewsByUserId({
+      accessToken: 'session-token',
+      userId: 'user-123',
+    });
+
+    const [url, requestInit] = fetchMock.mock.calls[0];
+
+    expect(reviews[0]).toMatchObject({
+      motorcycleId: 'bmw-f-900-gs-2024',
+      motorcycle: {
+        brand: 'BMW',
+        imageUrl: '/images/motorcycles/bmw-f-900-gs-2024.webp',
+        model: 'F 900 GS',
+        year: 2024,
+      },
+      source: 'user',
+      status: 'hidden',
+      userId: 'user-123',
+    });
+    expect(decodeURIComponent(String(url))).toContain('user_id=eq.user-123');
+    expect(decodeURIComponent(String(url))).toContain('order=created_at.desc');
+    expect(decodeURIComponent(String(url))).toContain('motorcycles(id,brand,model,year,image_url)');
+    expect(requestInit.headers).toMatchObject({
+      Authorization: 'Bearer session-token',
+      apikey: 'anon-key',
+    });
+  });
+
+  it('maneja lista vacía de reviews propias', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getReviewsByUserId({ accessToken: 'session-token', userId: 'user-123' })).resolves.toEqual([]);
+  });
+
+  it('propaga error al leer reviews propias', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: () => Promise.resolve('permission denied'),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getReviewsByUserId({ accessToken: 'session-token', userId: 'user-123' })).rejects.toThrow(
+      'Supabase motorcycle_reviews request failed (403): permission denied',
+    );
+  });
+
+  it('no consulta reviews propias si no hay userId', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getReviewsByUserId()).resolves.toEqual([]);
+    await expect(getReviewsByUserId({ accessToken: 'session-token', userId: '   ' })).resolves.toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

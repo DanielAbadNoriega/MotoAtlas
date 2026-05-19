@@ -243,6 +243,13 @@
   border-color: rgba($color-error, 0.62) !important;
 }
 
+.review-modal__account-note {
+  color: rgba($color-on-surface-variant, 0.78);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin: -0.95rem 0 0;
+}
+
 .review-modal__rating > div {
   border-radius: $radius-lg;
   display: flex;

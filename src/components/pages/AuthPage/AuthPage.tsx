@@ -10,6 +10,8 @@ type AuthPageProps = Readonly<{
   mode: AuthPageMode;
 }>;
 
+const registerSuccessMessage = 'Si los datos son válidos, recibirás un correo con las instrucciones para continuar.';
+
 function getInitialForm() {
   return {
     displayName: '',
@@ -80,7 +82,7 @@ export function AuthPage({ mode }: AuthPageProps) {
     try {
       if (isRegister) {
         await signUp({ displayName: form.displayName, email: form.email, password: form.password });
-        setSuccessMessage('Cuenta creada. Revisa tu email si Supabase requiere confirmación antes de iniciar sesión.');
+        setSuccessMessage(registerSuccessMessage);
       } else {
         await signIn({ email: form.email, password: form.password });
         setSuccessMessage('Sesión iniciada. Redirigiendo a Mi cuenta.');

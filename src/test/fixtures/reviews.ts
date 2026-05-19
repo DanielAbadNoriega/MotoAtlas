@@ -13,6 +13,7 @@ export function createReviewFixture(overrides: ReviewFixtureOverrides = {}): Mot
   return {
     id,
     motorcycleId: overrides.motorcycleId ?? 'test-bmw-f-900-gs',
+    userId: Object.prototype.hasOwnProperty.call(overrides, 'userId') ? (overrides.userId ?? null) : null,
     userName: overrides.userName ?? 'Laura',
     rating: overrides.rating ?? 5,
     ridingStyle: overrides.ridingStyle ?? 'viaje',

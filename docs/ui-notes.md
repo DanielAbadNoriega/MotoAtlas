@@ -42,7 +42,7 @@ Las rutas enlazadas desde el footer ya tienen páginas reales en `src/components
 
 - `#/metodologia` — explica procedencia `api`, `manual`, `estimated`, `user` y `placeholder`.
 - `#/fuentes-datos` — resume fuentes externas, revisión manual, comunidad, imágenes y ratings.
-- `#/solicitar-modelo` — formulario local preparado; valida marca, modelo y año, pero todavía no persiste en backend.
+- `#/solicitar-modelo` — formulario conectado a `model_requests`; valida marca, modelo y año, y permite envío anónimo o autenticado.
 - `#/privacidad` — base inicial de privacidad pendiente de revisión legal final.
 - `#/terminos` — base inicial de términos de uso pendiente de revisión legal final.
 

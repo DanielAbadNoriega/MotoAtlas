@@ -187,6 +187,7 @@ describe('App navigation with mocked motorcycleService', () => {
     ['#/login', /Iniciar sesión/i, 'Iniciar sesión | MotoAtlas'],
     ['#/registro', /Crear cuenta/i, 'Crear cuenta | MotoAtlas'],
     ['#/cuenta', /Inicia sesión para ver Mi cuenta/i, 'Mi cuenta | MotoAtlas'],
+    ['#/cuenta/solicitudes', /Inicia sesión para ver tus solicitudes/i, 'Mis solicitudes | MotoAtlas'],
   ])('renderiza la ruta de auth %s', async (hash, heading, expectedTitle) => {
     window.location.hash = hash;
 
