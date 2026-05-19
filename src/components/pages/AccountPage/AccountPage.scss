@@ -278,6 +278,38 @@
   }
 }
 
+.account-page__quick-links {
+  @include glass-panel;
+
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+
+  button {
+    @include label-caps;
+
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: $radius-md;
+    color: rgba($color-on-surface-variant, 0.82);
+    cursor: pointer;
+    padding: 0.75rem;
+    text-align: left;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-accent-container, 0.1);
+      border-color: rgba($color-accent-container, 0.28);
+      color: $color-on-surface;
+      outline: 0;
+    }
+  }
+}
+
 .account-page__section {
   display: grid;
   gap: 1rem;
@@ -308,6 +340,26 @@
     @include label-caps;
 
     color: rgba($color-on-surface-variant, 0.78);
+  }
+}
+
+.account-page__section-actions {
+  align-items: flex-end;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: end;
+
+  span {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.78);
+  }
+
+  a {
+    color: $color-accent-container;
+    font-family: $font-headline;
+    font-size: 0.86rem;
+    font-weight: 800;
   }
 }
 
@@ -420,6 +472,12 @@
   color: $color-on-surface;
 }
 
+.account-page__status--reviewed {
+  background: rgba($color-outline, 0.12);
+  border-color: rgba($color-outline, 0.34);
+  color: rgba($color-on-surface-variant, 0.95);
+}
+
 .account-page__status--rejected,
 .account-page__status--hidden {
   background: rgba($color-error, 0.1);
@@ -508,6 +566,11 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .account-page__section-actions {
+    align-items: flex-start;
+    justify-items: start;
   }
 
   .account-page__review-meta {

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
+import { getModelRequestsByUserId } from '../../../services/modelRequestService';
 import { getReviewsByUserId } from '../../../services/motorcycleReviewService';
 import { AccountPage } from './AccountPage';
 
@@ -13,7 +14,12 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
   getReviewsByUserId: vi.fn(),
 }));
 
+vi.mock('../../../services/modelRequestService', () => ({
+  getModelRequestsByUserId: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
+const getModelRequestsByUserIdMock = vi.mocked(getModelRequestsByUserId);
 const getReviewsByUserIdMock = vi.mocked(getReviewsByUserId);
 const signOutMock = vi.fn();
 
@@ -43,6 +49,22 @@ const ownReview = {
   updatedAt: '2026-05-14T10:00:00.000Z',
 } as const;
 
+const ownModelRequest = {
+  id: 'request-1',
+  userId: 'user-1',
+  brand: 'Ducati',
+  model: 'Monster',
+  year: 2026,
+  segment: 'naked',
+  contactEmail: 'rider@motoatlas.com',
+  comment:
+    'Me interesa para comparar contra la competencia A2 y entender si el paquete técnico merece entrar en el catálogo para usuarios que buscan naked ligeras con enfoque de diario y rutas de fin de semana.',
+  status: 'pending',
+  source: 'user',
+  createdAt: '2026-05-15T10:00:00.000Z',
+  updatedAt: '2026-05-15T10:00:00.000Z',
+} as const;
+
 function mockAuth(overrides = {}) {
   useAuthMock.mockReturnValue({
     user: null,
@@ -63,6 +85,7 @@ describe('AccountPage', () => {
   beforeEach(() => {
     window.location.hash = '';
     signOutMock.mockReset().mockResolvedValue(undefined);
+    getModelRequestsByUserIdMock.mockReset().mockResolvedValue([]);
     getReviewsByUserIdMock.mockReset().mockResolvedValue([]);
     mockAuth();
   });
@@ -72,10 +95,11 @@ describe('AccountPage', () => {
 
     expect(screen.getByRole('heading', { name: /Inicia sesión para ver Mi cuenta/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Iniciar sesión/i })).toHaveAttribute('href', '#/login');
+    expect(getModelRequestsByUserIdMock).not.toHaveBeenCalled();
     expect(getReviewsByUserIdMock).not.toHaveBeenCalled();
   });
 
-  it('muestra email, alias, resumen y placeholders si hay usuario', () => {
+  it('muestra email, alias, resumen y secciones principales si hay usuario', () => {
     mockAuth({
       isAuthenticated: true,
       session: { access_token: 'session-token' },
@@ -103,8 +127,23 @@ describe('AccountPage', () => {
 
     render(<AccountPage />);
 
-    expect(screen.getByRole('status')).toHaveTextContent('Cargando tus reviews...');
+    expect(screen.getByText('Cargando tus reviews...')).toBeInTheDocument();
     expect(getReviewsByUserIdMock).toHaveBeenCalledWith({ accessToken: 'session-token', userId: 'user-1' });
+  });
+
+  it('muestra loading al cargar solicitudes propias', () => {
+    getModelRequestsByUserIdMock.mockReturnValue(new Promise(() => undefined));
+    mockAuth({
+      isAuthenticated: true,
+      session: { access_token: 'session-token' },
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+
+    render(<AccountPage />);
+
+    expect(screen.getByText('Cargando tus solicitudes...')).toBeInTheDocument();
+    expect(getModelRequestsByUserIdMock).toHaveBeenCalledWith({ accessToken: 'session-token', userId: 'user-1' });
   });
 
   it('muestra empty state si el usuario no tiene reviews', async () => {
@@ -120,6 +159,21 @@ describe('AccountPage', () => {
     expect(await screen.findByRole('heading', { name: 'Aún no has enviado reviews' })).toBeInTheDocument();
     expect(screen.getByText(/Cuando compartas tu experiencia con una moto/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Explorar motos/i })).toHaveAttribute('href', '#/buscador');
+  });
+
+  it('muestra empty state si el usuario no tiene solicitudes', async () => {
+    mockAuth({
+      isAuthenticated: true,
+      session: { access_token: 'session-token' },
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+
+    render(<AccountPage />);
+
+    expect(await screen.findByRole('heading', { name: 'Aún no has solicitado modelos.' })).toBeInTheDocument();
+    expect(screen.getByText(/Solicita su ficha técnica/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Solicitar telemetría/i })).toHaveAttribute('href', '#/solicitar-modelo');
   });
 
   it('muestra reviews del usuario con status traducido y enlaces', async () => {
@@ -144,6 +198,53 @@ describe('AccountPage', () => {
     expect(screen.getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
     expect(screen.getByRole('link', { name: /Ver comunidad/i })).toHaveAttribute('href', '#/comunidad/bmw-f-900-gs-2024');
     expect(screen.queryByText('Yamaha Ténéré 700')).not.toBeInTheDocument();
+  });
+
+  it('muestra solicitudes reales del usuario con status traducido, fecha, comentario y enlace futuro', async () => {
+    getModelRequestsByUserIdMock.mockResolvedValue([
+      { ...ownModelRequest, status: 'reviewed' },
+      { ...ownModelRequest, id: 'request-other', userId: 'other-user', brand: 'Yamaha', model: 'R9', status: 'approved' },
+    ]);
+    mockAuth({
+      isAuthenticated: true,
+      session: { access_token: 'session-token' },
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+
+    render(<AccountPage />);
+
+    expect(await screen.findByText('Ducati Monster')).toBeInTheDocument();
+    expect(screen.getByText('Revisada')).toBeInTheDocument();
+    expect(screen.getByText('2026')).toBeInTheDocument();
+    expect(screen.getByText('naked')).toBeInTheDocument();
+    const summarizedComment = screen.getByText(/Me interesa para comparar/i);
+    expect(summarizedComment).toBeInTheDocument();
+    expect(summarizedComment.textContent?.endsWith('...')).toBe(true);
+    expect(screen.getByRole('link', { name: /Ver todas mis solicitudes/i })).toHaveAttribute('href', '#/cuenta/solicitudes');
+    expect(screen.queryByText('Yamaha R9')).not.toBeInTheDocument();
+  });
+
+  it('muestra todos los status traducidos de solicitudes propias', async () => {
+    getModelRequestsByUserIdMock.mockResolvedValue([
+      { ...ownModelRequest, id: 'request-pending', status: 'pending' },
+      { ...ownModelRequest, id: 'request-reviewed', status: 'reviewed' },
+      { ...ownModelRequest, id: 'request-approved', status: 'approved' },
+      { ...ownModelRequest, id: 'request-rejected', status: 'rejected' },
+    ]);
+    mockAuth({
+      isAuthenticated: true,
+      session: { access_token: 'session-token' },
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+
+    render(<AccountPage />);
+
+    expect(await screen.findByText('Pendiente')).toBeInTheDocument();
+    expect(screen.getByText('Revisada')).toBeInTheDocument();
+    expect(screen.getByText('Aprobada')).toBeInTheDocument();
+    expect(screen.getByText('Rechazada')).toBeInTheDocument();
   });
 
   it('muestra todos los status traducidos de reviews propias', async () => {
@@ -184,7 +285,23 @@ describe('AccountPage', () => {
     expect(alert).toHaveTextContent('RLS rejected');
   });
 
-  it('no consulta reviews si el usuario autenticado todavía no tiene userId', () => {
+  it('muestra error si falla la carga de solicitudes propias', async () => {
+    getModelRequestsByUserIdMock.mockRejectedValue(new Error('RLS rejected'));
+    mockAuth({
+      isAuthenticated: true,
+      session: { access_token: 'session-token' },
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+
+    render(<AccountPage />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('No se han podido cargar tus solicitudes.');
+    expect(alert).toHaveTextContent('RLS rejected');
+  });
+
+  it('no consulta datos de cuenta si el usuario autenticado todavía no tiene userId', () => {
     mockAuth({
       isAuthenticated: true,
       session: { access_token: 'session-token' },
@@ -194,6 +311,7 @@ describe('AccountPage', () => {
 
     render(<AccountPage />);
 
+    expect(getModelRequestsByUserIdMock).not.toHaveBeenCalled();
     expect(getReviewsByUserIdMock).not.toHaveBeenCalled();
   });
 

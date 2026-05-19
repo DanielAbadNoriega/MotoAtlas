@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import accountHeroImage from '../../../assets/hero-metodology.png';
 import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
+import { getModelRequestsByUserId, type ModelRequest, type ModelRequestStatus } from '../../../services/modelRequestService';
 import { getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import './AccountPage.scss';
 
@@ -10,12 +11,20 @@ function getProfileName(profileName: string | null | undefined, email: string | 
 }
 
 type AccountReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
+type AccountRequestsStatus = 'idle' | 'loading' | 'success' | 'error';
 
 const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
   pending: 'Pendiente de revisión',
   approved: 'Publicada',
   rejected: 'Rechazada',
   hidden: 'Oculta',
+};
+
+const modelRequestStatusLabels: Record<ModelRequestStatus, string> = {
+  pending: 'Pendiente',
+  reviewed: 'Revisada',
+  approved: 'Aprobada',
+  rejected: 'Rechazada',
 };
 
 const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
@@ -62,11 +71,15 @@ function getReviewMotorcycleDisplay(review: MotorcycleReview) {
 export function AccountPage() {
   const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
   const [error, setError] = useState('');
+  const [modelRequests, setModelRequests] = useState<readonly ModelRequest[]>([]);
+  const [modelRequestsError, setModelRequestsError] = useState('');
+  const [modelRequestsStatus, setModelRequestsStatus] = useState<AccountRequestsStatus>('idle');
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [reviewsError, setReviewsError] = useState('');
   const [reviewsStatus, setReviewsStatus] = useState<AccountReviewsStatus>('idle');
   const displayName = getProfileName(profile?.displayName, user?.email);
   const email = user?.email ?? 'Email no disponible';
+  const visibleModelRequests = modelRequests.filter((request) => request.userId === user?.id);
   const visibleReviews = reviews.filter((review) => review.userId === user?.id);
 
   const handleSignOut = async () => {
@@ -78,6 +91,10 @@ export function AccountPage() {
     } catch (signOutError) {
       setError(signOutError instanceof Error ? signOutError.message : 'No se ha podido cerrar sesión.');
     }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -111,6 +128,47 @@ export function AccountPage() {
           setReviews([]);
           setReviewsError(reviewsLoadError instanceof Error ? reviewsLoadError.message : 'No se han podido cargar tus reviews.');
           setReviewsStatus('error');
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, isLoading, session?.access_token, user?.id]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) {
+      setModelRequests([]);
+      setModelRequestsError('');
+      setModelRequestsStatus('idle');
+      return undefined;
+    }
+
+    if (!user?.id || !session?.access_token) {
+      setModelRequests([]);
+      setModelRequestsError('');
+      setModelRequestsStatus('success');
+      return undefined;
+    }
+
+    let isMounted = true;
+    setModelRequestsStatus('loading');
+    setModelRequestsError('');
+
+    getModelRequestsByUserId({ accessToken: session.access_token, userId: user.id })
+      .then((nextModelRequests) => {
+        if (isMounted) {
+          setModelRequests(nextModelRequests);
+          setModelRequestsStatus('success');
+        }
+      })
+      .catch((modelRequestsLoadError) => {
+        if (isMounted) {
+          setModelRequests([]);
+          setModelRequestsError(
+            modelRequestsLoadError instanceof Error ? modelRequestsLoadError.message : 'No se han podido cargar tus solicitudes.',
+          );
+          setModelRequestsStatus('error');
         }
       });
 
@@ -201,6 +259,11 @@ export function AccountPage() {
               <strong>Tu alias seguirá siendo el nombre visible para otros usuarios.</strong>
             </div>
           </article>
+
+          <nav className="account-page__quick-links" aria-label="Navegación de cuenta">
+            <button type="button" onClick={() => scrollToSection('account-reviews-title')}>Mis reviews</button>
+            <button type="button" onClick={() => scrollToSection('account-requests-title')}>Mis solicitudes</button>
+          </nav>
         </aside>
 
         <div className="account-page__main">
@@ -281,14 +344,65 @@ export function AccountPage() {
                 <span className="material-symbols-outlined" aria-hidden="true">analytics</span>
                 Mis solicitudes
               </h2>
-              <span>Pendientes: 0</span>
+              <div className="account-page__section-actions">
+                <span>Total: {modelRequestsStatus === 'loading' ? '...' : visibleModelRequests.length}</span>
+                <a href="#/cuenta/solicitudes">Ver todas mis solicitudes</a>
+              </div>
             </header>
-            <article className="account-page__empty-state">
-              <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">add_chart</span>
-              <h3>Aún no has solicitado modelos.</h3>
-              <p>¿No encuentras una moto? Solicita su ficha técnica y aparecerá en tu radar.</p>
-              <a className="account-page__button" href="#/solicitar-modelo">Solicitar telemetría</a>
-            </article>
+            {modelRequestsStatus === 'loading' ? (
+              <article className="account-page__empty-state" role="status">
+                <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">sync</span>
+                <h3>Cargando tus solicitudes...</h3>
+                <p>Estamos recuperando los modelos solicitados desde tu cuenta.</p>
+              </article>
+            ) : modelRequestsStatus === 'error' ? (
+              <article className="account-page__empty-state account-page__empty-state--error" role="alert">
+                <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">warning</span>
+                <h3>No se han podido cargar tus solicitudes.</h3>
+                <p>{modelRequestsError || 'Inténtalo de nuevo en unos minutos.'}</p>
+              </article>
+            ) : visibleModelRequests.length === 0 ? (
+              <article className="account-page__empty-state">
+                <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">add_chart</span>
+                <h3>Aún no has solicitado modelos.</h3>
+                <p>¿No encuentras una moto? Solicita su ficha técnica y aparecerá en tu radar.</p>
+                <a className="account-page__button" href="#/solicitar-modelo">Solicitar telemetría</a>
+              </article>
+            ) : (
+              <div className="account-page__reviews-list">
+                {visibleModelRequests.map((request) => (
+                  <article className="account-page__review-card" key={request.id}>
+                    <div className="account-page__review-main">
+                      <span className={`account-page__status account-page__status--${request.status}`}>
+                        {modelRequestStatusLabels[request.status]}
+                      </span>
+                      <h3>{`${request.brand} ${request.model}`}</h3>
+                      {request.comment ? <p>{truncateComment(request.comment)}</p> : null}
+                    </div>
+                    <dl className="account-page__review-meta">
+                      <div>
+                        <dt>Año</dt>
+                        <dd>{request.year}</dd>
+                      </div>
+                      {request.segment ? (
+                        <div>
+                          <dt>Segmento</dt>
+                          <dd>{request.segment}</dd>
+                        </div>
+                      ) : null}
+                      <div>
+                        <dt>Fecha</dt>
+                        <dd>{formatReviewDate(request.createdAt)}</dd>
+                      </div>
+                    </dl>
+                    <footer className="account-page__review-actions">
+                      <span>Solicitud {request.id.slice(0, 8)}</span>
+                      <a href="#/solicitar-modelo">Solicitar otro modelo</a>
+                    </footer>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </section>

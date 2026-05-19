@@ -42,6 +42,21 @@ type ModelRequestPayload = Readonly<{
   source: 'user';
 }>;
 
+type ModelRequestRow = Readonly<{
+  id: string;
+  user_id: string | null;
+  brand: string;
+  model: string;
+  year: number;
+  segment: string | null;
+  contact_email: string | null;
+  comment: string | null;
+  status: ModelRequestStatus;
+  source: ModelRequestSource;
+  created_at: string;
+  updated_at: string;
+}>;
+
 function getSupabaseConfig() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
@@ -110,6 +125,28 @@ async function assertSupabaseOk(response: Response) {
   }
 }
 
+async function parseSupabaseResponse<T>(response: Response): Promise<T> {
+  await assertSupabaseOk(response);
+  return (await response.json()) as T;
+}
+
+function mapModelRequestRow(row: ModelRequestRow): ModelRequest {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    brand: row.brand,
+    model: row.model,
+    year: row.year,
+    segment: row.segment,
+    contactEmail: row.contact_email,
+    comment: row.comment,
+    status: row.status,
+    source: row.source,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 function mapPendingPayloadToModelRequest(payload: ModelRequestPayload): ModelRequest {
   const timestamp = new Date().toISOString();
 
@@ -148,4 +185,31 @@ export async function createModelRequest(input: ModelRequestInput, authContext?:
   await assertSupabaseOk(response);
 
   return mapPendingPayloadToModelRequest(payload);
+}
+
+export async function getModelRequestsByUserId(authContext?: ModelRequestAuthContext | null): Promise<readonly ModelRequest[]> {
+  if (!authContext?.userId.trim() || !authContext?.accessToken.trim()) {
+    return [];
+  }
+
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+  if (!normalizedAuthContext) {
+    return [];
+  }
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    order: 'created_at.desc',
+    select: 'id,user_id,brand,model,year,segment,contact_email,comment,status,source,created_at,updated_at',
+    user_id: `eq.${normalizedAuthContext.userId}`,
+  });
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/model_requests?${params.toString()}`, {
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${normalizedAuthContext.accessToken}`,
+    },
+  });
+  const rows = await parseSupabaseResponse<ModelRequestRow[]>(response);
+
+  return rows.map(mapModelRequestRow);
 }
