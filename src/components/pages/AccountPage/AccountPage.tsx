@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { ModelRequestCard } from '../../model-requests/ModelRequestCard';
+import { formatAccountDate, truncateAccountText } from '../../model-requests/modelRequestPresentation';
 import accountHeroImage from '../../../assets/hero-metodology.png';
 import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
-import { getModelRequestsByUserId, type ModelRequest, type ModelRequestStatus } from '../../../services/modelRequestService';
+import { getModelRequestsByUserId, type ModelRequest } from '../../../services/modelRequestService';
 import { getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { AccountSidebar } from './AccountSidebar';
 import './AccountPage.scss';
 
 function getProfileName(profileName: string | null | undefined, email: string | undefined) {
@@ -20,13 +23,6 @@ const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
   hidden: 'Oculta',
 };
 
-const modelRequestStatusLabels: Record<ModelRequestStatus, string> = {
-  pending: 'Pendiente',
-  reviewed: 'Revisada',
-  approved: 'Aprobada',
-  rejected: 'Rechazada',
-};
-
 const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
   ciudad: 'Ciudad',
   viaje: 'Viaje',
@@ -35,19 +31,6 @@ const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
   pasajero: 'Pasajero',
   diario: 'Diario',
 };
-
-function formatReviewDate(value: string) {
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value));
-}
-
-function truncateComment(comment: string) {
-  const normalizedComment = comment.trim();
-  return normalizedComment.length > 150 ? `${normalizedComment.slice(0, 147)}...` : normalizedComment;
-}
 
 function getReviewMotorcycleDisplay(review: MotorcycleReview) {
   const catalogBike = findBikeById(review.motorcycleId);
@@ -80,6 +63,7 @@ export function AccountPage() {
   const displayName = getProfileName(profile?.displayName, user?.email);
   const email = user?.email ?? 'Email no disponible';
   const visibleModelRequests = modelRequests.filter((request) => request.userId === user?.id);
+  const recentModelRequests = visibleModelRequests.slice(0, 2);
   const visibleReviews = reviews.filter((review) => review.userId === user?.id);
 
   const handleSignOut = async () => {
@@ -91,10 +75,6 @@ export function AccountPage() {
     } catch (signOutError) {
       setError(signOutError instanceof Error ? signOutError.message : 'No se ha podido cerrar sesión.');
     }
-  };
-
-  const scrollToSection = (sectionId: string) => {
-    document.getElementById(sectionId)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -227,44 +207,16 @@ export function AccountPage() {
       {error ? <p className="account-page__alert" role="alert">{error}</p> : null}
 
       <section className="account-page__dashboard" aria-label="Panel de cuenta">
-        <aside className="account-page__sidebar" aria-label="Resumen de perfil">
-          <article className="account-page__card account-page__profile-card">
-            <span className="account-page__ghost-icon material-symbols-outlined" aria-hidden="true">settings_input_component</span>
-            <h2>
-              <span aria-hidden="true" />
-              Resumen de perfil
-            </h2>
-            <dl>
-              <div>
-                <dt>Alias de piloto</dt>
-                <dd>{displayName}</dd>
-              </div>
-              <div>
-                <dt>Email de acceso</dt>
-                <dd>{email}</dd>
-              </div>
-            </dl>
-            <div className="account-page__profile-actions">
-              <button className="account-page__button account-page__button--glass" type="button" onClick={handleSignOut}>
-                <span className="material-symbols-outlined" aria-hidden="true">logout</span>
-                Cerrar sesión
-              </button>
-            </div>
-          </article>
-
-          <article className="account-page__notice">
-            <span className="material-symbols-outlined" aria-hidden="true">info</span>
-            <div>
-              <p>Cuando envíes una review con sesión iniciada, quedará asociada a tu cuenta automáticamente.</p>
-              <strong>Tu alias seguirá siendo el nombre visible para otros usuarios.</strong>
-            </div>
-          </article>
-
-          <nav className="account-page__quick-links" aria-label="Navegación de cuenta">
-            <button type="button" onClick={() => scrollToSection('account-reviews-title')}>Mis reviews</button>
-            <button type="button" onClick={() => scrollToSection('account-requests-title')}>Mis solicitudes</button>
-          </nav>
-        </aside>
+        <AccountSidebar
+          activeItem="overview"
+          displayName={displayName}
+          email={email}
+          onSignOut={handleSignOut}
+          notice={{
+            body: 'Cuando envíes una review con sesión iniciada, quedará asociada a tu cuenta automáticamente.',
+            strong: 'Tu alias seguirá siendo el nombre visible para otros usuarios.',
+          }}
+        />
 
         <div className="account-page__main">
           <section className="account-page__section" aria-labelledby="account-reviews-title">
@@ -306,7 +258,7 @@ export function AccountPage() {
                           {reviewStatusLabels[review.status]}
                         </span>
                         <h3>{motorcycle.name}</h3>
-                        <p>{truncateComment(review.comment)}</p>
+                        <p>{truncateAccountText(review.comment)}</p>
                       </div>
                       <dl className="account-page__review-meta">
                         <div>
@@ -323,7 +275,7 @@ export function AccountPage() {
                         </div>
                         <div>
                           <dt>Fecha</dt>
-                          <dd>{formatReviewDate(review.createdAt)}</dd>
+                          <dd>{formatAccountDate(review.createdAt)}</dd>
                         </div>
                       </dl>
                       <footer className="account-page__review-actions">
@@ -346,7 +298,7 @@ export function AccountPage() {
               </h2>
               <div className="account-page__section-actions">
                 <span>Total: {modelRequestsStatus === 'loading' ? '...' : visibleModelRequests.length}</span>
-                <a href="#/cuenta/solicitudes">Ver todas mis solicitudes</a>
+                <a className="account-page__section-link-button" href="#/cuenta/solicitudes">Ver todas mis solicitudes</a>
               </div>
             </header>
             {modelRequestsStatus === 'loading' ? (
@@ -362,45 +314,34 @@ export function AccountPage() {
                 <p>{modelRequestsError || 'Inténtalo de nuevo en unos minutos.'}</p>
               </article>
             ) : visibleModelRequests.length === 0 ? (
-              <article className="account-page__empty-state">
-                <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">add_chart</span>
-                <h3>Aún no has solicitado modelos.</h3>
-                <p>¿No encuentras una moto? Solicita su ficha técnica y aparecerá en tu radar.</p>
-                <a className="account-page__button" href="#/solicitar-modelo">Solicitar telemetría</a>
-              </article>
+              <div className="account-page__requests-summary-grid">
+                <article className="account-page__empty-state account-page__empty-state--compact">
+                  <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">add_chart</span>
+                  <h3>Aún no has solicitado modelos.</h3>
+                  <p>¿No encuentras una moto? Solicita su ficha técnica y aparecerá en tu radar.</p>
+                </article>
+                <a className="account-page__request-cta-card" href="#/solicitar-modelo">
+                  <span className="material-symbols-outlined" aria-hidden="true">add_circle</span>
+                  <h3>Solicitar otro modelo</h3>
+                  <p>Propón una moto para ampliar la base de datos técnica.</p>
+                </a>
+              </div>
             ) : (
-              <div className="account-page__reviews-list">
-                {visibleModelRequests.map((request) => (
-                  <article className="account-page__review-card" key={request.id}>
-                    <div className="account-page__review-main">
-                      <span className={`account-page__status account-page__status--${request.status}`}>
-                        {modelRequestStatusLabels[request.status]}
-                      </span>
-                      <h3>{`${request.brand} ${request.model}`}</h3>
-                      {request.comment ? <p>{truncateComment(request.comment)}</p> : null}
-                    </div>
-                    <dl className="account-page__review-meta">
-                      <div>
-                        <dt>Año</dt>
-                        <dd>{request.year}</dd>
-                      </div>
-                      {request.segment ? (
-                        <div>
-                          <dt>Segmento</dt>
-                          <dd>{request.segment}</dd>
-                        </div>
-                      ) : null}
-                      <div>
-                        <dt>Fecha</dt>
-                        <dd>{formatReviewDate(request.createdAt)}</dd>
-                      </div>
-                    </dl>
-                    <footer className="account-page__review-actions">
-                      <span>Solicitud {request.id.slice(0, 8)}</span>
-                      <a href="#/solicitar-modelo">Solicitar otro modelo</a>
-                    </footer>
-                  </article>
+              <div className="account-page__requests-summary-grid">
+                {recentModelRequests.map((request) => (
+                  <ModelRequestCard
+                    commentMaxLength={150}
+                    headingLevel={3}
+                    key={request.id}
+                    request={request}
+                    testId="account-request-summary-card"
+                  />
                 ))}
+                <a className="account-page__request-cta-card" href="#/solicitar-modelo">
+                  <span className="material-symbols-outlined" aria-hidden="true">add_circle</span>
+                  <h3>Solicitar otro modelo</h3>
+                  <p>¿No encuentras una moto? Propón un nuevo modelo para ampliar la base de datos.</p>
+                </a>
               </div>
             )}
           </section>

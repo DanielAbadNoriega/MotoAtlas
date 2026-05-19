@@ -161,6 +161,8 @@ describe('Supabase model_requests schema', () => {
     expect(schemaSql).toContain('brand text not null check (length(trim(brand)) > 0)');
     expect(schemaSql).toContain('model text not null check (length(trim(model)) > 0)');
     expect(schemaSql).toContain('year integer not null check (year between 1900 and 2100)');
+    expect(schemaSql).toContain('official_url text null');
+    expect(schemaSql).toContain('add column if not exists official_url text null');
     expect(schemaSql).toContain("status text not null default 'pending' check (status in ('pending', 'reviewed', 'approved', 'rejected'))");
     expect(schemaSql).toContain("source text not null default 'user' check (source in ('user', 'admin', 'import'))");
   });

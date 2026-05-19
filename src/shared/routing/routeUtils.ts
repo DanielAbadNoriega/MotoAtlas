@@ -182,6 +182,11 @@ export function isAccountRoute(route: string) {
   return path === '/cuenta' || path === '/perfil';
 }
 
+export function isAccountRequestsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === '/cuenta/solicitudes';
+}
+
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {
   const queryIds = getQueryParamIds(route);
   const slug = getCompareSlugFromRoute(route);

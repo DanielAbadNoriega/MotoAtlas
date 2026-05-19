@@ -18,6 +18,7 @@ const modelRequestRow = {
   year: 2026,
   segment: 'sport',
   contact_email: 'rider@motoatlas.com',
+  official_url: 'https://honda.example/cbr600rr',
   comment: 'Prioridad para mercado UE.',
   status: 'pending',
   source: 'user',
@@ -66,9 +67,28 @@ describe('modelRequestService', () => {
       brand: 'Honda',
       contact_email: 'rider@motoatlas.com',
       model: 'CBR600RR',
+      official_url: null,
       source: 'user',
       status: 'pending',
       user_id: null,
+    });
+  });
+
+  it('envía official_url cuando la solicitud incluye una fuente oficial', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const request = await createModelRequest({
+      ...validModelRequestInput,
+      officialUrl: ' https://honda.example/cbr600rr ',
+    });
+
+    expect(request.officialUrl).toBe('https://honda.example/cbr600rr');
+    expect(getLastPayload(fetchMock)).toMatchObject({
+      official_url: 'https://honda.example/cbr600rr',
+      status: 'pending',
+      source: 'user',
     });
   });
 
@@ -181,6 +201,7 @@ describe('modelRequestService', () => {
     expect(url.searchParams.get('user_id')).toBe('eq.user-123');
     expect(url.searchParams.get('order')).toBe('created_at.desc');
     expect(url.searchParams.get('select')).toContain('contact_email');
+    expect(url.searchParams.get('select')).toContain('official_url');
     expect(requestInit.headers).toMatchObject({
       Authorization: 'Bearer session-token',
       apikey: 'anon-key',
@@ -194,6 +215,7 @@ describe('modelRequestService', () => {
         year: 2026,
         segment: 'sport',
         contactEmail: 'rider@motoatlas.com',
+        officialUrl: 'https://honda.example/cbr600rr',
         comment: 'Prioridad para mercado UE.',
         status: 'pending',
         source: 'user',

@@ -36,11 +36,12 @@ type FormState = Readonly<{
   contactEmail: string;
   market: string;
   model: string;
+  officialUrl: string;
   segment: BikeSegment | '';
   year: string;
 }>;
 
-type FormErrors = Partial<Record<keyof Pick<FormState, 'brand' | 'contactEmail' | 'model' | 'year'>, string>>;
+type FormErrors = Partial<Record<keyof Pick<FormState, 'brand' | 'contactEmail' | 'model' | 'officialUrl' | 'year'>, string>>;
 
 type SourceOverviewCard = Readonly<{
   accent?: 'primary' | 'accent' | 'muted';
@@ -608,6 +609,17 @@ function validateRequestModel(form: FormState): FormErrors {
     errors.contactEmail = 'Introduce un email válido.';
   }
 
+  if (form.officialUrl.trim()) {
+    try {
+      const officialUrl = new URL(form.officialUrl.trim());
+      if (!['http:', 'https:'].includes(officialUrl.protocol)) {
+        errors.officialUrl = 'Introduce una URL válida empezando por http:// o https://.';
+      }
+    } catch {
+      errors.officialUrl = 'Introduce una URL válida empezando por http:// o https://.';
+    }
+  }
+
   return errors;
 }
 
@@ -662,7 +674,16 @@ export function TermsPage() {
 
 export function RequestModelPage() {
   const { isAuthenticated, session, user } = useAuth();
-  const [form, setForm] = useState<FormState>({ brand: '', comment: '', contactEmail: '', market: '', model: '', segment: '', year: '' });
+  const [form, setForm] = useState<FormState>({
+    brand: '',
+    comment: '',
+    contactEmail: '',
+    market: '',
+    model: '',
+    officialUrl: '',
+    segment: '',
+    year: '',
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [requestStatus, setRequestStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [serviceError, setServiceError] = useState('');
@@ -701,6 +722,7 @@ export function RequestModelPage() {
           year: Number(form.year),
           segment: form.segment || null,
           contactEmail: form.contactEmail,
+          officialUrl: form.officialUrl,
           comment: buildRequestComment(form),
         },
         authContext,
@@ -811,6 +833,22 @@ export function RequestModelPage() {
               {errors.contactEmail ? <span id="request-contact-email-error">{errors.contactEmail}</span> : null}
             </label>
           ) : null}
+
+          <label htmlFor="request-official-url">
+            Página oficial o fuente
+            <input
+              id="request-official-url"
+              name="official_url"
+              type="url"
+              value={form.officialUrl}
+              onChange={(event) => updateField('officialUrl', event.target.value)}
+              placeholder="https://..."
+              aria-invalid={errors.officialUrl ? 'true' : undefined}
+              aria-describedby={errors.officialUrl ? 'request-official-url-helper request-official-url-error' : 'request-official-url-helper'}
+            />
+            <small id="request-official-url-helper">Opcional. Nos ayuda a verificar los datos del modelo.</small>
+            {errors.officialUrl ? <span id="request-official-url-error">{errors.officialUrl}</span> : null}
+          </label>
 
           <label htmlFor="request-comment">
             Comentario opcional

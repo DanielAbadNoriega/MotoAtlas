@@ -11,6 +11,7 @@ import {
   getStaticInfoCanonicalPath,
   getStaticInfoRouteKey,
   getSearchTextFromRoute,
+  isAccountRequestsRoute,
   isAccountRoute,
   isLoginRoute,
   isRegisterRoute,
@@ -54,6 +55,8 @@ describe('routeUtils SEO routes', () => {
     expect(isRegisterRoute('/registro')).toBe(true);
     expect(isAccountRoute('#/cuenta')).toBe(true);
     expect(isAccountRoute('#/perfil')).toBe(true);
+    expect(isAccountRequestsRoute('#/cuenta/solicitudes')).toBe(true);
+    expect(isAccountRoute('#/cuenta/solicitudes')).toBe(false);
     expect(isLoginRoute('#/cuenta')).toBe(false);
   });
 

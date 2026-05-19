@@ -1,0 +1,74 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.model-request-card {
+  @include glass-panel;
+
+  align-content: start;
+  background:
+    radial-gradient(circle at top right, rgba($color-on-surface, 0.1), transparent 18rem),
+    rgba($color-surface-container, 0.86);
+  border-color: rgba($color-outline-variant, 0.58);
+  border-radius: $radius-xl;
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.model-request-card__header {
+  display: grid;
+  gap: 0.55rem;
+
+  h2,
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  p {
+    color: rgba($color-on-surface-variant, 0.84);
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.model-request-card__meta {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+
+  div {
+    border-top: 1px solid rgba($color-outline-variant, 0.38);
+    display: grid;
+    gap: 0.25rem;
+    padding-top: 0.7rem;
+  }
+
+  dt {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.66);
+    font-size: 0.6rem;
+  }
+
+  dd {
+    color: $color-on-surface;
+    font-weight: 700;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  a {
+    color: $color-accent-container;
+  }
+}
+
+.model-request-card__comment {
+  color: rgba($color-on-surface-variant, 0.84);
+  line-height: 1.6;
+  margin: 0;
+}

@@ -48,6 +48,7 @@ describe('StaticInfoPages', () => {
       year: 2026,
       segment: 'sport',
       contactEmail: null,
+      officialUrl: null,
       comment: null,
       status: 'pending',
       source: 'user',
@@ -151,12 +152,49 @@ describe('StaticInfoPages', () => {
         brand: 'Honda',
         contactEmail: 'rider@motoatlas.com',
         model: 'CBR600RR',
+        officialUrl: '',
         segment: 'sport',
         year: 2026,
       }),
       undefined,
     );
     expect(await screen.findByRole('status')).toHaveTextContent(/Solicitud enviada/i);
+  });
+
+  it('muestra y envía la página oficial opcional cuando es válida', async () => {
+    const user = userEvent.setup();
+    render(<RequestModelPage />);
+
+    expect(screen.getByLabelText(/Página oficial o fuente/i)).toBeInTheDocument();
+    expect(screen.getByText(/Opcional. Nos ayuda a verificar/i)).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Marca'), 'Honda');
+    await user.type(screen.getByLabelText('Modelo'), 'CBR600RR');
+    await user.type(screen.getByLabelText('Año'), '2026');
+    await user.type(screen.getByLabelText(/Página oficial o fuente/i), 'https://honda.example/cbr600rr');
+    await user.click(screen.getByRole('button', { name: /Enviar solicitud/i }));
+
+    expect(createModelRequestMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        officialUrl: 'https://honda.example/cbr600rr',
+      }),
+      undefined,
+    );
+  });
+
+  it('muestra error si la página oficial no parece una URL válida', async () => {
+    const user = userEvent.setup();
+    render(<RequestModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Honda');
+    await user.type(screen.getByLabelText('Modelo'), 'CBR600RR');
+    await user.type(screen.getByLabelText('Año'), '2026');
+    await user.type(screen.getByLabelText(/Página oficial o fuente/i), 'honda punto com');
+    await user.click(screen.getByRole('button', { name: /Enviar solicitud/i }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/Revisa los campos obligatorios/i);
+    expect(screen.getByText(/Introduce una URL válida/i)).toBeInTheDocument();
+    expect(createModelRequestMock).not.toHaveBeenCalled();
   });
 
   it('muestra loading mientras envía solicitud de modelo', async () => {

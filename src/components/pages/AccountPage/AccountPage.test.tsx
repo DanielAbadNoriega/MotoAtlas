@@ -57,8 +57,9 @@ const ownModelRequest = {
   year: 2026,
   segment: 'naked',
   contactEmail: 'rider@motoatlas.com',
+  officialUrl: 'https://ducati.example/monster',
   comment:
-    'Me interesa para comparar contra la competencia A2 y entender si el paquete técnico merece entrar en el catálogo para usuarios que buscan naked ligeras con enfoque de diario y rutas de fin de semana.',
+    'Mercado: España\n\nMe interesa para comparar contra la competencia A2 y entender si el paquete técnico merece entrar en el catálogo para usuarios que buscan naked ligeras con enfoque de diario y rutas de fin de semana.',
   status: 'pending',
   source: 'user',
   createdAt: '2026-05-15T10:00:00.000Z',
@@ -114,6 +115,9 @@ describe('AccountPage', () => {
     expect(screen.getByText('rider@motoatlas.com')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Mis reviews/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Mis solicitudes/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Mis reviews' })).toHaveAttribute('href', '#/cuenta/reviews');
+    expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toHaveAttribute('href', '#/cuenta/solicitudes');
   });
 
   it('muestra loading al cargar reviews propias', () => {
@@ -173,10 +177,10 @@ describe('AccountPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Aún no has solicitado modelos.' })).toBeInTheDocument();
     expect(screen.getByText(/Solicita su ficha técnica/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Solicitar telemetría/i })).toHaveAttribute('href', '#/solicitar-modelo');
+    expect(screen.getByRole('link', { name: /Solicitar otro modelo/i })).toHaveAttribute('href', '#/solicitar-modelo');
   });
 
-  it('muestra reviews del usuario con status traducido y enlaces', async () => {
+  it('mantiene Mis reviews funcionando con status traducido y enlaces', async () => {
     getReviewsByUserIdMock.mockResolvedValue([
       { ...ownReview, status: 'approved' },
       { ...ownReview, id: 'review-other', userId: 'other-user', motorcycleId: 'yamaha-tenere-700-2024', status: 'rejected' },
@@ -200,9 +204,11 @@ describe('AccountPage', () => {
     expect(screen.queryByText('Yamaha Ténéré 700')).not.toBeInTheDocument();
   });
 
-  it('muestra solicitudes reales del usuario con status traducido, fecha, comentario y enlace futuro', async () => {
+  it('muestra máximo 2 solicitudes reales, resumen técnico y skeleton CTA como tercera card', async () => {
     getModelRequestsByUserIdMock.mockResolvedValue([
       { ...ownModelRequest, status: 'reviewed' },
+      { ...ownModelRequest, id: 'request-2', brand: 'Honda', model: 'CBR600RR', year: 2024, status: 'approved' },
+      { ...ownModelRequest, id: 'request-3', brand: 'Kawasaki', model: 'Z900', year: 2025, status: 'pending' },
       { ...ownModelRequest, id: 'request-other', userId: 'other-user', brand: 'Yamaha', model: 'R9', status: 'approved' },
     ]);
     mockAuth({
@@ -215,17 +221,24 @@ describe('AccountPage', () => {
     render(<AccountPage />);
 
     expect(await screen.findByText('Ducati Monster')).toBeInTheDocument();
+    expect(screen.getByText('Honda CBR600RR')).toBeInTheDocument();
     expect(screen.getByText('Revisada')).toBeInTheDocument();
-    expect(screen.getByText('2026')).toBeInTheDocument();
-    expect(screen.getByText('naked')).toBeInTheDocument();
-    const summarizedComment = screen.getByText(/Me interesa para comparar/i);
+    expect(screen.getAllByText('Año 2026 · naked').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('España').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: /Página oficial/i })[0]).toHaveAttribute('href', 'https://ducati.example/monster');
+    const summarizedComment = screen.getAllByText(/Me interesa para comparar/i)[0];
     expect(summarizedComment).toBeInTheDocument();
     expect(summarizedComment.textContent?.endsWith('...')).toBe(true);
+    expect(screen.getAllByTestId('account-request-summary-card')).toHaveLength(2);
     expect(screen.getByRole('link', { name: /Ver todas mis solicitudes/i })).toHaveAttribute('href', '#/cuenta/solicitudes');
+    expect(screen.getByRole('heading', { name: /Solicitar otro modelo/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Solicitar otro modelo/i })).toHaveAttribute('href', '#/solicitar-modelo');
+    expect(screen.queryByText('Kawasaki Z900')).not.toBeInTheDocument();
     expect(screen.queryByText('Yamaha R9')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Solicitud request/i)).not.toBeInTheDocument();
   });
 
-  it('muestra todos los status traducidos de solicitudes propias', async () => {
+  it('muestra status traducidos en el resumen compacto de solicitudes', async () => {
     getModelRequestsByUserIdMock.mockResolvedValue([
       { ...ownModelRequest, id: 'request-pending', status: 'pending' },
       { ...ownModelRequest, id: 'request-reviewed', status: 'reviewed' },
@@ -243,8 +256,8 @@ describe('AccountPage', () => {
 
     expect(await screen.findByText('Pendiente')).toBeInTheDocument();
     expect(screen.getByText('Revisada')).toBeInTheDocument();
-    expect(screen.getByText('Aprobada')).toBeInTheDocument();
-    expect(screen.getByText('Rechazada')).toBeInTheDocument();
+    expect(screen.queryByText('Aprobada')).not.toBeInTheDocument();
+    expect(screen.queryByText('Rechazada')).not.toBeInTheDocument();
   });
 
   it('muestra todos los status traducidos de reviews propias', async () => {

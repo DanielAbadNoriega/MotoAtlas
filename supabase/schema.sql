@@ -386,12 +386,16 @@ create table if not exists public.model_requests (
   year integer not null check (year between 1900 and 2100),
   segment text null,
   contact_email text null,
+  official_url text null,
   comment text null,
   status text not null default 'pending' check (status in ('pending', 'reviewed', 'approved', 'rejected')),
   source text not null default 'user' check (source in ('user', 'admin', 'import')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table if exists public.model_requests
+  add column if not exists official_url text null;
 
 create index if not exists model_requests_user_id_idx on public.model_requests (user_id);
 create index if not exists model_requests_status_idx on public.model_requests (status);

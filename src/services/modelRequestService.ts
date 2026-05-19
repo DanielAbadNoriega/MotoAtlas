@@ -7,6 +7,7 @@ export type ModelRequestInput = Readonly<{
   year: number;
   segment?: string | null;
   contactEmail?: string | null;
+  officialUrl?: string | null;
   comment?: string | null;
 }>;
 
@@ -23,6 +24,7 @@ export type ModelRequest = Readonly<{
   year: number;
   segment: string | null;
   contactEmail: string | null;
+  officialUrl: string | null;
   comment: string | null;
   status: ModelRequestStatus;
   source: ModelRequestSource;
@@ -37,6 +39,7 @@ type ModelRequestPayload = Readonly<{
   year: number;
   segment: string | null;
   contact_email: string | null;
+  official_url: string | null;
   comment: string | null;
   status: 'pending';
   source: 'user';
@@ -50,6 +53,7 @@ type ModelRequestRow = Readonly<{
   year: number;
   segment: string | null;
   contact_email: string | null;
+  official_url: string | null;
   comment: string | null;
   status: ModelRequestStatus;
   source: ModelRequestSource;
@@ -112,6 +116,7 @@ function buildModelRequestPayload(input: ModelRequestInput, authContext?: ModelR
     year: input.year,
     segment: normalizeOptionalText(input.segment),
     contact_email: normalizeOptionalText(input.contactEmail),
+    official_url: normalizeOptionalText(input.officialUrl),
     comment: normalizeOptionalText(input.comment),
     status: 'pending',
     source: 'user',
@@ -139,6 +144,7 @@ function mapModelRequestRow(row: ModelRequestRow): ModelRequest {
     year: row.year,
     segment: row.segment,
     contactEmail: row.contact_email,
+    officialUrl: row.official_url,
     comment: row.comment,
     status: row.status,
     source: row.source,
@@ -158,6 +164,7 @@ function mapPendingPayloadToModelRequest(payload: ModelRequestPayload): ModelReq
     year: payload.year,
     segment: payload.segment,
     contactEmail: payload.contact_email,
+    officialUrl: payload.official_url,
     comment: payload.comment,
     status: payload.status,
     source: payload.source,
@@ -199,7 +206,7 @@ export async function getModelRequestsByUserId(authContext?: ModelRequestAuthCon
   const config = getSupabaseConfig();
   const params = new URLSearchParams({
     order: 'created_at.desc',
-    select: 'id,user_id,brand,model,year,segment,contact_email,comment,status,source,created_at,updated_at',
+    select: 'id,user_id,brand,model,year,segment,contact_email,official_url,comment,status,source,created_at,updated_at',
     user_id: `eq.${normalizedAuthContext.userId}`,
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/model_requests?${params.toString()}`, {
