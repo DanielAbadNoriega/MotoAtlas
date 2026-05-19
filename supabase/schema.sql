@@ -195,6 +195,7 @@ grant select on public.motorcycles to anon, authenticated;
 create table if not exists public.motorcycle_reviews (
   id uuid primary key default gen_random_uuid(),
   motorcycle_id text not null references public.motorcycles(id) on delete cascade,
+  user_id uuid null references auth.users(id) on delete set null,
   user_name text not null,
   rating integer not null check (rating between 1 and 5),
   riding_style text not null default 'diario' check (riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')),
@@ -221,6 +222,18 @@ alter table if exists public.motorcycle_reviews
   add column if not exists source text not null default 'user' check (source in ('user', 'mock', 'seed', 'import'));
 
 alter table if exists public.motorcycle_reviews
+  add column if not exists user_id uuid null;
+
+do $$
+begin
+  alter table public.motorcycle_reviews
+    add constraint motorcycle_reviews_user_id_fkey
+    foreign key (user_id) references auth.users(id) on delete set null;
+exception
+  when duplicate_object then null;
+end $$;
+
+alter table if exists public.motorcycle_reviews
   drop constraint if exists motorcycle_reviews_status_check;
 
 alter table if exists public.motorcycle_reviews
@@ -229,6 +242,7 @@ alter table if exists public.motorcycle_reviews
 
 create index if not exists motorcycle_reviews_motorcycle_id_idx on public.motorcycle_reviews (motorcycle_id);
 create index if not exists motorcycle_reviews_status_idx on public.motorcycle_reviews (status);
+create index if not exists motorcycle_reviews_user_id_idx on public.motorcycle_reviews (user_id);
 
 drop trigger if exists set_motorcycle_reviews_updated_at on public.motorcycle_reviews;
 create trigger set_motorcycle_reviews_updated_at
@@ -247,13 +261,32 @@ using (status = 'approved');
 
 drop policy if exists "Public can insert pending motorcycle reviews" on public.motorcycle_reviews;
 drop policy if exists "Public motorcycle reviews can be created" on public.motorcycle_reviews;
-create policy "Public motorcycle reviews can be created"
+drop policy if exists "Anonymous motorcycle reviews can be created" on public.motorcycle_reviews;
+drop policy if exists "Authenticated motorcycle reviews can be created" on public.motorcycle_reviews;
+create policy "Anonymous motorcycle reviews can be created"
 on public.motorcycle_reviews
 for insert
-to anon, authenticated
+to anon
 with check (
   status = 'pending'
   and motorcycle_id is not null
+  and user_id is null
+  and length(trim(user_name)) > 0
+  and rating between 1 and 5
+  and riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')
+  and length(trim(comment)) > 0
+  and verified = false
+  and source = 'user'
+);
+
+create policy "Authenticated motorcycle reviews can be created"
+on public.motorcycle_reviews
+for insert
+to authenticated
+with check (
+  status = 'pending'
+  and motorcycle_id is not null
+  and user_id = auth.uid()
   and length(trim(user_name)) > 0
   and rating between 1 and 5
   and riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')

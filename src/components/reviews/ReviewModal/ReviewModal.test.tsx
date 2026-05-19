@@ -1,15 +1,37 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAuth } from '../../../features/auth';
 import { createReview } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { ReviewModal } from './ReviewModal';
+
+vi.mock('../../../features/auth', () => ({
+  useAuth: vi.fn(),
+}));
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   createReview: vi.fn(),
 }));
 
+const useAuthMock = vi.mocked(useAuth);
 const createReviewMock = vi.mocked(createReview);
+
+function mockAuth(overrides = {}) {
+  useAuthMock.mockReturnValue({
+    user: null,
+    session: null,
+    profile: null,
+    isAuthenticated: false,
+    isAdmin: false,
+    isLoading: false,
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+    refreshProfile: vi.fn(),
+    ...overrides,
+  } as never);
+}
 
 function renderModal(onClose = vi.fn()) {
   const renderResult = render(<ReviewModal isOpen motorcycle={bikeFixtures[0]} onClose={onClose} />);
@@ -19,9 +41,11 @@ function renderModal(onClose = vi.fn()) {
 describe('ReviewModal', () => {
   beforeEach(() => {
     createReviewMock.mockReset();
+    mockAuth();
     createReviewMock.mockResolvedValue({
       id: 'review-new',
       motorcycleId: bikeFixtures[0].id,
+      userId: null,
       userName: 'Dani',
       rating: 4,
       ridingStyle: 'viaje',
@@ -168,22 +192,51 @@ describe('ReviewModal', () => {
     await user.click(screen.getByRole('button', { name: /Enviar review/i }));
 
     await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
-    expect(createReviewMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        motorcycleId: bikeFixtures[0].id,
-        userName: 'MoteroViajero',
-        rating: 4,
-        ridingStyle: 'viaje',
-        ownershipMonths: 12,
-        kilometers: 8500,
-        comment: 'Muy buena para viajar.',
-        pros: ['Motor lleno'],
-        cons: ['Precio alto'],
-      }),
-    );
+    expect(createReviewMock.mock.calls[0][0]).toMatchObject({
+      motorcycleId: bikeFixtures[0].id,
+      userName: 'MoteroViajero',
+      rating: 4,
+      ridingStyle: 'viaje',
+      ownershipMonths: 12,
+      kilometers: 8500,
+      comment: 'Muy buena para viajar.',
+      pros: ['Motor lleno'],
+      cons: ['Precio alto'],
+    });
+    expect(createReviewMock.mock.calls[0][1]).toBeUndefined();
     expect(createReviewMock.mock.calls[0][0]).not.toHaveProperty('verified');
     expect(await screen.findByRole('heading', { name: /Review enviada/i })).toBeInTheDocument();
     expect(screen.getByText(/Gracias. Tu opinión se revisará antes de publicarse/i)).toBeInTheDocument();
+  });
+
+  it('funciona con usuario autenticado y pasa user_id correcto al servicio', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'auth-user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      profile: { id: 'auth-user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+    renderModal();
+
+    expect(screen.getByText(/Tu review quedará asociada a tu cuenta/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Alias/i)).toHaveValue('Rider Zero');
+
+    await user.click(screen.getByRole('button', { name: /Valorar 5 de 5/i }));
+    await user.click(screen.getByRole('button', { name: 'Viaje' }));
+    await user.clear(screen.getByLabelText(/Alias/i));
+    await user.type(screen.getByLabelText(/Alias/i), 'Alias Visible');
+    await user.type(screen.getByLabelText(/Comentario detallado/i), 'Experiencia real con sesión iniciada.');
+    await user.click(screen.getByRole('button', { name: /Enviar review/i }));
+
+    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
+    expect(createReviewMock.mock.calls[0][0]).toMatchObject({
+      userName: 'Alias Visible',
+    });
+    expect(createReviewMock.mock.calls[0][1]).toEqual({
+      accessToken: 'session-token',
+      userId: 'auth-user-1',
+    });
   });
 
   it('muestra error si falla el servicio', async () => {

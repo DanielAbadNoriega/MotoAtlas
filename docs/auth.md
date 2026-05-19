@@ -34,10 +34,18 @@ RLS:
 - Sesión persistente vía Supabase Auth.
 - Navbar con estado de usuario.
 - `#/cuenta` con datos básicos y placeholders.
+- Reviews anónimas permitidas con `user_id = null`.
+- Reviews autenticadas asociadas a `auth.uid()` mediante `motorcycle_reviews.user_id`.
+
+## Reviews
+
+- `user_name` sigue siendo el alias visible en la web.
+- `user_id` solo vincula la review con la cuenta autenticada y queda `null` en reviews anónimas.
+- Toda review creada desde el formulario público entra como `status = pending`, `verified = false` y `source = user`.
+- Esta asociación prepara futuras funciones: “Mis reviews”, edición de reviews propias, moderación admin y reputación.
 
 ## No implementado todavía
 
-- Reviews asociadas a `user_id`.
 - Solicitar modelo persistido en backend.
 - Panel admin.
 - Perfiles públicos, seguidores, notificaciones o gamificación.
