@@ -44,7 +44,7 @@ export const machineDuelContent = {
 } satisfies MachineDuelContent;
 
 export const reportCta = {
-  title: '¿Tenés problemas técnicos?',
+  title: '¿Tienes problemas técnicos?',
   actionLabel: 'Enviar reporte',
 } satisfies ReportCtaContent;
 
