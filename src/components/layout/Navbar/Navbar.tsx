@@ -225,17 +225,21 @@ function MobileBottomNav({ compareHref, route }: { compareHref: `#${string}`; ro
 
 export function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
   const route = useCurrentRoute();
   const compareHref = useCompareHref();
   const { isAuthenticated, profile, signOut, user } = useAuth();
   const accountLabel = profile?.displayName?.trim() || user?.email || 'Mi cuenta';
   const accountHref = isAuthenticated ? '#/cuenta' : '#/login';
+  const accountMenuId = 'navbar-account-menu';
 
   const openSearch = () => {
     window.location.hash = '#/buscador';
   };
 
   const handleSignOut = () => {
+    setIsAccountMenuOpen(false);
     void signOut().finally(() => {
       window.location.hash = '#/';
     });
@@ -243,7 +247,34 @@ export function Navbar() {
 
   useEffect(() => {
     setIsDrawerOpen(false);
+    setIsAccountMenuOpen(false);
   }, [route]);
+
+  useEffect(() => {
+    if (!isAccountMenuOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !accountMenuRef.current?.contains(event.target)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAccountMenuOpen]);
 
   return (
     <>
@@ -259,16 +290,40 @@ export function Navbar() {
             <button className="navbar__mobile-icon" type="button" onClick={openSearch} aria-label="Abrir buscador">
               <NavIcon icon="search" />
             </button>
-            <div className="navbar__account">
-              <a className="navbar__signin" href={accountHref}>
-                <NavIcon icon="account_circle" />
-                <span>{isAuthenticated ? accountLabel : navActions.signInLabel}</span>
-              </a>
+            <div className="navbar__account" ref={accountMenuRef}>
               {isAuthenticated ? (
-                <button className="navbar__signout" type="button" onClick={handleSignOut}>
-                  Cerrar sesión
-                </button>
-              ) : null}
+                <>
+                  <button
+                    className="navbar__signin"
+                    type="button"
+                    aria-controls={accountMenuId}
+                    aria-expanded={isAccountMenuOpen}
+                    aria-haspopup="menu"
+                    onClick={() => setIsAccountMenuOpen((isOpen) => !isOpen)}
+                  >
+                    <NavIcon icon="account_circle" />
+                    <span>{accountLabel}</span>
+                    <NavIcon icon="expand_more" />
+                  </button>
+                  {isAccountMenuOpen ? (
+                    <div className="navbar__account-menu" id={accountMenuId} role="menu">
+                      <a href="#/cuenta" role="menuitem" onClick={() => setIsAccountMenuOpen(false)}>
+                        <NavIcon icon="person" />
+                        <span>Mi cuenta</span>
+                      </a>
+                      <button className="navbar__account-menu-action" type="button" role="menuitem" onClick={handleSignOut}>
+                        <NavIcon icon="logout" />
+                        <span>Cerrar sesión</span>
+                      </button>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <a className="navbar__signin" href={accountHref}>
+                  <NavIcon icon="account_circle" />
+                  <span>{navActions.signInLabel}</span>
+                </a>
+              )}
             </div>
           </div>
 

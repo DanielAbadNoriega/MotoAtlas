@@ -75,8 +75,13 @@ describe('Navbar responsive', () => {
 
     render(<AuthProvider><Navbar /></AuthProvider>);
 
-    expect(await screen.findByRole('link', { name: /Rider Zero/i })).toHaveAttribute('href', '#/cuenta');
-    await user.click(screen.getByRole('button', { name: /Cerrar sesión/i }));
+    const accountButton = await screen.findByRole('button', { name: /Rider Zero/i });
+    expect(accountButton).toHaveAttribute('aria-haspopup', 'menu');
+
+    await user.click(accountButton);
+
+    expect(screen.getByRole('menuitem', { name: /Mi cuenta/i })).toHaveAttribute('href', '#/cuenta');
+    await user.click(screen.getByRole('menuitem', { name: /Cerrar sesión/i }));
 
     expect(signOut).toHaveBeenCalledTimes(1);
   });

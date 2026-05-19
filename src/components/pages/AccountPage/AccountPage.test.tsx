@@ -41,7 +41,7 @@ describe('AccountPage', () => {
     expect(screen.getByRole('link', { name: /Iniciar sesión/i })).toHaveAttribute('href', '#/login');
   });
 
-  it('muestra email, alias, rol y placeholders si hay usuario', () => {
+  it('muestra email, alias, resumen y placeholders si hay usuario', () => {
     mockAuth({
       isAuthenticated: true,
       user: { id: 'user-1', email: 'rider@motoatlas.com' },
@@ -51,8 +51,8 @@ describe('AccountPage', () => {
     render(<AccountPage />);
 
     expect(screen.getByRole('heading', { name: 'Rider Zero' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Resumen de perfil/i })).toBeInTheDocument();
     expect(screen.getByText('rider@motoatlas.com')).toBeInTheDocument();
-    expect(screen.getByText('Usuario')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Mis reviews/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Mis solicitudes/i })).toBeInTheDocument();
   });
