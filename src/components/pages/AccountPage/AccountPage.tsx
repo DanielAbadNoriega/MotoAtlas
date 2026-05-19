@@ -1,17 +1,73 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import accountHeroImage from '../../../assets/hero-metodology.png';
+import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
+import { getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import './AccountPage.scss';
 
 function getProfileName(profileName: string | null | undefined, email: string | undefined) {
   return profileName?.trim() || email || 'Usuario MotoAtlas';
 }
 
+type AccountReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
+
+const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
+  pending: 'Pendiente de revisión',
+  approved: 'Publicada',
+  rejected: 'Rechazada',
+  hidden: 'Oculta',
+};
+
+const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
+  ciudad: 'Ciudad',
+  viaje: 'Viaje',
+  offroad: 'Off-road',
+  deportivo: 'Deportivo',
+  pasajero: 'Pasajero',
+  diario: 'Diario',
+};
+
+function formatReviewDate(value: string) {
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
+function truncateComment(comment: string) {
+  const normalizedComment = comment.trim();
+  return normalizedComment.length > 150 ? `${normalizedComment.slice(0, 147)}...` : normalizedComment;
+}
+
+function getReviewMotorcycleDisplay(review: MotorcycleReview) {
+  const catalogBike = findBikeById(review.motorcycleId);
+  const motorcycle = review.motorcycle;
+  const name = motorcycle
+    ? `${motorcycle.brand} ${motorcycle.model}`
+    : catalogBike
+      ? getBikeDisplayName(catalogBike)
+      : review.motorcycleId;
+  const year = motorcycle?.year ?? catalogBike?.year;
+  const detailHref = catalogBike ? getBikeDetailHash(catalogBike) : `#/motos/${review.motorcycleId}`;
+
+  return {
+    communityHref: `#/comunidad/${review.motorcycleId}`,
+    detailHref,
+    name,
+    year,
+  };
+}
+
 export function AccountPage() {
-  const { isAuthenticated, isLoading, profile, signOut, user } = useAuth();
+  const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
   const [error, setError] = useState('');
+  const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
+  const [reviewsError, setReviewsError] = useState('');
+  const [reviewsStatus, setReviewsStatus] = useState<AccountReviewsStatus>('idle');
   const displayName = getProfileName(profile?.displayName, user?.email);
   const email = user?.email ?? 'Email no disponible';
+  const visibleReviews = reviews.filter((review) => review.userId === user?.id);
 
   const handleSignOut = async () => {
     setError('');
@@ -23,6 +79,45 @@ export function AccountPage() {
       setError(signOutError instanceof Error ? signOutError.message : 'No se ha podido cerrar sesión.');
     }
   };
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) {
+      setReviews([]);
+      setReviewsError('');
+      setReviewsStatus('idle');
+      return undefined;
+    }
+
+    if (!user?.id || !session?.access_token) {
+      setReviews([]);
+      setReviewsError('');
+      setReviewsStatus('success');
+      return undefined;
+    }
+
+    let isMounted = true;
+    setReviewsStatus('loading');
+    setReviewsError('');
+
+    getReviewsByUserId({ accessToken: session.access_token, userId: user.id })
+      .then((nextReviews) => {
+        if (isMounted) {
+          setReviews(nextReviews);
+          setReviewsStatus('success');
+        }
+      })
+      .catch((reviewsLoadError) => {
+        if (isMounted) {
+          setReviews([]);
+          setReviewsError(reviewsLoadError instanceof Error ? reviewsLoadError.message : 'No se han podido cargar tus reviews.');
+          setReviewsStatus('error');
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, isLoading, session?.access_token, user?.id]);
 
   if (isLoading) {
     return (
@@ -115,13 +210,69 @@ export function AccountPage() {
                 <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
                 Mis reviews
               </h2>
-              <span>Total: 0</span>
+              <span>Total: {reviewsStatus === 'loading' ? '...' : visibleReviews.length}</span>
             </header>
-            <article className="account-page__empty-state">
-              <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">history</span>
-              <h3>Aún no has enviado reviews.</h3>
-              <p>Tus aportes técnicos sobre modelos específicos aparecerán aquí una vez que los valides.</p>
-            </article>
+            {reviewsStatus === 'loading' ? (
+              <article className="account-page__empty-state" role="status">
+                <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">sync</span>
+                <h3>Cargando tus reviews...</h3>
+                <p>Estamos recuperando las experiencias asociadas a tu cuenta.</p>
+              </article>
+            ) : reviewsStatus === 'error' ? (
+              <article className="account-page__empty-state account-page__empty-state--error" role="alert">
+                <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">warning</span>
+                <h3>No se han podido cargar tus reviews.</h3>
+                <p>{reviewsError || 'Inténtalo de nuevo en unos minutos.'}</p>
+              </article>
+            ) : visibleReviews.length === 0 ? (
+              <article className="account-page__empty-state">
+                <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">history</span>
+                <h3>Aún no has enviado reviews</h3>
+                <p>Cuando compartas tu experiencia con una moto, aparecerá aquí junto con su estado de revisión.</p>
+                <a className="account-page__button" href="#/buscador">Explorar motos</a>
+              </article>
+            ) : (
+              <div className="account-page__reviews-list">
+                {visibleReviews.map((review) => {
+                  const motorcycle = getReviewMotorcycleDisplay(review);
+
+                  return (
+                    <article className="account-page__review-card" key={review.id}>
+                      <div className="account-page__review-main">
+                        <span className={`account-page__status account-page__status--${review.status}`}>
+                          {reviewStatusLabels[review.status]}
+                        </span>
+                        <h3>{motorcycle.name}</h3>
+                        <p>{truncateComment(review.comment)}</p>
+                      </div>
+                      <dl className="account-page__review-meta">
+                        <div>
+                          <dt>Rating</dt>
+                          <dd>{review.rating}/5</dd>
+                        </div>
+                        <div>
+                          <dt>Alias</dt>
+                          <dd>{review.userName}</dd>
+                        </div>
+                        <div>
+                          <dt>Uso</dt>
+                          <dd>{ridingStyleLabels[review.ridingStyle]}</dd>
+                        </div>
+                        <div>
+                          <dt>Fecha</dt>
+                          <dd>{formatReviewDate(review.createdAt)}</dd>
+                        </div>
+                      </dl>
+                      <footer className="account-page__review-actions">
+                        {motorcycle.year ? <span>MY {motorcycle.year}</span> : <span>{review.motorcycleId}</span>}
+                        <a href={motorcycle.detailHref}>Ver ficha</a>
+                        <a href={motorcycle.communityHref}>Ver comunidad</a>
+                      </footer>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
           <section className="account-page__section" aria-labelledby="account-requests-title">

@@ -259,6 +259,13 @@ for select
 to anon, authenticated
 using (status = 'approved');
 
+drop policy if exists "Users can read own motorcycle reviews" on public.motorcycle_reviews;
+create policy "Users can read own motorcycle reviews"
+on public.motorcycle_reviews
+for select
+to authenticated
+using (user_id = auth.uid());
+
 drop policy if exists "Public can insert pending motorcycle reviews" on public.motorcycle_reviews;
 drop policy if exists "Public motorcycle reviews can be created" on public.motorcycle_reviews;
 drop policy if exists "Anonymous motorcycle reviews can be created" on public.motorcycle_reviews;

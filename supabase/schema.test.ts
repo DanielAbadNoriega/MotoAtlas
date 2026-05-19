@@ -67,6 +67,20 @@ describe('Supabase motorcycle_reviews RLS schema', () => {
     expect(schemaSql).toContain("using (status = 'approved')");
   });
 
+  it('permite que usuarios autenticados lean sus propias reviews no públicas', () => {
+    expect(schemaSql).toContain('drop policy if exists "Users can read own motorcycle reviews" on public.motorcycle_reviews;');
+    expect(schemaSql).toContain('create policy "Users can read own motorcycle reviews"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (user_id = auth.uid())');
+  });
+
+  it('no abre lectura total de motorcycle_reviews pendientes a anon', () => {
+    expect(normalizedSchemaSql).not.toMatch(/on public\.motorcycle_reviews for select to anon\b[^;]*using \(true\)/);
+    expect(normalizedSchemaSql).not.toMatch(/on public\.motorcycle_reviews for select to anon, authenticated\b[^;]*using \(true\)/);
+    expect(normalizedSchemaSql).not.toContain("using (status in ('pending', 'approved', 'rejected', 'hidden'))");
+  });
+
   it('incluye hidden como status válido', () => {
     expect(schemaSql).toContain("check (status in ('pending', 'approved', 'rejected', 'hidden'))");
     expect(schemaSql).toContain('drop constraint if exists motorcycle_reviews_status_check');

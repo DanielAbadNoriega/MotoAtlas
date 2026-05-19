@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createReview, getApprovedReviewsByMotorcycleId } from './motorcycleReviewService';
+import { createReview, getApprovedReviewsByMotorcycleId, getReviewsByUserId } from './motorcycleReviewService';
 
 const reviewRow = {
   id: 'review-1',
@@ -14,8 +14,16 @@ const reviewRow = {
   pros: ['Motor lleno'],
   cons: ['Precio alto'],
   status: 'pending',
+  source: 'user',
   created_at: '2026-05-14T10:00:00.000Z',
   updated_at: '2026-05-14T10:00:00.000Z',
+  motorcycles: {
+    id: 'bmw-f-900-gs-2024',
+    brand: 'BMW',
+    model: 'F 900 GS',
+    year: 2024,
+    image_url: '/images/motorcycles/bmw-f-900-gs-2024.webp',
+  },
 };
 
 const validReviewInput = {
@@ -255,5 +263,75 @@ describe('motorcycleReviewService', () => {
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/rest/v1/motorcycle_reviews?'), expect.any(Object));
     expect(fetchMock.mock.calls[0][0]).toContain('status=eq.approved');
     expect(fetchMock.mock.calls[0][0]).toContain('motorcycle_id=eq.bmw-f-900-gs-2024');
+  });
+
+  it('consulta reviews propias por user_id con token autenticado', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([{ ...reviewRow, user_id: 'user-123', status: 'hidden' }]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const reviews = await getReviewsByUserId({
+      accessToken: 'session-token',
+      userId: 'user-123',
+    });
+
+    const [url, requestInit] = fetchMock.mock.calls[0];
+
+    expect(reviews[0]).toMatchObject({
+      motorcycleId: 'bmw-f-900-gs-2024',
+      motorcycle: {
+        brand: 'BMW',
+        imageUrl: '/images/motorcycles/bmw-f-900-gs-2024.webp',
+        model: 'F 900 GS',
+        year: 2024,
+      },
+      source: 'user',
+      status: 'hidden',
+      userId: 'user-123',
+    });
+    expect(decodeURIComponent(String(url))).toContain('user_id=eq.user-123');
+    expect(decodeURIComponent(String(url))).toContain('order=created_at.desc');
+    expect(decodeURIComponent(String(url))).toContain('motorcycles(id,brand,model,year,image_url)');
+    expect(requestInit.headers).toMatchObject({
+      Authorization: 'Bearer session-token',
+      apikey: 'anon-key',
+    });
+  });
+
+  it('maneja lista vacía de reviews propias', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getReviewsByUserId({ accessToken: 'session-token', userId: 'user-123' })).resolves.toEqual([]);
+  });
+
+  it('propaga error al leer reviews propias', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: () => Promise.resolve('permission denied'),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getReviewsByUserId({ accessToken: 'session-token', userId: 'user-123' })).rejects.toThrow(
+      'Supabase motorcycle_reviews request failed (403): permission denied',
+    );
+  });
+
+  it('no consulta reviews propias si no hay userId', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getReviewsByUserId()).resolves.toEqual([]);
+    await expect(getReviewsByUserId({ accessToken: 'session-token', userId: '   ' })).resolves.toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
