@@ -36,6 +36,7 @@ RLS:
 - `#/cuenta` con datos básicos y listado de reviews propias.
 - Reviews anónimas permitidas con `user_id = null`.
 - Reviews autenticadas asociadas a `auth.uid()` mediante `motorcycle_reviews.user_id`.
+- Solicitudes de modelos anónimas o autenticadas persistidas en `model_requests`.
 
 ## Reviews
 
@@ -48,6 +49,5 @@ RLS:
 
 ## No implementado todavía
 
-- Solicitar modelo persistido en backend.
 - Panel admin.
 - Perfiles públicos, seguidores, notificaciones o gamificación.

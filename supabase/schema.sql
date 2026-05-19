@@ -378,4 +378,73 @@ grant select on table public.user_profiles to authenticated;
 grant insert (id, display_name, avatar_url) on public.user_profiles to authenticated;
 grant update (display_name, avatar_url) on public.user_profiles to authenticated;
 
+create table if not exists public.model_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid null references auth.users(id) on delete set null,
+  brand text not null check (length(trim(brand)) > 0),
+  model text not null check (length(trim(model)) > 0),
+  year integer not null check (year between 1900 and 2100),
+  segment text null,
+  contact_email text null,
+  comment text null,
+  status text not null default 'pending' check (status in ('pending', 'reviewed', 'approved', 'rejected')),
+  source text not null default 'user' check (source in ('user', 'admin', 'import')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists model_requests_user_id_idx on public.model_requests (user_id);
+create index if not exists model_requests_status_idx on public.model_requests (status);
+create index if not exists model_requests_created_at_idx on public.model_requests (created_at);
+create index if not exists model_requests_brand_model_year_idx on public.model_requests (brand, model, year);
+
+drop trigger if exists set_model_requests_updated_at on public.model_requests;
+create trigger set_model_requests_updated_at
+before update on public.model_requests
+for each row
+execute function public.set_updated_at();
+
+alter table public.model_requests enable row level security;
+
+drop policy if exists "Anonymous model requests can be created" on public.model_requests;
+create policy "Anonymous model requests can be created"
+on public.model_requests
+for insert
+to anon
+with check (
+  user_id is null
+  and status = 'pending'
+  and source = 'user'
+  and length(trim(brand)) > 0
+  and length(trim(model)) > 0
+  and year between 1900 and 2100
+);
+
+drop policy if exists "Authenticated model requests can be created" on public.model_requests;
+create policy "Authenticated model requests can be created"
+on public.model_requests
+for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+  and status = 'pending'
+  and source = 'user'
+  and length(trim(brand)) > 0
+  and length(trim(model)) > 0
+  and year between 1900 and 2100
+);
+
+drop policy if exists "Users can read own model requests" on public.model_requests;
+create policy "Users can read own model requests"
+on public.model_requests
+for select
+to authenticated
+using (user_id = auth.uid());
+
+revoke all on table public.model_requests from anon;
+revoke all on table public.model_requests from authenticated;
+
+grant insert on public.model_requests to anon, authenticated;
+grant select on public.model_requests to authenticated;
+
 notify pgrst, 'reload schema';

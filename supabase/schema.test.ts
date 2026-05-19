@@ -9,6 +9,11 @@ function getUserProfilesGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getModelRequestsGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.model_requests\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 describe('Supabase public motorcycle schema', () => {
   it('permite leer motos públicas también con sesión autenticada', () => {
     expect(schemaSql).toContain('create policy "Public motorcycles are readable"');
@@ -146,6 +151,63 @@ describe('Supabase user_profiles auth schema', () => {
     expect(normalizedSchemaSql).not.toContain('grant select, insert on public.user_profiles to authenticated;');
     expect(normalizedSchemaSql).not.toContain('grant all on table public.user_profiles to authenticated;');
     expect(normalizedSchemaSql).not.toContain('grant all on table public.user_profiles to anon;');
+  });
+});
+
+describe('Supabase model_requests schema', () => {
+  it('crea tabla de solicitudes con user_id nullable y checks de estado/origen', () => {
+    expect(schemaSql).toContain('create table if not exists public.model_requests');
+    expect(schemaSql).toContain('user_id uuid null references auth.users(id) on delete set null');
+    expect(schemaSql).toContain('brand text not null check (length(trim(brand)) > 0)');
+    expect(schemaSql).toContain('model text not null check (length(trim(model)) > 0)');
+    expect(schemaSql).toContain('year integer not null check (year between 1900 and 2100)');
+    expect(schemaSql).toContain("status text not null default 'pending' check (status in ('pending', 'reviewed', 'approved', 'rejected'))");
+    expect(schemaSql).toContain("source text not null default 'user' check (source in ('user', 'admin', 'import'))");
+  });
+
+  it('crea índices y trigger updated_at para model_requests', () => {
+    expect(schemaSql).toContain('create index if not exists model_requests_user_id_idx on public.model_requests (user_id);');
+    expect(schemaSql).toContain('create index if not exists model_requests_status_idx on public.model_requests (status);');
+    expect(schemaSql).toContain('create index if not exists model_requests_created_at_idx on public.model_requests (created_at);');
+    expect(schemaSql).toContain('create index if not exists model_requests_brand_model_year_idx on public.model_requests (brand, model, year);');
+    expect(schemaSql).toContain('drop trigger if exists set_model_requests_updated_at on public.model_requests;');
+    expect(schemaSql).toContain('create trigger set_model_requests_updated_at');
+    expect(schemaSql).toContain('execute function public.set_updated_at();');
+  });
+
+  it('activa RLS y permite inserts anónimos estrictos', () => {
+    expect(schemaSql).toContain('alter table public.model_requests enable row level security;');
+    expect(schemaSql).toContain('create policy "Anonymous model requests can be created"');
+    expect(schemaSql).toContain('for insert');
+    expect(schemaSql).toContain('to anon');
+    expect(schemaSql).toContain('user_id is null');
+    expect(schemaSql).toContain("status = 'pending'");
+    expect(schemaSql).toContain("source = 'user'");
+    expect(schemaSql).toContain('length(trim(brand)) > 0');
+    expect(schemaSql).toContain('length(trim(model)) > 0');
+    expect(schemaSql).toContain('year between 1900 and 2100');
+  });
+
+  it('permite inserts autenticados solo para auth.uid y lectura propia', () => {
+    expect(schemaSql).toContain('create policy "Authenticated model requests can be created"');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('user_id = auth.uid()');
+    expect(schemaSql).toContain('create policy "Users can read own model requests"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('using (user_id = auth.uid())');
+  });
+
+  it('no abre SELECT público total ni update/delete para model_requests', () => {
+    const grants = getModelRequestsGrantStatements();
+
+    expect(normalizedSchemaSql).not.toMatch(/on public\.model_requests for select to anon\b[^;]*using \(true\)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+(update|delete)\s+on\s+(?:table\s+)?public\.model_requests\s+to\s+(anon|authenticated)/);
+    expect(schemaSql).toContain('revoke all on table public.model_requests from anon;');
+    expect(schemaSql).toContain('revoke all on table public.model_requests from authenticated;');
+    expect(grants).toEqual([
+      'grant insert on public.model_requests to anon, authenticated;',
+      'grant select on public.model_requests to authenticated;',
+    ]);
   });
 });
 

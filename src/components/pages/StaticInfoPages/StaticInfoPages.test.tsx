@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAuth } from '../../../features/auth';
+import { createModelRequest } from '../../../services/modelRequestService';
 import {
   DataMethodologyPage,
   DataSourcesPage,
@@ -9,7 +11,52 @@ import {
   TermsPage,
 } from './StaticInfoPages';
 
+vi.mock('../../../features/auth', () => ({
+  useAuth: vi.fn(),
+}));
+
+vi.mock('../../../services/modelRequestService', () => ({
+  createModelRequest: vi.fn(),
+}));
+
+const useAuthMock = vi.mocked(useAuth);
+const createModelRequestMock = vi.mocked(createModelRequest);
+
+function mockAuth(overrides = {}) {
+  useAuthMock.mockReturnValue({
+    user: null,
+    session: null,
+    profile: null,
+    isAuthenticated: false,
+    isAdmin: false,
+    isLoading: false,
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+    refreshProfile: vi.fn(),
+    ...overrides,
+  } as never);
+}
+
 describe('StaticInfoPages', () => {
+  beforeEach(() => {
+    createModelRequestMock.mockReset().mockResolvedValue({
+      id: 'request-1',
+      userId: null,
+      brand: 'Honda',
+      model: 'CBR600RR',
+      year: 2026,
+      segment: 'sport',
+      contactEmail: null,
+      comment: null,
+      status: 'pending',
+      source: 'user',
+      createdAt: '2026-05-19T10:00:00.000Z',
+      updatedAt: '2026-05-19T10:00:00.000Z',
+    });
+    mockAuth();
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -88,9 +135,7 @@ describe('StaticInfoPages', () => {
     expect(screen.getByText('El año es obligatorio.')).toBeInTheDocument();
   });
 
-  it('muestra success state local y no llama a Supabase al solicitar modelo', async () => {
-    const fetchSpy = vi.fn();
-    vi.stubGlobal('fetch', fetchSpy);
+  it('envía solicitud anónima y muestra success real', async () => {
     const user = userEvent.setup();
     render(<RequestModelPage />);
 
@@ -98,9 +143,72 @@ describe('StaticInfoPages', () => {
     await user.type(screen.getByLabelText('Modelo'), 'CBR600RR');
     await user.type(screen.getByLabelText('Año'), '2026');
     await user.selectOptions(screen.getByLabelText('Segmento'), 'sport');
+    await user.type(screen.getByLabelText(/Email de contacto opcional/i), 'rider@motoatlas.com');
     await user.click(screen.getByRole('button', { name: /Enviar solicitud/i }));
 
-    expect(screen.getByRole('status')).toHaveTextContent(/Solicitud recibida/i);
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(createModelRequestMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        brand: 'Honda',
+        contactEmail: 'rider@motoatlas.com',
+        model: 'CBR600RR',
+        segment: 'sport',
+        year: 2026,
+      }),
+      undefined,
+    );
+    expect(await screen.findByRole('status')).toHaveTextContent(/Solicitud enviada/i);
+  });
+
+  it('muestra loading mientras envía solicitud de modelo', async () => {
+    createModelRequestMock.mockReturnValue(new Promise(() => undefined));
+    const user = userEvent.setup();
+    render(<RequestModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Honda');
+    await user.type(screen.getByLabelText('Modelo'), 'CBR600RR');
+    await user.type(screen.getByLabelText('Año'), '2026');
+    await user.click(screen.getByRole('button', { name: /Enviar solicitud/i }));
+
+    expect(screen.getByRole('button', { name: /Enviando/i })).toBeDisabled();
+  });
+
+  it('muestra error si falla el envío real de solicitud', async () => {
+    createModelRequestMock.mockRejectedValue(new Error('RLS rejected'));
+    const user = userEvent.setup();
+    render(<RequestModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Honda');
+    await user.type(screen.getByLabelText('Modelo'), 'CBR600RR');
+    await user.type(screen.getByLabelText('Año'), '2026');
+    await user.click(screen.getByRole('button', { name: /Enviar solicitud/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('RLS rejected');
+  });
+
+  it('pasa authContext al service cuando el usuario está autenticado', async () => {
+    mockAuth({
+      isAuthenticated: true,
+      session: { access_token: 'session-token' },
+      user: { id: 'user-123', email: 'rider@motoatlas.com' },
+    });
+    const user = userEvent.setup();
+    render(<RequestModelPage />);
+
+    expect(screen.getByText(/Esta solicitud quedará asociada a tu cuenta/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Email de contacto opcional/i)).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Marca'), 'Honda');
+    await user.type(screen.getByLabelText('Modelo'), 'CBR600RR');
+    await user.type(screen.getByLabelText('Año'), '2026');
+    await user.click(screen.getByRole('button', { name: /Enviar solicitud/i }));
+
+    expect(createModelRequestMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        brand: 'Honda',
+        model: 'CBR600RR',
+        year: 2026,
+      }),
+      { accessToken: 'session-token', userId: 'user-123' },
+    );
   });
 });

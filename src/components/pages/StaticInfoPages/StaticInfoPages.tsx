@@ -1,5 +1,7 @@
 import { FormEvent, MouseEvent, useMemo, useState } from 'react';
 import methodologyHeroImage from '../../../assets/hero-metodology.png';
+import { useAuth } from '../../../features/auth';
+import { createModelRequest } from '../../../services/modelRequestService';
 import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import type { BikeSegment } from '../../../types/bike';
 import './StaticInfoPages.scss';
@@ -31,13 +33,14 @@ type ArticlePageProps = Readonly<{
 type FormState = Readonly<{
   brand: string;
   comment: string;
+  contactEmail: string;
   market: string;
   model: string;
   segment: BikeSegment | '';
   year: string;
 }>;
 
-type FormErrors = Partial<Record<keyof Pick<FormState, 'brand' | 'model' | 'year'>, string>>;
+type FormErrors = Partial<Record<keyof Pick<FormState, 'brand' | 'contactEmail' | 'model' | 'year'>, string>>;
 
 type SourceOverviewCard = Readonly<{
   accent?: 'primary' | 'accent' | 'muted';
@@ -601,7 +604,18 @@ function validateRequestModel(form: FormState): FormErrors {
     errors.year = 'Introduce un año válido.';
   }
 
+  if (form.contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contactEmail.trim())) {
+    errors.contactEmail = 'Introduce un email válido.';
+  }
+
   return errors;
+}
+
+function buildRequestComment(form: FormState) {
+  const market = form.market.trim();
+  const comment = form.comment.trim();
+
+  return [market ? `Mercado: ${market}` : '', comment].filter(Boolean).join('\n\n');
 }
 
 export function DataMethodologyPage() {
@@ -647,29 +661,55 @@ export function TermsPage() {
 }
 
 export function RequestModelPage() {
-  const [form, setForm] = useState<FormState>({ brand: '', comment: '', market: '', model: '', segment: '', year: '' });
+  const { isAuthenticated, session, user } = useAuth();
+  const [form, setForm] = useState<FormState>({ brand: '', comment: '', contactEmail: '', market: '', model: '', segment: '', year: '' });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [serviceError, setServiceError] = useState('');
 
   const hasErrors = useMemo(() => Object.keys(errors).length > 0, [errors]);
+  const isSubmitting = requestStatus === 'submitting';
+  const authContext = isAuthenticated && user?.id && session?.access_token
+    ? { accessToken: session.access_token, userId: user.id }
+    : undefined;
 
   const updateField = (field: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
-    setIsSubmitted(false);
+    setRequestStatus('idle');
+    setServiceError('');
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextErrors = validateRequestModel(form);
     setErrors(nextErrors);
+    setServiceError('');
 
     if (Object.keys(nextErrors).length > 0) {
-      setIsSubmitted(false);
+      setRequestStatus('idle');
       return;
     }
 
-    setIsSubmitted(true);
+    setRequestStatus('submitting');
+
+    try {
+      await createModelRequest(
+        {
+          brand: form.brand,
+          model: form.model,
+          year: Number(form.year),
+          segment: form.segment || null,
+          contactEmail: form.contactEmail,
+          comment: buildRequestComment(form),
+        },
+        authContext,
+      );
+      setRequestStatus('success');
+    } catch (error) {
+      setRequestStatus('error');
+      setServiceError(error instanceof Error ? error.message : 'No se ha podido enviar la solicitud.');
+    }
   };
 
   return (
@@ -678,8 +718,12 @@ export function RequestModelPage() {
         <div>
           <span>Community contribution</span>
           <h1 id="request-model-title">¿Falta una moto?</h1>
-          <p>Solicita un modelo y ayuda a MotoAtlas a ampliar el catálogo técnico. La conexión real con backend queda pendiente.</p>
-          <small>Las solicitudes se asociarán a cuentas de MotoAtlas en una fase futura.</small>
+          <p>Solicita un modelo y ayuda a MotoAtlas a ampliar el catálogo técnico. Revisaremos la solicitud antes de incorporarla.</p>
+          <small>
+            {authContext
+              ? 'Esta solicitud quedará asociada a tu cuenta.'
+              : 'Puedes enviarla sin iniciar sesión, aunque si accedes a tu cuenta podremos asociarla a tu perfil.'}
+          </small>
         </div>
 
         <form className="static-info__request-form" onSubmit={handleSubmit} noValidate aria-label="Formulario para solicitar modelo">
@@ -751,6 +795,23 @@ export function RequestModelPage() {
             </label>
           </div>
 
+          {!authContext ? (
+            <label htmlFor="request-contact-email">
+              Email de contacto opcional
+              <input
+                id="request-contact-email"
+                name="contact_email"
+                type="email"
+                value={form.contactEmail}
+                onChange={(event) => updateField('contactEmail', event.target.value)}
+                placeholder="tu@email.com"
+                aria-invalid={errors.contactEmail ? 'true' : undefined}
+                aria-describedby={errors.contactEmail ? 'request-contact-email-error' : undefined}
+              />
+              {errors.contactEmail ? <span id="request-contact-email-error">{errors.contactEmail}</span> : null}
+            </label>
+          ) : null}
+
           <label htmlFor="request-comment">
             Comentario opcional
             <textarea
@@ -764,13 +825,18 @@ export function RequestModelPage() {
           </label>
 
           {hasErrors ? <p className="static-info__form-alert" role="alert">Revisa los campos obligatorios antes de enviar.</p> : null}
-          {isSubmitted ? (
+          {requestStatus === 'error' ? (
+            <p className="static-info__form-alert" role="alert">{serviceError || 'No se ha podido enviar la solicitud.'}</p>
+          ) : null}
+          {requestStatus === 'success' ? (
             <p className="static-info__form-success" role="status">
-              Solicitud recibida. Revisaremos este modelo antes de añadirlo al catálogo.
+              Solicitud enviada. Revisaremos el modelo antes de incorporarlo al catálogo.
             </p>
           ) : null}
 
-          <button className="button button--primary" type="submit">Enviar solicitud</button>
+          <button className="button button--primary" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Enviando...' : 'Enviar solicitud'}
+          </button>
         </form>
       </section>
     </main>
