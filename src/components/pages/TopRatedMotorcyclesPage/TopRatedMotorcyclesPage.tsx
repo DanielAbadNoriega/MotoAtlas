@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import rankingHeroImage from '../../../assets/hero-comunity.png';
+import requestModelHeroImage from '../../../assets/hero-request-model.jpeg';
 import { getBikeDisplayName } from '../../../data/bikes';
 import {
   getApprovedReviewsByMotorcycleId,
@@ -158,6 +159,161 @@ function TopRatedEmptyState({ hasActiveFilters, onReset }: { hasActiveFilters: b
   );
 }
 
+function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: readonly TopRatedMotorcycle[] }) {
+  const mostReviewed = ranking.slice().sort((left, right) => right.reviewCount - left.reviewCount)[0];
+  const topRated = ranking[0];
+  const a2Signal = ranking.find((item) => item.bike.license === 'A2');
+
+  const signals = [
+    mostReviewed
+      ? {
+          href: getCommunityHref(mostReviewed.bike),
+          icon: 'forum',
+          label: 'Más conversación',
+          text: `${numberFormatter.format(mostReviewed.reviewCount)} reviews aprobadas`,
+          title: getBikeDisplayName(mostReviewed.bike),
+        }
+      : null,
+    topRated
+      ? {
+          href: getCommunityHref(topRated.bike),
+          icon: 'military_tech',
+          label: 'Mejor señal global',
+          text: `${formatReviewRating(topRated.averageRating)}/5 rating medio`,
+          title: getBikeDisplayName(topRated.bike),
+        }
+      : null,
+    a2Signal
+      ? {
+          href: getCommunityHref(a2Signal.bike),
+          icon: 'verified',
+          label: 'A2 en movimiento',
+          text: `${numberFormatter.format(a2Signal.reviewCount)} reviews de propietarios`,
+          title: getBikeDisplayName(a2Signal.bike),
+        }
+      : null,
+  ].filter(Boolean) as Array<{ href: string; icon: string; label: string; text: string; title: string }>;
+
+  return (
+    <section className="top-rated__community-radar" aria-labelledby="top-rated-radar-title">
+      <div className="top-rated__community-heading">
+        <span className="material-symbols-outlined" aria-hidden="true">trending_up</span>
+        <h2 id="top-rated-radar-title">Radar de la comunidad</h2>
+      </div>
+      <div className="top-rated__radar-panel">
+        <div>
+          <span className="material-symbols-outlined" aria-hidden="true">radar</span>
+          <h3>{signals.length > 0 ? 'Señales vivas por modelo' : isLoading ? 'Calibrando señales' : 'Sin tendencias activas todavía'}</h3>
+          <p>
+            El radar resume actividad aprobada de la comunidad MotoAtlas: conversación, rating y modelos que empiezan a concentrar experiencia real.
+          </p>
+        </div>
+        {signals.length > 0 ? (
+          <div className="top-rated__radar-signals">
+            {signals.map((signal) => (
+              <a href={signal.href} key={signal.label}>
+                <span className="material-symbols-outlined" aria-hidden="true">{signal.icon}</span>
+                <small>{signal.label}</small>
+                <strong>{signal.title}</strong>
+                <em>{signal.text}</em>
+              </a>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function ActiveCommunities({ ranking }: { ranking: readonly TopRatedMotorcycle[] }) {
+  return (
+    <section className="top-rated__active-communities" aria-labelledby="top-rated-active-title">
+      <div className="top-rated__active-header">
+        <div className="top-rated__community-heading">
+          <span className="material-symbols-outlined" aria-hidden="true">groups</span>
+          <h2 id="top-rated-active-title">Comunidades activas</h2>
+        </div>
+        <a href="#/buscador">Ver modelos</a>
+      </div>
+      <div>
+        {ranking.slice(0, 3).map((item) => (
+          <a className="top-rated__active-community-card" href={getCommunityHref(item.bike)} key={item.bike.id}>
+            <MotorcycleImage motorcycle={item.bike} alt={`Imagen de ${getBikeDisplayName(item.bike)}`} loading="lazy" />
+            <span>{segmentLabels[item.bike.segment]}</span>
+            <h3>{getBikeDisplayName(item.bike)}</h3>
+            <p>{numberFormatter.format(item.reviewCount)} reviews · {formatReviewRating(item.averageRating)}/5 rating</p>
+          </a>
+        ))}
+        {ranking.length === 0 ? (
+          <article className="top-rated__active-community-card top-rated__active-community-card--empty">
+            <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+            <h3>Comunidades en formación</h3>
+            <p>Cuando haya reviews aprobadas, los modelos con más actividad aparecerán aquí.</p>
+          </article>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function RecentReviews({ isLoading, recentReviews }: { isLoading: boolean; recentReviews: readonly RecentReviewItem[] }) {
+  return (
+    <section className="top-rated__recent-reviews" aria-labelledby="top-rated-recent-title">
+      <div className="top-rated__community-heading">
+        <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+        <h2 id="top-rated-recent-title">Reviews recientes</h2>
+      </div>
+      <div className="top-rated__recent-list">
+        {recentReviews.length > 0 ? recentReviews.slice(0, 3).map(({ bike, review }) => (
+          <article key={review.id}>
+            <div>
+              <span>User: {review.userName}</span>
+              <small>{getBikeDisplayName(bike)}</small>
+            </div>
+            <p>“{review.comment}”</p>
+            <div>
+              <span className="top-rated__rating-star" aria-hidden="true">★</span>
+              <small>{formatReviewRating(review.rating)}/5</small>
+            </div>
+          </article>
+        )) : (
+          <article>
+            <div>
+              <span>{isLoading ? 'Calibrando' : 'Sin reviews recientes'}</span>
+              <small>Comunidad MotoAtlas</small>
+            </div>
+            <p>Las reviews aprobadas aparecerán aquí cuando la comunidad empiece a generar señales recientes.</p>
+          </article>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ParticipationCtas() {
+  return (
+    <section className="top-rated__participation" aria-label="Participar en la comunidad MotoAtlas">
+      <article className="top-rated__participation-card top-rated__participation-card--request">
+        <img src={requestModelHeroImage} alt="" aria-hidden="true" />
+        <div>
+          <span className="material-symbols-outlined" aria-hidden="true">add_circle</span>
+          <h2>¿No encuentras tu moto?</h2>
+          <p>Ayúdanos a ampliar el catálogo MotoAtlas proponiendo nuevos modelos.</p>
+          <a href="#/solicitar-modelo">Solicitar modelo</a>
+        </div>
+      </article>
+      <article className="top-rated__participation-card">
+        <div>
+          <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
+          <h2>Tu experiencia puede ayudar a otro motero</h2>
+          <p>Comparte kilómetros, sensaciones, puntos fuertes y defectos reales.</p>
+          <a href="#/buscador">Buscar moto para opinar</a>
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function CommunityFeatureSections({
   isLoading,
   ranking,
@@ -169,95 +325,12 @@ function CommunityFeatureSections({
 }) {
   return (
     <>
-      <section className="top-rated__community-grid" aria-label="Actividad destacada de comunidad">
-        <div>
-          <div className="top-rated__community-heading">
-            <span className="material-symbols-outlined" aria-hidden="true">star</span>
-            <h2>Top Rated</h2>
-          </div>
-          <div className="top-rated__community-list">
-            {ranking.slice(0, 3).map((item) => (
-              <a href={getCommunityHref(item.bike)} key={item.bike.id}>
-                <strong>#{item.rank}</strong>
-                <span>
-                  <b>{getBikeDisplayName(item.bike)}</b>
-                  <small>{formatReviewRating(item.averageRating)}/5 rating · {numberFormatter.format(item.reviewCount)} reviews</small>
-                </span>
-                <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div className="top-rated__community-heading">
-            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-            <h2>Recent Reviews</h2>
-          </div>
-          <div className="top-rated__recent-list">
-            {recentReviews.length > 0 ? recentReviews.slice(0, 2).map(({ bike, review }) => (
-              <article key={review.id}>
-                <div>
-                  <span>User: {review.userName}</span>
-                  <small>{getBikeDisplayName(bike)}</small>
-                </div>
-                <p>“{review.comment}”</p>
-                <div>
-                  <span className="top-rated__rating-star" aria-hidden="true">★</span>
-                  <small>{formatReviewRating(review.rating)}/5</small>
-                </div>
-              </article>
-            )) : (
-              <article>
-                <div>
-                  <span>{isLoading ? 'Calibrando' : 'Sin reviews recientes'}</span>
-                  <small>Comunidad MotoAtlas</small>
-                </div>
-                <p>Las reviews aprobadas aparecerán aquí cuando la comunidad empiece a generar señales recientes.</p>
-              </article>
-            )}
-          </div>
-        </div>
+      <CommunityRadar isLoading={isLoading} ranking={ranking} />
+      <section className="top-rated__community-columns" aria-label="Actividad reciente de comunidad">
+        <ActiveCommunities ranking={ranking} />
+        <RecentReviews isLoading={isLoading} recentReviews={recentReviews} />
       </section>
-
-      <section className="top-rated__nearby" aria-labelledby="top-rated-nearby-title">
-        <div className="top-rated__community-heading">
-          <span className="material-symbols-outlined" aria-hidden="true">trending_up</span>
-          <h2 id="top-rated-nearby-title">Trending Near You</h2>
-        </div>
-        <div>
-          <span className="material-symbols-outlined" aria-hidden="true">location_off</span>
-          <h3>No hay tendencias locales activas</h3>
-          <p>Las comunidades locales llegarán cuando MotoAtlas active señales por zona. Mientras tanto, explora comunidades por modelo.</p>
-          <a href="#/comunidad">Explorar comunidades</a>
-        </div>
-      </section>
-
-      <section className="top-rated__active-communities" aria-labelledby="top-rated-active-title">
-        <div className="top-rated__active-header">
-          <div className="top-rated__community-heading">
-            <span className="material-symbols-outlined" aria-hidden="true">groups</span>
-            <h2 id="top-rated-active-title">Active Communities</h2>
-          </div>
-          <a href="#/buscador">Ver modelos</a>
-        </div>
-        <div>
-          {[
-            ['bolt', 'Técnica DIY', 'Mantenimiento, ajustes y soluciones reales de propietarios.'],
-            ['map', 'Rutas touring', 'Experiencias de viaje, confort, pasajero y carga.'],
-            ['timer', 'Track day ops', 'Uso deportivo, frenos, neumáticos y comportamiento en conducción rápida.'],
-          ].map(([icon, title, text]) => (
-            <article key={title}>
-              <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>
-              <h3>{title}</h3>
-              <p>{text}</p>
-              <div aria-hidden="true">
-                <i /><i /><i /><b>+{title === 'Rutas touring' ? '120' : title === 'Técnica DIY' ? '80' : '45'}</b>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <ParticipationCtas />
     </>
   );
 }
@@ -334,10 +407,10 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
       <section className="top-rated__hero">
         <img src={rankingHeroImage} alt="" aria-hidden="true" />
         <div>
-          <span>Engineered for connection</span>
-          <h1 id="top-rated-title">Fuel your <span>passion.</span></h1>
+          <span>Opiniones reales</span>
+          <h1 id="top-rated-title">Comunidad MotoAtlas</h1>
           <p>
-            Únete a la comunidad MotoAtlas: reviews aprobadas, rankings por modelo y señales reales para elegir mejor.
+            Opiniones reales, rankings vivos y actividad de propietarios para elegir mejor.
           </p>
           <div className="top-rated__hero-actions">
             <button type="button" onClick={scrollToPodium}>Explorar comunidades</button>

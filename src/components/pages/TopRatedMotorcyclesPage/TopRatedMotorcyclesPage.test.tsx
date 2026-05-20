@@ -57,7 +57,7 @@ describe('TopRatedMotorcyclesPage', () => {
   it('renderiza la landing sin header/footer ficticios de Stitch', async () => {
     await renderPage();
 
-    expect(screen.getByRole('heading', { name: /Fuel your passion/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Podium rankings/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Explorar comunidades/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Comparar motos/i })).toHaveAttribute('href', '#/comparador');
@@ -112,7 +112,7 @@ describe('TopRatedMotorcyclesPage', () => {
 
     expect(await within(podium).findByRole('article', { name: /Yamaha MT-09/i })).toBeInTheDocument();
     expect(within(podium).queryByRole('article', { name: /Aprilia Tuareg 660/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Top Rated/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Top Rated/i })).not.toBeInTheDocument();
     expect(screen.getAllByText(/Aprilia Tuareg 660/i).length).toBeGreaterThan(0);
   });
 
@@ -153,8 +153,9 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(await screen.findByRole('heading', { name: /Aún no hay suficientes datos de comunidad/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ir al buscador/i })).toHaveAttribute('href', '#/buscador');
     expect(screen.getByRole('link', { name: /^Explorar comunidad$/i })).toHaveAttribute('href', '#/comunidad');
-    expect(screen.getByRole('heading', { name: /Top Rated/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Recent Reviews/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Top Rated/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Radar de la comunidad/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Reviews recientes/i })).toBeInTheDocument();
   });
 
   it('renderiza empty state global si no hay reviews aprobadas', async () => {
@@ -174,16 +175,28 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(within(firstRank).queryByRole('button', { name: /Comparar/i })).not.toBeInTheDocument();
   });
 
-  it('renderiza las secciones de comunidad posteriores al podium', async () => {
+  it('renderiza la nueva jerarquía de comunidad sin Top Rated ni geolocalización', async () => {
     await renderPage();
 
-    expect(screen.getByRole('heading', { name: /Top Rated/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Recent Reviews/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Trending Near You/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Active Communities/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Podium rankings/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Radar de la comunidad/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Comunidades activas/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Reviews recientes/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /Top Rated/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/near you/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/cerca de ti/i)).not.toBeInTheDocument();
   });
 
-  it('usa estrella real en las puntuaciones de Recent Reviews', async () => {
+  it('renderiza el CTA doble final de participación', async () => {
+    await renderPage();
+
+    expect(screen.getByRole('heading', { name: /¿No encuentras tu moto\?/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Solicitar modelo/i })).toHaveAttribute('href', '#/solicitar-modelo');
+    expect(screen.getByRole('heading', { name: /Tu experiencia puede ayudar a otro motero/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Buscar moto para opinar/i })).toHaveAttribute('href', '#/buscador');
+  });
+
+  it('usa estrella real en las puntuaciones de Reviews recientes', async () => {
     await renderPage();
 
     const recentReview = screen.getAllByText(/Fantástica para viajar con equipaje/i)[0].closest('article');

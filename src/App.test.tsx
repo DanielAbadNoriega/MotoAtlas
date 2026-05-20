@@ -170,7 +170,7 @@ describe('App navigation with mocked motorcycleService', () => {
 
     await renderApp();
 
-    expect(await screen.findByRole('heading', { name: /Fuel your passion/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
     expect(document.title).toBe('Comunidad MotoAtlas | Reviews y motos mejor valoradas');
   });
 
@@ -179,7 +179,7 @@ describe('App navigation with mocked motorcycleService', () => {
 
     await renderApp();
 
-    expect(await screen.findByRole('heading', { name: /Fuel your passion/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
     expect(document.title).toBe('Comunidad MotoAtlas | Reviews y motos mejor valoradas');
     expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://motoatlas.com/comunidad');
   });
