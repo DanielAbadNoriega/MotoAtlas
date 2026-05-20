@@ -51,7 +51,7 @@ La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de 
 
 La ruta `#/comunidad/reviews` funciona como archivo público de reviews `approved`: aplica filtros en cliente por marca/modelo, segmento, carnet, rating, uso principal y orden, y pagina a 9 reviews por página.
 
-Reutiliza `AccountReviewCard` con variante `community`: muestra alias público, rating con estrella, metadatos compactos con iconos y oculta el badge de estado. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas, fotos de usuario, destacadas del mes e insights quedan para fases futuras.
+Reutiliza `AccountReviewCard` con variante `community`: muestra alias público, rating con estrella alineado con el título, metadatos compactos con iconos y oculta el badge de estado. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas, fotos de usuario, destacadas del mes e insights quedan para fases futuras.
 
 Los filtros de segmento/carnet usan las mismas constantes visuales que el buscador; `Sport` usa `speed`, `Touring` usa `explore` y el carnet se presenta como `Carnet A2`, `Carnet A`, `A2 limitable`.
 
@@ -64,6 +64,8 @@ La ruta `#/comunidad/[motorcycleId]` muestra las reviews aprobadas en un slider 
 La ruta `#/cuenta/reviews` muestra todas las reviews asociadas al usuario autenticado.
 
 En `#/cuenta`, el bloque “Mis reviews” reutiliza la misma card visual en variante compacta y muestra solo las 3 reviews más recientes (`created_at desc`) con enlace a `#/cuenta/reviews`.
+
+`AccountReviewCard` mantiene una estructura visual compartida en cuenta y comunidad: imagen izquierda, título + rating en cabecera, metadatos con iconos, acciones inferiores y enlace secundario `Más reviews`. La estructura de autor queda preparada para un badge futuro de reviewer verificado mediante clases dedicadas, sin mostrar badges falsos.
 
 - carga reviews propias mediante RLS y token de sesión.
 - filtra en cliente por marca/modelo, estado y uso principal.

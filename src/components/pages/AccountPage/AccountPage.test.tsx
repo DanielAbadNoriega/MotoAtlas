@@ -214,7 +214,8 @@ describe('AccountPage', () => {
     expect(within(card).getByText(/Muy buena para viajar/i)).toBeInTheDocument();
     expect(within(card).getByText('+ Motor lleno')).toBeInTheDocument();
     expect(within(card).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
-    expect(within(card).getByRole('link', { name: /Ver comunidad/i })).toHaveAttribute('href', '#/comunidad/bmw-f-900-gs-2024');
+    expect(within(card).getByRole('link', { name: /Más reviews/i })).toHaveAttribute('href', '#/comunidad/bmw-f-900-gs-2024');
+    expect(card).toHaveClass('account-review-card--compact');
     expect(screen.getByRole('link', { name: /Ver todas mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(screen.queryByText('Yamaha Ténéré 700')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();

@@ -129,7 +129,7 @@ describe('AccountReviewsPage', () => {
   it('muestra cards con moto, rating, uso, kilómetros, comentario, pros/contras y links', async () => {
     await renderWithReviews([createReview({ id: 'review-1', status: 'approved', rating: 5, ridingStyle: 'viaje', kilometers: 12500 })]);
 
-    const card = screen.getByTestId('account-review-card');
+    const card = await screen.findByTestId('account-review-card');
 
     expect(within(card).getByRole('heading', { name: /BMW F 900 GS 1 2024/i })).toBeInTheDocument();
     expect(within(card).getByText('Publicada')).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe('AccountReviewsPage', () => {
     expect(within(card).getByText('+ Motor lleno')).toBeInTheDocument();
     expect(within(card).getByText('- Precio')).toBeInTheDocument();
     expect(within(card).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/moto-1');
-    expect(within(card).getByRole('link', { name: /Ver comunidad/i })).toHaveAttribute('href', '#/comunidad/moto-1');
+    expect(within(card).getByRole('link', { name: /Más reviews/i })).toHaveAttribute('href', '#/comunidad/moto-1');
     expect(within(card).getByRole('img')).toHaveAttribute('src', '/images/motorcycles/bmw-f-900-gs-2024.webp');
     expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /borrar/i })).not.toBeInTheDocument();
