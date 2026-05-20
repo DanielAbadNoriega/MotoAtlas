@@ -6,6 +6,7 @@ import {
   buildAuthSeoMetadata,
   buildBikeSeoMetadata,
   buildCommunityLandingSeoMetadata,
+  buildCommunityReviewsSeoMetadata,
   buildCommunitySeoMetadata,
   buildCompareSeoMetadata,
   buildStaticInfoSeoMetadata,
@@ -80,6 +81,17 @@ describe('seoUtils', () => {
     expect(metadata.jsonLd).toMatchObject({ '@type': 'CollectionPage' });
   });
 
+  it('genera meta SEO para el archivo público de reviews de comunidad', () => {
+    const metadata = buildCommunityReviewsSeoMetadata();
+
+    expect(metadata).toMatchObject({
+      canonicalUrl: 'https://motoatlas.com/comunidad/reviews',
+      description: 'Opiniones reales de propietarios, kilómetros, uso, pros y contras para ayudarte a elegir mejor tu próxima moto.',
+      title: 'Reviews de la comunidad | MotoAtlas',
+    });
+    expect(metadata.jsonLd).toMatchObject({ '@type': 'CollectionPage' });
+  });
+
   it('mantiene motos mejor valoradas como alias SEO de comunidad', () => {
     expect(buildTopRatedSeoMetadata()).toMatchObject(buildCommunityLandingSeoMetadata());
   });
@@ -119,6 +131,7 @@ describe('seoUtils', () => {
 
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/motos/bmw-f-900-gs']));
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/comunidad']));
+    expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/comunidad/reviews']));
     expect(urls).not.toContain('https://motoatlas.com/motos-mejor-valoradas');
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/metodologia']));
     expect(urls).toEqual(expect.arrayContaining(['https://motoatlas.com/fuentes-datos']));

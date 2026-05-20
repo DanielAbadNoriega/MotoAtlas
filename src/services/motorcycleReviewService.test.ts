@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createReview, getApprovedReviewsByMotorcycleId, getReviewsByUserId } from './motorcycleReviewService';
+import { createReview, getApprovedCommunityReviews, getApprovedReviewsByMotorcycleId, getReviewsByUserId } from './motorcycleReviewService';
 
 const reviewRow = {
   id: 'review-1',
@@ -20,7 +20,9 @@ const reviewRow = {
   motorcycles: {
     id: 'bmw-f-900-gs-2024',
     brand: 'BMW',
+    license: 'A',
     model: 'F 900 GS',
+    segment: 'trail',
     year: 2024,
     image_url: '/images/motorcycles/bmw-f-900-gs-2024.webp',
   },
@@ -263,6 +265,44 @@ describe('motorcycleReviewService', () => {
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/rest/v1/motorcycle_reviews?'), expect.any(Object));
     expect(fetchMock.mock.calls[0][0]).toContain('status=eq.approved');
     expect(fetchMock.mock.calls[0][0]).toContain('motorcycle_id=eq.bmw-f-900-gs-2024');
+  });
+
+  it('lee el archivo público de reviews aprobadas con datos mínimos de moto', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([
+        { ...reviewRow, id: 'approved-1', status: 'approved' },
+        { ...reviewRow, id: 'pending-1', status: 'pending' },
+      ]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const reviews = await getApprovedCommunityReviews();
+    const [url, requestInit] = fetchMock.mock.calls[0];
+    const decodedUrl = decodeURIComponent(String(url));
+
+    expect(reviews).toHaveLength(1);
+    expect(reviews[0]).toMatchObject({
+      id: 'approved-1',
+      motorcycle: {
+        brand: 'BMW',
+        imageUrl: '/images/motorcycles/bmw-f-900-gs-2024.webp',
+        license: 'A',
+        model: 'F 900 GS',
+        segment: 'trail',
+        year: 2024,
+      },
+      status: 'approved',
+    });
+    expect(decodedUrl).toContain('/rest/v1/motorcycle_reviews?');
+    expect(decodedUrl).toContain('status=eq.approved');
+    expect(decodedUrl).toContain('order=created_at.desc');
+    expect(decodedUrl).toContain('motorcycles(id,brand,model,year,segment,license,image_url)');
+    expect(requestInit.headers).toMatchObject({
+      Authorization: 'Bearer anon-key',
+      apikey: 'anon-key',
+    });
   });
 
   it('consulta reviews propias por user_id con token autenticado', async () => {

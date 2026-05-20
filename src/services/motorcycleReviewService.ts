@@ -1,3 +1,5 @@
+import type { BikeLicense, BikeSegment } from '../types/bike';
+
 export type MotorcycleReviewStatus = 'pending' | 'approved' | 'rejected' | 'hidden';
 export type MotorcycleReviewRidingStyle = 'ciudad' | 'viaje' | 'offroad' | 'deportivo' | 'pasajero' | 'diario';
 export type MotorcycleReviewSource = 'user' | 'mock' | 'seed' | 'import';
@@ -45,6 +47,8 @@ export type MotorcycleReviewMotorcycle = Readonly<{
   model: string;
   year: number;
   imageUrl: string;
+  license?: BikeLicense | null;
+  segment?: BikeSegment | null;
 }>;
 
 type MotorcycleReviewMotorcycleRow = Readonly<{
@@ -52,7 +56,9 @@ type MotorcycleReviewMotorcycleRow = Readonly<{
   brand: string;
   model: string;
   year: number;
-  image_url: string;
+  image_url?: string | null;
+  license?: BikeLicense | null;
+  segment?: BikeSegment | null;
 }>;
 
 type MotorcycleReviewRow = Readonly<{
@@ -155,9 +161,11 @@ function mapMotorcycleRow(row: MotorcycleReviewMotorcycleRow | null | undefined)
   return {
     id: row.id,
     brand: row.brand,
+    license: row.license ?? null,
     model: row.model,
+    segment: row.segment ?? null,
     year: row.year,
-    imageUrl: row.image_url,
+    imageUrl: row.image_url ?? '',
   };
 }
 
@@ -283,6 +291,25 @@ export async function getApprovedReviewsByMotorcycleId(motorcycleId: string): Pr
   const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);
 
   return rows.map(mapReviewRow);
+}
+
+export async function getApprovedCommunityReviews(): Promise<readonly MotorcycleReview[]> {
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    order: 'created_at.desc',
+    select: 'id,motorcycle_id,user_id,user_name,rating,riding_style,ownership_months,kilometers,comment,pros,cons,status,verified,source,created_at,updated_at,motorcycles(id,brand,model,year,segment,license,image_url)',
+    status: 'eq.approved',
+  });
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews?${params.toString()}`, {
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${config.supabaseAnonKey}`,
+    },
+  });
+  const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);
+
+  return rows.map(mapReviewRow).filter((review) => review.status === 'approved');
 }
 
 export async function getReviewsByUserId(authContext?: CreateReviewAuthContext | null): Promise<readonly MotorcycleReview[]> {

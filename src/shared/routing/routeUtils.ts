@@ -23,6 +23,10 @@ export function getCommunityCanonicalPath(bike: Pick<Bike, 'id'>) {
   return `/comunidad/${bike.id}`;
 }
 
+export function getCommunityReviewsCanonicalPath() {
+  return '/comunidad/reviews';
+}
+
 export function getCompareSeoSlug(bikes: readonly Pick<Bike, 'brand' | 'model'>[]) {
   return bikes.map(getBikeSeoSlug).join('-vs-');
 }
@@ -117,6 +121,10 @@ export function getBikeDetailIdFromRoute(route: string, motorcycles: readonly Bi
 
 export function getCommunityMotorcycleIdFromRoute(route: string, motorcycles: readonly Bike[]) {
   const { path } = routeToPathAndSearch(route);
+  if (path === getCommunityReviewsCanonicalPath()) {
+    return undefined;
+  }
+
   const match = path.match(/^\/comunidad\/([^/?#]+)/);
 
   if (!match) {
@@ -160,6 +168,11 @@ export function isComparatorRoute(route: string) {
 export function isCommunityRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return /^\/comunidad(\/|$)/.test(path);
+}
+
+export function isCommunityReviewsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === getCommunityReviewsCanonicalPath();
 }
 
 export function isTopRatedRoute(route: string) {

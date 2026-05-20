@@ -652,6 +652,25 @@
   }
 }
 
+.top-rated__recent-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+
+  .top-rated__community-heading {
+    margin-bottom: 0;
+  }
+
+  > a {
+    @include label-caps;
+
+    color: $color-accent;
+    flex: 0 0 auto;
+  }
+}
+
 .top-rated__active-communities > div:last-child,
 .top-rated__community-list,
 .top-rated__recent-list {
@@ -1163,7 +1182,8 @@
     gap: 0.35rem;
   }
 
-  .top-rated__active-header {
+  .top-rated__active-header,
+  .top-rated__recent-header {
     align-items: start;
     flex-direction: column;
   }

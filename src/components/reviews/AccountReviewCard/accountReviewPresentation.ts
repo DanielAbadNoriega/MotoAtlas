@@ -1,5 +1,7 @@
 import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import type { MotorcycleReview, MotorcycleReviewRidingStyle, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import type { BikeLicense, BikeSegment } from '../../../types/bike';
+import { getBikeA2Status, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 
 export type AccountReviewMotorcycleDisplay = Readonly<{
   communityHref: string;
@@ -10,8 +12,11 @@ export type AccountReviewMotorcycleDisplay = Readonly<{
     model?: string;
     name?: string;
   }>;
+  a2Status?: BikeA2Status | null;
+  license?: BikeLicense | null;
   name: string;
   searchText: string;
+  segment?: BikeSegment | null;
   year?: number;
 }>;
 
@@ -79,11 +84,14 @@ export function getAccountReviewMotorcycleDisplay(review: MotorcycleReview): Acc
       : { name: displayName };
 
   return {
+    a2Status: catalogBike ? getBikeA2Status(catalogBike) : motorcycle?.license ?? null,
     communityHref: `#/comunidad/${review.motorcycleId}`,
     detailHref,
     imageSource,
+    license: motorcycle?.license ?? catalogBike?.license ?? null,
     name: displayName,
     searchText: `${displayName} ${review.motorcycleId}`.toLowerCase(),
+    segment: motorcycle?.segment ?? catalogBike?.segment ?? null,
     year,
   };
 }

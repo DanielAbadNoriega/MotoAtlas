@@ -182,6 +182,7 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(screen.getByRole('heading', { name: /Trending/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Comunidades activas/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Reviews recientes/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Ver todas las reviews/i })).toHaveAttribute('href', '#/comunidad/reviews');
     expect(screen.queryByRole('heading', { name: /Top Rated/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/near you/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/cerca de ti/i)).not.toBeInTheDocument();
