@@ -288,6 +288,53 @@
   }
 }
 
+.account-requests-page__pagination {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+
+  button {
+    align-items: center;
+    background: rgba($color-surface-container, 0.92);
+    border: 1px solid rgba($color-outline-variant, 0.36);
+    border-radius: $radius-md;
+    color: rgba($color-on-surface-variant, 0.9);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: $font-mono;
+    font-weight: 800;
+    height: 2.5rem;
+    justify-content: center;
+    min-width: 2.5rem;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base;
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      background: rgba($color-surface-bright, 0.5);
+      border-color: rgba($color-accent-container, 0.52);
+      color: $color-on-surface;
+      outline: 0;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.42;
+    }
+  }
+
+  .account-requests-page__pagination-current {
+    background: $color-accent-container;
+    border-color: $color-accent-container;
+    color: $color-on-surface;
+  }
+}
+
 @media (max-width: $breakpoint-tablet) {
   .account-requests-page__header {
     align-items: start;
@@ -308,5 +355,9 @@
 
   .account-requests-page__stats {
     width: 100%;
+  }
+
+  .account-requests-page__pagination button {
+    min-width: 2.25rem;
   }
 }

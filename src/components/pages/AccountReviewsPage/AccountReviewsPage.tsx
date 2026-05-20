@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AccountSidebar } from '../AccountPage/AccountSidebar';
+import { AccountPagination } from '../AccountPage/AccountPagination';
 import '../AccountPage/AccountPage.scss';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
@@ -145,20 +146,6 @@ function filterReviews(
   });
 }
 
-function getVisiblePageNumbers(currentPage: number, totalPages: number) {
-  const maxVisiblePages = 5;
-  const visibleCount = Math.min(maxVisiblePages, totalPages);
-  const halfWindow = Math.floor(visibleCount / 2);
-  let start = Math.max(1, currentPage - halfWindow);
-  const endOverflow = start + visibleCount - 1 - totalPages;
-
-  if (endOverflow > 0) {
-    start = Math.max(1, start - endOverflow);
-  }
-
-  return Array.from({ length: visibleCount }, (_, index) => start + index);
-}
-
 function ReviewChips({ items, tone }: Readonly<{ items: readonly string[]; tone: 'positive' | 'negative' }>) {
   if (items.length === 0) {
     return null;
@@ -227,47 +214,6 @@ function ReviewCard({ review }: Readonly<{ review: MotorcycleReview }>) {
         </footer>
       </div>
     </article>
-  );
-}
-
-function ReviewsPagination({ currentPage, onPageChange, totalPages }: Readonly<{
-  currentPage: number;
-  onPageChange: (page: number) => void;
-  totalPages: number;
-}>) {
-  if (totalPages <= 1) {
-    return null;
-  }
-
-  const visiblePages = getVisiblePageNumbers(currentPage, totalPages);
-
-  return (
-    <nav className="account-reviews-page__pagination" aria-label="Paginación de reviews">
-      <button type="button" aria-label="Primera página" disabled={currentPage === 1} onClick={() => onPageChange(1)}>
-        <span className="material-symbols-outlined" aria-hidden="true">keyboard_double_arrow_left</span>
-      </button>
-      <button type="button" aria-label="Página anterior" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
-        <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
-      </button>
-      {visiblePages.map((page) => (
-        <button
-          className={page === currentPage ? 'account-reviews-page__pagination-current' : undefined}
-          type="button"
-          aria-current={page === currentPage ? 'page' : undefined}
-          aria-label={`Página ${page}`}
-          key={page}
-          onClick={() => onPageChange(page)}
-        >
-          {page}
-        </button>
-      ))}
-      <button type="button" aria-label="Página siguiente" disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>
-        <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-      </button>
-      <button type="button" aria-label="Última página" disabled={currentPage === totalPages} onClick={() => onPageChange(totalPages)}>
-        <span className="material-symbols-outlined" aria-hidden="true">keyboard_double_arrow_right</span>
-      </button>
-    </nav>
   );
 }
 
@@ -549,7 +495,14 @@ export function AccountReviewsPage() {
               <section className="account-reviews-page__list" aria-label="Listado de reviews">
                 {paginatedReviews.map((review) => <ReviewCard review={review} key={review.id} />)}
               </section>
-              <ReviewsPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+              <AccountPagination
+                ariaLabel="Paginación de reviews"
+                className="account-reviews-page__pagination"
+                currentClassName="account-reviews-page__pagination-current"
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </>
           )}
         </div>
