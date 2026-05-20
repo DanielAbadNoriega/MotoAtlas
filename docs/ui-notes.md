@@ -35,6 +35,10 @@ Filtros disponibles:
 
 Limitación actual: la tendencia no usa una serie temporal real; es una señal simple basada en rating y volumen de reviews. No se muestran reviews `pending`, `rejected` ni `hidden`.
 
+## Comunidad por moto — Reviews
+
+La ruta `#/comunidad/[motorcycleId]` muestra las reviews aprobadas en un slider horizontal con scroll/snap. En mobile cada card ocupa el ancho útil disponible para evitar overflow global y mantener lectura cómoda.
+
 ## Mi cuenta — Reviews
 
 La ruta `#/cuenta/reviews` muestra todas las reviews asociadas al usuario autenticado.

@@ -215,8 +215,11 @@ describe('MotorcycleCommunityPage', () => {
 
     expect(within(slider).getByText('Fantástica para viajar con equipaje.')).toBeInTheDocument();
     expect(within(slider).getByText('Muy equilibrada, aunque alta para ciudad.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Ver reviews anteriores/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Ver más reviews/i })).toBeInTheDocument();
+    const previousButton = screen.getByRole('button', { name: /Ver reviews anteriores/i });
+    const nextButton = screen.getByRole('button', { name: /Ver reviews siguientes/i });
+
+    expect(within(previousButton).getByText('chevron_left')).toHaveClass('material-symbols-outlined');
+    expect(within(nextButton).getByText('chevron_right')).toHaveClass('material-symbols-outlined');
   });
 
   it('el listado horizontal no crashea con muchas reviews aprobadas', async () => {

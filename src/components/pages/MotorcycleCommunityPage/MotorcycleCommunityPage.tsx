@@ -310,14 +310,10 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
               {reviews.length > 1 ? (
                 <div className="motorcycle-community__review-controls" aria-label="Navegación de reviews">
                   <button type="button" onClick={() => scrollReviews(-1)} aria-label="Ver reviews anteriores">
-                    <span className="material-symbols-outlined" aria-hidden="true">
-                      arrow_back
-                    </span>
+                    <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
                   </button>
-                  <button type="button" onClick={() => scrollReviews(1)} aria-label="Ver más reviews">
-                    <span className="material-symbols-outlined" aria-hidden="true">
-                      arrow_forward
-                    </span>
+                  <button type="button" onClick={() => scrollReviews(1)} aria-label="Ver reviews siguientes">
+                    <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
                   </button>
                 </div>
               ) : null}

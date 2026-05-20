@@ -77,7 +77,7 @@
   }
 
   &__eyebrow,
-  &__section-header span,
+  &__section-header span:not(.material-symbols-outlined),
   &__insights > div > span {
     @include label-caps;
 
@@ -148,6 +148,7 @@
     margin-top: clamp(-3.6rem, -4vw, -1.5rem);
     position: relative;
     z-index: 2;
+    text-align: center;
 
     .button {
       @include label-caps;
@@ -351,6 +352,11 @@
     margin: 0;
   }
 
+  &__reviews {
+    min-width: 0;
+    overflow: hidden;
+  }
+
   &__review-controls {
     display: flex;
     gap: 0.55rem;
@@ -383,16 +389,29 @@
       &:active {
         transform: scale(0.95);
       }
+
+      .material-symbols-outlined {
+        -webkit-font-feature-settings: 'liga';
+        font-feature-settings: 'liga';
+        font-size: 1.35rem;
+        line-height: 1;
+      }
     }
   }
 
   &__review-viewport {
-    margin-inline: -0.25rem;
+    inline-size: 100%;
+    margin-inline: 0;
+    max-inline-size: 100%;
     overflow-x: auto;
-    padding: 0.25rem 0.25rem 0.9rem;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    padding: 0.25rem 0.25rem 1rem;
+    scroll-behavior: smooth;
     scroll-padding-inline: 0.25rem;
     scroll-snap-type: x mandatory;
     scrollbar-color: rgba($color-outline, 0.34) transparent;
+    -webkit-overflow-scrolling: touch;
 
     &::-webkit-scrollbar {
       height: 0.4rem;
@@ -409,8 +428,32 @@
   }
 
   &__review-list {
+    align-items: stretch;
     display: flex;
-    gap: 1rem;
+    gap: clamp(0.9rem, 2vw, 1.25rem);
+    inline-size: max-content;
+    min-inline-size: 100%;
+  }
+
+  &__review-list > .motorcycle-review-card {
+    flex: 0 0 clamp(18rem, 42vw, 28rem);
+    max-inline-size: 28rem;
+    min-block-size: 100%;
+    scroll-snap-align: start;
+
+    > header,
+    > header > div:first-child,
+    > header > div:first-child > div {
+      min-width: 0;
+    }
+
+    h3,
+    small,
+    > p,
+    dd,
+    li {
+      overflow-wrap: anywhere;
+    }
   }
 
   &__review-card {
@@ -659,6 +702,15 @@
 
     &__review-controls {
       align-self: flex-start;
+    }
+
+    &__review-list {
+      gap: 0.85rem;
+    }
+
+    &__review-list > .motorcycle-review-card {
+      flex-basis: min(100%, calc(100vw - #{2 * $margin-mobile}));
+      max-inline-size: calc(100vw - #{2 * $margin-mobile});
     }
 
     &__review-pros-cons,
