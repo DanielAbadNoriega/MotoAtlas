@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { bikeCatalog } from './data/bikes';
 import { getMotorcycles } from './services/motorcycleService';
-import { getApprovedReviewsByMotorcycleId } from './services/motorcycleReviewService';
+import { getApprovedCommunityReviews, getApprovedReviewsByMotorcycleId } from './services/motorcycleReviewService';
 import { bikeFixtures } from './test/fixtures/bikes';
 
 vi.mock('./services/motorcycleService', () => ({
@@ -13,12 +13,14 @@ vi.mock('./services/motorcycleService', () => ({
 
 vi.mock('./services/motorcycleReviewService', () => ({
   createReview: vi.fn(),
+  getApprovedCommunityReviews: vi.fn(),
   getApprovedReviewsByMotorcycleId: vi.fn(),
   getReviewsByUserId: vi.fn(),
 }));
 
 const getMotorcyclesMock = vi.mocked(getMotorcycles);
 const getApprovedReviewsMock = vi.mocked(getApprovedReviewsByMotorcycleId);
+const getApprovedCommunityReviewsMock = vi.mocked(getApprovedCommunityReviews);
 
 async function renderApp() {
   const view = render(<App />);
@@ -33,8 +35,10 @@ describe('App navigation with mocked motorcycleService', () => {
     window.localStorage.clear();
     getMotorcyclesMock.mockReset();
     getApprovedReviewsMock.mockReset();
+    getApprovedCommunityReviewsMock.mockReset();
     getMotorcyclesMock.mockResolvedValue({ motorcycles: bikeFixtures, source: 'supabase' });
     getApprovedReviewsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
   });
 
   it('does not depend on real Supabase data', async () => {
@@ -172,6 +176,17 @@ describe('App navigation with mocked motorcycleService', () => {
 
     expect(await screen.findByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
     expect(document.title).toBe('Comunidad MotoAtlas | Reviews y motos mejor valoradas');
+  });
+
+  it('renderiza el archivo público de reviews desde #/comunidad/reviews', async () => {
+    window.location.hash = '#/comunidad/reviews';
+
+    await renderApp();
+
+    expect(await screen.findByRole('heading', { name: /Reviews de la comunidad/i })).toBeInTheDocument();
+    expect(document.title).toBe('Reviews de la comunidad | MotoAtlas');
+    expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1);
+    expect(getApprovedReviewsMock).not.toHaveBeenCalledWith('reviews');
   });
 
   it('mantiene #/motos-mejor-valoradas como alias sin SEO duplicado', async () => {

@@ -8,6 +8,7 @@ import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
+import { CommunityReviewsPage } from './components/pages/CommunityReviewsPage';
 import { MotorcycleCommunityPage } from './components/pages/MotorcycleCommunityPage';
 import { SearchPage } from './components/pages/SearchPage';
 import {
@@ -38,6 +39,7 @@ import {
   isAccountReviewsRoute,
   isAccountRoute,
   isAccountRequestsRoute,
+  isCommunityReviewsRoute,
   isCommunityRoute,
   isComparatorRoute,
   isLoginRoute,
@@ -45,7 +47,7 @@ import {
   isSearchRoute,
   isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -100,7 +102,8 @@ export function App() {
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
-  const isCommunityLandingPage = isCommunityPage && !communityMotorcycleId;
+  const isCommunityReviewsPage = isCommunityReviewsRoute(route);
+  const isCommunityLandingPage = isCommunityPage && !communityMotorcycleId && !isCommunityReviewsPage;
   const routeComparatorSelection = getComparatorSelectionFromRoute(route, motorcycles);
   const persistedComparatorIds = isComparatorPage && routeComparatorSelection.rawIds.length === 0 && legacyComparisonIds.length === 0
     ? loadCompareQueue()
@@ -171,6 +174,11 @@ export function App() {
       return;
     }
 
+    if (isCommunityReviewsPage) {
+      applySeoMetadata(buildCommunityReviewsSeoMetadata());
+      return;
+    }
+
     if (isTopRatedPage) {
       applySeoMetadata(buildTopRatedSeoMetadata());
       return;
@@ -196,7 +204,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isCommunityLandingPage, isCommunityPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -221,6 +229,8 @@ export function App() {
         />
       ) : isCommunityLandingPage ? (
         <TopRatedMotorcyclesPage motorcycles={motorcycles} />
+      ) : isCommunityReviewsPage ? (
+        <CommunityReviewsPage />
       ) : isCommunityPage ? (
         <MotorcycleCommunityPage bike={communityBike} motorcycleId={communityMotorcycleId} />
       ) : bikeDetailId ? (

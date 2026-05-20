@@ -26,6 +26,12 @@ import {
   segmentLabels,
   type BikeA2Status,
 } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import {
+  getAvailableMotorcycleSegmentFilterOptions,
+  getMotorcycleLicenseFilterLabel,
+  getMotorcycleSegmentFilterTargetSegments,
+  motorcycleLicenseFilterOptions,
+} from '../../../shared/filters/motorcycleFilterOptions';
 import { getComparatorHashFromBikes, getSearchTextFromRoute } from '../../../shared/routing/routeUtils';
 import { getDataQualityLabel, isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { AccountPagination } from '../AccountPage/AccountPagination';
@@ -51,25 +57,6 @@ const currencyFormatter = new Intl.NumberFormat('es-ES', {
   style: 'currency',
 });
 
-const segmentIcons: Partial<Record<BikeSegment, string>> = {
-  adventure: 'map',
-  cruiser: 'airline_seat_recline_extra',
-  custom: 'construction',
-  'dual-sport': 'hiking',
-  enduro: 'forest',
-  hypernaked: 'bolt',
-  naked: 'motorcycle',
-  'neo-retro': 'auto_awesome',
-  retro: 'history',
-  scooter: 'electric_moped',
-  scrambler: 'terrain',
-  sport: 'speed',
-  'sport-touring': 'route',
-  supersport: 'sports_motorsports',
-  touring: 'travel_explore',
-  trail: 'landscape',
-};
-
 const featureLabels: Record<keyof BikeFeatures, string> = {
   absCornering: 'ABS curva',
   cruiseControl: 'Control crucero',
@@ -88,12 +75,6 @@ const useLabels: Record<keyof BikeUseScores, string> = {
   passenger: 'Pasajero',
   sport: 'Deportivo',
   touring: 'Viaje',
-};
-
-const a2FilterLabels: Record<BikeA2Status, string> = {
-  A: 'Solo A',
-  A2: 'A2',
-  A2_LIMITABLE: 'A2 limitable',
 };
 
 type RangeField = 'price' | 'power' | 'weight' | 'seatHeight';
@@ -222,6 +203,10 @@ function getRangeFields(field: RangeField) {
   return ['minSeatHeight', 'maxSeatHeight'] as const;
 }
 
+function isLicenseFilterValue(value: BikeA2Status): value is BikeLicense {
+  return value === 'A2' || value === 'A';
+}
+
 function RangeFilter({
   field,
   filters,
@@ -324,6 +309,10 @@ export function AdvancedFilters({
   segmentOptions: readonly BikeSegment[];
 }) {
   const panelClasses = ['search-page__filters', isOpen ? 'search-page__filters--open' : ''].filter(Boolean).join(' ');
+  const visibleSegmentOptions = useMemo(
+    () => getAvailableMotorcycleSegmentFilterOptions(segmentOptions),
+    [segmentOptions],
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -400,21 +389,37 @@ export function AdvancedFilters({
 
           <FilterGroup title="Segmento">
             <div className="search-page__segment-grid">
-              {segmentOptions.map((segment) => {
-                const isSelected = filters.segments.includes(segment);
+              {visibleSegmentOptions.map((option) => {
+                const targetSegments = getMotorcycleSegmentFilterTargetSegments(option.value, segmentOptions);
+                const isSelected = option.value === 'all'
+                  ? filters.segments.length === 0
+                  : targetSegments.length > 0 && targetSegments.every((segment) => filters.segments.includes(segment));
+
+                const toggleSegment = () => {
+                  if (option.value === 'all') {
+                    onChange({ segments: [] });
+                    return;
+                  }
+
+                  const nextSegments = isSelected
+                    ? filters.segments.filter((segment) => !targetSegments.includes(segment))
+                    : [...filters.segments, ...targetSegments.filter((segment) => !filters.segments.includes(segment))];
+
+                  onChange({ segments: nextSegments });
+                };
 
                 return (
                   <button
                     className={isSelected ? 'search-page__option-card search-page__option-card--active' : 'search-page__option-card'}
-                    key={segment}
+                    key={option.value}
                     type="button"
                     aria-pressed={isSelected}
-                    onClick={() => onChange({ segments: toggleArrayValue(filters.segments, segment) })}
+                    onClick={toggleSegment}
                   >
                     <span className="material-symbols-outlined" aria-hidden="true">
-                      {segmentIcons[segment] ?? 'motorcycle'}
+                      {option.icon}
                     </span>
-                    {segmentLabels[segment]}
+                    {option.label}
                   </button>
                 );
               })}
@@ -423,33 +428,36 @@ export function AdvancedFilters({
 
           <FilterGroup title="Carnet">
             <div className="search-page__pill-list">
-              {(['A2', 'A'] satisfies BikeLicense[]).map((license) => {
-                const isSelected = filters.licenses.includes(license);
+              {motorcycleLicenseFilterOptions.map((option) => {
+                if (isLicenseFilterValue(option.value)) {
+                  const license = option.value;
+                  const isSelected = filters.licenses.includes(license);
 
-                return (
-                  <button
-                    className={isSelected ? 'search-page__pill search-page__pill--active' : 'search-page__pill'}
-                    key={license}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => onChange({ licenses: toggleArrayValue(filters.licenses, license) })}
-                  >
-                    Carnet {license}
-                  </button>
-                );
-              })}
-              {(['A2_LIMITABLE'] satisfies BikeA2Status[]).map((status) => {
+                  return (
+                    <button
+                      className={isSelected ? 'search-page__pill search-page__pill--active' : 'search-page__pill'}
+                      key={option.value}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => onChange({ licenses: toggleArrayValue(filters.licenses, license) })}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                }
+
+                const status = option.value;
                 const isSelected = filters.a2Statuses.includes(status);
 
                 return (
                   <button
                     className={isSelected ? 'search-page__pill search-page__pill--active' : 'search-page__pill'}
-                    key={status}
+                    key={option.value}
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => onChange({ a2Statuses: toggleArrayValue(filters.a2Statuses, status) })}
                   >
-                    {a2FilterLabels[status]}
+                    {option.label}
                   </button>
                 );
               })}
@@ -762,7 +770,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
     filters.licenses.forEach((license) => {
       chips.push({
         id: `license-${license}`,
-        label: `Carnet ${license}`,
+        label: getMotorcycleLicenseFilterLabel(license),
         onRemove: () => updateFilters({ licenses: filters.licenses.filter((item) => item !== license) }),
       });
     });
@@ -770,7 +778,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
     filters.a2Statuses.forEach((status) => {
       chips.push({
         id: `a2-${status}`,
-        label: a2FilterLabels[status],
+        label: getMotorcycleLicenseFilterLabel(status),
         onRemove: () => updateFilters({ a2Statuses: filters.a2Statuses.filter((item) => item !== status) }),
       });
     });

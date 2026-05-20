@@ -5,6 +5,7 @@ import {
   getBikeCanonicalPath,
   getBikeSeoSlug,
   getCommunityCanonicalPath,
+  getCommunityReviewsCanonicalPath,
   getCompareCanonicalPath,
   getCompareSeoSlug,
   getStaticInfoCanonicalPath,
@@ -196,6 +197,25 @@ export function buildCommunityLandingSeoMetadata(): SeoMetadata {
   };
 }
 
+export function buildCommunityReviewsSeoMetadata(): SeoMetadata {
+  const title = `Reviews de la comunidad | ${siteName}`;
+  const description = 'Opiniones reales de propietarios, kilómetros, uso, pros y contras para ayudarte a elegir mejor tu próxima moto.';
+  const canonicalPath = getCommunityReviewsCanonicalPath();
+
+  return {
+    canonicalUrl: absoluteUrl(canonicalPath),
+    description,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      description,
+      name: title,
+      url: absoluteUrl(canonicalPath),
+    },
+    title,
+  };
+}
+
 export function buildTopRatedSeoMetadata(): SeoMetadata {
   return buildCommunityLandingSeoMetadata();
 }
@@ -293,6 +313,7 @@ export function getSitemapUrls(motorcycles: readonly Bike[]) {
     siteBaseUrl,
     `${siteBaseUrl}/buscador`,
     `${siteBaseUrl}/comunidad`,
+    `${siteBaseUrl}${getCommunityReviewsCanonicalPath()}`,
     `${siteBaseUrl}/metodologia`,
     `${siteBaseUrl}/fuentes-datos`,
     `${siteBaseUrl}/solicitar-modelo`,
@@ -314,4 +335,4 @@ export function buildRobotsTxt() {
   return `User-agent: *\nAllow: /\nSitemap: ${siteBaseUrl}/sitemap.xml\n`;
 }
 
-export { getBikeCanonicalPath, getBikeSeoSlug, getCommunityCanonicalPath, getCompareCanonicalPath, getCompareSeoSlug };
+export { getBikeCanonicalPath, getBikeSeoSlug, getCommunityCanonicalPath, getCommunityReviewsCanonicalPath, getCompareCanonicalPath, getCompareSeoSlug };

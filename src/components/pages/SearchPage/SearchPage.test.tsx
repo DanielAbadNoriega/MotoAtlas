@@ -413,6 +413,7 @@ describe('AdvancedFilters', () => {
     await user.click(screen.getByRole('button', { name: 'BMW' }));
     await user.click(screen.getByRole('button', { name: 'Naked' }));
     await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
+    await user.click(screen.getByRole('button', { name: 'A2 limitable' }));
     fireEvent.change(screen.getByLabelText('Precio mínimo'), { target: { value: '10000' } });
     fireEvent.change(screen.getByLabelText('Precio máximo'), { target: { value: '15000' } });
     fireEvent.change(screen.getByLabelText('Potencia mínimo'), { target: { value: '90' } });
@@ -421,10 +422,38 @@ describe('AdvancedFilters', () => {
     expect(onChange).toHaveBeenCalledWith({ brands: ['BMW'] });
     expect(onChange).toHaveBeenCalledWith({ segments: ['naked'] });
     expect(onChange).toHaveBeenCalledWith({ licenses: ['A2'] });
+    expect(onChange).toHaveBeenCalledWith({ a2Statuses: ['A2_LIMITABLE'] });
     expect(onChange).toHaveBeenCalledWith({ minPrice: '10000' });
     expect(onChange).toHaveBeenCalledWith({ maxPrice: '15000' });
     expect(onChange).toHaveBeenCalledWith({ minPower: '90' });
     expect(onChange).toHaveBeenCalledWith({ maxWeight: '220' });
+  });
+
+  it('uses unified segment icons and carnet labels', () => {
+    render(
+      <AdvancedFilters
+        brandOptions={['BMW']}
+        filters={initialSearchFilters}
+        isOpen
+        onChange={vi.fn()}
+        onClose={vi.fn()}
+        onReset={vi.fn()}
+        segmentOptions={['sport', 'touring', 'trail']}
+      />,
+    );
+
+    const sportButton = screen.getByRole('button', { name: 'Sport' });
+    const touringButton = screen.getByRole('button', { name: 'Touring' });
+    const carnetGroup = screen.getByText('Carnet').closest('details');
+
+    expect(within(sportButton).getByText('speed')).toBeInTheDocument();
+    expect(within(touringButton).getByText('explore')).toBeInTheDocument();
+    expect(carnetGroup).toBeInTheDocument();
+    expect(within(carnetGroup as HTMLElement).getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Carnet A2',
+      'Carnet A',
+      'A2 limitable',
+    ]);
   });
 
   it('can reset and close filters', async () => {

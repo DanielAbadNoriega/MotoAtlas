@@ -39,11 +39,21 @@ Limitación actual: la tendencia no usa una serie temporal real; es una señal s
 
 La ruta `#/buscador` pagina el listado a 9 motos por página. La paginación se calcula después de aplicar búsqueda, filtros y ordenación, mientras el contador conserva el total filtrado.
 
+Los filtros de segmento y carnet comparten labels/iconos con `#/comunidad/reviews`: segmentos principales con Material Symbols y carnet en orden `Carnet A2`, `Carnet A`, `A2 limitable`.
+
 El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante.
 
 ## Comunidad landing
 
 La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. `Top Rated` ya no aparece como bloque separado en esta landing.
+
+## Comunidad — Reviews públicas
+
+La ruta `#/comunidad/reviews` funciona como archivo público de reviews `approved`: aplica filtros en cliente por marca/modelo, segmento, carnet, rating, uso principal y orden, y pagina a 9 reviews por página.
+
+Reutiliza `AccountReviewCard` con variante `community`: muestra alias público, rating con estrella, metadatos compactos con iconos y oculta el badge de estado. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas, fotos de usuario, destacadas del mes e insights quedan para fases futuras.
+
+Los filtros de segmento/carnet usan las mismas constantes visuales que el buscador; `Sport` usa `speed`, `Touring` usa `explore` y el carnet se presenta como `Carnet A2`, `Carnet A`, `A2 limitable`.
 
 ## Comunidad por moto — Reviews
 

@@ -4,6 +4,8 @@ import {
   getBikeCanonicalPath,
   getBikeDetailIdFromRoute,
   getBikeSeoSlug,
+  getCommunityMotorcycleIdFromRoute,
+  getCommunityReviewsCanonicalPath,
   getCompareCanonicalPath,
   getComparatorHashFromBikes,
   getComparatorSelectionFromRoute,
@@ -14,6 +16,7 @@ import {
   isAccountReviewsRoute,
   isAccountRequestsRoute,
   isAccountRoute,
+  isCommunityReviewsRoute,
   isLoginRoute,
   isRegisterRoute,
   isTopRatedRoute,
@@ -67,6 +70,14 @@ describe('routeUtils SEO routes', () => {
     expect(isTopRatedRoute('#/motos-mejor-valoradas')).toBe(true);
     expect(isTopRatedRoute('/motos-mejor-valoradas')).toBe(true);
     expect(isTopRatedRoute('#/motos/test-bmw-f-900-gs')).toBe(false);
+  });
+
+  it('detecta el archivo público de reviews de comunidad sin tratarlo como moto', () => {
+    expect(getCommunityReviewsCanonicalPath()).toBe('/comunidad/reviews');
+    expect(isCommunityReviewsRoute('#/comunidad/reviews')).toBe(true);
+    expect(isCommunityReviewsRoute('/comunidad/test-bmw-f-900-gs')).toBe(false);
+    expect(getCommunityMotorcycleIdFromRoute('#/comunidad/reviews', bikeFixtures)).toBeUndefined();
+    expect(getCommunityMotorcycleIdFromRoute('#/comunidad/test-bmw-f-900-gs', bikeFixtures)).toBe('test-bmw-f-900-gs');
   });
 
   it('genera y lee rutas de búsqueda desde la home', () => {

@@ -133,7 +133,7 @@ describe('AccountReviewsPage', () => {
 
     expect(within(card).getByRole('heading', { name: /BMW F 900 GS 1 2024/i })).toBeInTheDocument();
     expect(within(card).getByText('Publicada')).toBeInTheDocument();
-    expect(within(card).getByText(/5\/5 rating/i)).toBeInTheDocument();
+    expect(within(card).getByLabelText('Rating 5 de 5')).toBeInTheDocument();
     expect(within(card).getByText('Viaje')).toBeInTheDocument();
     expect(within(card).getByText('12.500 km')).toBeInTheDocument();
     expect(within(card).getByText(/La entrega de potencia/i)).toBeInTheDocument();

@@ -259,9 +259,12 @@ function ActiveCommunities({ ranking }: { ranking: readonly TopRatedMotorcycle[]
 function RecentReviews({ isLoading, recentReviews }: { isLoading: boolean; recentReviews: readonly RecentReviewItem[] }) {
   return (
     <section className="top-rated__recent-reviews" aria-labelledby="top-rated-recent-title">
-      <div className="top-rated__community-heading">
-        <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-        <h2 id="top-rated-recent-title">Reviews recientes</h2>
+      <div className="top-rated__recent-header">
+        <div className="top-rated__community-heading">
+          <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+          <h2 id="top-rated-recent-title">Reviews recientes</h2>
+        </div>
+        <a href="#/comunidad/reviews">Ver todas las reviews</a>
       </div>
       <div className="top-rated__recent-list">
         {recentReviews.length > 0 ? recentReviews.slice(0, 3).map(({ bike, review }) => (

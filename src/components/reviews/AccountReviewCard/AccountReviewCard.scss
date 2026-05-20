@@ -50,6 +50,30 @@
   }
 }
 
+.account-review-card--community {
+  background:
+    linear-gradient(135deg, rgba($color-surface-container-high, 0.72), rgba($color-surface-low, 0.92)),
+    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.08), transparent 18rem);
+  grid-template-columns: minmax(12rem, 0.28fr) minmax(0, 1fr);
+  min-height: 18rem;
+
+  .account-review-card__body {
+    gap: 1rem;
+  }
+
+  .account-review-card__header {
+    align-items: flex-start;
+  }
+
+  .account-review-card__kicker {
+    margin-bottom: 0.5rem;
+  }
+
+  .account-review-card__comment {
+    -webkit-line-clamp: 4;
+  }
+}
+
 .account-review-card__media {
   background: #000;
   min-height: 100%;
@@ -159,10 +183,49 @@
 }
 
 .account-review-card__rating {
+  align-items: center;
   color: $color-accent-container;
+  display: inline-flex;
+  gap: 0.35rem;
   font-size: 0.72rem;
   font-weight: 900;
   padding-inline: 0;
+
+  span {
+    color: $color-accent;
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+}
+
+.account-review-card__author {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+
+  > span {
+    align-items: center;
+    background: rgba($color-surface-bright, 0.18);
+    border: 1px solid rgba($color-outline-variant, 0.36);
+    border-radius: 999px;
+    color: $color-on-surface;
+    display: inline-flex;
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    font-weight: 900;
+    height: 1.8rem;
+    justify-content: center;
+    width: 1.8rem;
+  }
+
+  strong {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.86);
+    font-size: 0.72rem;
+    text-transform: none;
+  }
 }
 
 .account-review-card__specs {
@@ -188,6 +251,31 @@
     font-family: $font-headline;
     font-weight: 800;
     margin: 0;
+  }
+}
+
+.account-review-card__meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    @include label-caps;
+
+    align-items: center;
+    color: rgba($color-on-surface-variant, 0.78);
+    display: inline-flex;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+  }
+
+  .material-symbols-outlined {
+    color: rgba($color-accent-container, 0.88);
+    font-size: 1rem;
   }
 }
 
@@ -271,11 +359,16 @@
   .account-review-card {
     grid-template-columns: minmax(14rem, 0.34fr) minmax(0, 1fr);
   }
+
+  .account-review-card--community {
+    grid-template-columns: minmax(12rem, 0.32fr) minmax(0, 1fr);
+  }
 }
 
 @media (max-width: $breakpoint-mobile) {
   .account-review-card,
   .account-review-card--compact,
+  .account-review-card--community,
   .account-review-card__specs {
     grid-template-columns: 1fr;
   }
