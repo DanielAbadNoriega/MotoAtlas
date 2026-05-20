@@ -157,6 +157,7 @@
 }
 
 .account-page__dashboard {
+  align-items: start;
   display: grid;
   gap: 2rem;
   grid-template-columns: minmax(18rem, 4fr) minmax(0, 8fr);
@@ -166,6 +167,10 @@
 .account-page__main {
   display: grid;
   gap: 1.5rem;
+}
+
+.account-page__sidebar {
+  align-self: start;
 }
 
 .account-page__main {
