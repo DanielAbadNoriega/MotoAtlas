@@ -9,7 +9,7 @@
     linear-gradient(180deg, rgba($color-surface-lowest, 0.55), rgba($color-surface, 0));
 
   &__hero {
-    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.45) 48%, transparent 100%), url('../../../assets/comparison-hero.png') center / cover;
+    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0) 48%, transparent 100%), url('../../../assets/comparison-hero.png') center / cover;
     overflow: hidden;
     padding-block: clamp(4rem, 10vw, 8rem);
     position: relative;
@@ -45,6 +45,7 @@
 
       margin: 1rem auto 1.5rem;
       max-width: 760px;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.88);
     }
 
     p {
