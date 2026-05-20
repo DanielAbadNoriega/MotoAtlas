@@ -9,10 +9,7 @@
     linear-gradient(180deg, rgba($color-surface-lowest, 0.55), rgba($color-surface, 0));
 
   &__hero {
-    background:
-      linear-gradient(180deg, rgba($color-surface-lowest, 0.72), rgba($color-surface, 0.94)),
-      radial-gradient(circle at 50% 20%, rgba($color-accent, 0.18), transparent 28rem),
-      url('../../../assets/comparison-hero.png') center / cover;
+    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.45) 48%, transparent 100%), url('../../../assets/comparison-hero.png') center / cover;
     overflow: hidden;
     padding-block: clamp(4rem, 10vw, 8rem);
     position: relative;
