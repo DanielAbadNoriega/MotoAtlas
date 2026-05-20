@@ -28,6 +28,7 @@ import {
 } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes, getSearchTextFromRoute } from '../../../shared/routing/routeUtils';
 import { getDataQualityLabel, isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
+import { AccountPagination } from '../AccountPage/AccountPagination';
 import './SearchPage.scss';
 
 const sortLabels: Record<SortOption, string> = {
@@ -43,6 +44,7 @@ const sortLabels: Record<SortOption, string> = {
 
 const sortOptions = Object.entries(sortLabels) as [SortOption, string][];
 const numberFormatter = new Intl.NumberFormat('es-ES');
+const SEARCH_RESULTS_PER_PAGE = 9;
 const currencyFormatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
   maximumFractionDigits: 0,
@@ -560,7 +562,7 @@ export function BikeResultCard({
   const hasPendingPrice = isPendingPrice(bike.priceEur, bike.priceSource);
 
   return (
-    <article className={isSelected ? 'search-result-card search-result-card--selected' : 'search-result-card'}>
+    <article className={isSelected ? 'search-result-card search-result-card--selected' : 'search-result-card'} data-testid="search-result-card">
       <div className="search-result-card__media">
         <MotorcycleImage motorcycle={bike} loading="lazy" />
         <div className="search-result-card__badges">
@@ -709,6 +711,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
     isBrowseSearchHash(routeHash) ? [] : loadCompareQueue(),
   );
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectionWarning, setSelectionWarning] = useState('');
   const isInitialQueueSync = useRef(true);
 
@@ -716,10 +719,12 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
   const segmentOptions = useMemo(() => [...new Set(motorcycles.map((bike) => bike.segment))].sort(), [motorcycles]);
 
   const updateFilters = (next: Partial<SearchFilters>) => {
+    setCurrentPage(1);
     setFilters((current) => ({ ...current, ...next }));
   };
 
   const clearFilters = () => {
+    setCurrentPage(1);
     setFilters(initialSearchFilters);
     setSelectionWarning('');
   };
@@ -829,6 +834,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
       return;
     }
 
+    setCurrentPage(1);
     setFilters((current) => (current.text === routeSearchText ? current : { ...current, text: routeSearchText }));
   }, [routeHash]);
 
@@ -867,6 +873,8 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
   }, [routeHash]);
 
   const filteredBikes = useMemo(() => filterMotorcycles(motorcycles, filters), [filters, motorcycles]);
+  const totalPages = Math.max(1, Math.ceil(filteredBikes.length / SEARCH_RESULTS_PER_PAGE));
+  const paginatedBikes = filteredBikes.slice((currentPage - 1) * SEARCH_RESULTS_PER_PAGE, currentPage * SEARCH_RESULTS_PER_PAGE);
 
   const selectedBikes = useMemo(
     () => selectedBikeIds.map((id) => motorcycles.find((bike) => bike.id === id)).filter((bike): bike is Bike => bike !== undefined),
@@ -885,6 +893,12 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
       return nextSelection.selectedIds;
     });
   };
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <main className="search-page" aria-labelledby="search-page-title">
@@ -945,7 +959,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
           {selectionWarning ? <p className="search-page__warning">{selectionWarning}</p> : null}
 
           <div className="search-page__grid">
-            {filteredBikes.map((bike) => (
+            {paginatedBikes.map((bike) => (
               <BikeResultCard
                 bike={bike}
                 isSelected={selectedBikeIds.includes(bike.id)}
@@ -962,6 +976,15 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
               <Button onClick={clearFilters}>Resetear filtros</Button>
             </div>
           ) : null}
+
+          <AccountPagination
+            ariaLabel="Paginación de motos"
+            className="search-page__pagination"
+            currentClassName="search-page__pagination-current"
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </section>
 

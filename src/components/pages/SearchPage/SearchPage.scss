@@ -682,6 +682,53 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  &__pagination {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    justify-content: center;
+    margin-top: 2rem;
+
+    button {
+      align-items: center;
+      background: rgba($color-surface-container, 0.92);
+      border: 1px solid rgba($color-outline-variant, 0.36);
+      border-radius: $radius-md;
+      color: rgba($color-on-surface-variant, 0.9);
+      cursor: pointer;
+      display: inline-flex;
+      font-family: $font-mono;
+      font-weight: 800;
+      height: 2.5rem;
+      justify-content: center;
+      min-width: 2.5rem;
+      transition:
+        background $transition-base,
+        border-color $transition-base,
+        color $transition-base;
+
+      &:hover:not(:disabled),
+      &:focus-visible:not(:disabled) {
+        background: rgba($color-surface-bright, 0.5);
+        border-color: rgba($color-accent, 0.52);
+        color: $color-on-surface;
+        outline: 0;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.42;
+      }
+    }
+  }
+
+  &__pagination-current {
+    background: $color-accent !important;
+    border-color: $color-accent !important;
+    color: white !important;
+  }
+
   &__empty {
     @include dashboard-card;
 
@@ -1234,6 +1281,10 @@
 
     &__grid {
       grid-template-columns: 1fr;
+    }
+
+    &__pagination button {
+      min-width: 2.25rem;
     }
 
     &__range-grid {

@@ -23,6 +23,17 @@ function renderRealSearchPage() {
   return render(<SearchPage motorcycles={realMotorcycles} routeHash="#/buscador?browse=1" />);
 }
 
+function buildPaginatedMotorcycles(count: number) {
+  return Array.from({ length: count }, (_, index) => ({
+    ...bikeFixtures[index % bikeFixtures.length],
+    id: `pagination-bike-${index + 1}`,
+    brand: index < 12 ? 'Pagination' : 'Other',
+    model: `Pagination ${String(index + 1).padStart(2, '0')}`,
+    priceEur: index + 1,
+    year: 2020 + index,
+  })) as Bike[];
+}
+
 describe('SearchPage', () => {
   it('renders the desktop advanced filter sidebar', () => {
     renderSearchPage();
@@ -133,6 +144,67 @@ describe('SearchPage', () => {
     await user.type(screen.getByLabelText(/Buscar por marca o modelo/i), 'zzzz');
 
     expect(screen.getByRole('heading', { name: /No hay motos con esos filtros/i })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /Paginación de motos/i })).not.toBeInTheDocument();
+  });
+
+  it('pagina el listado a 9 motos por página y mantiene el contador total filtrado', async () => {
+    const user = userEvent.setup();
+    render(<SearchPage motorcycles={buildPaginatedMotorcycles(25)} routeHash="#/buscador?browse=1" />);
+
+    expect(screen.getByRole('heading', { name: /25 resultados encontrados/i })).toBeInTheDocument();
+    expect(screen.getAllByTestId('search-result-card')).toHaveLength(9);
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: 'Primera página' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Página anterior' })).toBeDisabled();
+    expect(screen.queryByRole('heading', { name: /Pagination 10/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+
+    expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getAllByTestId('search-result-card')).toHaveLength(9);
+    expect(screen.getByRole('heading', { name: /Pagination 10/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Última página' }));
+
+    expect(screen.getByRole('button', { name: 'Página 3' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getAllByTestId('search-result-card')).toHaveLength(7);
+    expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Última página' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Página anterior' }));
+    expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: 'Primera página' }));
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('no muestra paginación con 9 motos o menos', () => {
+    render(<SearchPage motorcycles={buildPaginatedMotorcycles(9)} routeHash="#/buscador?browse=1" />);
+
+    expect(screen.getAllByTestId('search-result-card')).toHaveLength(9);
+    expect(screen.queryByRole('navigation', { name: /Paginación de motos/i })).not.toBeInTheDocument();
+  });
+
+  it('limita los números visibles a 5 y vuelve a página 1 al cambiar filtros u ordenación', async () => {
+    const user = userEvent.setup();
+    render(<SearchPage motorcycles={buildPaginatedMotorcycles(55)} routeHash="#/buscador?browse=1" />);
+
+    expect(screen.getAllByRole('button', { name: /^Página \d+$/ })).toHaveLength(5);
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: 'Pagination' }));
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('heading', { name: /12 resultados encontrados/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    await user.type(screen.getByLabelText(/Buscar por marca o modelo/i), 'Pagination');
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    await user.selectOptions(screen.getByLabelText(/Ordenar por/i), 'year-desc');
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('does not allow selecting more than 3 motorcycles for comparison', async () => {
@@ -152,8 +224,9 @@ describe('SearchPage', () => {
     renderRealSearchPage();
 
     expect(screen.getByRole('heading', { name: new RegExp(`${realMotorcycles.length} resultados encontrados`, 'i') })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /F 900 GS/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /R 1300 GS/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('search-result-card')).toHaveLength(9);
   });
 
   it('filters real motorcycles by trail segment', async () => {
