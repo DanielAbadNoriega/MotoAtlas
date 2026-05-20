@@ -233,7 +233,9 @@ describe('App navigation with mocked motorcycleService', () => {
     await user.click(screen.getByRole('link', { name: /Modificar comparativa/i }));
 
     expect(await screen.findByRole('heading', { name: /Encuentra tu próxima moto/i })).toBeInTheDocument();
-    expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
+    expect(screen.getAllByTestId('compare-slot-filled')).toHaveLength(3);
+    expect(screen.queryByTestId('compare-slot-empty')).not.toBeInTheDocument();
+    expect(screen.queryByText(/3\/3 motos seleccionadas/i)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Comparar \(3\)/i })).toBeInTheDocument();
   });
 

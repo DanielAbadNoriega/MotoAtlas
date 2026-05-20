@@ -216,7 +216,9 @@ describe('SearchPage', () => {
     await user.click(screen.getAllByRole('button', { name: /^Comparar$/i })[0]);
     await user.click(screen.getAllByRole('button', { name: /^Comparar$/i })[0]);
 
-    expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
+    expect(screen.getAllByTestId('compare-slot-filled')).toHaveLength(3);
+    expect(screen.queryByTestId('compare-slot-empty')).not.toBeInTheDocument();
+    expect(screen.queryByText(/motos seleccionadas/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Solo puedes seleccionar hasta 3 motos/i)).toBeInTheDocument();
   });
 
@@ -475,12 +477,16 @@ describe('AdvancedFilters', () => {
 
 describe('CompareDrawer', () => {
   it('allows comparing two selected motorcycles', () => {
-    render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 2)} onClear={vi.fn()} onRemove={vi.fn()} />);
+    const { container } = render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 2)} onClear={vi.fn()} onRemove={vi.fn()} />);
 
     const compareLink = screen.getByRole('link', { name: /Comparar \(2\)/i });
 
     expect(screen.getByLabelText('Comparador flotante')).toBeInTheDocument();
-    expect(screen.getByText('2/3 motos seleccionadas')).toBeInTheDocument();
+    expect(container.querySelector('.search-page__compare-summary')).not.toBeInTheDocument();
+    expect(screen.queryByText(/motos seleccionadas/i)).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('compare-slot-filled')).toHaveLength(2);
+    expect(screen.getAllByTestId('compare-slot-empty')).toHaveLength(1);
+    expect(screen.getByLabelText(/Moto seleccionada: BMW F 900 GS/i)).toHaveAttribute('title', 'BMW F 900 GS');
     expect(compareLink).toHaveAttribute(
       'href',
       '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660',
@@ -490,7 +496,8 @@ describe('CompareDrawer', () => {
   it('allows comparing three selected motorcycles', () => {
     render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 3)} onClear={vi.fn()} onRemove={vi.fn()} />);
 
-    expect(screen.getByText('3/3 motos seleccionadas')).toBeInTheDocument();
+    expect(screen.getAllByTestId('compare-slot-filled')).toHaveLength(3);
+    expect(screen.queryByTestId('compare-slot-empty')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Comparar \(3\)/i })).toHaveAttribute(
       'href',
       '#/comparador/bmw-f-900-gs-vs-aprilia-tuareg-660-vs-yamaha-mt-09?bikes=test-bmw-f-900-gs,test-aprilia-tuareg-660,test-yamaha-mt-09',
@@ -505,9 +512,11 @@ describe('CompareDrawer', () => {
     render(<CompareDrawer selectedBikes={bikeFixtures.slice(0, 1)} onClear={onClear} onRemove={onRemove} />);
 
     expect(screen.getByText(/Elige al menos 2 motos/i)).toBeInTheDocument();
+    expect(screen.getAllByTestId('compare-slot-empty')).toHaveLength(2);
+    expect(screen.queryByRole('link', { name: /Comparar/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Quitar BMW F 900 GS/i }));
-    await user.click(screen.getByRole('button', { name: /Vaciar comparador/i }));
+    await user.click(screen.getByRole('button', { name: /Quitar BMW F 900 GS del comparador/i }));
+    await user.click(screen.getByRole('button', { name: /Limpiar selección del comparador/i }));
 
     expect(onRemove).toHaveBeenCalledWith('test-bmw-f-900-gs');
     expect(onClear).toHaveBeenCalledTimes(1);

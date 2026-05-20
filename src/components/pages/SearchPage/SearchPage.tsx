@@ -637,34 +637,41 @@ export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBi
     return null;
   }
 
+  const emptySlotCount = Math.max(0, compareQueueMaxSize - selectedBikes.length);
+
   return (
     <div className="search-page__compare-tray" aria-label="Comparador flotante" aria-live="polite">
       <div className="search-page__compare-slots">
-        {selectedBikes.map((bike) => (
-          <article className="search-page__compare-slot search-page__compare-slot--filled" key={bike.id}>
-            <MotorcycleImage motorcycle={bike} decorative />
-            <div>
-              <span>{bike.brand}</span>
-              <strong>{bike.model}</strong>
-            </div>
-            <button type="button" onClick={() => onRemove(bike.id)} aria-label={`Quitar ${getBikeDisplayName(bike)}`}>
-              <span className="material-symbols-outlined" aria-hidden="true">
-                close
-              </span>
-            </button>
-          </article>
-        ))}
-        {selectedBikes.length < compareQueueMaxSize ? (
-          <div className="search-page__compare-slot search-page__compare-slot--empty" aria-hidden="true">
-            <span className="material-symbols-outlined">add</span>
-            <span>Añadir otra</span>
-          </div>
-        ) : null}
-      </div>
+        {selectedBikes.map((bike) => {
+          const displayName = getBikeDisplayName(bike);
 
-      <div className="search-page__compare-summary">
-        <strong>Comparador</strong>
-        <span>{selectedBikes.length}/{compareQueueMaxSize} motos seleccionadas</span>
+          return (
+            <article
+              className="search-page__compare-slot search-page__compare-slot--filled"
+              data-testid="compare-slot-filled"
+              key={bike.id}
+              title={displayName}
+              aria-label={`Moto seleccionada: ${displayName}`}
+            >
+              <MotorcycleImage motorcycle={bike} decorative />
+              <div className="search-page__compare-slot-label">
+                <span>{bike.brand}</span>
+                <strong>{bike.model}</strong>
+              </div>
+              <button type="button" onClick={() => onRemove(bike.id)} aria-label={`Quitar ${displayName} del comparador`}>
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  close
+                </span>
+              </button>
+            </article>
+          );
+        })}
+        {Array.from({ length: emptySlotCount }, (_, index) => (
+          <div className="search-page__compare-slot search-page__compare-slot--empty" data-testid="compare-slot-empty" key={`empty-slot-${index}`} aria-hidden="true">
+            <span className="material-symbols-outlined">add</span>
+            <span>Añadir</span>
+          </div>
+        ))}
       </div>
 
       {selectedBikes.length >= 2 ? (
@@ -676,7 +683,7 @@ export function CompareDrawer({ selectedBikes, onClear, onRemove }: { selectedBi
         <div className="search-page__compare-status">Elige al menos 2 motos</div>
       )}
 
-      <button className="search-page__compare-clear" type="button" onClick={onClear} aria-label="Vaciar comparador">
+      <button className="search-page__compare-clear" type="button" onClick={onClear} aria-label="Limpiar selección del comparador">
         <span className="material-symbols-outlined" aria-hidden="true">
           close
         </span>
