@@ -449,7 +449,6 @@
   gap: 1rem;
 }
 
-.account-page__review-card,
 .account-page__request-cta-card {
   background:
     radial-gradient(circle at top right, rgba($color-on-surface, 0.1), transparent 18rem),
@@ -551,25 +550,6 @@
   }
 }
 
-.account-page__review-main {
-  display: grid;
-  gap: 0.55rem;
-
-  h3 {
-    color: $color-on-surface;
-    font-family: $font-headline;
-    font-size: 1.2rem;
-    font-weight: 800;
-    margin: 0;
-  }
-
-  p {
-    color: rgba($color-on-surface-variant, 0.86);
-    line-height: 1.6;
-    margin: 0;
-  }
-}
-
 .account-page__status {
   @include label-caps;
 
@@ -603,55 +583,6 @@
   background: rgba($color-error, 0.1);
   border-color: rgba($color-error, 0.36);
   color: $color-error;
-}
-
-.account-page__review-meta {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0;
-
-  div {
-    border-top: 1px solid rgba($color-outline-variant, 0.42);
-    display: grid;
-    gap: 0.25rem;
-    padding-top: 0.75rem;
-  }
-
-  dt {
-    @include label-caps;
-
-    color: rgba($color-on-surface-variant, 0.68);
-    font-size: 0.62rem;
-  }
-
-  dd {
-    color: $color-on-surface;
-    font-weight: 700;
-    margin: 0;
-    overflow-wrap: anywhere;
-  }
-}
-
-.account-page__review-actions {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.9rem;
-  justify-content: flex-end;
-
-  span {
-    @include label-caps;
-
-    color: rgba($color-on-surface-variant, 0.66);
-    margin-right: auto;
-  }
-
-  a {
-    color: $color-accent-container;
-    font-family: $font-headline;
-    font-weight: 800;
-  }
 }
 
 @media (max-width: $breakpoint-tablet) {
@@ -695,10 +626,6 @@
   .account-page__section-actions {
     align-items: flex-start;
     justify-items: start;
-  }
-
-  .account-page__review-meta {
-    grid-template-columns: 1fr 1fr;
   }
 
   .account-page__requests-summary-grid {

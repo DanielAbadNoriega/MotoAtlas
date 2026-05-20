@@ -1,9 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import { getModelRequestsByUserId } from '../../../services/modelRequestService';
-import { getReviewsByUserId } from '../../../services/motorcycleReviewService';
+import { getReviewsByUserId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { AccountPage } from './AccountPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -48,6 +48,14 @@ const ownReview = {
   createdAt: '2026-05-14T10:00:00.000Z',
   updatedAt: '2026-05-14T10:00:00.000Z',
 } as const;
+
+function createOwnReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
+  return {
+    ...ownReview,
+    ...overrides,
+    motorcycle: overrides.motorcycle ?? ownReview.motorcycle,
+  } as MotorcycleReview;
+}
 
 const ownModelRequest = {
   id: 'request-1',
@@ -117,6 +125,7 @@ describe('AccountPage', () => {
     expect(screen.getByRole('heading', { name: /Mis solicitudes/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Mis reviews' })).toHaveAttribute('href', '#/cuenta/reviews');
+    expect(screen.getByRole('link', { name: /Ver todas mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toHaveAttribute('href', '#/cuenta/solicitudes');
   });
 
@@ -180,10 +189,10 @@ describe('AccountPage', () => {
     expect(screen.getByRole('link', { name: /Solicitar otro modelo/i })).toHaveAttribute('href', '#/solicitar-modelo');
   });
 
-  it('mantiene Mis reviews funcionando con status traducido y enlaces', async () => {
+  it('mantiene Mis reviews funcionando con card unificada, status y enlaces', async () => {
     getReviewsByUserIdMock.mockResolvedValue([
-      { ...ownReview, status: 'approved' },
-      { ...ownReview, id: 'review-other', userId: 'other-user', motorcycleId: 'yamaha-tenere-700-2024', status: 'rejected' },
+      createOwnReview({ status: 'approved' }),
+      createOwnReview({ id: 'review-other', userId: 'other-user', motorcycleId: 'yamaha-tenere-700-2024', status: 'rejected' }),
     ]);
     mockAuth({
       isAuthenticated: true,
@@ -194,14 +203,22 @@ describe('AccountPage', () => {
 
     render(<AccountPage />);
 
-    expect(await screen.findByText('Publicada')).toBeInTheDocument();
-    expect(screen.getByText('BMW F 900 GS')).toBeInTheDocument();
-    expect(screen.getByText('RiderAlias')).toBeInTheDocument();
-    expect(screen.getByText('Viaje')).toBeInTheDocument();
-    expect(screen.getByText(/Muy buena para viajar/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
-    expect(screen.getByRole('link', { name: /Ver comunidad/i })).toHaveAttribute('href', '#/comunidad/bmw-f-900-gs-2024');
+    const card = await screen.findByTestId('account-review-card');
+
+    expect(within(card).getByText('Publicada')).toBeInTheDocument();
+    expect(within(card).getByRole('heading', { name: /BMW F 900 GS 2024/i })).toBeInTheDocument();
+    expect(within(card).getByText(/5\/5 rating/i)).toBeInTheDocument();
+    expect(within(card).getByText('Viaje')).toBeInTheDocument();
+    expect(within(card).getByText('10 meses')).toBeInTheDocument();
+    expect(within(card).getByText('12.000 km')).toBeInTheDocument();
+    expect(within(card).getByText(/Muy buena para viajar/i)).toBeInTheDocument();
+    expect(within(card).getByText('+ Motor lleno')).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
+    expect(within(card).getByRole('link', { name: /Ver comunidad/i })).toHaveAttribute('href', '#/comunidad/bmw-f-900-gs-2024');
+    expect(screen.getByRole('link', { name: /Ver todas mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(screen.queryByText('Yamaha Ténéré 700')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /borrar/i })).not.toBeInTheDocument();
   });
 
   it('muestra máximo 2 solicitudes reales, resumen técnico y skeleton CTA como tercera card', async () => {
@@ -260,12 +277,13 @@ describe('AccountPage', () => {
     expect(screen.queryByText('Rechazada')).not.toBeInTheDocument();
   });
 
-  it('muestra todos los status traducidos de reviews propias', async () => {
+  it('muestra máximo 3 reviews y usa las más recientes', async () => {
     getReviewsByUserIdMock.mockResolvedValue([
-      { ...ownReview, id: 'review-pending', status: 'pending' },
-      { ...ownReview, id: 'review-approved', status: 'approved' },
-      { ...ownReview, id: 'review-rejected', status: 'rejected' },
-      { ...ownReview, id: 'review-hidden', status: 'hidden' },
+      createOwnReview({ id: 'review-oldest', comment: 'Review más antigua', createdAt: '2026-05-10T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'old-bike', model: 'Old Bike' } }),
+      createOwnReview({ id: 'review-newest', status: 'pending', createdAt: '2026-05-20T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'new-bike', model: 'Newest Bike' } }),
+      createOwnReview({ id: 'review-second', status: 'approved', createdAt: '2026-05-19T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'second-bike', model: 'Second Bike' } }),
+      createOwnReview({ id: 'review-third', status: 'rejected', createdAt: '2026-05-18T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'third-bike', model: 'Third Bike' } }),
+      createOwnReview({ id: 'review-fourth', status: 'hidden', createdAt: '2026-05-17T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'fourth-bike', model: 'Fourth Bike' } }),
     ]);
     mockAuth({
       isAuthenticated: true,
@@ -276,10 +294,15 @@ describe('AccountPage', () => {
 
     render(<AccountPage />);
 
-    expect(await screen.findByText('Pendiente de revisión')).toBeInTheDocument();
+    expect(await screen.findByText('Pendiente')).toBeInTheDocument();
+    expect(screen.getAllByTestId('account-review-card')).toHaveLength(3);
+    expect(screen.getByRole('heading', { name: /BMW Newest Bike 2024/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /BMW Second Bike 2024/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /BMW Third Bike 2024/i })).toBeInTheDocument();
     expect(screen.getByText('Publicada')).toBeInTheDocument();
     expect(screen.getByText('Rechazada')).toBeInTheDocument();
-    expect(screen.getByText('Oculta')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /BMW Fourth Bike 2024/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /BMW Old Bike 2024/i })).not.toBeInTheDocument();
   });
 
   it('muestra error si falla la carga de reviews propias', async () => {

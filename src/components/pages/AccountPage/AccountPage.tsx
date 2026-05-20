@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ModelRequestCard } from '../../model-requests/ModelRequestCard';
-import { formatAccountDate, truncateAccountText } from '../../model-requests/modelRequestPresentation';
 import accountHeroImage from '../../../assets/hero-metodology.png';
-import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
 import { getModelRequestsByUserId, type ModelRequest } from '../../../services/modelRequestService';
-import { getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { AccountReviewCard, sortAccountReviewsByNewest } from '../../reviews/AccountReviewCard';
+import { getReviewsByUserId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { AccountSidebar } from './AccountSidebar';
 import './AccountPage.scss';
 
@@ -15,41 +14,6 @@ function getProfileName(profileName: string | null | undefined, email: string | 
 
 type AccountReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
 type AccountRequestsStatus = 'idle' | 'loading' | 'success' | 'error';
-
-const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
-  pending: 'Pendiente de revisión',
-  approved: 'Publicada',
-  rejected: 'Rechazada',
-  hidden: 'Oculta',
-};
-
-const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
-  ciudad: 'Ciudad',
-  viaje: 'Viaje',
-  offroad: 'Off-road',
-  deportivo: 'Deportivo',
-  pasajero: 'Pasajero',
-  diario: 'Diario',
-};
-
-function getReviewMotorcycleDisplay(review: MotorcycleReview) {
-  const catalogBike = findBikeById(review.motorcycleId);
-  const motorcycle = review.motorcycle;
-  const name = motorcycle
-    ? `${motorcycle.brand} ${motorcycle.model}`
-    : catalogBike
-      ? getBikeDisplayName(catalogBike)
-      : review.motorcycleId;
-  const year = motorcycle?.year ?? catalogBike?.year;
-  const detailHref = catalogBike ? getBikeDetailHash(catalogBike) : `#/motos/${review.motorcycleId}`;
-
-  return {
-    communityHref: `#/comunidad/${review.motorcycleId}`,
-    detailHref,
-    name,
-    year,
-  };
-}
 
 export function AccountPage() {
   const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
@@ -65,6 +29,7 @@ export function AccountPage() {
   const visibleModelRequests = modelRequests.filter((request) => request.userId === user?.id);
   const recentModelRequests = visibleModelRequests.slice(0, 2);
   const visibleReviews = reviews.filter((review) => review.userId === user?.id);
+  const recentReviews = sortAccountReviewsByNewest(visibleReviews).slice(0, 3);
 
   const handleSignOut = async () => {
     setError('');
@@ -225,7 +190,10 @@ export function AccountPage() {
                 <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
                 Mis reviews
               </h2>
-              <span>Total: {reviewsStatus === 'loading' ? '...' : visibleReviews.length}</span>
+              <div className="account-page__section-actions">
+                <span>Total: {reviewsStatus === 'loading' ? '...' : visibleReviews.length}</span>
+                <a className="account-page__section-link-button" href="#/cuenta/reviews">Ver todas mis reviews</a>
+              </div>
             </header>
             {reviewsStatus === 'loading' ? (
               <article className="account-page__empty-state" role="status">
@@ -248,44 +216,9 @@ export function AccountPage() {
               </article>
             ) : (
               <div className="account-page__reviews-list">
-                {visibleReviews.map((review) => {
-                  const motorcycle = getReviewMotorcycleDisplay(review);
-
-                  return (
-                    <article className="account-page__review-card" key={review.id}>
-                      <div className="account-page__review-main">
-                        <span className={`account-page__status account-page__status--${review.status}`}>
-                          {reviewStatusLabels[review.status]}
-                        </span>
-                        <h3>{motorcycle.name}</h3>
-                        <p>{truncateAccountText(review.comment)}</p>
-                      </div>
-                      <dl className="account-page__review-meta">
-                        <div>
-                          <dt>Rating</dt>
-                          <dd>{review.rating}/5</dd>
-                        </div>
-                        <div>
-                          <dt>Alias</dt>
-                          <dd>{review.userName}</dd>
-                        </div>
-                        <div>
-                          <dt>Uso</dt>
-                          <dd>{ridingStyleLabels[review.ridingStyle]}</dd>
-                        </div>
-                        <div>
-                          <dt>Fecha</dt>
-                          <dd>{formatAccountDate(review.createdAt)}</dd>
-                        </div>
-                      </dl>
-                      <footer className="account-page__review-actions">
-                        {motorcycle.year ? <span>MY {motorcycle.year}</span> : <span>{review.motorcycleId}</span>}
-                        <a href={motorcycle.detailHref}>Ver ficha</a>
-                        <a href={motorcycle.communityHref}>Ver comunidad</a>
-                      </footer>
-                    </article>
-                  );
-                })}
+                {recentReviews.map((review) => (
+                  <AccountReviewCard headingLevel={3} key={review.id} review={review} variant="compact" />
+                ))}
               </div>
             )}
           </section>

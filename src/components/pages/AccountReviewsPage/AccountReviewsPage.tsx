@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AccountSidebar } from '../AccountPage/AccountSidebar';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import '../AccountPage/AccountPage.scss';
-import { MotorcycleImage } from '../../ui/MotorcycleImage';
-import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { AccountReviewCard, getAccountReviewMotorcycleDisplay } from '../../reviews/AccountReviewCard';
 import { useAuth } from '../../../features/auth';
 import {
   getReviewsByUserId,
@@ -19,91 +18,10 @@ type StatusFilter = 'all' | MotorcycleReviewStatus;
 type RidingStyleFilter = 'all' | MotorcycleReviewRidingStyle;
 type SortOption = 'recent' | 'oldest' | 'rating-desc' | 'rating-asc' | 'kilometers-desc';
 
-type ReviewMotorcycleDisplay = Readonly<{
-  communityHref: string;
-  detailHref: string;
-  imageSource: Readonly<{
-    brand?: string;
-    imageUrl?: string;
-    model?: string;
-    name?: string;
-  }>;
-  name: string;
-  searchText: string;
-  year?: number;
-}>;
-
 const REVIEWS_PER_PAGE = 5;
-
-const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
-  pending: 'Pendiente',
-  approved: 'Publicada',
-  rejected: 'Rechazada',
-  hidden: 'Oculta',
-};
-
-const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
-  ciudad: 'Ciudad',
-  viaje: 'Viaje',
-  offroad: 'Offroad',
-  deportivo: 'Deportivo',
-  pasajero: 'Pasajero',
-  diario: 'Diario',
-};
 
 function getProfileName(profileName: string | null | undefined, email: string | undefined) {
   return profileName?.trim() || email || 'Usuario MotoAtlas';
-}
-
-function formatReviewDate(value: string) {
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value));
-}
-
-function formatOwnershipMonths(value: number | null) {
-  if (value === null) {
-    return 'Sin dato';
-  }
-
-  return value === 1 ? '1 mes' : `${value} meses`;
-}
-
-function formatKilometers(value: number | null) {
-  if (value === null) {
-    return 'Sin dato';
-  }
-
-  return `${new Intl.NumberFormat('es-ES').format(value)} km`;
-}
-
-function getReviewMotorcycleDisplay(review: MotorcycleReview): ReviewMotorcycleDisplay {
-  const catalogBike = findBikeById(review.motorcycleId);
-  const motorcycle = review.motorcycle;
-  const name = motorcycle
-    ? `${motorcycle.brand} ${motorcycle.model}`
-    : catalogBike
-      ? getBikeDisplayName(catalogBike)
-      : review.motorcycleId;
-  const year = motorcycle?.year ?? catalogBike?.year;
-  const displayName = year ? `${name} ${year}` : name;
-  const detailHref = catalogBike ? getBikeDetailHash(catalogBike) : `#/motos/${review.motorcycleId}`;
-  const imageSource = motorcycle
-    ? { brand: motorcycle.brand, imageUrl: motorcycle.imageUrl, model: motorcycle.model, name: displayName }
-    : catalogBike
-      ? { brand: catalogBike.brand, imageUrl: catalogBike.imageUrl, model: catalogBike.model, name: displayName }
-      : { name: displayName };
-
-  return {
-    communityHref: `#/comunidad/${review.motorcycleId}`,
-    detailHref,
-    imageSource,
-    name: displayName,
-    searchText: `${displayName} ${review.motorcycleId}`.toLowerCase(),
-    year,
-  };
 }
 
 function sortReviews(reviews: readonly MotorcycleReview[], sort: SortOption) {
@@ -137,84 +55,13 @@ function filterReviews(
   const normalizedSearch = search.trim().toLowerCase();
 
   return reviews.filter((review) => {
-    const motorcycle = getReviewMotorcycleDisplay(review);
+    const motorcycle = getAccountReviewMotorcycleDisplay(review);
     const matchesSearch = !normalizedSearch || motorcycle.searchText.includes(normalizedSearch);
     const matchesStatus = status === 'all' || review.status === status;
     const matchesRidingStyle = ridingStyle === 'all' || review.ridingStyle === ridingStyle;
 
     return matchesSearch && matchesStatus && matchesRidingStyle;
   });
-}
-
-function ReviewChips({ items, tone }: Readonly<{ items: readonly string[]; tone: 'positive' | 'negative' }>) {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="account-reviews-page__chips" aria-label={tone === 'positive' ? 'Pros' : 'Contras'}>
-      {items.map((item) => (
-        <span className={`account-reviews-page__chip account-reviews-page__chip--${tone}`} key={item}>
-          {tone === 'positive' ? '+' : '-'} {item}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function ReviewCard({ review }: Readonly<{ review: MotorcycleReview }>) {
-  const motorcycle = getReviewMotorcycleDisplay(review);
-
-  return (
-    <article className="account-reviews-page__card" data-testid="account-review-card">
-      <div className="account-reviews-page__card-media">
-        <MotorcycleImage alt={motorcycle.name} className="account-reviews-page__card-image" motorcycle={motorcycle.imageSource} />
-        <div className="account-reviews-page__card-gradient" aria-hidden="true" />
-      </div>
-
-      <div className="account-reviews-page__card-body">
-        <header className="account-reviews-page__card-header">
-          <div>
-            <div className="account-reviews-page__card-kicker">
-              <span className={`account-reviews-page__status account-reviews-page__status--${review.status}`}>
-                {reviewStatusLabels[review.status]}
-              </span>
-              <span className="account-reviews-page__rating">{review.rating}/5 rating</span>
-            </div>
-            <h2>{motorcycle.name}</h2>
-          </div>
-          <time dateTime={review.createdAt}>{formatReviewDate(review.createdAt)}</time>
-        </header>
-
-        <dl className="account-reviews-page__specs">
-          <div>
-            <dt>Tiempo con la moto</dt>
-            <dd>{formatOwnershipMonths(review.ownershipMonths)}</dd>
-          </div>
-          <div>
-            <dt>Kilómetros</dt>
-            <dd>{formatKilometers(review.kilometers)}</dd>
-          </div>
-          <div>
-            <dt>Uso principal</dt>
-            <dd>{ridingStyleLabels[review.ridingStyle]}</dd>
-          </div>
-        </dl>
-
-        <p className="account-reviews-page__comment">“{review.comment}”</p>
-
-        <div className="account-reviews-page__chips-row">
-          <ReviewChips items={review.pros} tone="positive" />
-          <ReviewChips items={review.cons} tone="negative" />
-        </div>
-
-        <footer className="account-reviews-page__actions">
-          <a href={motorcycle.detailHref}>Ver ficha</a>
-          <a href={motorcycle.communityHref}>Ver comunidad</a>
-        </footer>
-      </div>
-    </article>
-  );
 }
 
 function ReviewSkeletonList() {
@@ -493,7 +340,7 @@ export function AccountReviewsPage() {
           ) : (
             <>
               <section className="account-reviews-page__list" aria-label="Listado de reviews">
-                {paginatedReviews.map((review) => <ReviewCard review={review} key={review.id} />)}
+                {paginatedReviews.map((review) => <AccountReviewCard review={review} key={review.id} />)}
               </section>
               <AccountPagination
                 ariaLabel="Paginación de reviews"

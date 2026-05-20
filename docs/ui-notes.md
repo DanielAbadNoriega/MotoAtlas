@@ -49,6 +49,8 @@ La ruta `#/comunidad/[motorcycleId]` muestra las reviews aprobadas en un slider 
 
 La ruta `#/cuenta/reviews` muestra todas las reviews asociadas al usuario autenticado.
 
+En `#/cuenta`, el bloque “Mis reviews” reutiliza la misma card visual en variante compacta y muestra solo las 3 reviews más recientes (`created_at desc`) con enlace a `#/cuenta/reviews`.
+
 - carga reviews propias mediante RLS y token de sesión.
 - filtra en cliente por marca/modelo, estado y uso principal.
 - ordena por fecha, rating o kilómetros.
