@@ -198,14 +198,14 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
     <section className="top-rated__community-radar" aria-labelledby="top-rated-radar-title">
       <div className="top-rated__community-heading">
         <span className="material-symbols-outlined" aria-hidden="true">trending_up</span>
-        <h2 id="top-rated-radar-title">Radar de la comunidad</h2>
+        <h2 id="top-rated-radar-title">Trending</h2>
       </div>
       <div className="top-rated__radar-panel">
         <div>
           <span className="material-symbols-outlined" aria-hidden="true">radar</span>
-          <h3>{signals.length > 0 ? 'Señales vivas por modelo' : isLoading ? 'Calibrando señales' : 'Sin tendencias activas todavía'}</h3>
+          <h3>{signals.length > 0 ? 'WHAT’S MOVING NOW' : isLoading ? 'Calibrando señales' : 'Sin tendencias activas todavía'}</h3>
           <p>
-            El radar resume actividad aprobada de la comunidad MotoAtlas: conversación, rating y modelos que empiezan a concentrar experiencia real.
+            Reviews recientes, modelos solicitados y motos que empiezan a generar conversación.
           </p>
         </div>
         {signals.length > 0 ? (

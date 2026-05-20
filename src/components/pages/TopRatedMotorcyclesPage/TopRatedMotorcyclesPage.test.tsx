@@ -154,7 +154,7 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(screen.getByRole('link', { name: /Ir al buscador/i })).toHaveAttribute('href', '#/buscador');
     expect(screen.getByRole('link', { name: /^Explorar comunidad$/i })).toHaveAttribute('href', '#/comunidad');
     expect(screen.queryByRole('heading', { name: /Top Rated/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Radar de la comunidad/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Trending/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Reviews recientes/i })).toBeInTheDocument();
   });
 
@@ -179,7 +179,7 @@ describe('TopRatedMotorcyclesPage', () => {
     await renderPage();
 
     expect(screen.getByRole('heading', { name: /Podium rankings/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Radar de la comunidad/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Trending/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Comunidades activas/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Reviews recientes/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /Top Rated/i })).not.toBeInTheDocument();
