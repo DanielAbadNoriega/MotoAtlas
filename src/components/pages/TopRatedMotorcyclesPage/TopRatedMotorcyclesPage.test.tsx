@@ -187,6 +187,17 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(screen.queryByText(/cerca de ti/i)).not.toBeInTheDocument();
   });
 
+  it('renderiza labels internacionales en las cards de Trending', async () => {
+    await renderPage();
+
+    expect(screen.getByText('MOST DISCUSSED')).toBeInTheDocument();
+    expect(screen.getByText('TOP RATED SIGNAL')).toBeInTheDocument();
+    expect(screen.getByText('A2 TRENDING')).toBeInTheDocument();
+    expect(screen.queryByText('Más conversación')).not.toBeInTheDocument();
+    expect(screen.queryByText('Mejor señal global')).not.toBeInTheDocument();
+    expect(screen.queryByText('A2 en movimiento')).not.toBeInTheDocument();
+  });
+
   it('renderiza el CTA doble final de participación', async () => {
     await renderPage();
 

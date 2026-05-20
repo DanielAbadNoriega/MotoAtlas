@@ -169,7 +169,7 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
       ? {
           href: getCommunityHref(mostReviewed.bike),
           icon: 'forum',
-          label: 'Más conversación',
+          label: 'MOST DISCUSSED',
           text: `${numberFormatter.format(mostReviewed.reviewCount)} reviews aprobadas`,
           title: getBikeDisplayName(mostReviewed.bike),
         }
@@ -178,7 +178,7 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
       ? {
           href: getCommunityHref(topRated.bike),
           icon: 'military_tech',
-          label: 'Mejor señal global',
+          label: 'TOP RATED SIGNAL',
           text: `${formatReviewRating(topRated.averageRating)}/5 rating medio`,
           title: getBikeDisplayName(topRated.bike),
         }
@@ -187,7 +187,7 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
       ? {
           href: getCommunityHref(a2Signal.bike),
           icon: 'verified',
-          label: 'A2 en movimiento',
+          label: 'A2 TRENDING',
           text: `${numberFormatter.format(a2Signal.reviewCount)} reviews de propietarios`,
           title: getBikeDisplayName(a2Signal.bike),
         }
