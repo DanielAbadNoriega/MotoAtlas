@@ -173,15 +173,16 @@
   display: inline-flex;
   flex: 0 0 auto;
   gap: 0.35rem;
-  font-size: 0.72rem;
+  font-size: 1.5rem;
   font-weight: 900;
   line-height: 1;
   margin-top: 0.1rem;
   padding-inline: 0;
 
   .account-review-card__rating-icon {
+    padding-bottom: 3px;
     color: $color-accent;
-    font-size: 0.9rem;
+    font-size: 2rem;
     line-height: 1;
   }
 }
