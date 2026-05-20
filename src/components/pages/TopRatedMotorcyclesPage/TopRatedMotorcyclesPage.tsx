@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import rankingHeroImage from '../../../assets/comparison-hero.png';
+import rankingHeroImage from '../../../assets/hero-comunity.png';
 import { getBikeDisplayName } from '../../../data/bikes';
 import {
   getApprovedReviewsByMotorcycleId,
