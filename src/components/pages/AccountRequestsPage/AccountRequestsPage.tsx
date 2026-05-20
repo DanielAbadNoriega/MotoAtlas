@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ModelRequestCard } from '../../model-requests/ModelRequestCard';
 import { useAuth } from '../../../features/auth';
 import { getModelRequestsByUserId, type ModelRequest, type ModelRequestStatus } from '../../../services/modelRequestService';
+import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountSidebar } from '../AccountPage/AccountSidebar';
 import '../AccountPage/AccountPage.scss';
 import './AccountRequestsPage.scss';
@@ -9,6 +10,8 @@ import './AccountRequestsPage.scss';
 type AccountRequestsStatus = 'idle' | 'loading' | 'success' | 'error';
 type StatusFilter = 'all' | ModelRequestStatus;
 type SortOption = 'recent' | 'oldest' | 'year-desc' | 'year-asc';
+
+const REQUESTS_PER_PAGE = 8;
 
 function getProfileName(profileName: string | null | undefined, email: string | undefined) {
   return profileName?.trim() || email || 'Usuario MotoAtlas';
@@ -62,6 +65,7 @@ export function AccountRequestsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sort, setSort] = useState<SortOption>('recent');
+  const [currentPage, setCurrentPage] = useState(1);
   const displayName = getProfileName(profile?.displayName, user?.email);
   const email = user?.email ?? 'Email no disponible';
   const visibleRequests = requests.filter((request) => request.userId === user?.id);
@@ -70,6 +74,10 @@ export function AccountRequestsPage() {
     () => sortModelRequests(filterModelRequests(visibleRequests, search, statusFilter), sort),
     [search, sort, statusFilter, visibleRequests],
   );
+  const requestPageCount = Math.ceil(filteredRequests.length / REQUESTS_PER_PAGE);
+  const paginatedRequests = filteredRequests.slice((currentPage - 1) * REQUESTS_PER_PAGE, currentPage * REQUESTS_PER_PAGE);
+
+  const resetPagination = () => setCurrentPage(1);
 
   const handleSignOut = async () => {
     setError('');
@@ -120,6 +128,12 @@ export function AccountRequestsPage() {
       isMounted = false;
     };
   }, [isAuthenticated, isLoading, session?.access_token, user?.id]);
+
+  useEffect(() => {
+    if (currentPage > requestPageCount) {
+      setCurrentPage(Math.max(1, requestPageCount));
+    }
+  }, [currentPage, requestPageCount]);
 
   if (isLoading) {
     return (
@@ -186,13 +200,23 @@ export function AccountRequestsPage() {
                 id="account-requests-search"
                 type="search"
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  resetPagination();
+                }}
                 placeholder="Marca o modelo"
               />
             </label>
             <label htmlFor="account-requests-status">
               Estado
-              <select id="account-requests-status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}>
+              <select
+                id="account-requests-status"
+                value={statusFilter}
+                onChange={(event) => {
+                  setStatusFilter(event.target.value as StatusFilter);
+                  resetPagination();
+                }}
+              >
                 <option value="all">Todas</option>
                 <option value="pending">Pendiente</option>
                 <option value="reviewed">Revisada</option>
@@ -202,7 +226,14 @@ export function AccountRequestsPage() {
             </label>
             <label htmlFor="account-requests-sort">
               Orden
-              <select id="account-requests-sort" value={sort} onChange={(event) => setSort(event.target.value as SortOption)}>
+              <select
+                id="account-requests-sort"
+                value={sort}
+                onChange={(event) => {
+                  setSort(event.target.value as SortOption);
+                  resetPagination();
+                }}
+              >
                 <option value="recent">Más recientes</option>
                 <option value="oldest">Más antiguas</option>
                 <option value="year-desc">Año más reciente</option>
@@ -242,10 +273,20 @@ export function AccountRequestsPage() {
               <RequestCtaCard />
             </div>
           ) : (
-            <section className="account-requests-page__grid" aria-label="Listado de solicitudes">
-              {filteredRequests.map((request) => <ModelRequestCard request={request} key={request.id} />)}
-              <RequestCtaCard />
-            </section>
+            <>
+              <section className="account-requests-page__grid" aria-label="Listado de solicitudes">
+                {paginatedRequests.map((request) => <ModelRequestCard request={request} key={request.id} />)}
+                <RequestCtaCard />
+              </section>
+              <AccountPagination
+                ariaLabel="Paginación de solicitudes"
+                className="account-requests-page__pagination"
+                currentClassName="account-requests-page__pagination-current"
+                currentPage={currentPage}
+                totalPages={requestPageCount}
+                onPageChange={setCurrentPage}
+              />
+            </>
           )}
         </div>
       </section>

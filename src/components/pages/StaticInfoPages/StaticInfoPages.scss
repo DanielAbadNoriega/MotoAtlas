@@ -904,7 +904,6 @@
     @include body-lg;
 
     color: $color-on-surface-variant;
-    max-width: 520px;
   }
 
   small {
@@ -913,8 +912,6 @@
     border-left: 1px solid rgba($color-outline-variant, 0.7);
     color: $color-outline;
     display: block;
-    margin-top: 4rem;
-    max-width: 360px;
     padding-left: 1rem;
   }
 }
@@ -1135,10 +1132,6 @@
 
   .static-info__article-hero {
     margin-bottom: 3rem;
-  }
-
-  .static-info__request-hero small {
-    margin-top: 2rem;
   }
 
   .static-info__request-form button {

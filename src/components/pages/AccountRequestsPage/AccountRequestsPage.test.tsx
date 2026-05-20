@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
-import { getModelRequestsByUserId } from '../../../services/modelRequestService';
+import { getModelRequestsByUserId, type ModelRequest, type ModelRequestStatus } from '../../../services/modelRequestService';
 import { AccountRequestsPage } from './AccountRequestsPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -17,10 +17,45 @@ const useAuthMock = vi.mocked(useAuth);
 const getModelRequestsByUserIdMock = vi.mocked(getModelRequestsByUserId);
 const signOutMock = vi.fn();
 
-const modelRequests = [
-  {
+function createModelRequest(overrides: Partial<ModelRequest> = {}): ModelRequest {
+  const id = overrides.id ?? 'request-1';
+  const index = Number(id.replace(/\D/g, '')) || 1;
+
+  return {
+    id,
+    userId: overrides.userId ?? 'user-1',
+    brand: overrides.brand ?? 'Ducati',
+    model: overrides.model ?? `Model ${index}`,
+    year: overrides.year ?? 2020 + index,
+    segment: overrides.segment ?? 'naked',
+    contactEmail: overrides.contactEmail ?? null,
+    officialUrl: overrides.officialUrl ?? null,
+    comment: overrides.comment ?? null,
+    status: overrides.status ?? 'pending',
+    source: overrides.source ?? 'user',
+    createdAt: overrides.createdAt ?? `2026-05-${String(Math.min(index, 28)).padStart(2, '0')}T10:00:00.000Z`,
+    updatedAt: overrides.updatedAt ?? `2026-05-${String(Math.min(index, 28)).padStart(2, '0')}T10:00:00.000Z`,
+  };
+}
+
+function buildModelRequestSet(count: number, getOverrides: (index: number) => Partial<ModelRequest> = () => ({})) {
+  const statuses: ModelRequestStatus[] = ['pending', 'reviewed', 'approved', 'rejected'];
+
+  return Array.from({ length: count }, (_, index) => createModelRequest({
+    id: `request-${index + 1}`,
+    brand: index % 2 === 0 ? 'Ducati' : 'Honda',
+    model: `Request ${index + 1}`,
+    status: statuses[index % statuses.length],
+    year: 2020 + index,
+    createdAt: `2026-05-${String(Math.min(index + 1, 28)).padStart(2, '0')}T10:00:00.000Z`,
+    updatedAt: `2026-05-${String(Math.min(index + 1, 28)).padStart(2, '0')}T10:00:00.000Z`,
+    ...getOverrides(index),
+  }));
+}
+
+const modelRequests: readonly ModelRequest[] = [
+  createModelRequest({
     id: 'request-1',
-    userId: 'user-1',
     brand: 'Ducati',
     model: 'Monster',
     year: 2026,
@@ -32,10 +67,9 @@ const modelRequests = [
     source: 'user',
     createdAt: '2026-05-18T10:00:00.000Z',
     updatedAt: '2026-05-18T10:00:00.000Z',
-  },
-  {
+  }),
+  createModelRequest({
     id: 'request-2',
-    userId: 'user-1',
     brand: 'Honda',
     model: 'CBR600RR',
     year: 2024,
@@ -47,10 +81,9 @@ const modelRequests = [
     source: 'user',
     createdAt: '2026-05-16T10:00:00.000Z',
     updatedAt: '2026-05-16T10:00:00.000Z',
-  },
-  {
+  }),
+  createModelRequest({
     id: 'request-3',
-    userId: 'user-1',
     brand: 'Yamaha',
     model: 'R9',
     year: 2025,
@@ -62,8 +95,8 @@ const modelRequests = [
     source: 'user',
     createdAt: '2026-05-17T10:00:00.000Z',
     updatedAt: '2026-05-17T10:00:00.000Z',
-  },
-] as const;
+  }),
+];
 
 function mockAuth(overrides = {}) {
   useAuthMock.mockReturnValue({
@@ -117,6 +150,7 @@ describe('AccountRequestsPage', () => {
     expect(screen.getAllByText('rider@motoatlas.com').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /Página oficial/i })).toHaveAttribute('href', 'https://ducati.example/monster');
     expect(screen.getByRole('link', { name: /Solicitar otro modelo/i })).toHaveAttribute('href', '#/solicitar-modelo');
+    expect(screen.queryByRole('button', { name: 'Página siguiente' })).not.toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
@@ -165,6 +199,7 @@ describe('AccountRequestsPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Aún no has solicitado modelos.' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Solicitar otro modelo/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Página siguiente' })).not.toBeInTheDocument();
   });
 
   it('muestra empty state si los filtros no devuelven resultados', async () => {
@@ -176,6 +211,103 @@ describe('AccountRequestsPage', () => {
 
     expect(screen.getByRole('heading', { name: /No hay solicitudes con esos filtros/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Solicitar otro modelo/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Página siguiente' })).not.toBeInTheDocument();
+  });
+
+  it('pagina 8 solicitudes reales y deja el CTA como novena card visual sin alterar contadores', async () => {
+    const user = userEvent.setup();
+    getModelRequestsByUserIdMock.mockResolvedValue(buildModelRequestSet(9, () => ({ status: 'pending' })));
+
+    render(<AccountRequestsPage />);
+
+    await screen.findAllByTestId('model-request-card');
+
+    const list = screen.getByRole('region', { name: 'Listado de solicitudes' });
+    const cta = within(list).getByRole('link', { name: /Solicitar otro modelo/i });
+
+    expect(within(list).getAllByTestId('model-request-card')).toHaveLength(8);
+    expect(list.children).toHaveLength(9);
+    expect(list.lastElementChild).toBe(cta);
+    expect(screen.getAllByRole('link', { name: /Solicitar otro modelo/i })).toHaveLength(1);
+    expect(screen.getByLabelText('Resumen de solicitudes')).toHaveTextContent(/Total\s*9/);
+    expect(screen.getByLabelText('Resumen de solicitudes')).toHaveTextContent(/Pendientes\s*9/);
+    expect(cta).toHaveAttribute('href', '#/solicitar-modelo');
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+
+    const secondPageList = screen.getByRole('region', { name: 'Listado de solicitudes' });
+    expect(within(secondPageList).getAllByTestId('model-request-card')).toHaveLength(1);
+    expect(secondPageList.children).toHaveLength(2);
+    expect(secondPageList.lastElementChild).toBe(within(secondPageList).getByRole('link', { name: /Solicitar otro modelo/i }));
+  });
+
+  it.each([
+    [16, 2],
+    [17, 3],
+  ])('calcula %i solicitudes reales como %i páginas', async (requestCount, expectedPages) => {
+    getModelRequestsByUserIdMock.mockResolvedValue(buildModelRequestSet(requestCount));
+
+    render(<AccountRequestsPage />);
+
+    await screen.findAllByTestId('model-request-card');
+
+    expect(screen.getAllByRole('button', { name: /^Página \d+$/ })).toHaveLength(expectedPages);
+    expect(screen.getByRole('button', { name: `Página ${expectedPages}` })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: `Página ${expectedPages + 1}` })).not.toBeInTheDocument();
+  });
+
+  it('navega con primera/anterior/siguiente/última y limita los números visibles a 5', async () => {
+    const user = userEvent.setup();
+    getModelRequestsByUserIdMock.mockResolvedValue(buildModelRequestSet(49));
+
+    render(<AccountRequestsPage />);
+
+    await screen.findAllByTestId('model-request-card');
+
+    expect(screen.getAllByTestId('model-request-card')).toHaveLength(8);
+    expect(screen.getAllByRole('button', { name: /^Página \d+$/ })).toHaveLength(5);
+    expect(screen.getByRole('button', { name: 'Primera página' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Página anterior' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: 'Última página' }));
+    expect(screen.getByRole('button', { name: 'Página 7' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: 'Página siguiente' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Última página' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Página anterior' }));
+    expect(screen.getByRole('button', { name: 'Página 6' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: 'Primera página' }));
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('vuelve a página 1 al cambiar búsqueda, filtro u ordenación', async () => {
+    const user = userEvent.setup();
+    getModelRequestsByUserIdMock.mockResolvedValue(buildModelRequestSet(20, (index) => ({
+      brand: 'Ducati',
+      status: index < 12 ? 'pending' : 'approved',
+    })));
+
+    render(<AccountRequestsPage />);
+
+    await screen.findAllByTestId('model-request-card');
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
+
+    await user.type(screen.getByLabelText('Buscar'), 'ducati');
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    await user.selectOptions(screen.getByLabelText('Estado'), 'pending');
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+    await user.selectOptions(screen.getByLabelText('Orden'), 'oldest');
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('muestra loading mientras carga solicitudes', () => {

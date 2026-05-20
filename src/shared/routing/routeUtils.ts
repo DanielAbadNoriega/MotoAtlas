@@ -182,6 +182,11 @@ export function isAccountRoute(route: string) {
   return path === '/cuenta' || path === '/perfil';
 }
 
+export function isAccountReviewsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === '/cuenta/reviews';
+}
+
 export function isAccountRequestsRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return path === '/cuenta/solicitudes';
