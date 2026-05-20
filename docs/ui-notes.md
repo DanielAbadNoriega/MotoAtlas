@@ -41,6 +41,10 @@ La ruta `#/buscador` pagina el listado a 9 motos por página. La paginación se 
 
 El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante.
 
+## Comunidad landing
+
+La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. `Top Rated` ya no aparece como bloque separado en esta landing.
+
 ## Comunidad por moto — Reviews
 
 La ruta `#/comunidad/[motorcycleId]` muestra las reviews aprobadas en un slider horizontal con scroll/snap. En mobile cada card ocupa el ancho útil disponible para evitar overflow global y mantener lectura cómoda.

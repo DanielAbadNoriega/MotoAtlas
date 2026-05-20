@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -134,6 +135,21 @@ describe('StaticInfoPages', () => {
     expect(screen.getByText('La marca es obligatoria.')).toBeInTheDocument();
     expect(screen.getByText('El modelo es obligatorio.')).toBeInTheDocument();
     expect(screen.getByText('El año es obligatorio.')).toBeInTheDocument();
+  });
+
+  it('usa hero-request-model como fondo completo del main de Solicitar modelo', () => {
+    const styles = readFileSync('src/components/pages/StaticInfoPages/StaticInfoPages.scss', 'utf8');
+    const requestPageBlockStart = styles.indexOf('.static-info--request');
+    const requestPageBlock = styles.slice(
+      requestPageBlockStart,
+      styles.indexOf('.static-info__request-hero', requestPageBlockStart),
+    );
+
+    render(<RequestModelPage />);
+
+    expect(screen.getByRole('main')).toHaveClass('static-info--request');
+    expect(requestPageBlock).toContain("url('../../../assets/hero-request-model.jpeg')");
+    expect(requestPageBlock).toContain('center / cover no-repeat');
   });
 
   it('envía solicitud anónima y muestra success real', async () => {
