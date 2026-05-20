@@ -35,9 +35,7 @@
   }
 
   &::after {
-    background:
-      linear-gradient(90deg, rgba($color-surface, 0.98) 0%, rgba($color-surface, 0.62) 48%, rgba($color-surface, 0.08) 100%),
-      linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.48) 48%, rgba($color-surface, 0.12) 100%);
+    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.45) 48%, transparent 100%);
     content: '';
     inset: 0;
     position: absolute;
@@ -689,7 +687,7 @@
       filter: grayscale(0.32) contrast(1.05);
       height: 100%;
       object-fit: cover;
-      opacity: 0.34;
+      opacity: 0.8;
       width: 100%;
     }
   }
@@ -801,7 +799,7 @@
     height: 100%;
     inset: 0;
     object-fit: cover;
-    opacity: 0.34;
+    opacity: 0.8;
     position: absolute;
     width: 100%;
   }
