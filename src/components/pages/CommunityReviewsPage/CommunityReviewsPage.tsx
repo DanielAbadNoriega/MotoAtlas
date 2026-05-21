@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import communityHeroImage from '../../../assets/hero-community.png';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountReviewsEmptyState } from '../AccountReviewsPage/AccountReviewsEmptyState';
@@ -467,7 +467,6 @@ function GarageMotorcycleCard({ item }: Readonly<{ item: CommunityGarageMotorcyc
       <div className="community-reviews-page__garage-card-content">
         <header className="community-reviews-page__garage-card-header">
           <div>
-            <span>Modelo con opiniones</span>
             <h3>{item.motorcycle.name}</h3>
           </div>
           <div className="community-reviews-page__garage-rating" aria-label={`Rating medio ${formatReviewRating(item.averageRating)} de 5`}>
@@ -795,6 +794,11 @@ export function CommunityReviewsPage() {
     document.getElementById('community-reviews-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const scrollToGarageHeader = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    document.getElementById('community-reviews-garage-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
@@ -816,7 +820,7 @@ export function CommunityReviewsPage() {
           </p>
           <div className="community-reviews-page__hero-actions" aria-label="Acciones del hero de reviews">
             <button type="button" onClick={scrollToReviews}>Explorar reviews</button>
-            <a href="#/buscador">Buscar moto para opinar</a>
+            <a href="#community-reviews-garage-header" onClick={scrollToGarageHeader}>Buscar moto para opinar</a>
           </div>
         </div>
       </section>
@@ -862,7 +866,7 @@ export function CommunityReviewsPage() {
         />
 
         <div className="community-reviews-page__results">
-          <header className="community-reviews-page__garage-header">
+          <header id="community-reviews-garage-header" className="community-reviews-page__garage-header">
             <div>
               <h2>Garaje de la comunidad</h2>
               <p>Explora los modelos con opiniones reales de propietarios y entra en cada comunidad para leer todas sus reviews.</p>

@@ -844,7 +844,7 @@ span.community-reviews-page__insight-icon {
 }
 
 .community-reviews-page__garage-card-header {
-  align-items: start;
+  align-items: flex-end;
   display: flex;
   gap: 1rem;
   justify-content: space-between;
@@ -859,7 +859,7 @@ span.community-reviews-page__insight-icon {
   h3 {
     color: $color-on-surface;
     font-family: $font-headline;
-    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-size: clamp(1rem, 1vw, 1.75rem);
     font-weight: 900;
     letter-spacing: -0.02em;
     line-height: 0.98;
