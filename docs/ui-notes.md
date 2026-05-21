@@ -65,7 +65,7 @@ La ruta `#/comunidad/[motorcycleId]` muestra las reviews aprobadas en un slider 
 
 ## Mi cuenta — Reviews
 
-La ruta `#/cuenta/reviews` muestra todas las reviews asociadas al usuario autenticado.
+La ruta `#/cuenta/reviews` funciona como “Mi garaje de reviews”: agrupa las reviews del usuario autenticado por moto, pagina modelos agrupados y aplica filtros sobre marca/modelo, segmento, carnet, rating medio, uso principal y orden. Los filtros replican el patrón visual de `#/comunidad/reviews` con header/body/footer y botones/chips sin selects; en desktop viven dentro del sidebar de cuenta antes del notice y en tablet/mobile usan panel responsive. El detalle privado por moto queda pendiente para `#/cuenta/reviews/[motorcycleId]`.
 
 En `#/cuenta`, el bloque “Mis reviews” agrupa las reviews propias por moto, muestra hasta 3 modelos ordenados por última review y usa una card visual tipo garage con CTAs `Ver mis reviews` y `Ver ficha`. El detalle filtrado por moto queda pendiente para una futura ruta `#/cuenta/reviews/[motorcycleId]`.
 
