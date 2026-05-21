@@ -66,6 +66,11 @@ describe('CommunityReviewsPage', () => {
     await renderPage([createCommunityReview({ id: 'community-review-1' })]);
 
     expect(screen.getByRole('heading', { name: /Reviews de la comunidad/i })).toBeInTheDocument();
+    expect(screen.getByText('Opiniones reales de propietarios: kilómetros, uso, pros, contras y experiencias para elegir mejor tu próxima moto.')).toBeInTheDocument();
+    expect(screen.getByTestId('community-reviews-hero-image').getAttribute('src')).toContain('hero-community.png');
+    expect(screen.getByRole('button', { name: 'Explorar reviews' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Buscar moto para opinar' })).toHaveAttribute('href', '#/buscador');
+    expect(screen.getByRole('region', { name: 'Archivo de reviews aprobadas' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filtros de reviews' })).toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: /Buscar por marca o modelo/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Segmento: Trail' })).toBeInTheDocument();
@@ -224,6 +229,8 @@ describe('CommunityReviewsPage', () => {
     const user = userEvent.setup();
     await renderPage(buildReviews(55));
 
+    expect(screen.getByRole('region', { name: 'Listado público de reviews aprobadas' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: /Paginación de reviews de comunidad/i })).toBeInTheDocument();
     expect(screen.getAllByTestId('account-review-card')).toHaveLength(9);
     expect(screen.getAllByRole('button', { name: /^Página \d+$/ })).toHaveLength(5);
     expect(screen.getByRole('button', { name: 'Primera página' })).toBeDisabled();

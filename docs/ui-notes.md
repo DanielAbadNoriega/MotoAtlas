@@ -51,6 +51,8 @@ La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de 
 
 La ruta `#/comunidad/reviews` funciona como archivo público de reviews `approved`: aplica filtros en cliente por marca/modelo, segmento, carnet, rating, uso principal y orden, y pagina a 9 reviews por página.
 
+El hero de `#/comunidad/reviews` replica el patrón visual del hero oficial de Home: imagen full-bleed con overlay/degradado, texto centrado y CTAs. Usa `src/assets/hero-community.png`.
+
 Reutiliza `AccountReviewCard` con variante `community`: muestra alias público, rating con estrella alineado con el título, metadatos compactos con iconos y oculta el badge de estado. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas, fotos de usuario, destacadas del mes e insights quedan para fases futuras.
 
 Los filtros de segmento/carnet usan las mismas constantes visuales que el buscador; `Sport` usa `speed`, `Touring` usa `explore` y el carnet se presenta como `Carnet A2`, `Carnet A`, `A2 limitable`.

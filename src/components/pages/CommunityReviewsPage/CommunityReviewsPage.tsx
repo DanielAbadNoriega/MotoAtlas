@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import communityHeroImage from '../../../assets/hero-community.png';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountReviewsEmptyState } from '../AccountReviewsPage/AccountReviewsEmptyState';
 import { AccountReviewCard, getAccountReviewMotorcycleDisplay } from '../../reviews/AccountReviewCard';
@@ -426,6 +427,10 @@ export function CommunityReviewsPage() {
     setCurrentPage(1);
   };
 
+  const scrollToReviews = () => {
+    document.getElementById('community-reviews-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
@@ -434,14 +439,21 @@ export function CommunityReviewsPage() {
 
   return (
     <main className="community-reviews-page" aria-labelledby="community-reviews-title">
-      <section className="community-reviews-page__hero">
-        <div>
-          <span>Archivo público</span>
+      <section className="community-reviews-page__hero" aria-labelledby="community-reviews-title">
+        <div className="community-reviews-page__hero-background" aria-hidden="true">
+          <img data-testid="community-reviews-hero-image" src={communityHeroImage} alt="" />
+          <span />
+        </div>
+
+        <div className="community-reviews-page__hero-content fade-in">
           <h1 id="community-reviews-title">Reviews de la comunidad</h1>
           <p>
-            Opiniones aprobadas de propietarios reales: kilómetros, uso, pros y contras para elegir con más contexto.
+            Opiniones reales de propietarios: kilómetros, uso, pros, contras y experiencias para elegir mejor tu próxima moto.
           </p>
-          <a href="#/buscador">Buscar moto para opinar</a>
+          <div className="community-reviews-page__hero-actions" aria-label="Acciones del hero de reviews">
+            <button type="button" onClick={scrollToReviews}>Explorar reviews</button>
+            <a href="#/buscador">Buscar moto para opinar</a>
+          </div>
         </div>
       </section>
 
@@ -452,7 +464,7 @@ export function CommunityReviewsPage() {
         </button>
       </div>
 
-      <section className="community-reviews-page__content" aria-label="Archivo de reviews aprobadas">
+      <section id="community-reviews-list" className="community-reviews-page__content" aria-label="Archivo de reviews aprobadas">
         <CommunityReviewFiltersPanel
           filters={filters}
           isOpen={isFilterPanelOpen}
