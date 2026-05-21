@@ -1,7 +1,10 @@
+import type { ReactNode } from 'react';
+
 export type AccountSidebarActiveItem = 'overview' | 'reviews' | 'requests';
 
 type AccountSidebarProps = Readonly<{
   activeItem: AccountSidebarActiveItem;
+  beforeNotice?: ReactNode;
   displayName: string;
   email: string;
   onSignOut: () => void | Promise<void>;
@@ -15,7 +18,7 @@ function getNavLinkClassName(item: AccountSidebarActiveItem, activeItem: Account
   return item === activeItem ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link';
 }
 
-export function AccountSidebar({ activeItem, displayName, email, notice, onSignOut }: AccountSidebarProps) {
+export function AccountSidebar({ activeItem, beforeNotice, displayName, email, notice, onSignOut }: AccountSidebarProps) {
   return (
     <aside className="account-page__sidebar" aria-label="Resumen de perfil">
       <article className="account-page__card account-page__profile-card">
@@ -53,6 +56,8 @@ export function AccountSidebar({ activeItem, displayName, email, notice, onSignO
           Mis solicitudes
         </a>
       </nav>
+
+      {beforeNotice}
 
       {notice ? (
         <article className="account-page__notice">
