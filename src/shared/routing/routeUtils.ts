@@ -27,6 +27,14 @@ export function getCommunityReviewsCanonicalPath() {
   return '/comunidad/reviews';
 }
 
+export function getAccountMotorcycleReviewsCanonicalPath(motorcycleId: string) {
+  return `/cuenta/reviews/${encodeURIComponent(motorcycleId)}`;
+}
+
+export function getAccountMotorcycleReviewsHash(motorcycleId: string) {
+  return `#${getAccountMotorcycleReviewsCanonicalPath(motorcycleId)}`;
+}
+
 export function getCompareSeoSlug(bikes: readonly Pick<Bike, 'brand' | 'model'>[]) {
   return bikes.map(getBikeSeoSlug).join('-vs-');
 }
@@ -135,6 +143,18 @@ export function getCommunityMotorcycleIdFromRoute(route: string, motorcycles: re
   return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
 }
 
+export function getAccountReviewMotorcycleIdFromRoute(route: string, motorcycles: readonly Bike[]) {
+  const { path } = routeToPathAndSearch(route);
+  const match = path.match(/^\/cuenta\/reviews\/([^/?#]+)/);
+
+  if (!match) {
+    return undefined;
+  }
+
+  const slugOrId = decodeURIComponent(match[1]);
+  return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
+}
+
 
 export type StaticInfoRouteKey = 'metodologia' | 'fuentes-datos' | 'solicitar-modelo' | 'privacidad' | 'terminos';
 
@@ -198,6 +218,11 @@ export function isAccountRoute(route: string) {
 export function isAccountReviewsRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return path === '/cuenta/reviews';
+}
+
+export function isAccountMotorcycleReviewsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return /^\/cuenta\/reviews\/[^/?#]+$/.test(path);
 }
 
 export function isAccountRequestsRoute(route: string) {

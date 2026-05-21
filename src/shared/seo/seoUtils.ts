@@ -4,6 +4,7 @@ import { getMotorcycleImage } from '../images/getMotorcycleImage';
 import {
   getBikeCanonicalPath,
   getBikeSeoSlug,
+  getAccountMotorcycleReviewsCanonicalPath,
   getCommunityCanonicalPath,
   getCommunityReviewsCanonicalPath,
   getCompareCanonicalPath,
@@ -263,6 +264,25 @@ export function buildAuthSeoMetadata(route: 'login' | 'registro' | 'cuenta' | 'c
   };
 }
 
+export function buildAccountMotorcycleReviewsSeoMetadata(motorcycleId: string): SeoMetadata {
+  const title = `Mis reviews de esta moto | ${siteName}`;
+  const description = 'Revisa tus experiencias, valoraciones y comentarios sobre esta moto.';
+  const canonicalPath = getAccountMotorcycleReviewsCanonicalPath(motorcycleId);
+
+  return {
+    canonicalUrl: absoluteUrl(canonicalPath),
+    description,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      description,
+      name: title,
+      url: absoluteUrl(canonicalPath),
+    },
+    title,
+  };
+}
+
 export function buildCompareSeoMetadata(bikes: readonly Bike[]): SeoMetadata {
   const names = bikes.map((bike) => `${bike.brand} ${bike.model}`);
   const title = `${names.join(' vs ')} | Comparador MotoAtlas`;
@@ -335,4 +355,4 @@ export function buildRobotsTxt() {
   return `User-agent: *\nAllow: /\nSitemap: ${siteBaseUrl}/sitemap.xml\n`;
 }
 
-export { getBikeCanonicalPath, getBikeSeoSlug, getCommunityCanonicalPath, getCommunityReviewsCanonicalPath, getCompareCanonicalPath, getCompareSeoSlug };
+export { getBikeCanonicalPath, getBikeSeoSlug, getAccountMotorcycleReviewsCanonicalPath, getCommunityCanonicalPath, getCommunityReviewsCanonicalPath, getCompareCanonicalPath, getCompareSeoSlug };

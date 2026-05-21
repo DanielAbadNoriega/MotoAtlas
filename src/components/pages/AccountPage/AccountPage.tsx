@@ -6,6 +6,7 @@ import { getModelRequestsByUserId, type ModelRequest } from '../../../services/m
 import { getAccountReviewMotorcycleDisplay } from '../../reviews/AccountReviewCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { getReviewsByUserId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { getAccountMotorcycleReviewsHash } from '../../../shared/routing/routeUtils';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { AccountSidebar } from './AccountSidebar';
 import './AccountPage.scss';
@@ -104,7 +105,7 @@ function AccountReviewMotorcycleSummaryCard({ item }: Readonly<{ item: AccountRe
         </ul>
 
         <footer className="account-page__review-summary-actions">
-          <a href="#/cuenta/reviews">Ver mis reviews</a>
+          <a href={getAccountMotorcycleReviewsHash(item.motorcycleId)}>Ver mis reviews</a>
           <a href={item.motorcycle.detailHref}>Ver ficha</a>
         </footer>
       </div>

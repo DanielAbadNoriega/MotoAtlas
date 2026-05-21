@@ -210,7 +210,7 @@ describe('AccountPage', () => {
     expect(within(card).getByLabelText('Rating medio 5 de 5')).toBeInTheDocument();
     expect(within(card).getByText('1 review tuya')).toBeInTheDocument();
     expect(within(card).getByText('Última review: 14 may 2026')).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: /Ver mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
+    expect(within(card).getByRole('link', { name: /Ver mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews/bmw-f-900-gs-2024');
     expect(within(card).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
     expect(screen.getByRole('link', { name: /Ver todas mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(within(reviewsSection).queryByText('Publicada')).not.toBeInTheDocument();

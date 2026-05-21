@@ -353,7 +353,7 @@ describe('MotorcycleCommunityPage', () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
     const page = screen.getByRole('main');
-    expect(within(page).getByRole('link', { name: /Volver a ficha/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+    expect(within(page).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
     expect(within(page).getByRole('link', { name: /Comparar esta moto/i })).toHaveAttribute(
       'href',
       '#/comparador?bikes=test-bmw-f-900-gs',

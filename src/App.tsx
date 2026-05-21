@@ -3,6 +3,7 @@ import { AuthProvider } from './features/auth';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { AccountPage } from './components/pages/AccountPage';
+import { AccountMotorcycleReviewsPage } from './components/pages/AccountMotorcycleReviewsPage';
 import { AccountReviewsPage } from './components/pages/AccountReviewsPage';
 import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
 import { AuthPage } from './components/pages/AuthPage';
@@ -32,6 +33,7 @@ import { loadCompareQueue } from './utils/compareQueue';
 import type { Bike } from './types/bike';
 import {
   getBikeDetailIdFromRoute,
+  getAccountReviewMotorcycleIdFromRoute,
   getCommunityMotorcycleIdFromRoute,
   getComparatorSelectionFromRoute,
   getCurrentAppRoute,
@@ -39,6 +41,7 @@ import {
   isAccountReviewsRoute,
   isAccountRoute,
   isAccountRequestsRoute,
+  isAccountMotorcycleReviewsRoute,
   isCommunityReviewsRoute,
   isCommunityRoute,
   isComparatorRoute,
@@ -47,7 +50,7 @@ import {
   isSearchRoute,
   isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -88,9 +91,11 @@ export function App() {
   const legacyComparison = findBikeComparisonByHash(route);
   const legacyComparisonIds = legacyComparison?.bikes.map((bike) => bike.bikeId) ?? [];
   const bikeDetailId = getBikeDetailIdFromRoute(route, motorcycles);
+  const accountReviewMotorcycleId = getAccountReviewMotorcycleIdFromRoute(route, motorcycles);
   const communityMotorcycleId = getCommunityMotorcycleIdFromRoute(route, motorcycles);
   const findMotorcycleById = (id: Bike['id']) => motorcycles.find((bike) => bike.id === id);
   const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
+  const accountReviewMotorcycleBike = accountReviewMotorcycleId ? findMotorcycleById(accountReviewMotorcycleId) : undefined;
   const communityBike = communityMotorcycleId ? findMotorcycleById(communityMotorcycleId) : undefined;
   const staticInfoRouteKey = getStaticInfoRouteKey(route);
   const isSearchPage = isSearchRoute(route);
@@ -98,6 +103,7 @@ export function App() {
   const isRegisterPage = isRegisterRoute(route);
   const isAccountPage = isAccountRoute(route);
   const isAccountReviewsPage = isAccountReviewsRoute(route);
+  const isAccountMotorcycleReviewsPage = isAccountMotorcycleReviewsRoute(route);
   const isAccountRequestsPage = isAccountRequestsRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
@@ -146,6 +152,11 @@ export function App() {
 
     if (isRegisterPage) {
       applySeoMetadata(buildAuthSeoMetadata('registro'));
+      return;
+    }
+
+    if (isAccountMotorcycleReviewsPage && accountReviewMotorcycleId) {
+      applySeoMetadata(buildAccountMotorcycleReviewsSeoMetadata(accountReviewMotorcycleId));
       return;
     }
 
@@ -204,7 +215,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [communityBike, comparatorBikes, detailBike, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -214,6 +225,8 @@ export function App() {
         <AuthPage mode="login" />
       ) : isRegisterPage ? (
         <AuthPage mode="register" />
+      ) : isAccountMotorcycleReviewsPage ? (
+        <AccountMotorcycleReviewsPage bike={accountReviewMotorcycleBike} motorcycleId={accountReviewMotorcycleId} />
       ) : isAccountReviewsPage ? (
         <AccountReviewsPage />
       ) : isAccountRequestsPage ? (

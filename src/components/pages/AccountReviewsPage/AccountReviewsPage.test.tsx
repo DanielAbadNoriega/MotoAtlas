@@ -206,7 +206,7 @@ describe('AccountReviewsPage', () => {
     expect(within(cards[0]).getByLabelText('Rating medio 4 de 5')).toBeInTheDocument();
     expect(within(cards[0]).getByText('2 reviews tuyas')).toBeInTheDocument();
     expect(within(cards[0]).getByText('Última review: 19 may 2026')).toBeInTheDocument();
-    expect(within(cards[0]).getByRole('link', { name: 'Ver mis reviews' })).toHaveAttribute('href', '#/cuenta/reviews');
+    expect(within(cards[0]).getByRole('link', { name: 'Ver mis reviews' })).toHaveAttribute('href', '#/cuenta/reviews/bmw-f-900-gs-2024');
     expect(within(cards[0]).getByRole('link', { name: 'Ver ficha' })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
     expect(within(cards[1]).getByRole('heading', { name: 'Ducati Monster 2025' })).toBeInTheDocument();
     expect(screen.queryByText('Yamaha R9 2026')).not.toBeInTheDocument();
