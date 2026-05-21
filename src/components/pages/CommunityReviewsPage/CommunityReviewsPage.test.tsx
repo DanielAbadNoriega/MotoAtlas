@@ -89,12 +89,13 @@ describe('CommunityReviewsPage', () => {
     expect(screen.getByText('Opiniones reales de propietarios: kilómetros, uso, pros, contras y experiencias para elegir mejor tu próxima moto.')).toBeInTheDocument();
     expect(screen.getByTestId('community-reviews-hero-image').getAttribute('src')).toContain('hero-community.png');
     expect(screen.getByRole('button', { name: 'Explorar reviews' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Buscar moto para opinar' })).toHaveAttribute('href', '#/buscador');
+    expect(screen.getByRole('link', { name: 'Buscar moto para opinar' })).toHaveAttribute('href', '#community-reviews-garage-header');
     expect(screen.getByRole('region', { name: 'Bloque editorial de reviews' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Destacadas del mes' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Últimos reportes' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Insights en vivo' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Garaje de la comunidad' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Garaje de la comunidad' }).closest('header')).toHaveAttribute('id', 'community-reviews-garage-header');
     expect(screen.queryByRole('heading', { name: 'Explorar todas las reviews' })).not.toBeInTheDocument();
     expect(screen.getByText('Explora los modelos con opiniones reales de propietarios y entra en cada comunidad para leer todas sus reviews.')).toBeInTheDocument();
     expect(getGarageSection()).toBeInTheDocument();
