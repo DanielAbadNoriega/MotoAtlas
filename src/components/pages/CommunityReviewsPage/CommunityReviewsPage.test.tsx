@@ -112,7 +112,7 @@ describe('CommunityReviewsPage', () => {
     expect(within(fiveStarsButton).getAllByText('star')).toHaveLength(5);
   });
 
-  it('renderiza máximo 3 destacadas por kilómetros, rating, comentario y fecha', async () => {
+  it('renderiza máximo 2 destacadas por kilómetros, rating, comentario y fecha', async () => {
     await renderPage([
       createCommunityReview({ id: 'featured-1', kilometers: 4000, rating: 5, comment: 'Kilómetros medios' }),
       createCommunityReview({ id: 'featured-2', kilometers: 9000, rating: 3, comment: 'Más kilómetros visible' }),
@@ -124,13 +124,15 @@ describe('CommunityReviewsPage', () => {
     const featuredSection = getFeaturedSection();
     const featuredCards = within(featuredSection).getAllByTestId('account-review-card');
 
-    expect(featuredCards).toHaveLength(3);
+    expect(featuredCards).toHaveLength(2);
     expect(featuredCards[0]).toHaveTextContent('Más kilómetros visible');
     expect(featuredCards[1]).toHaveTextContent('Segunda por kilómetros');
-    expect(featuredCards[2]).toHaveTextContent('Tercera por kilómetros');
+    expect(within(featuredSection).queryByText('Tercera por kilómetros')).not.toBeInTheDocument();
+    expect(within(featuredCards[0]).getByRole('link', { name: /Ver ficha/i })).toBeInTheDocument();
+    expect(within(featuredCards[0]).getByRole('link', { name: /Más reviews/i })).toBeInTheDocument();
   });
 
-  it('renderiza máximo 3 últimos reportes ordenados por fecha descendente', async () => {
+  it('renderiza máximo 2 últimos reportes ordenados por fecha descendente', async () => {
     await renderPage([
       createCommunityReview({ id: 'latest-1', comment: 'Reporte antiguo', createdAt: '2026-05-01T10:00:00.000Z' }),
       createCommunityReview({ id: 'latest-2', comment: 'Reporte intermedio', createdAt: '2026-05-10T10:00:00.000Z' }),
@@ -140,10 +142,12 @@ describe('CommunityReviewsPage', () => {
 
     const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
 
-    expect(latestCards).toHaveLength(3);
+    expect(latestCards).toHaveLength(2);
     expect(latestCards[0]).toHaveTextContent('Reporte más reciente');
     expect(latestCards[1]).toHaveTextContent('Reporte cuarto');
-    expect(latestCards[2]).toHaveTextContent('Reporte intermedio');
+    expect(within(getLatestSection()).queryByText('Reporte intermedio')).not.toBeInTheDocument();
+    expect(within(latestCards[0]).getByRole('link', { name: /Ver ficha/i })).toBeInTheDocument();
+    expect(within(latestCards[0]).getByRole('link', { name: /Más reviews/i })).toBeInTheDocument();
   });
 
   it('calcula insights reales sin datos inventados', async () => {

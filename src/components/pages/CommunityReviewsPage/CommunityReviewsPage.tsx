@@ -51,6 +51,7 @@ type CommunityInsights = Readonly<{
 }>;
 
 const REVIEWS_PER_PAGE = 9;
+const EDITORIAL_REVIEWS_LIMIT = 2;
 const defaultFilters: CommunityReviewFilters = {
   license: 'all',
   rating: 'all',
@@ -132,11 +133,11 @@ function getFeaturedReviews(reviews: readonly MotorcycleReview[]) {
       right.comment.length - left.comment.length ||
       getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
     ))
-    .slice(0, 3);
+    .slice(0, EDITORIAL_REVIEWS_LIMIT);
 }
 
 function getLatestReviews(reviews: readonly MotorcycleReview[]) {
-  return sortReviews(reviews, 'recent').slice(0, 3);
+  return sortReviews(reviews, 'recent').slice(0, EDITORIAL_REVIEWS_LIMIT);
 }
 
 function getCommunityInsights(reviews: readonly MotorcycleReview[]): CommunityInsights {
@@ -242,14 +243,21 @@ function EditorialReviewSection({
   id,
   reviews,
   title,
+  tone,
 }: Readonly<{
   emptyMessage: string;
   id: string;
   reviews: readonly MotorcycleReview[];
   title: string;
+  tone: 'featured' | 'latest';
 }>) {
+  const sectionClasses = [
+    'community-reviews-page__editorial-section',
+    `community-reviews-page__editorial-section--${tone}`,
+  ].join(' ');
+
   return (
-    <section className="community-reviews-page__editorial-section" aria-labelledby={id}>
+    <section className={sectionClasses} aria-labelledby={id}>
       <header className="community-reviews-page__editorial-header">
         <h2 id={id}>{title}</h2>
       </header>
@@ -259,7 +267,7 @@ function EditorialReviewSection({
       ) : (
         <div className="community-reviews-page__editorial-list">
           {reviews.map((review) => (
-            <AccountReviewCard headingLevel={3} key={review.id} review={review} variant="community" />
+            <AccountReviewCard headingLevel={3} key={review.id} review={review} variant="communityCompact" />
           ))}
         </div>
       )}
@@ -669,12 +677,14 @@ export function CommunityReviewsPage() {
               id="community-featured-reviews-title"
               reviews={featuredReviews}
               title="Destacadas del mes"
+              tone="featured"
             />
             <EditorialReviewSection
               emptyMessage="Todavía no hay actividad reciente."
               id="community-latest-reviews-title"
               reviews={latestReviews}
               title="Últimos reportes"
+              tone="latest"
             />
           </div>
 

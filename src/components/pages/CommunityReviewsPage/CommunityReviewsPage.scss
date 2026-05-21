@@ -121,13 +121,13 @@
 .community-reviews-page__editorial {
   @include container;
 
-  padding-block: 4rem 1rem;
+  padding-block: 3rem 0.75rem;
 }
 
 .community-reviews-page__editorial-grid {
   align-items: start;
   display: grid;
-  gap: 2rem;
+  gap: 1.5rem;
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.38fr);
 }
 
@@ -138,17 +138,17 @@
 
 .community-reviews-page__editorial-main {
   display: grid;
-  gap: 2rem;
+  gap: 1.25rem;
 }
 
 .community-reviews-page__editorial-section {
   display: grid;
-  gap: 1rem;
+  gap: 0.7rem;
 }
 
 .community-reviews-page__editorial-header {
   border-left: 4px solid $color-accent-container;
-  padding-left: 1rem;
+  padding-left: 0.85rem;
 
   h2 {
     @include headline-md;
@@ -160,24 +160,74 @@
 
 .community-reviews-page__editorial-list {
   display: grid;
-  gap: 1rem;
+  gap: 0.58rem;
 
-  .account-review-card--community {
-    grid-template-columns: minmax(11rem, 0.26fr) minmax(0, 1fr);
-    min-height: 16rem;
+  .account-review-card--communityCompact {
+    grid-template-columns: minmax(8rem, 0.2fr) minmax(0, 1fr);
+  }
+}
+
+.community-reviews-page__editorial-section--featured {
+  .account-review-card__body {
+    min-height: 9.4rem;
+  }
+
+  .account-review-card__media {
+    min-height: 9.4rem;
+  }
+}
+
+.community-reviews-page__editorial-section--latest {
+  .community-reviews-page__editorial-list {
+    gap: 0.5rem;
+  }
+
+  .account-review-card--communityCompact {
+    grid-template-columns: minmax(6.75rem, 0.17fr) minmax(0, 1fr);
   }
 
   .account-review-card__body {
-    gap: 0.9rem;
-    padding: clamp(1rem, 2vw, 1.35rem);
+    gap: 0.34rem;
+    min-height: 7.7rem;
+    padding: 0.58rem 0.78rem;
+  }
+
+  .account-review-card__media {
+    min-height: 7.7rem;
   }
 
   .account-review-card__title-row h3 {
-    font-size: clamp(1.15rem, 2vw, 1.45rem);
+    font-size: clamp(0.88rem, 1.2vw, 1.04rem);
+  }
+
+  .account-review-card__rating {
+    font-size: 0.86rem;
+
+    .account-review-card__rating-icon {
+      font-size: 1rem;
+      padding-bottom: 1px;
+    }
+  }
+
+  .account-review-card__meta {
+    gap: 0.18rem 0.45rem;
   }
 
   .account-review-card__comment {
-    -webkit-line-clamp: 2;
+    font-size: 0.78rem;
+    line-height: 1.28;
+  }
+
+  .account-review-card__chips-row {
+    max-height: 1.25rem;
+  }
+
+  .account-review-card__footer {
+    padding-top: 0.32rem;
+  }
+
+  .account-review-card__author-avatar {
+    display: none;
   }
 }
 
@@ -206,16 +256,16 @@
     $shadow-glass,
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   display: grid;
-  gap: 1.1rem;
+  gap: 0.8rem;
   overflow: hidden;
-  padding: clamp(1rem, 2vw, 1.4rem);
+  padding: clamp(0.85rem, 1.6vw, 1.1rem);
 }
 
 .community-reviews-page__insights-header {
   border-bottom: 1px solid rgba($color-outline-variant, 0.32);
   display: grid;
-  gap: 0.55rem;
-  padding-bottom: 0.95rem;
+  gap: 0.42rem;
+  padding-bottom: 0.72rem;
 
   .community-reviews-page__insights-kicker {
     @include label-caps;
@@ -251,7 +301,7 @@
 
 .community-reviews-page__insight-list {
   display: grid;
-  gap: 0.7rem;
+  gap: 0.52rem;
 }
 
 .community-reviews-page__insight-item {
@@ -262,10 +312,10 @@
   border: 1px solid rgba($color-outline-variant, 0.34);
   border-radius: $radius-lg;
   display: grid;
-  gap: 0.75rem;
+  gap: 0.58rem;
   grid-template-columns: auto minmax(0, 1fr);
   min-width: 0;
-  padding: 0.85rem;
+  padding: 0.68rem;
   transition:
     background $transition-base,
     border-color $transition-base,
@@ -289,14 +339,14 @@ span.community-reviews-page__insight-icon {
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 1.2rem;
-  height: 2.25rem;
+  height: 2rem;
   justify-content: center;
-  width: 2.25rem;
+  width: 2rem;
 }
 
 .community-reviews-page__insight-content {
   display: grid;
-  gap: 0.32rem;
+  gap: 0.22rem;
   min-width: 0;
 }
 
@@ -304,14 +354,14 @@ span.community-reviews-page__insight-icon {
   @include label-caps;
 
   color: $color-accent;
-  font-size: 0.64rem;
+  font-size: 0.58rem;
   letter-spacing: 0.12em;
 }
 
 .community-reviews-page__insight-value {
   color: $color-on-surface;
   font-family: $font-headline;
-  font-size: clamp(0.98rem, 1.6vw, 1.16rem);
+  font-size: clamp(0.9rem, 1.35vw, 1.04rem);
   font-weight: 900;
   letter-spacing: -0.01em;
   line-height: 1.12;
@@ -324,7 +374,7 @@ span.community-reviews-page__insight-icon {
     @include label-caps;
 
     color: rgba($color-on-surface-variant, 0.74);
-    font-size: 0.66rem;
+    font-size: 0.58rem;
     margin: 0;
   }
 }
@@ -937,7 +987,7 @@ span.community-reviews-page__insight-icon {
   }
 
   .community-reviews-page__editorial-list {
-    .account-review-card--community {
+    .account-review-card--communityCompact {
       grid-template-columns: 1fr;
     }
 

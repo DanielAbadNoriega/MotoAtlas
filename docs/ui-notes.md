@@ -55,7 +55,7 @@ El hero de `#/comunidad/reviews` replica el patrón visual del hero oficial de H
 
 Debajo del hero hay un bloque editorial separado del listado filtrable: `Destacadas del mes`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Explorar todas las reviews`. El aside `Insights en vivo` usa un panel técnico compacto inspirado en `comunidad-reviews.html`, con iconos Material Symbols y datos reales calculados.
 
-Reutiliza `AccountReviewCard` con variante `community`: muestra alias público, rating con estrella alineado con el título, metadatos compactos con iconos y oculta el badge de estado. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas y fotos de usuario quedan para fases futuras.
+Reutiliza `AccountReviewCard` con variante `community`: muestra alias público, rating con estrella alineado con el título, metadatos compactos con iconos y oculta el badge de estado. Las secciones editoriales muestran 2 items y usan la variante `communityCompact` para diferenciar cards densas de la card completa del listado. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas y fotos de usuario quedan para fases futuras.
 
 Los filtros de segmento/carnet usan las mismas constantes visuales que el buscador; `Sport` usa `speed`, `Touring` usa `explore` y el carnet se presenta como `Carnet A2`, `Carnet A`, `A2 limitable`.
 
