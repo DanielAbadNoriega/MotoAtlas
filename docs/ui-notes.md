@@ -61,7 +61,7 @@ Los filtros de segmento/carnet usan las mismas constantes visuales que el buscad
 
 ## Comunidad por moto — Reviews
 
-La ruta `#/comunidad/[motorcycleId]` muestra las reviews aprobadas en un slider horizontal con scroll/snap. En mobile cada card ocupa el ancho útil disponible para evitar overflow global y mantener lectura cómoda.
+La ruta `#/comunidad/[motorcycleId]` reemplaza el slider de `Verified owner reports` por un listado compacto vertical de experiencias aprobadas. Los filtros de esta fase viven en el sidebar (`rating` y `orden`), en mobile pasan a panel responsive y la paginación muestra 5 reviews por página. Likes/dislikes, respuestas, menciones y fotos quedan para fases futuras.
 
 ## Mi cuenta — Reviews
 

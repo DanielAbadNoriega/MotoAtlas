@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   getApprovedReviewsByMotorcycleId,
   type MotorcycleReview,
+  type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
-import { formatReviewAggregate, formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { formatReviewAggregate, formatReviewRating, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
 import { getTopCommunityItemsSafe, getMostCommonRidingStyleSafe } from '../../../shared/reviews/communityUtils';
 import type { Bike } from '../../../types/bike';
 import { ReviewModal } from '../../reviews/ReviewModal';
-import { MotorcycleReviewCard } from '../../reviews/MotorcycleReviewCard';
+import { AccountPagination } from '../AccountPage/AccountPagination';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './MotorcycleCommunityPage.scss';
 
@@ -25,7 +26,47 @@ type CommunityMetric = Readonly<{
   detail?: string;
 }>;
 
+type OwnerReportsRatingFilter = 'all' | '5' | '4-plus' | '3-minus';
+type OwnerReportsSortOption = 'recent' | 'rating-desc' | 'kilometers-desc' | 'ownership-desc';
+type OwnerReportsFilters = Readonly<{
+  rating: OwnerReportsRatingFilter;
+  sort: OwnerReportsSortOption;
+}>;
+
+const OWNER_REPORTS_PER_PAGE = 5;
+const defaultOwnerReportsFilters: OwnerReportsFilters = {
+  rating: 'all',
+  sort: 'recent',
+};
 const numberFormatter = new Intl.NumberFormat('es-ES');
+const dateFormatter = new Intl.DateTimeFormat('es-ES', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+const ridingStyleLabels: Record<MotorcycleReviewRidingStyle, string> = {
+  ciudad: 'Ciudad',
+  deportivo: 'Deportivo',
+  diario: 'Diario',
+  offroad: 'Off-road',
+  pasajero: 'Pasajero',
+  viaje: 'Viaje',
+};
+
+const ownerReportsRatingOptions = [
+  { ariaLabel: 'Todas las valoraciones', filledStars: 0, label: 'Todas', value: 'all' },
+  { ariaLabel: '5 estrellas', filledStars: 5, label: '5 estrellas', value: '5' },
+  { ariaLabel: '4 estrellas o más', filledStars: 4, label: '4 o más', value: '4-plus' },
+  { ariaLabel: '3 estrellas o menos', filledStars: 3, label: '3 o menos', value: '3-minus' },
+] satisfies readonly { ariaLabel: string; filledStars: number; label: string; value: OwnerReportsRatingFilter }[];
+
+const ownerReportsSortOptions = [
+  { label: 'Más recientes', value: 'recent' },
+  { label: 'Mejor valoradas', value: 'rating-desc' },
+  { label: 'Más kilómetros', value: 'kilometers-desc' },
+  { label: 'Más tiempo con la moto', value: 'ownership-desc' },
+] satisfies readonly { label: string; value: OwnerReportsSortOption }[];
 
 function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
   return (reviews ?? []).filter((review) => review?.status === 'approved');
@@ -103,11 +144,325 @@ function RatingStars({ rating }: { rating: number }) {
   );
 }
 
+function getTimestamp(value: string) {
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Fecha pendiente';
+  }
+
+  return dateFormatter.format(date);
+}
+
+function formatKilometers(value: number | null) {
+  return value === null ? 'N/D' : `${numberFormatter.format(value)} km`;
+}
+
+function formatOwnershipMonths(value: number | null) {
+  return value === null ? 'N/D' : `${numberFormatter.format(value)} meses`;
+}
+
+function formatCommunityAlias(userName: string) {
+  const cleanName = getReviewUserName({ userName });
+  return cleanName.startsWith('@') ? cleanName : `@${cleanName.replace(/\s+/g, '_')}`;
+}
+
+function normalizeReviewList(items: readonly unknown[] | string | null | undefined) {
+  const list = Array.isArray(items) ? items : [items];
+
+  return list
+    .map((item) => (item === null || item === undefined ? '' : String(item).trim()))
+    .filter((item) => item.length > 0 && item.toLowerCase() !== 'null' && item.toLowerCase() !== 'undefined');
+}
+
+function matchesOwnerReportRating(review: MotorcycleReview, rating: OwnerReportsRatingFilter) {
+  if (rating === '5') {
+    return review.rating === 5;
+  }
+
+  if (rating === '4-plus') {
+    return review.rating >= 4;
+  }
+
+  if (rating === '3-minus') {
+    return review.rating <= 3;
+  }
+
+  return true;
+}
+
+function sortOwnerReports(reviews: readonly MotorcycleReview[], sort: OwnerReportsSortOption) {
+  return [...reviews].sort((left, right) => {
+    if (sort === 'rating-desc') {
+      return right.rating - left.rating || getTimestamp(right.createdAt) - getTimestamp(left.createdAt);
+    }
+
+    if (sort === 'kilometers-desc') {
+      return (right.kilometers ?? -1) - (left.kilometers ?? -1) || getTimestamp(right.createdAt) - getTimestamp(left.createdAt);
+    }
+
+    if (sort === 'ownership-desc') {
+      return (right.ownershipMonths ?? -1) - (left.ownershipMonths ?? -1) || getTimestamp(right.createdAt) - getTimestamp(left.createdAt);
+    }
+
+    return getTimestamp(right.createdAt) - getTimestamp(left.createdAt);
+  });
+}
+
+function filterOwnerReports(reviews: readonly MotorcycleReview[], filters: OwnerReportsFilters) {
+  return sortOwnerReports(reviews.filter((review) => matchesOwnerReportRating(review, filters.rating)), filters.sort);
+}
+
+function hasActiveOwnerReportFilters(filters: OwnerReportsFilters) {
+  return filters.rating !== defaultOwnerReportsFilters.rating || filters.sort !== defaultOwnerReportsFilters.sort;
+}
+
+function FilterGroup({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
+  return (
+    <details className="motorcycle-community__filter-group" open>
+      <summary>
+        <span>{title}</span>
+        <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
+      </summary>
+      <div className="motorcycle-community__filter-group-body">{children}</div>
+    </details>
+  );
+}
+
+function FilterOptionButton({
+  active,
+  ariaLabel,
+  children,
+  className = '',
+  label,
+  onClick,
+}: Readonly<{
+  active: boolean;
+  ariaLabel: string;
+  children?: ReactNode;
+  className?: string;
+  label: string;
+  onClick: () => void;
+}>) {
+  const buttonClasses = ['motorcycle-community__filter-option', active ? 'motorcycle-community__filter-option--active' : '', className]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <button className={buttonClasses} type="button" aria-label={ariaLabel} aria-pressed={active} onClick={onClick}>
+      <span>{label}</span>
+      {children}
+    </button>
+  );
+}
+
+function FilterRatingStars({ filledStars }: Readonly<{ filledStars: number }>) {
+  return (
+    <span className="motorcycle-community__filter-stars" aria-hidden="true">
+      {Array.from({ length: 5 }, (_, index) => (
+        <span className={index < filledStars ? 'motorcycle-community__filter-star--filled' : undefined} key={index}>star</span>
+      ))}
+    </span>
+  );
+}
+
+function OwnerReportsFiltersPanel({
+  filters,
+  isOpen,
+  onApply,
+  onChange,
+  onClose,
+  onReset,
+}: Readonly<{
+  filters: OwnerReportsFilters;
+  isOpen: boolean;
+  onApply: () => void;
+  onChange: (next: Partial<OwnerReportsFilters>) => void;
+  onClose: () => void;
+  onReset: () => void;
+}>) {
+  const panelClasses = ['motorcycle-community__filters', isOpen ? 'motorcycle-community__filters--open' : ''].filter(Boolean).join(' ');
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  const applyFilters = () => {
+    onApply();
+    onClose();
+  };
+
+  return (
+    <>
+      {isOpen ? <button className="motorcycle-community__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros" /> : null}
+      <section
+        className={panelClasses}
+        aria-label="Filtros de owner reports"
+        aria-labelledby="motorcycle-community-filters-title"
+        aria-modal={isOpen ? 'true' : undefined}
+        role={isOpen ? 'dialog' : undefined}
+      >
+        <div className="motorcycle-community__sheet-handle" aria-hidden="true" />
+        <div className="motorcycle-community__filters-header">
+          <h2 id="motorcycle-community-filters-title">Filtros</h2>
+          <button type="button" aria-label="Limpiar filtros de owner reports" onClick={onReset}>Limpiar filtros</button>
+          <button className="motorcycle-community__filters-close" type="button" onClick={onClose} aria-label="Cerrar filtros">
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <div className="motorcycle-community__filters-body">
+          <FilterGroup title="Rating">
+            <div className="motorcycle-community__rating-grid">
+              {ownerReportsRatingOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.rating === option.value}
+                  ariaLabel={option.ariaLabel}
+                  className="motorcycle-community__filter-option--rating"
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ rating: option.value })}
+                >
+                  <FilterRatingStars filledStars={option.filledStars} />
+                </FilterOptionButton>
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Orden">
+            <div className="motorcycle-community__sort-grid">
+              {ownerReportsSortOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.sort === option.value}
+                  ariaLabel={`Orden: ${option.label}`}
+                  className="motorcycle-community__filter-option--sort"
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ sort: option.value })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+        </div>
+
+        <footer className="motorcycle-community__filters-footer">
+          <button type="button" aria-label="Restablecer filtros de owner reports" onClick={onReset}>Limpiar filtros</button>
+          <button type="button" onClick={applyFilters}>Aplicar filtros</button>
+        </footer>
+      </section>
+    </>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg aria-hidden="true" className="motorcycle-review-card__user-icon motorcycle-community__owner-user-icon" viewBox="0 0 24 24" focusable="false">
+      <path d="M12 12.25c2.42 0 4.38-1.96 4.38-4.38S14.42 3.5 12 3.5 7.62 5.46 7.62 7.87 9.58 12.25 12 12.25Zm0 2.1c-3.36 0-6.9 1.64-6.9 4.05v1.1h13.8v-1.1c0-2.41-3.54-4.05-6.9-4.05Z" />
+    </svg>
+  );
+}
+
+function OwnerReportListBlock({ items, title }: Readonly<{ items: readonly string[]; title: string }>) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <p>
+      <strong>{title}:</strong> {items.join(', ')}
+    </p>
+  );
+}
+
+function OwnerReportRow({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
+  const alias = formatCommunityAlias(review.userName);
+  const pros = normalizeReviewList(review.pros as readonly unknown[]);
+  const cons = normalizeReviewList(review.cons as readonly unknown[]);
+
+  return (
+    <article className="motorcycle-community__owner-report-row" data-testid="owner-report-row" data-row-tone={index % 2 === 0 ? 'even' : 'odd'} role="listitem">
+      <div className="motorcycle-community__owner-report-identity">
+        <div className="motorcycle-community__owner-report-owner">
+          <span className="motorcycle-review-card__avatar motorcycle-community__owner-avatar" aria-hidden="true">
+            <UserIcon />
+          </span>
+          <div>
+            <h3>{alias}</h3>
+            {isReviewVerified(review) ? (
+              <span className="motorcycle-community__verified-badge">
+                <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                Review verificada
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="motorcycle-community__owner-report-rating">
+          <RatingStars rating={review.rating} />
+          <strong>{review.rating}/5</strong>
+        </div>
+
+        <ul className="motorcycle-community__owner-report-meta" aria-label="Metadatos de la review">
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">route</span>
+            {ridingStyleLabels[(review.ridingStyle ?? 'diario') as MotorcycleReviewRidingStyle]}
+          </li>
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
+            {formatOwnershipMonths(review.ownershipMonths)}
+          </li>
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">speed</span>
+            {formatKilometers(review.kilometers)}
+          </li>
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+            {formatDate(review.createdAt)}
+          </li>
+        </ul>
+      </div>
+
+      <div className="motorcycle-community__owner-report-summary">
+        <p>{(review.comment ?? '').toString().trim() || '—'}</p>
+        <div className="motorcycle-community__owner-report-pros-cons">
+          <OwnerReportListBlock title="Pros" items={pros} />
+          <OwnerReportListBlock title="Contras" items={cons} />
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommunityPageProps) {
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [hasReviewError, setHasReviewError] = useState(false);
-  const reviewSliderRef = useRef<HTMLDivElement>(null);
+  const [ownerReportFilters, setOwnerReportFilters] = useState<OwnerReportsFilters>(defaultOwnerReportsFilters);
+  const [ownerReportsPage, setOwnerReportsPage] = useState(1);
+  const [isOwnerReportFiltersOpen, setIsOwnerReportFiltersOpen] = useState(false);
 
   useEffect(() => {
     if (!bike) {
@@ -156,6 +511,32 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
       { label: 'Uso más habitual', value: getMostCommonRidingStyle(reviews), detail: 'Según reviews aprobadas' },
     ];
   }, [reviews]);
+  const filteredOwnerReports = useMemo(
+    () => filterOwnerReports(reviews, ownerReportFilters),
+    [ownerReportFilters, reviews],
+  );
+  const ownerReportsTotalPages = Math.max(1, Math.ceil(filteredOwnerReports.length / OWNER_REPORTS_PER_PAGE));
+  const paginatedOwnerReports = filteredOwnerReports.slice(
+    (ownerReportsPage - 1) * OWNER_REPORTS_PER_PAGE,
+    ownerReportsPage * OWNER_REPORTS_PER_PAGE,
+  );
+  const hasActiveOwnerFilters = hasActiveOwnerReportFilters(ownerReportFilters);
+
+  useEffect(() => {
+    if (ownerReportsPage > ownerReportsTotalPages) {
+      setOwnerReportsPage(ownerReportsTotalPages);
+    }
+  }, [ownerReportsPage, ownerReportsTotalPages]);
+
+  const updateOwnerReportFilters = (nextFilters: Partial<OwnerReportsFilters>) => {
+    setOwnerReportFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }));
+    setOwnerReportsPage(1);
+  };
+
+  const clearOwnerReportFilters = () => {
+    setOwnerReportFilters(defaultOwnerReportsFilters);
+    setOwnerReportsPage(1);
+  };
 
   if (!motorcycleId) {
     return <CommunityRootState />;
@@ -164,13 +545,6 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   if (!bike) {
     return <NotFoundState motorcycleId={motorcycleId} />;
   }
-
-  const scrollReviews = (direction: -1 | 1) => {
-    reviewSliderRef.current?.scrollBy({
-      behavior: 'smooth',
-      left: direction * Math.min(420, window.innerWidth * 0.86),
-    });
-  };
 
   const bikeName = getBikeDisplayName(bike);
   const aggregate = getReviewAggregate(reviews);
@@ -222,6 +596,15 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
 
       <section className="motorcycle-community__layout">
         <aside className="motorcycle-community__sidebar" aria-label="Resumen de comunidad">
+          <OwnerReportsFiltersPanel
+            filters={ownerReportFilters}
+            isOpen={isOwnerReportFiltersOpen}
+            onApply={() => setOwnerReportsPage(1)}
+            onChange={updateOwnerReportFilters}
+            onClose={() => setIsOwnerReportFiltersOpen(false)}
+            onReset={clearOwnerReportFilters}
+          />
+
           <section className="motorcycle-community__panel motorcycle-community__panel--hud" aria-labelledby="community-score-title">
             <h2 id="community-score-title">Resumen comunidad</h2>
             <div className="motorcycle-community__metrics">
@@ -305,18 +688,12 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             <div className="motorcycle-community__section-header">
               <div>
                 <span>Verified owner reports</span>
-                <h2 id="community-reviews-title">Reviews aprobadas</h2>
+                <h2 id="community-reviews-title">Experiencias de propietarios</h2>
               </div>
-              {reviews.length > 1 ? (
-                <div className="motorcycle-community__review-controls" aria-label="Navegación de reviews">
-                  <button type="button" onClick={() => scrollReviews(-1)} aria-label="Ver reviews anteriores">
-                    <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
-                  </button>
-                  <button type="button" onClick={() => scrollReviews(1)} aria-label="Ver reviews siguientes">
-                    <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-                  </button>
-                </div>
-              ) : null}
+              <button className="motorcycle-community__mobile-filter-trigger" type="button" onClick={() => setIsOwnerReportFiltersOpen(true)}>
+                <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+                Filtros
+              </button>
             </div>
 
             {hasReviewError ? (
@@ -326,13 +703,40 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             ) : null}
 
             {reviews.length > 0 ? (
-              <div ref={reviewSliderRef} className="motorcycle-community__review-viewport" role="region" aria-label="Verified owner reports">
-                <div className="motorcycle-community__review-list" role="list">
-                  {reviews.map((review) => (
-                    <MotorcycleReviewCard key={review.id} review={review} />
-                  ))}
+              filteredOwnerReports.length > 0 ? (
+                <>
+                  <div className="motorcycle-community__owner-report-list" role="list" aria-label="Listado compacto de owner reports">
+                    {paginatedOwnerReports.map((review, index) => (
+                      <OwnerReportRow
+                        index={(ownerReportsPage - 1) * OWNER_REPORTS_PER_PAGE + index}
+                        key={review.id}
+                        review={review}
+                      />
+                    ))}
+                  </div>
+                  {ownerReportsTotalPages > 1 ? (
+                    <AccountPagination
+                      ariaLabel="Paginación de owner reports"
+                      className="motorcycle-community__pagination"
+                      currentClassName="motorcycle-community__pagination-current"
+                      currentPage={ownerReportsPage}
+                      totalPages={ownerReportsTotalPages}
+                      onPageChange={setOwnerReportsPage}
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <div className="motorcycle-community__empty motorcycle-community__empty--compact">
+                  <span className="material-symbols-outlined" aria-hidden="true">filter_alt_off</span>
+                  <h3>No hay owner reports con esos filtros.</h3>
+                  <p>Probá cambiar el rating o el orden para volver a ver experiencias de propietarios.</p>
+                  {hasActiveOwnerFilters ? (
+                    <button className="button button--primary" type="button" onClick={clearOwnerReportFilters}>
+                      Limpiar filtros
+                    </button>
+                  ) : null}
                 </div>
-              </div>
+              )
             ) : (
               <div className="motorcycle-community__empty">
                 <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
