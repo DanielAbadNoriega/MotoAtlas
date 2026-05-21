@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
 import {
@@ -41,10 +41,17 @@ type OwnerReportsFilters = Readonly<{
 type ReactionSummaryMap = Record<string, ReviewReactionSummary>;
 type ReactionNotice = Readonly<{
   message: string;
-  reviewId?: string;
+}>;
+type HelpfulTooltipState = Readonly<{
+  message: string;
+  reviewId: string;
+  ticket: number;
+  visible: boolean;
 }>;
 
 const OWNER_REPORTS_PER_PAGE = 5;
+const HELPFUL_TOOLTIP_VISIBLE_MS = 2000;
+const HELPFUL_TOOLTIP_EXIT_MS = 220;
 const defaultOwnerReportsFilters: OwnerReportsFilters = {
   rating: 'all',
   sort: 'recent',
@@ -457,7 +464,8 @@ function HelpfulReviewAction({
 }
 
 function OwnerReportRow({
-  feedbackMessage,
+  feedbackTooltipMessage,
+  feedbackTooltipVisible,
   index,
   isOwnReview,
   isReactionPending,
@@ -465,7 +473,8 @@ function OwnerReportRow({
   reactionSummary,
   review,
 }: Readonly<{
-  feedbackMessage?: string;
+  feedbackTooltipMessage?: string;
+  feedbackTooltipVisible?: boolean;
   index: number;
   isOwnReview: boolean;
   isReactionPending: boolean;
@@ -533,12 +542,16 @@ function OwnerReportRow({
             onToggle={onToggleHelpful}
             summary={reactionSummary}
           />
+          {feedbackTooltipMessage ? (
+            <p
+              className={`motorcycle-community__helpful-feedback ${feedbackTooltipVisible ? 'motorcycle-community__helpful-feedback--visible' : ''}`}
+              role="status"
+              aria-live="polite"
+            >
+              {feedbackTooltipMessage}
+            </p>
+          ) : null}
         </div>
-        {feedbackMessage ? (
-          <p className="motorcycle-community__helpful-feedback" role="status" aria-live="polite">
-            {feedbackMessage}
-          </p>
-        ) : null}
       </div>
     </article>
   );
@@ -555,6 +568,9 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
   const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
   const [reactionNotice, setReactionNotice] = useState<ReactionNotice | null>(null);
+  const [helpfulTooltip, setHelpfulTooltip] = useState<HelpfulTooltipState | null>(null);
+  const tooltipHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tooltipClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!bike) {
@@ -624,6 +640,22 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     }
   }, [ownerReportsPage, ownerReportsTotalPages]);
 
+  const clearHelpfulTooltipTimers = () => {
+    if (tooltipHideTimeoutRef.current) {
+      clearTimeout(tooltipHideTimeoutRef.current);
+      tooltipHideTimeoutRef.current = null;
+    }
+
+    if (tooltipClearTimeoutRef.current) {
+      clearTimeout(tooltipClearTimeoutRef.current);
+      tooltipClearTimeoutRef.current = null;
+    }
+  };
+
+  useEffect(() => () => {
+    clearHelpfulTooltipTimers();
+  }, []);
+
   const updateOwnerReportFilters = (nextFilters: Partial<OwnerReportsFilters>) => {
     setOwnerReportFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }));
     setOwnerReportsPage(1);
@@ -632,6 +664,31 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const clearOwnerReportFilters = () => {
     setOwnerReportFilters(defaultOwnerReportsFilters);
     setOwnerReportsPage(1);
+  };
+
+  const showHelpfulTooltip = (reviewId: string, message: string) => {
+    clearHelpfulTooltipTimers();
+    const ticket = Date.now();
+    setHelpfulTooltip({
+      message,
+      reviewId,
+      ticket,
+      visible: true,
+    });
+
+    tooltipHideTimeoutRef.current = setTimeout(() => {
+      setHelpfulTooltip((currentTooltip) => {
+        if (!currentTooltip || currentTooltip.ticket !== ticket) {
+          return currentTooltip;
+        }
+
+        return { ...currentTooltip, visible: false };
+      });
+    }, HELPFUL_TOOLTIP_VISIBLE_MS);
+
+    tooltipClearTimeoutRef.current = setTimeout(() => {
+      setHelpfulTooltip((currentTooltip) => (currentTooltip?.ticket === ticket ? null : currentTooltip));
+    }, HELPFUL_TOOLTIP_VISIBLE_MS + HELPFUL_TOOLTIP_EXIT_MS);
   };
 
   useEffect(() => {
@@ -669,13 +726,12 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     }
 
     if (!reactionAuthContext) {
-      setReactionNotice({
-        message: 'Inicia sesión para marcar esta review como útil.',
-        reviewId: review.id,
-      });
+      showHelpfulTooltip(review.id, 'Inicia sesión para marcar esta review como útil.');
       return;
     }
 
+    clearHelpfulTooltipTimers();
+    setHelpfulTooltip(null);
     setReactionNotice(null);
     setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
 
@@ -688,7 +744,6 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     } catch (error) {
       setReactionNotice({
         message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción útil.',
-        reviewId: review.id,
       });
     } finally {
       setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
@@ -858,7 +913,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                 No se han podido cargar las reviews. Mostramos la comunidad vacía de forma segura.
               </p>
             ) : null}
-            {reactionNotice && !reactionNotice.reviewId ? (
+            {reactionNotice ? (
               <p className="motorcycle-community__notice motorcycle-community__notice--reaction" role="status">
                 {reactionNotice.message}
               </p>
@@ -875,7 +930,8 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                         isReactionPending={reactionPendingIds.includes(review.id)}
                         key={review.id}
                         onToggleHelpful={() => toggleHelpful(review)}
-                        feedbackMessage={reactionNotice?.reviewId === review.id ? reactionNotice.message : undefined}
+                        feedbackTooltipMessage={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.message : undefined}
+                        feedbackTooltipVisible={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.visible : false}
                         reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}
                         review={review}
                       />

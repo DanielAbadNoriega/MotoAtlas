@@ -103,6 +103,7 @@ const approvedReviews: readonly MotorcycleReview[] = [
 
 describe('MotorcycleCommunityPage', () => {
   beforeEach(() => {
+    vi.useRealTimers();
     getApprovedReviewsMock.mockReset();
     createReviewMock.mockReset();
     getHelpfulReactionSummaryMock.mockReset();
@@ -297,17 +298,30 @@ describe('MotorcycleCommunityPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /Quitar útil\. Útil 3/i })).toHaveAttribute('aria-pressed', 'true'));
   });
 
-  it('si no hay sesión muestra mensaje y no llama al toggle', async () => {
+  it('si no hay sesión muestra tooltip temporal, no llama al toggle y reinicia timer al pulsar otra vez', async () => {
     const user = userEvent.setup();
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
     const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
-    await user.click(within(firstRow).getByRole('button', { name: /Útil 2/i }));
+    const helpfulButton = await waitFor(() => within(firstRow).getByRole('button', { name: /Útil 2/i }));
+    const initialHelpfulLabel = helpfulButton.textContent;
+    await user.click(helpfulButton);
 
-    expect(within(firstRow).getByText('Inicia sesión para marcar esta review como útil.')).toBeInTheDocument();
+    const tooltip = within(firstRow).getByRole('status');
+    expect(tooltip).toHaveTextContent('Inicia sesión para marcar esta review como útil.');
+    expect(tooltip).toHaveClass('motorcycle-community__helpful-feedback--visible');
     expect(toggleHelpfulReactionMock).not.toHaveBeenCalled();
-    expect(within(firstRow).getByRole('button', { name: /Útil 2/i })).toHaveAttribute('aria-pressed', 'false');
-  });
+    expect(helpfulButton).toHaveAttribute('aria-pressed', 'false');
+    expect(within(firstRow).getByRole('button', { name: /Marcar como útil\./i })).toHaveTextContent(initialHelpfulLabel ?? '');
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await user.click(helpfulButton);
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    expect(within(firstRow).getByRole('status')).toHaveTextContent('Inicia sesión para marcar esta review como útil.');
+
+    await new Promise((resolve) => setTimeout(resolve, 1600));
+    expect(within(firstRow).queryByRole('status')).not.toBeInTheDocument();
+  }, 10000);
 
   it('no permite marcar como útil una review propia y la muestra como métrica pasiva', async () => {
     mockAuth({

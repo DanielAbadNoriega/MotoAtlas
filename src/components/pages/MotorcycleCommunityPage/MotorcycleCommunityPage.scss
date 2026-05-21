@@ -774,6 +774,7 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 0.1rem;
+    position: relative;
   }
 
   &__helpful-action {
@@ -837,13 +838,39 @@
   }
 
   &__helpful-feedback {
-    @include label-caps;
-
-    color: rgba($color-accent-container, 0.94);
-    font-size: 0.6rem;
-    line-height: 1.4;
+    background: rgba($color-surface-lowest, 0.96);
+    border: 1px solid rgba($color-accent, 0.45);
+    border-radius: $radius-md;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.34);
+    color: rgba($color-on-surface, 0.96);
+    font-size: 0.72rem;
+    line-height: 1.35;
     margin: 0;
-    text-transform: none;
+    max-width: min(22rem, 82vw);
+    opacity: 0;
+    padding: 0.52rem 0.65rem;
+    pointer-events: none;
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 0.5rem);
+    transform: translateY(4px);
+    transition: opacity 180ms ease, transform 180ms ease;
+    z-index: 4;
+
+    &::after {
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid rgba($color-accent, 0.45);
+      content: '';
+      left: 0.9rem;
+      position: absolute;
+      top: 100%;
+    }
+  }
+
+  &__helpful-feedback--visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   &__verified-badge {
