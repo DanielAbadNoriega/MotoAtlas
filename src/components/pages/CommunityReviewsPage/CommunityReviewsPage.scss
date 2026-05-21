@@ -10,78 +10,372 @@
 }
 
 .community-reviews-page__hero {
-  @include container;
-
-  align-items: center;
   display: grid;
-  min-height: min(520px, 72vh);
-  padding-block: 8rem 4rem;
+  height: 870px;
+  min-height: min(870px, calc(100vh - 80px));
+  overflow: hidden;
+  place-items: center;
   position: relative;
-
-  &::before {
-    background:
-      linear-gradient(to right, rgba($color-on-surface, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba($color-on-surface, 0.04) 1px, transparent 1px);
-    background-size: 48px 48px;
-    content: '';
-    inset: 0 $margin-desktop;
-    opacity: 0.42;
-    pointer-events: none;
-    position: absolute;
-  }
-
-  > div {
-    max-width: 56rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  span {
-    @include label-caps;
-
-    color: $color-accent;
-  }
 
   h1 {
     @include headline-xl;
 
-    margin: 0.9rem 0 1rem;
+    color: white;
+    margin: 0 auto 1.25rem;
+    max-width: 58rem;
     text-transform: uppercase;
+    text-shadow: 0 5px 34px rgba(0, 0, 0, 0.95);
   }
 
   p {
     @include body-lg;
 
-    color: rgba($color-on-surface-variant, 0.9);
-    margin: 0;
-    max-width: 44rem;
+    color: rgba(#fff, 0.86);
+    margin: 0 auto;
+    max-width: 48rem;
+    text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
+  }
+}
+
+.community-reviews-page__hero-background {
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+
+  img {
+    filter: grayscale(0.45) contrast(1.1);
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.01);
+    width: 100%;
   }
 
-  a {
+  span {
+    background:
+      linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.45) 48%, transparent 100%),
+      linear-gradient(90deg, rgba($color-surface, 0.72) 0%, rgba($color-surface, 0.16) 52%, rgba($color-surface, 0.56) 100%);
+    inset: 0;
+    position: absolute;
+  }
+}
+
+.community-reviews-page__hero-content {
+  @include container;
+
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.community-reviews-page__hero-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+
+  a,
+  button {
     @include label-caps;
 
     align-items: center;
-    background: $color-accent;
-    border: 1px solid $color-accent;
+    border: 1px solid rgba($color-outline, 0.72);
     border-radius: $radius-lg;
-    color: white;
+    cursor: pointer;
     display: inline-flex;
-    margin-top: 2rem;
-    min-height: 2.9rem;
-    padding: 0.85rem 1.15rem;
+    justify-content: center;
+    min-height: 3.4rem;
+    padding: 0.95rem 1.5rem;
     text-decoration: none;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
     transition:
       background $transition-base,
       border-color $transition-base,
+      filter $transition-base,
       transform $transition-fast;
 
     &:hover,
     &:focus-visible {
-      background: $color-accent-dark;
-      border-color: $color-accent-dark;
+      border-color: $color-accent;
+      filter: brightness(1.08);
       outline: 0;
       transform: translateY(-1px);
     }
+  }
+
+  button {
+    background: $color-accent-container;
+    border-color: $color-accent-container;
+    color: white;
+  }
+
+  a {
+    background: rgba($color-surface, 0.72);
+    color: $color-on-surface;
+    backdrop-filter: blur(20px);
+  }
+}
+
+.community-reviews-page__editorial {
+  @include container;
+
+  padding-block: 3rem 0.75rem;
+}
+
+.community-reviews-page__editorial-grid {
+  align-items: start;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.38fr);
+}
+
+.community-reviews-page__editorial-main,
+.community-reviews-page__editorial-section {
+  min-width: 0;
+}
+
+.community-reviews-page__editorial-main {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.community-reviews-page__editorial-section {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.community-reviews-page__editorial-header {
+  border-left: 4px solid $color-accent-container;
+  padding-left: 0.85rem;
+
+  h2 {
+    @include headline-md;
+
+    margin: 0;
+    text-transform: uppercase;
+  }
+}
+
+.community-reviews-page__editorial-list {
+  display: grid;
+  gap: 0.58rem;
+
+  .account-review-card--communityCompact {
+    grid-template-columns: minmax(8rem, 0.2fr) minmax(0, 1fr);
+  }
+}
+
+.community-reviews-page__editorial-section--featured {
+  .account-review-card__body {
+    min-height: 9.4rem;
+  }
+
+  .account-review-card__media {
+    min-height: 9.4rem;
+  }
+}
+
+.community-reviews-page__editorial-section--latest {
+  .community-reviews-page__editorial-list {
+    gap: 0.5rem;
+  }
+
+  .account-review-card--communityCompact {
+    grid-template-columns: minmax(6.75rem, 0.17fr) minmax(0, 1fr);
+  }
+
+  .account-review-card__body {
+    gap: 0.34rem;
+    min-height: 7.7rem;
+    padding: 0.58rem 0.78rem;
+  }
+
+  .account-review-card__media {
+    min-height: 7.7rem;
+  }
+
+  .account-review-card__title-row h3 {
+    font-size: clamp(0.88rem, 1.2vw, 1.04rem);
+  }
+
+  .account-review-card__rating {
+    font-size: 0.86rem;
+
+    .account-review-card__rating-icon {
+      font-size: 1rem;
+      padding-bottom: 1px;
+    }
+  }
+
+  .account-review-card__meta {
+    gap: 0.18rem 0.45rem;
+  }
+
+  .account-review-card__comment {
+    font-size: 0.78rem;
+    line-height: 1.28;
+  }
+
+  .account-review-card__chips-row {
+    max-height: 1.25rem;
+  }
+
+  .account-review-card__footer {
+    padding-top: 0.32rem;
+  }
+
+  .account-review-card__author-avatar {
+    display: none;
+  }
+}
+
+.community-reviews-page__editorial-empty,
+.community-reviews-page__insights {
+  @include glass-panel;
+
+  background:
+    linear-gradient(180deg, rgba($color-surface-container-high, 0.74), rgba($color-surface-low, 0.88)),
+    radial-gradient(circle at top left, rgba($color-accent, 0.12), transparent 17rem);
+  border-radius: $radius-xl;
+}
+
+.community-reviews-page__editorial-empty {
+  color: rgba($color-on-surface-variant, 0.88);
+  margin: 0;
+  padding: 1.25rem;
+}
+
+.community-reviews-page__insights {
+  background:
+    linear-gradient(180deg, rgba($color-surface-container, 0.94), rgba($color-surface-lowest, 0.96)),
+    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.15), transparent 15rem);
+  border-color: rgba($color-outline-variant, 0.46);
+  box-shadow:
+    $shadow-glass,
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  display: grid;
+  gap: 0.8rem;
+  overflow: hidden;
+  padding: clamp(0.85rem, 1.6vw, 1.1rem);
+}
+
+.community-reviews-page__insights-header {
+  border-bottom: 1px solid rgba($color-outline-variant, 0.32);
+  display: grid;
+  gap: 0.42rem;
+  padding-bottom: 0.72rem;
+
+  .community-reviews-page__insights-kicker {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.7);
+    letter-spacing: 0.16em;
+  }
+
+  h2 {
+    @include headline-md;
+
+    align-items: center;
+    display: flex;
+    gap: 0.55rem;
+    margin: 0;
+    text-transform: uppercase;
+
+    .material-symbols-outlined {
+      align-items: center;
+      background: rgba($color-accent, 0.16);
+      border: 1px solid rgba($color-accent, 0.34);
+      border-radius: $radius-md;
+      color: $color-accent;
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 1.15rem;
+      height: 2rem;
+      justify-content: center;
+      width: 2rem;
+    }
+  }
+}
+
+.community-reviews-page__insight-list {
+  display: grid;
+  gap: 0.52rem;
+}
+
+.community-reviews-page__insight-item {
+  align-items: start;
+  background:
+    linear-gradient(135deg, rgba($color-surface-lowest, 0.72), rgba($color-surface-container, 0.72)),
+    radial-gradient(circle at top right, rgba($color-accent, 0.08), transparent 7rem);
+  border: 1px solid rgba($color-outline-variant, 0.34);
+  border-radius: $radius-lg;
+  display: grid;
+  gap: 0.58rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-width: 0;
+  padding: 0.68rem;
+  transition:
+    background $transition-base,
+    border-color $transition-base,
+    transform $transition-fast;
+
+  &:hover {
+    background:
+      linear-gradient(135deg, rgba($color-surface-container, 0.88), rgba($color-surface-low, 0.78)),
+      radial-gradient(circle at top right, rgba($color-accent, 0.12), transparent 7rem);
+    border-color: rgba($color-accent, 0.4);
+    transform: translateY(-1px);
+  }
+}
+
+span.community-reviews-page__insight-icon {
+  align-items: center;
+  background: rgba($color-surface-bright, 0.28);
+  border: 1px solid rgba($color-outline-variant, 0.42);
+  border-radius: $radius-md;
+  color: rgba($color-accent, 0.95);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 1.2rem;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.community-reviews-page__insight-content {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.community-reviews-page__insight-label {
+  @include label-caps;
+
+  color: $color-accent;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+}
+
+.community-reviews-page__insight-value {
+  color: $color-on-surface;
+  font-family: $font-headline;
+  font-size: clamp(0.9rem, 1.35vw, 1.04rem);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.community-reviews-page__insight-content {
+  p {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.74);
+    font-size: 0.58rem;
+    margin: 0;
   }
 }
 
@@ -445,40 +739,220 @@
   min-width: 0;
 }
 
-.community-reviews-page__results-header {
-  @include glass-panel;
-
+.community-reviews-page__garage-header {
   align-items: end;
-  background: rgba($color-surface-low, 0.68);
-  border-radius: $radius-xl;
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding: clamp(1.2rem, 3vw, 1.8rem);
-
-  span {
-    @include label-caps;
-
-    color: $color-accent;
-  }
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: 1.35rem;
 
   h2 {
     @include headline-lg;
 
-    margin: 0.35rem 0;
+    margin: 0;
     text-transform: uppercase;
   }
 
   p {
     color: rgba($color-on-surface-variant, 0.86);
+    line-height: 1.6;
+    margin: 0.55rem 0 0;
+    max-width: 46rem;
+  }
+
+  dl {
+    display: flex;
+    gap: 0.75rem;
     margin: 0;
+  }
+
+  dl > div {
+    @include glass-panel;
+
+    border-radius: $radius-lg;
+    min-width: 6.4rem;
+    padding: 0.75rem 0.95rem;
+  }
+
+  dt {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.72);
+    font-size: 0.62rem;
+  }
+
+  dd {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: 1.35rem;
+    font-weight: 900;
+    margin: 0.25rem 0 0;
   }
 }
 
-.community-reviews-page__list {
+.community-reviews-page__garage-grid {
   display: grid;
   gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.community-reviews-page__garage-card {
+  @include image-zoom;
+
+  background: $color-surface-container;
+  border: 1px solid rgba($color-outline-variant, 0.5);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  min-height: 18.5rem;
+  overflow: hidden;
+  position: relative;
+
+  .motorcycle-image {
+    height: 100%;
+    inset: 0;
+    position: absolute;
+    width: 100%;
+
+    img {
+      filter: grayscale(0.28) contrast(1.08) saturate(0.95);
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      width: 100%;
+    }
+  }
+}
+
+.community-reviews-page__garage-card-overlay {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba($color-surface, 0.6) 46%, rgba($color-surface-lowest, 0.96)),
+    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.16), transparent 13rem);
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.community-reviews-page__garage-card-content {
+  bottom: 0;
+  display: grid;
+  gap: 0.85rem;
+  left: 0;
+  padding: 1rem;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+}
+
+.community-reviews-page__garage-card-header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+
+  > div > span {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.74);
+    font-size: 0.62rem;
+  }
+
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 0.98;
+    margin: 0.25rem 0 0;
+    text-transform: uppercase;
+  }
+}
+
+.community-reviews-page__garage-rating {
+  align-items: center;
+  color: $color-on-surface;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.28rem;
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+
+  span {
+    color: $color-accent;
+    font-size: 1.08rem;
+  }
+
+  strong {
+    font-family: $font-headline;
+    font-size: 1.35rem;
+    font-weight: 900;
+  }
+}
+
+.community-reviews-page__garage-meta {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+
+  div {
+    min-width: 0;
+  }
+
+  dt {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.7);
+    font-size: 0.55rem;
+  }
+
+  dd {
+    @include label-caps;
+
+    color: $color-on-surface;
+    font-size: 0.66rem;
+    line-height: 1.2;
+    margin: 0.22rem 0 0;
+  }
+}
+
+.community-reviews-page__garage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+
+  a {
+    @include label-caps;
+
+    align-items: center;
+    border: 1px solid rgba($color-outline-variant, 0.75);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: inline-flex;
+    flex: 1 1 8rem;
+    justify-content: center;
+    min-height: 2.35rem;
+    padding: 0.65rem 0.85rem;
+    text-decoration: none;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+
+    &:first-child {
+      background: $color-accent-container;
+      border-color: $color-accent-container;
+      color: #fff;
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: $color-accent;
+      outline: 0;
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .community-reviews-page__skeleton-card {
@@ -612,8 +1086,12 @@
 }
 
 @media (max-width: $breakpoint-tablet) {
-  .community-reviews-page__hero::before {
-    inset-inline: $margin-tablet;
+  .community-reviews-page__editorial {
+    padding-block: 3rem 1rem;
+  }
+
+  .community-reviews-page__editorial-grid {
+    grid-template-columns: 1fr;
   }
 
   .community-reviews-page__mobile-filter-trigger {
@@ -623,6 +1101,10 @@
   .community-reviews-page__content {
     grid-template-columns: 1fr;
     padding-block: 1.5rem 5rem;
+  }
+
+  .community-reviews-page__garage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .community-reviews-page__filters {
@@ -664,12 +1146,37 @@
 
 @media (max-width: $breakpoint-mobile) {
   .community-reviews-page__hero {
-    min-height: 420px;
-    padding-block: 6rem 2rem;
-    text-align: left;
+    height: 600px;
+    min-height: 600px;
+  }
 
-    &::before {
-      inset-inline: $margin-mobile;
+  .community-reviews-page__hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    a,
+    button {
+      width: 100%;
+    }
+  }
+
+  .community-reviews-page__editorial {
+    padding-block: 2.5rem 0.75rem;
+  }
+
+  .community-reviews-page__editorial-grid,
+  .community-reviews-page__editorial-main {
+    gap: 1.25rem;
+  }
+
+  .community-reviews-page__editorial-list {
+    .account-review-card--communityCompact {
+      grid-template-columns: 1fr;
+    }
+
+    .account-review-card__media {
+      min-height: 12rem;
     }
   }
 
@@ -717,9 +1224,22 @@
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 
-  .community-reviews-page__results-header {
+  .community-reviews-page__garage-header {
     align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+
+    dl {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .community-reviews-page__garage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .community-reviews-page__garage-card {
+    min-height: 17rem;
   }
 
   .community-reviews-page__skeleton-card {

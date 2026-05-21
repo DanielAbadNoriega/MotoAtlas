@@ -66,6 +66,115 @@
   }
 }
 
+.account-review-card--communityCompact {
+  background:
+    linear-gradient(135deg, rgba($color-surface-container-high, 0.7), rgba($color-surface-low, 0.92)),
+    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.06), transparent 12rem);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.36);
+  grid-template-columns: minmax(7.75rem, 0.2fr) minmax(0, 1fr);
+  min-height: 0;
+
+  .account-review-card__body {
+    gap: 0.42rem;
+    padding: 0.72rem 0.9rem;
+  }
+
+  .account-review-card__title-group {
+    gap: 0.25rem;
+  }
+
+  .account-review-card__title-row {
+    align-items: center;
+    gap: 0.6rem;
+
+    h2,
+    h3 {
+      font-size: clamp(0.95rem, 1.35vw, 1.16rem);
+      line-height: 1.05;
+    }
+  }
+
+  .account-review-card__rating {
+    font-size: 0.95rem;
+    gap: 0.18rem;
+
+    .account-review-card__rating-icon {
+      font-size: 1.15rem;
+      padding-bottom: 2px;
+    }
+  }
+
+  .account-review-card__meta {
+    gap: 0.24rem 0.58rem;
+
+    li {
+      font-size: 0.55rem;
+    }
+
+    .material-symbols-outlined {
+      font-size: 0.84rem;
+    }
+  }
+
+  .account-review-card__comment {
+    font-size: 0.84rem;
+    line-height: 1.34;
+    -webkit-line-clamp: 2;
+  }
+
+  .account-review-card__chips-row,
+  .account-review-card__chips {
+    gap: 0.26rem;
+  }
+
+  .account-review-card__chips-row {
+    max-height: 1.55rem;
+    overflow: hidden;
+  }
+
+  .account-review-card__chip {
+    font-size: 0.5rem;
+    padding: 0.22rem 0.34rem;
+  }
+
+  .account-review-card__footer {
+    border-top: 1px solid rgba($color-outline-variant, 0.22);
+    gap: 0.55rem;
+    padding-top: 0.42rem;
+  }
+
+  .account-review-card__author {
+    gap: 0.38rem;
+
+    .account-review-card__author-avatar {
+      font-size: 0.55rem;
+      height: 1.35rem;
+      width: 1.35rem;
+    }
+
+    .account-review-card__author-name {
+      font-size: 0.58rem;
+    }
+  }
+
+  .account-review-card__actions {
+    gap: 0.38rem;
+
+    a {
+      border-radius: $radius-md;
+      font-size: 0.54rem;
+      min-height: 1.75rem;
+      padding: 0.36rem 0.52rem;
+    }
+
+    a:first-child {
+      background: rgba($color-accent, 0.1);
+      border-color: rgba($color-accent, 0.42);
+      color: $color-on-surface;
+    }
+  }
+}
+
 .account-review-card__media {
   background: #000;
   min-height: 100%;
@@ -118,6 +227,7 @@
   display: flex;
   gap: 1rem;
   justify-content: space-between;
+  align-items: center;
 
   h2,
   h3 {
@@ -180,7 +290,7 @@
   padding-inline: 0;
 
   .account-review-card__rating-icon {
-    padding-bottom: 3px;
+    padding-bottom: 8px;
     color: $color-accent;
     font-size: 2rem;
     line-height: 1;
@@ -329,7 +439,7 @@
 
   a {
     @include label-caps;
-
+    font-family: $font-body;
     align-items: center;
     border-radius: $radius-lg;
     display: inline-flex;
@@ -372,7 +482,8 @@
     grid-template-columns: minmax(14rem, 0.34fr) minmax(0, 1fr);
   }
 
-  .account-review-card--community {
+  .account-review-card--community,
+  .account-review-card--communityCompact {
     grid-template-columns: minmax(12rem, 0.32fr) minmax(0, 1fr);
   }
 }
@@ -381,6 +492,7 @@
   .account-review-card,
   .account-review-card--compact,
   .account-review-card--community,
+  .account-review-card--communityCompact,
   .account-review-card__specs {
     grid-template-columns: 1fr;
   }

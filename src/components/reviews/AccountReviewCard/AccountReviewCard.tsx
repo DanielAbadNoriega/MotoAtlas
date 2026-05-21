@@ -14,7 +14,7 @@ import './AccountReviewCard.scss';
 type AccountReviewCardProps = Readonly<{
   headingLevel?: 2 | 3;
   review: MotorcycleReview;
-  variant?: 'compact' | 'community' | 'full';
+  variant?: 'compact' | 'community' | 'communityCompact' | 'full';
 }>;
 
 function ReviewChips({ items, tone }: Readonly<{ items: readonly string[]; tone: 'positive' | 'negative' }>) {
@@ -90,7 +90,7 @@ function ReviewAuthor({ userName }: Readonly<{ userName: string }>) {
 export function AccountReviewCard({ headingLevel = 2, review, variant = 'full' }: AccountReviewCardProps) {
   const Heading = `h${headingLevel}` as const;
   const motorcycle = getAccountReviewMotorcycleDisplay(review);
-  const isCommunityVariant = variant === 'community';
+  const isCommunityVariant = variant === 'community' || variant === 'communityCompact';
   const footerClasses = [
     'account-review-card__footer',
     isCommunityVariant ? 'account-review-card__footer--with-author' : 'account-review-card__footer--actions-only',
