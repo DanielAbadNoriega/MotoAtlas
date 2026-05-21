@@ -402,6 +402,105 @@ grant select on public.review_reactions to anon, authenticated;
 grant insert (review_id, user_id, type) on public.review_reactions to authenticated;
 grant delete on public.review_reactions to authenticated;
 
+create table if not exists public.review_reports (
+  id uuid primary key default gen_random_uuid(),
+  review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  reason text not null,
+  comment text null,
+  status text not null default 'pending',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table if exists public.review_reports
+  add column if not exists comment text null;
+
+alter table if exists public.review_reports
+  add column if not exists status text not null default 'pending';
+
+alter table if exists public.review_reports
+  add column if not exists updated_at timestamptz not null default now();
+
+alter table if exists public.review_reports
+  drop constraint if exists review_reports_reason_check;
+
+alter table if exists public.review_reports
+  add constraint review_reports_reason_check
+  check (reason in ('spam', 'offensive', 'false_information', 'harassment', 'other'));
+
+alter table if exists public.review_reports
+  drop constraint if exists review_reports_status_check;
+
+alter table if exists public.review_reports
+  add constraint review_reports_status_check
+  check (status in ('pending', 'reviewed', 'dismissed', 'action_taken'));
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'review_reports_review_id_user_id_key'
+      and conrelid = 'public.review_reports'::regclass
+  ) then
+    alter table public.review_reports
+      add constraint review_reports_review_id_user_id_key
+      unique (review_id, user_id);
+  end if;
+end $$;
+
+create index if not exists review_reports_review_id_idx
+on public.review_reports (review_id);
+
+create index if not exists review_reports_user_id_idx
+on public.review_reports (user_id);
+
+create index if not exists review_reports_status_idx
+on public.review_reports (status);
+
+create index if not exists review_reports_created_at_idx
+on public.review_reports (created_at);
+
+drop trigger if exists set_review_reports_updated_at on public.review_reports;
+create trigger set_review_reports_updated_at
+before update on public.review_reports
+for each row
+execute function public.set_updated_at();
+
+alter table public.review_reports enable row level security;
+
+drop policy if exists "Users can read own review reports" on public.review_reports;
+create policy "Users can read own review reports"
+on public.review_reports
+for select
+to authenticated
+using (user_id = auth.uid());
+
+drop policy if exists "Users can create own review report" on public.review_reports;
+create policy "Users can create own review report"
+on public.review_reports
+for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+  and status = 'pending'
+  and reason in ('spam', 'offensive', 'false_information', 'harassment', 'other')
+  and review_id is not null
+  and not exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = review_reports.review_id
+      and motorcycle_reviews.user_id = auth.uid()
+  )
+);
+
+revoke all on table public.review_reports from anon;
+revoke all on table public.review_reports from authenticated;
+
+grant select on public.review_reports to authenticated;
+grant insert (review_id, user_id, reason, comment, status) on public.review_reports to authenticated;
+
 notify pgrst, 'reload schema';
 
 create table if not exists public.user_profiles (

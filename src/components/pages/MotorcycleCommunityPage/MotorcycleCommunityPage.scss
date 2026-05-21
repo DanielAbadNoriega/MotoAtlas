@@ -852,6 +852,164 @@
     }
   }
 
+  &__helpful-action--report {
+    .material-symbols-outlined {
+      color: rgba($color-accent, 0.9);
+    }
+  }
+
+  &__helpful-action--reported {
+    background: rgba($color-accent, 0.11);
+    border-color: rgba($color-accent, 0.42);
+    color: rgba($color-on-surface, 0.9);
+    cursor: default;
+
+    .material-symbols-outlined {
+      color: rgba($color-accent, 0.95);
+      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-accent, 0.11);
+      border-color: rgba($color-accent, 0.42);
+      color: rgba($color-on-surface, 0.9);
+      transform: none;
+    }
+  }
+
+  &__report-panel {
+    background:
+      linear-gradient(135deg, rgba($color-surface-bright, 0.14), rgba($color-surface-lowest, 0.9)),
+      rgba($color-surface-container, 0.92);
+    border: 1px solid rgba($color-outline-variant, 0.36);
+    border-radius: $radius-lg;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 0.75rem;
+    padding: 0.95rem;
+
+    fieldset {
+      border: 0;
+      margin: 0;
+      min-inline-size: 0;
+      padding: 0;
+    }
+
+    legend,
+    label > span {
+      @include label-caps;
+
+      color: rgba($color-on-surface-variant, 0.82);
+      font-size: 0.64rem;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  &__report-reasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+
+    label {
+      align-items: center;
+      cursor: pointer;
+      display: inline-flex;
+    }
+
+    input {
+      height: 1px;
+      margin: -1px;
+      opacity: 0;
+      overflow: hidden;
+      position: absolute;
+      width: 1px;
+    }
+
+    span {
+      @include label-caps;
+
+      background: rgba($color-surface-container-high, 0.45);
+      border: 1px solid rgba($color-outline-variant, 0.34);
+      border-radius: 999px;
+      color: rgba($color-on-surface-variant, 0.9);
+      font-size: 0.6rem;
+      padding: 0.45rem 0.65rem;
+      transition: background $transition-base, border-color $transition-base, color $transition-base;
+    }
+
+    input:checked + span {
+      background: rgba($color-accent, 0.14);
+      border-color: rgba($color-accent, 0.56);
+      color: $color-on-surface;
+    }
+
+    input:focus-visible + span {
+      outline: 2px solid rgba($color-accent, 0.7);
+      outline-offset: 2px;
+    }
+  }
+
+  &__report-comment {
+    display: grid;
+    gap: 0.45rem;
+
+    textarea {
+      background: rgba($color-surface-lowest, 0.72);
+      border: 1px solid rgba($color-outline-variant, 0.38);
+      border-radius: $radius-md;
+      color: $color-on-surface;
+      font: inherit;
+      min-height: 5rem;
+      padding: 0.7rem 0.8rem;
+      resize: vertical;
+
+      &::placeholder {
+        color: rgba($color-on-surface-variant, 0.62);
+      }
+
+      &:focus-visible {
+        border-color: rgba($color-accent, 0.65);
+        outline: 2px solid rgba($color-accent, 0.22);
+      }
+    }
+  }
+
+  &__report-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+
+    button {
+      @include label-caps;
+
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.62rem;
+      min-height: 2rem;
+      padding: 0.45rem 0.75rem;
+
+      &:first-child {
+        background: transparent;
+        border: 1px solid rgba($color-outline-variant, 0.42);
+        color: rgba($color-on-surface-variant, 0.9);
+      }
+
+      &:last-child {
+        background: rgba($color-accent, 0.16);
+        border: 1px solid rgba($color-accent, 0.52);
+        color: $color-on-surface;
+      }
+
+      &:disabled {
+        cursor: wait;
+        opacity: 0.66;
+      }
+    }
+  }
+
   &__helpful-feedback {
     background: rgba($color-surface-lowest, 0.96);
     border: 1px solid rgba($color-accent, 0.45);

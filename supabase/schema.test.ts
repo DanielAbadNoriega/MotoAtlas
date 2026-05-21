@@ -19,6 +19,11 @@ function getReviewReactionsGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getReviewReportsGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 describe('Supabase public motorcycle schema', () => {
   it('permite leer motos públicas también con sesión autenticada', () => {
     expect(schemaSql).toContain('create policy "Public motorcycles are readable"');
@@ -184,6 +189,82 @@ describe('Supabase review_reactions schema', () => {
     ]);
     expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.review_reactions\s+to\s+(anon|authenticated)/);
     expect(normalizedSchemaSql).not.toMatch(/on public\.review_reactions for update to authenticated/);
+  });
+});
+
+describe('Supabase review_reports schema', () => {
+  it('crea tabla de reportes con claves, checks e índices esperados', () => {
+    expect(schemaSql).toContain('create table if not exists public.review_reports');
+    expect(schemaSql).toContain('id uuid primary key default gen_random_uuid()');
+    expect(schemaSql).toContain('review_id uuid not null references public.motorcycle_reviews(id) on delete cascade');
+    expect(schemaSql).toContain('user_id uuid not null references auth.users(id) on delete cascade');
+    expect(schemaSql).toContain('reason text not null');
+    expect(schemaSql).toContain('comment text null');
+    expect(schemaSql).toContain("status text not null default 'pending'");
+    expect(schemaSql).toContain('created_at timestamptz not null default now()');
+    expect(schemaSql).toContain('updated_at timestamptz not null default now()');
+
+    expect(schemaSql).toContain('drop constraint if exists review_reports_reason_check');
+    expect(schemaSql).toContain('add constraint review_reports_reason_check');
+    expect(schemaSql).toContain("check (reason in ('spam', 'offensive', 'false_information', 'harassment', 'other'))");
+    expect(schemaSql).toContain('drop constraint if exists review_reports_status_check');
+    expect(schemaSql).toContain('add constraint review_reports_status_check');
+    expect(schemaSql).toContain("check (status in ('pending', 'reviewed', 'dismissed', 'action_taken'))");
+
+    expect(schemaSql).toContain('review_reports_review_id_user_id_key');
+    expect(schemaSql).toContain("conrelid = 'public.review_reports'::regclass");
+    expect(schemaSql).toContain('unique (review_id, user_id)');
+    expect(schemaSql).toMatch(/create index if not exists review_reports_review_id_idx\s+on public\.review_reports \(review_id\);/);
+    expect(schemaSql).toMatch(/create index if not exists review_reports_user_id_idx\s+on public\.review_reports \(user_id\);/);
+    expect(schemaSql).toMatch(/create index if not exists review_reports_status_idx\s+on public\.review_reports \(status\);/);
+    expect(schemaSql).toMatch(/create index if not exists review_reports_created_at_idx\s+on public\.review_reports \(created_at\);/);
+  });
+
+  it('crea trigger updated_at para reportes', () => {
+    expect(schemaSql).toContain('drop trigger if exists set_review_reports_updated_at on public.review_reports;');
+    expect(schemaSql).toContain('create trigger set_review_reports_updated_at');
+    expect(schemaSql).toContain('before update on public.review_reports');
+    expect(schemaSql).toContain('execute function public.set_updated_at();');
+  });
+
+  it('activa RLS, permite leer solo reportes propios y no abre lectura pública', () => {
+    expect(schemaSql).toContain('alter table public.review_reports enable row level security;');
+    expect(schemaSql).toContain('drop policy if exists "Users can read own review reports" on public.review_reports;');
+    expect(schemaSql).toContain('create policy "Users can read own review reports"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (user_id = auth.uid())');
+    expect(normalizedSchemaSql).not.toMatch(/on public\.review_reports for select to anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/on public\.review_reports for select to anon, authenticated\b/);
+  });
+
+  it('solo permite insertar reportes propios pending y evita autoreporte', () => {
+    expect(schemaSql).toContain('drop policy if exists "Users can create own review report" on public.review_reports;');
+    expect(schemaSql).toContain('create policy "Users can create own review report"');
+    expect(schemaSql).toContain('for insert');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('user_id = auth.uid()');
+    expect(schemaSql).toContain("status = 'pending'");
+    expect(schemaSql).toContain("reason in ('spam', 'offensive', 'false_information', 'harassment', 'other')");
+    expect(schemaSql).toContain('review_id is not null');
+    expect(schemaSql).toContain('not exists (');
+    expect(schemaSql).toContain('motorcycle_reviews.id = review_reports.review_id');
+    expect(schemaSql).toContain('motorcycle_reviews.user_id = auth.uid()');
+  });
+
+  it('usa grants mínimos y no concede update/delete a usuarios normales', () => {
+    const grants = getReviewReportsGrantStatements();
+
+    expect(schemaSql).toContain('revoke all on table public.review_reports from anon;');
+    expect(schemaSql).toContain('revoke all on table public.review_reports from authenticated;');
+    expect(grants).toEqual([
+      'grant select on public.review_reports to authenticated;',
+      'grant insert (review_id, user_id, reason, comment, status) on public.review_reports to authenticated;',
+    ]);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+select\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+anon/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+(update|delete)\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/on public\.review_reports for update to authenticated/);
+    expect(normalizedSchemaSql).not.toMatch(/on public\.review_reports for delete to authenticated/);
   });
 });
 

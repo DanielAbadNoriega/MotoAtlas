@@ -154,6 +154,7 @@ describe('AccountMotorcycleReviewsPage', () => {
     expect(screen.queryByText('Review de otra moto.')).not.toBeInTheDocument();
     expect(await screen.findByLabelText('Útil 5')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Útil 5/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
     expect(getReviewReactionSummaryMock).toHaveBeenCalledWith(['review-pending', 'review-approved'], {
       accessToken: 'session-token',
       userId: 'user-1',
