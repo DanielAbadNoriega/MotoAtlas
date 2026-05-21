@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  clearMyReviewReaction,
   getHelpfulReactionSummary,
   getReviewReactionSummary,
   toggleHelpfulReaction,
@@ -238,5 +239,50 @@ describe('reviewReactionService', () => {
     await expect(getReviewReactionSummary(['review-1'])).rejects.toThrow(
       'Supabase review_reactions request failed (403): permission denied',
     );
+  });
+
+  it('clearMyReviewReaction elimina reacción propia y devuelve resumen actualizado', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(emptyOkResponse())
+      .mockResolvedValueOnce(jsonResponse([
+        { review_id: 'review-1', user_id: 'user-2', type: 'helpful' },
+      ]));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const summary = await clearMyReviewReaction('review-1', {
+      accessToken: 'session-token',
+      userId: 'user-1',
+    });
+    const [deleteUrl, deleteRequest] = fetchMock.mock.calls[0];
+
+    expect(summary).toEqual({
+      helpfulCount: 1,
+      hasReactedHelpful: false,
+      hasReactedNotHelpful: false,
+      reviewId: 'review-1',
+    });
+    expect(deleteRequest).toMatchObject({ method: 'DELETE' });
+    expect(decodeURIComponent(String(deleteUrl))).toContain('review_id=eq.review-1');
+    expect(decodeURIComponent(String(deleteUrl))).toContain('user_id=eq.user-1');
+    expect(deleteRequest.headers).toMatchObject({
+      Authorization: 'Bearer session-token',
+      Prefer: 'return=minimal',
+    });
+  });
+
+  it('clearMyReviewReaction exige credenciales de sesión', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(clearMyReviewReaction('review-1', { accessToken: '', userId: 'user-1' })).rejects.toThrow(
+      'userId y accessToken son obligatorios para reaccionar a reviews',
+    );
+    await expect(clearMyReviewReaction('  ', { accessToken: 'session-token', userId: 'user-1' })).rejects.toThrow(
+      'reviewId es obligatorio para limpiar reacciones de reviews',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

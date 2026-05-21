@@ -3,7 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
-import { getReviewReactionSummary, toggleHelpfulReaction, toggleNotHelpfulReaction } from '../../../services/reviewReactionService';
+import {
+  clearMyReviewReaction,
+  getReviewReactionSummary,
+  toggleHelpfulReaction,
+  toggleNotHelpfulReaction,
+} from '../../../services/reviewReactionService';
 import { createReviewReport, getMyReviewReports } from '../../../services/reviewReportService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import {
@@ -21,6 +26,7 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
 }));
 
 vi.mock('../../../services/reviewReactionService', () => ({
+  clearMyReviewReaction: vi.fn(),
   getReviewReactionSummary: vi.fn(),
   toggleHelpfulReaction: vi.fn(),
   toggleNotHelpfulReaction: vi.fn(),
@@ -40,6 +46,7 @@ const createReviewMock = vi.mocked(createReview);
 const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
 const toggleHelpfulReactionMock = vi.mocked(toggleHelpfulReaction);
 const toggleNotHelpfulReactionMock = vi.mocked(toggleNotHelpfulReaction);
+const clearMyReviewReactionMock = vi.mocked(clearMyReviewReaction);
 const createReviewReportMock = vi.mocked(createReviewReport);
 const getMyReviewReportsMock = vi.mocked(getMyReviewReports);
 const useAuthMock = vi.mocked(useAuth);
@@ -119,6 +126,7 @@ describe('MotorcycleCommunityPage', () => {
     getReviewReactionSummaryMock.mockReset();
     toggleHelpfulReactionMock.mockReset();
     toggleNotHelpfulReactionMock.mockReset();
+    clearMyReviewReactionMock.mockReset();
     createReviewReportMock.mockReset();
     getMyReviewReportsMock.mockReset();
     useAuthMock.mockReset();
@@ -133,6 +141,12 @@ describe('MotorcycleCommunityPage', () => {
       })),
     );
     getMyReviewReportsMock.mockResolvedValue([]);
+    clearMyReviewReactionMock.mockResolvedValue({
+      helpfulCount: 1,
+      hasReactedHelpful: false,
+      hasReactedNotHelpful: false,
+      reviewId: 'review-approved-1',
+    });
     createReviewReportMock.mockResolvedValue({
       comment: null,
       reason: 'spam',
@@ -521,8 +535,15 @@ describe('MotorcycleCommunityPage', () => {
       { comment: 'Datos incorrectos', reason: 'false_information', reviewId: 'review-approved-1' },
       { accessToken: 'session-token', userId: 'user-1' },
     );
+    expect(clearMyReviewReactionMock).toHaveBeenCalledWith('review-approved-1', {
+      accessToken: 'session-token',
+      userId: 'user-1',
+    });
     await waitFor(() => expect(within(firstRow).getByRole('status')).toHaveTextContent('Gracias. Revisaremos esta review.'));
     expect(within(firstRow).getByLabelText('Review reportada')).toHaveTextContent('Reportada');
+    expect(within(firstRow).queryByRole('button', { name: /Marcar como útil/i })).not.toBeInTheDocument();
+    expect(within(firstRow).queryByRole('button', { name: /Marcar como no útil/i })).not.toBeInTheDocument();
+    expect(within(firstRow).getByLabelText('Útil 1')).toBeInTheDocument();
   });
 
   it('duplicado de reporte muestra mensaje controlado y no abre contador', async () => {
@@ -541,6 +562,10 @@ describe('MotorcycleCommunityPage', () => {
     await user.click(within(firstRow).getByRole('button', { name: /Enviar reporte/i }));
 
     await waitFor(() => expect(within(firstRow).getByRole('status')).toHaveTextContent('Ya has reportado esta review.'));
+    expect(clearMyReviewReactionMock).toHaveBeenCalledWith('review-approved-1', {
+      accessToken: 'session-token',
+      userId: 'user-1',
+    });
     expect(within(firstRow).getByLabelText('Review reportada')).toHaveTextContent('Reportada');
     expect(within(firstRow).queryByText(/Reportar\s+\d/)).not.toBeInTheDocument();
   });
@@ -565,7 +590,43 @@ describe('MotorcycleCommunityPage', () => {
 
     const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
     await waitFor(() => expect(within(firstRow).getByLabelText('Review reportada')).toHaveTextContent('Reportada'));
+    expect(within(firstRow).queryByRole('button', { name: /Marcar como útil/i })).not.toBeInTheDocument();
+    expect(within(firstRow).queryByRole('button', { name: /Marcar como no útil/i })).not.toBeInTheDocument();
+    expect(within(firstRow).getByLabelText('Útil 2')).toBeInTheDocument();
     expect(within(firstRow).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
+  });
+
+  it('si tenía no útil y reporta, limpia no útil y deja útil pasivo sin bajar de 0', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
+    getReviewReactionSummaryMock.mockImplementation(async (reviewIds) =>
+      reviewIds.map((reviewId) => ({
+        helpfulCount: reviewId === 'review-approved-1' ? 0 : 0,
+        hasReactedHelpful: false,
+        hasReactedNotHelpful: reviewId === 'review-approved-1',
+        reviewId,
+      })),
+    );
+    clearMyReviewReactionMock.mockResolvedValue({
+      helpfulCount: 0,
+      hasReactedHelpful: false,
+      hasReactedNotHelpful: false,
+      reviewId: 'review-approved-1',
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
+    await user.click(await waitFor(() => within(firstRow).getByRole('button', { name: /Reportar review/i })));
+    await user.click(within(firstRow).getByRole('button', { name: /Enviar reporte/i }));
+
+    await waitFor(() => expect(within(firstRow).getByLabelText('Review reportada')).toBeInTheDocument());
+    expect(within(firstRow).getByLabelText('Útil 0')).toBeInTheDocument();
+    expect(within(firstRow).queryByRole('button', { name: /Marcar como no útil/i })).not.toBeInTheDocument();
   });
 
   it('no permite marcar como útil una review propia y la muestra como métrica pasiva', async () => {

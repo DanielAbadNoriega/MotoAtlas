@@ -211,3 +211,40 @@ export function toggleNotHelpfulReaction(
 ): Promise<ReviewReactionSummary> {
   return toggleReaction(reviewId, authContext, 'not_helpful');
 }
+
+export async function clearMyReviewReaction(
+  reviewId: string,
+  authContext: CreateReviewAuthContext,
+): Promise<ReviewReactionSummary> {
+  const normalizedReviewId = reviewId.trim();
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+
+  if (!normalizedReviewId) {
+    throw new Error('reviewId es obligatorio para limpiar reacciones de reviews.');
+  }
+
+  if (!normalizedAuthContext) {
+    throw new Error('userId y accessToken son obligatorios para limpiar reacciones de reviews.');
+  }
+
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    review_id: `eq.${normalizedReviewId}`,
+    user_id: `eq.${normalizedAuthContext.userId}`,
+  });
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/review_reactions?${params.toString()}`, {
+    headers: buildHeaders(config, normalizedAuthContext.accessToken, { Prefer: 'return=minimal' }),
+    method: 'DELETE',
+  });
+
+  await assertSupabaseOk(response);
+
+  const [updatedSummary] = await getReviewReactionSummary([normalizedReviewId], normalizedAuthContext);
+
+  return updatedSummary ?? {
+    helpfulCount: 0,
+    hasReactedHelpful: false,
+    hasReactedNotHelpful: false,
+    reviewId: normalizedReviewId,
+  };
+}
