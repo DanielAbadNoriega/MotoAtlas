@@ -584,7 +584,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
 
       <section className="motorcycle-community__hero-actions" aria-label="Acciones de comunidad">
         <a className="button button--ghost" href={getBikeDetailHash(bike)}>
-          Volver a ficha
+          Ver ficha
         </a>
         <a className="button button--ghost" href={getComparatorHashFromBikes([bike])}>
           Comparar esta moto
