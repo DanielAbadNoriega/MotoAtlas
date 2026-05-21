@@ -71,7 +71,7 @@ type ReportRow = Readonly<{
   user_id: string;
 }>;
 
-const reportStatuses = new Set<ReviewReportStatus>(['pending', 'reviewed', 'dismissed', 'action_taken']);
+const reportStatuses = new Set<ReviewReportStatus>(['reviewed', 'dismissed', 'action_taken']);
 const reviewStatuses = new Set<MotorcycleReviewStatus>(['approved', 'rejected', 'hidden']);
 
 function getSupabaseConfig() {
@@ -269,4 +269,14 @@ export async function updateReportedReviewStatus(
   });
 
   await assertSupabaseOk(response, 'motorcycle_reviews');
+}
+
+export async function resolveReportWithReviewStatus(
+  reportId: string,
+  reviewId: string,
+  reviewStatus: MotorcycleReviewStatus,
+  authContext: CreateReviewAuthContext,
+): Promise<void> {
+  await updateReportedReviewStatus(reviewId, reviewStatus, authContext);
+  await updateReviewReportStatus(reportId, 'action_taken', authContext);
 }

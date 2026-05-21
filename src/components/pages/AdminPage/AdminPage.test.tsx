@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import {
   getReviewReports,
-  updateReportedReviewStatus,
+  resolveReportWithReviewStatus,
   updateReviewReportStatus,
   type AdminReviewReport,
 } from '../../../services/adminModerationService';
@@ -16,14 +16,14 @@ vi.mock('../../../features/auth', () => ({
 
 vi.mock('../../../services/adminModerationService', () => ({
   getReviewReports: vi.fn(),
-  updateReportedReviewStatus: vi.fn(),
+  resolveReportWithReviewStatus: vi.fn(),
   updateReviewReportStatus: vi.fn(),
 }));
 
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
+const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
-const updateReportedReviewStatusMock = vi.mocked(updateReportedReviewStatus);
 
 const adminAuth = {
   user: { id: 'admin-1', email: 'admin@motoatlas.com' },
@@ -76,8 +76,8 @@ describe('AdminPage', () => {
   beforeEach(() => {
     useAuthMock.mockReset();
     getReviewReportsMock.mockReset().mockResolvedValue(reports);
+    resolveReportWithReviewStatusMock.mockReset().mockResolvedValue(undefined);
     updateReviewReportStatusMock.mockReset().mockResolvedValue(undefined);
-    updateReportedReviewStatusMock.mockReset().mockResolvedValue(undefined);
     mockAuth();
   });
 
@@ -130,6 +130,10 @@ describe('AdminPage', () => {
       { accessToken: 'admin-token', userId: 'admin-1' },
       { reason: 'all', sort: 'recent', status: 'pending' },
     );
+    expect(screen.getByRole('button', { name: 'Descartar reporte' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Marcar acción tomada' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gestionar reporte' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gestionar review' })).toBeInTheDocument();
   });
 
   it('filtra por estado, motivo y orden', async () => {
@@ -156,7 +160,7 @@ describe('AdminPage', () => {
     ));
   });
 
-  it('permite cambiar estado de reporte y de review', async () => {
+  it('permite cambiar estado de reporte y de review con feedback claro', async () => {
     const user = userEvent.setup();
     render(<AdminModerationPage />);
 
@@ -167,14 +171,42 @@ describe('AdminPage', () => {
       accessToken: 'admin-token',
       userId: 'admin-1',
     });
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Reporte actualizado.'));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Reporte marcado como revisado.'));
 
-    await user.click(within(card).getByRole('button', { name: /Ocultar review/i }));
-    expect(updateReportedReviewStatusMock).toHaveBeenCalledWith('review-1', 'hidden', {
+    await user.click(within(card).getByRole('button', { name: 'Descartar reporte' }));
+    expect(updateReviewReportStatusMock).toHaveBeenCalledWith('report-1', 'dismissed', {
       accessToken: 'admin-token',
       userId: 'admin-1',
     });
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Estado de la review actualizado.'));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Reporte descartado.'));
+
+    await user.click(within(card).getByRole('button', { name: 'Marcar acción tomada' }));
+    expect(updateReviewReportStatusMock).toHaveBeenCalledWith('report-1', 'action_taken', {
+      accessToken: 'admin-token',
+      userId: 'admin-1',
+    });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Reporte marcado como acción tomada.'));
+
+    await user.click(within(card).getByRole('button', { name: /Ocultar review/i }));
+    expect(resolveReportWithReviewStatusMock).toHaveBeenCalledWith('report-1', 'review-1', 'hidden', {
+      accessToken: 'admin-token',
+      userId: 'admin-1',
+    });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review ocultada y reporte marcado como acción tomada.'));
+
+    await user.click(within(card).getByRole('button', { name: /Aprobar review/i }));
+    expect(resolveReportWithReviewStatusMock).toHaveBeenCalledWith('report-1', 'review-1', 'approved', {
+      accessToken: 'admin-token',
+      userId: 'admin-1',
+    });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review aprobada y reporte marcado como acción tomada.'));
+
+    await user.click(within(card).getByRole('button', { name: /Rechazar review/i }));
+    expect(resolveReportWithReviewStatusMock).toHaveBeenCalledWith('report-1', 'review-1', 'rejected', {
+      accessToken: 'admin-token',
+      userId: 'admin-1',
+    });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review rechazada y reporte marcado como acción tomada.'));
   });
 
   it('muestra empty, loading y error', async () => {
@@ -193,5 +225,29 @@ describe('AdminPage', () => {
     render(<AdminModerationPage />);
     expect(await screen.findByRole('alert')).toHaveTextContent('No se pudieron cargar los reportes.');
     expect(screen.getByRole('button', { name: /Reintentar/i })).toBeInTheDocument();
+  });
+
+  it('deshabilita acciones redundantes según estado actual', async () => {
+    getReviewReportsMock.mockResolvedValueOnce([{
+      ...reports[0],
+      status: 'action_taken',
+      review: reports[0].review ? { ...reports[0].review, status: 'hidden' } : reports[0].review,
+    }]);
+    render(<AdminModerationPage />);
+
+    const card = (await screen.findAllByTestId('admin-report-card'))[0];
+    expect(within(card).getByRole('button', { name: 'Marcar acción tomada' })).toBeDisabled();
+    expect(within(card).getByRole('button', { name: /Ocultar review/i })).toBeDisabled();
+  });
+
+  it('muestra error claro si falla una acción de moderación', async () => {
+    updateReviewReportStatusMock.mockRejectedValueOnce(new Error('permission denied'));
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const card = (await screen.findAllByTestId('admin-report-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Marcar revisado/i }));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('No se pudo completar la acción de moderación.'));
   });
 });

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { useAuth } from '../../../features/auth';
 import {
   getReviewReports,
-  updateReportedReviewStatus,
+  resolveReportWithReviewStatus,
   updateReviewReportStatus,
   type AdminReportReasonFilter,
   type AdminReportSort,
@@ -290,8 +290,8 @@ function AdminReportCard({
   report,
 }: Readonly<{
   isPending: boolean;
-  onReportStatus: (report: AdminReviewReport, status: ReviewReportStatus) => void;
-  onReviewStatus: (report: AdminReviewReport, status: MotorcycleReviewStatus) => void;
+  onReportStatus: (report: AdminReviewReport, status: Exclude<ReviewReportStatus, 'pending'>) => void;
+  onReviewStatus: (report: AdminReviewReport, status: Exclude<MotorcycleReviewStatus, 'pending'>) => void;
   report: AdminReviewReport;
 }>) {
   const motorcycleName = report.review?.motorcycle
@@ -339,29 +339,35 @@ function AdminReportCard({
       ) : null}
 
       <footer>
-        <div aria-label="Acciones sobre reporte">
-          <button type="button" disabled={isPending || report.status === 'reviewed'} onClick={() => onReportStatus(report, 'reviewed')}>
-            Marcar revisado
-          </button>
-          <button type="button" disabled={isPending || report.status === 'dismissed'} onClick={() => onReportStatus(report, 'dismissed')}>
-            Descartar
-          </button>
-          <button type="button" disabled={isPending || report.status === 'action_taken'} onClick={() => onReportStatus(report, 'action_taken')}>
-            Acción tomada
-          </button>
+        <div className="admin-page__action-group" aria-label="Acciones sobre reporte">
+          <h3>Gestionar reporte</h3>
+          <div>
+            <button type="button" disabled={isPending || report.status === 'reviewed'} onClick={() => onReportStatus(report, 'reviewed')}>
+              Marcar revisado
+            </button>
+            <button type="button" disabled={isPending || report.status === 'dismissed'} onClick={() => onReportStatus(report, 'dismissed')}>
+              Descartar reporte
+            </button>
+            <button type="button" disabled={isPending || report.status === 'action_taken'} onClick={() => onReportStatus(report, 'action_taken')}>
+              Marcar acción tomada
+            </button>
+          </div>
         </div>
 
         {report.review ? (
-          <div aria-label="Acciones sobre review">
-            <button type="button" disabled={isPending || reviewStatus === 'hidden'} onClick={() => onReviewStatus(report, 'hidden')}>
-              Ocultar review
-            </button>
-            <button type="button" disabled={isPending || reviewStatus === 'approved'} onClick={() => onReviewStatus(report, 'approved')}>
-              Aprobar review
-            </button>
-            <button type="button" disabled={isPending || reviewStatus === 'rejected'} onClick={() => onReviewStatus(report, 'rejected')}>
-              Rechazar review
-            </button>
+          <div className="admin-page__action-group" aria-label="Acciones sobre review">
+            <h3>Gestionar review</h3>
+            <div>
+              <button type="button" disabled={isPending || reviewStatus === 'hidden'} onClick={() => onReviewStatus(report, 'hidden')}>
+                Ocultar review
+              </button>
+              <button type="button" disabled={isPending || reviewStatus === 'approved'} onClick={() => onReviewStatus(report, 'approved')}>
+                Aprobar review
+              </button>
+              <button type="button" disabled={isPending || reviewStatus === 'rejected'} onClick={() => onReviewStatus(report, 'rejected')}>
+                Rechazar review
+              </button>
+            </div>
           </div>
         ) : null}
       </footer>
@@ -401,11 +407,23 @@ export function AdminModerationPage() {
     loadReports();
   }, [loadReports]);
 
-  const updateFilters = (next: Partial<AdminFilters>) => {
-    setFilters((currentFilters) => ({ ...currentFilters, ...next }));
-  };
+const updateFilters = (next: Partial<AdminFilters>) => {
+  setFilters((currentFilters) => ({ ...currentFilters, ...next }));
+};
 
-  const handleReportStatus = async (report: AdminReviewReport, status: ReviewReportStatus) => {
+const reportActionNotices: Record<Exclude<ReviewReportStatus, 'pending'>, string> = {
+  reviewed: 'Reporte marcado como revisado.',
+  dismissed: 'Reporte descartado.',
+  action_taken: 'Reporte marcado como acción tomada.',
+};
+
+const reviewActionNotices: Record<Exclude<MotorcycleReviewStatus, 'pending'>, string> = {
+  hidden: 'Review ocultada y reporte marcado como acción tomada.',
+  approved: 'Review aprobada y reporte marcado como acción tomada.',
+  rejected: 'Review rechazada y reporte marcado como acción tomada.',
+};
+
+  const handleReportStatus = async (report: AdminReviewReport, status: Exclude<ReviewReportStatus, 'pending'>) => {
     if (!authContext) {
       return;
     }
@@ -419,15 +437,15 @@ export function AdminModerationPage() {
       setReports((currentReports) => currentReports.map((currentReport) => (
         currentReport.id === report.id ? { ...currentReport, status } : currentReport
       )));
-      setNotice('Reporte actualizado.');
+      setNotice(reportActionNotices[status]);
     } catch {
-      setError('No se pudo actualizar el reporte.');
+      setError('No se pudo completar la acción de moderación.');
     } finally {
       setPendingAction(null);
     }
   };
 
-  const handleReviewStatus = async (report: AdminReviewReport, status: MotorcycleReviewStatus) => {
+  const handleReviewStatus = async (report: AdminReviewReport, status: Exclude<MotorcycleReviewStatus, 'pending'>) => {
     if (!authContext || !report.review) {
       return;
     }
@@ -437,15 +455,15 @@ export function AdminModerationPage() {
     setError(null);
 
     try {
-      await updateReportedReviewStatus(report.review.id, status, authContext);
+      await resolveReportWithReviewStatus(report.id, report.review.id, status, authContext);
       setReports((currentReports) => currentReports.map((currentReport) => (
         currentReport.id === report.id && currentReport.review
-          ? { ...currentReport, review: { ...currentReport.review, status } }
+          ? { ...currentReport, status: 'action_taken', review: { ...currentReport.review, status } }
           : currentReport
       )));
-      setNotice('Estado de la review actualizado.');
+      setNotice(reviewActionNotices[status]);
     } catch {
-      setError('No se pudo actualizar la review.');
+      setError('No se pudo completar la acción de moderación.');
     } finally {
       setPendingAction(null);
     }

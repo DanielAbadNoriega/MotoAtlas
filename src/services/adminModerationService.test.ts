@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getReviewReports, updateReportedReviewStatus, updateReviewReportStatus } from './adminModerationService';
+import {
+  getReviewReports,
+  resolveReportWithReviewStatus,
+  updateReportedReviewStatus,
+  updateReviewReportStatus,
+} from './adminModerationService';
 
 function stubSupabaseEnv() {
   vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
@@ -34,6 +39,9 @@ describe('adminModerationService', () => {
       'userId y accessToken son obligatorios para moderación admin',
     );
     await expect(updateReviewReportStatus('report-1', 'reviewed', { accessToken: 'token', userId: ' ' })).rejects.toThrow(
+      'userId y accessToken son obligatorios para moderación admin',
+    );
+    await expect(resolveReportWithReviewStatus('report-1', 'review-1', 'hidden', { accessToken: '', userId: 'admin-1' })).rejects.toThrow(
       'userId y accessToken son obligatorios para moderación admin',
     );
     expect(fetchMock).not.toHaveBeenCalled();
@@ -127,47 +135,122 @@ describe('adminModerationService', () => {
     expect(decodeURIComponent(String(fetchMock.mock.calls[0][0]))).toContain('status=eq.pending');
   });
 
-  it('actualiza status de reporte', async () => {
+  it('actualiza reporte a reviewed, dismissed y action_taken', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn().mockResolvedValue(emptyOkResponse());
     vi.stubGlobal('fetch', fetchMock);
 
-    await updateReviewReportStatus(' report-1 ', 'action_taken', {
+    await updateReviewReportStatus(' report-1 ', 'reviewed', {
       accessToken: 'session-token',
       userId: 'admin-1',
     });
-    const [url, requestInit] = fetchMock.mock.calls[0];
+    await updateReviewReportStatus('report-1', 'dismissed', {
+      accessToken: 'session-token',
+      userId: 'admin-1',
+    });
+    await updateReviewReportStatus('report-1', 'action_taken', {
+      accessToken: 'session-token',
+      userId: 'admin-1',
+    });
 
-    expect(decodeURIComponent(String(url))).toContain('/rest/v1/review_reports?id=eq.report-1');
-    expect(requestInit).toMatchObject({
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(decodeURIComponent(String(fetchMock.mock.calls[0][0]))).toContain('/rest/v1/review_reports?id=eq.report-1');
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
+      body: JSON.stringify({ status: 'reviewed' }),
+      method: 'PATCH',
+    });
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({
+      body: JSON.stringify({ status: 'dismissed' }),
+      method: 'PATCH',
+    });
+    expect(fetchMock.mock.calls[2][1]).toMatchObject({
       body: JSON.stringify({ status: 'action_taken' }),
       method: 'PATCH',
     });
-    expect(requestInit.headers).toMatchObject({
+    expect(fetchMock.mock.calls[0][1].headers).toMatchObject({
       Authorization: 'Bearer session-token',
       Prefer: 'return=minimal',
     });
   });
 
-  it('actualiza status de review reportada', async () => {
+  it('resuelve reporte con hidden/approved/rejected actualizando review y marcando action_taken', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn().mockResolvedValue(emptyOkResponse());
     vi.stubGlobal('fetch', fetchMock);
 
-    await updateReportedReviewStatus(' review-1 ', 'hidden', {
+    await resolveReportWithReviewStatus('report-1', 'review-1', 'hidden', {
       accessToken: 'session-token',
       userId: 'admin-1',
     });
-    const [url, requestInit] = fetchMock.mock.calls[0];
+    await resolveReportWithReviewStatus('report-1', 'review-1', 'approved', {
+      accessToken: 'session-token',
+      userId: 'admin-1',
+    });
+    await resolveReportWithReviewStatus('report-1', 'review-1', 'rejected', {
+      accessToken: 'session-token',
+      userId: 'admin-1',
+    });
 
-    expect(decodeURIComponent(String(url))).toContain('/rest/v1/motorcycle_reviews?id=eq.review-1');
-    expect(requestInit).toMatchObject({
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+
+    expect(decodeURIComponent(String(fetchMock.mock.calls[0][0]))).toContain('/rest/v1/motorcycle_reviews?id=eq.review-1');
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
       body: JSON.stringify({ status: 'hidden' }),
       method: 'PATCH',
     });
+    expect(decodeURIComponent(String(fetchMock.mock.calls[1][0]))).toContain('/rest/v1/review_reports?id=eq.report-1');
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({
+      body: JSON.stringify({ status: 'action_taken' }),
+      method: 'PATCH',
+    });
+
+    expect(fetchMock.mock.calls[2][1]).toMatchObject({ body: JSON.stringify({ status: 'approved' }) });
+    expect(fetchMock.mock.calls[3][1]).toMatchObject({ body: JSON.stringify({ status: 'action_taken' }) });
+    expect(fetchMock.mock.calls[4][1]).toMatchObject({ body: JSON.stringify({ status: 'rejected' }) });
+    expect(fetchMock.mock.calls[5][1]).toMatchObject({ body: JSON.stringify({ status: 'action_taken' }) });
   });
 
-  it('valida estados y maneja errores de Supabase', async () => {
+  it('maneja error al actualizar review y no intenta marcar action_taken', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 403,
+      text: () => Promise.resolve('permission denied'),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveReportWithReviewStatus('report-1', 'review-1', 'hidden', {
+      accessToken: 'session-token',
+      userId: 'admin-1',
+    })).rejects.toThrow('Supabase motorcycle_reviews request failed (403): permission denied');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(decodeURIComponent(String(fetchMock.mock.calls[0][0]))).toContain('/rest/v1/motorcycle_reviews?id=eq.review-1');
+  });
+
+  it('maneja error al marcar action_taken después de actualizar review', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(emptyOkResponse())
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        text: () => Promise.resolve('conflict'),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(resolveReportWithReviewStatus('report-1', 'review-1', 'hidden', {
+      accessToken: 'session-token',
+      userId: 'admin-1',
+    })).rejects.toThrow('Supabase review_reports request failed (409): conflict');
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(decodeURIComponent(String(fetchMock.mock.calls[0][0]))).toContain('/rest/v1/motorcycle_reviews?id=eq.review-1');
+    expect(decodeURIComponent(String(fetchMock.mock.calls[1][0]))).toContain('/rest/v1/review_reports?id=eq.report-1');
+  });
+
+  it('valida estados inválidos y errores de Supabase', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
@@ -179,7 +262,7 @@ describe('adminModerationService', () => {
     await expect(updateReviewReportStatus('', 'reviewed', { accessToken: 'token', userId: 'admin-1' })).rejects.toThrow(
       'reportId es obligatorio',
     );
-    await expect(updateReviewReportStatus('report-1', 'invalid' as never, { accessToken: 'token', userId: 'admin-1' })).rejects.toThrow(
+    await expect(updateReviewReportStatus('report-1', 'pending', { accessToken: 'token', userId: 'admin-1' })).rejects.toThrow(
       'Estado de reporte inválido',
     );
     await expect(updateReportedReviewStatus('review-1', 'pending', { accessToken: 'token', userId: 'admin-1' })).rejects.toThrow(

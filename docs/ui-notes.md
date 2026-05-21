@@ -67,7 +67,11 @@ La ruta `#/comunidad/[motorcycleId]` reemplaza el slider de `Verified owner repo
 
 Las rutas `#/admin` y `#/admin/moderacion` son privadas para perfiles con `user_profiles.role = admin`. El dashboard admin es mínimo y enlaza a moderación; `#/admin/moderacion` lista reportes de reviews con filtros por estado, motivo y orden.
 
-El panel permite cambiar el estado del reporte (`Revisado`, `Descartado`, `Acción tomada`) y, en esta fase, también actualizar el estado de la review reportada (`Oculta`, `Aprobada`, `Rechazada`). Avisos al autor, administración completa de reviews/solicitudes y reportes de respuestas quedan para fases futuras.
+La moderación separa dos conceptos:
+- estado del reporte (`Revisado`, `Descartado`, `Acción tomada`)
+- estado de la review (`Oculta`, `Aprobada`, `Rechazada`)
+
+Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `Acción tomada`. Avisos al autor, administración completa de reviews/solicitudes y reportes de respuestas quedan para fases futuras.
 
 ## Mi cuenta — Reviews
 

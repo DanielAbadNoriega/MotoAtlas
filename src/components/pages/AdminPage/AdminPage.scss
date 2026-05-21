@@ -190,12 +190,6 @@
       gap: 0.65rem;
       padding-top: 0.85rem;
 
-      > div {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.45rem;
-      }
-
       button {
         @include label-caps;
 
@@ -221,6 +215,25 @@
           opacity: 0.48;
         }
       }
+    }
+  }
+
+  &__action-group {
+    display: grid;
+    gap: 0.45rem;
+
+    h3 {
+      @include label-caps;
+
+      color: rgba($color-on-surface-variant, 0.76);
+      font-size: 0.58rem;
+      margin: 0;
+    }
+
+    > div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
     }
   }
 
