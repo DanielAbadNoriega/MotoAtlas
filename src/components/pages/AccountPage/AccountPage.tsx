@@ -3,8 +3,10 @@ import { ModelRequestCard } from '../../model-requests/ModelRequestCard';
 import accountHeroImage from '../../../assets/hero-metodology.png';
 import { useAuth } from '../../../features/auth';
 import { getModelRequestsByUserId, type ModelRequest } from '../../../services/modelRequestService';
-import { AccountReviewCard, sortAccountReviewsByNewest } from '../../reviews/AccountReviewCard';
+import { getAccountReviewMotorcycleDisplay } from '../../reviews/AccountReviewCard';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { getReviewsByUserId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { AccountSidebar } from './AccountSidebar';
 import './AccountPage.scss';
 
@@ -14,6 +16,101 @@ function getProfileName(profileName: string | null | undefined, email: string | 
 
 type AccountReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
 type AccountRequestsStatus = 'idle' | 'loading' | 'success' | 'error';
+type AccountReviewMotorcycleSummary = Readonly<{
+  averageRating: number;
+  latestReviewAt: string;
+  motorcycle: ReturnType<typeof getAccountReviewMotorcycleDisplay>;
+  motorcycleId: string;
+  reviewCount: number;
+}>;
+
+const ACCOUNT_REVIEW_SUMMARY_LIMIT = 3;
+const accountNumberFormatter = new Intl.NumberFormat('es-ES');
+
+function getTimestamp(value: string) {
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function formatAccountReviewSummaryDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Sin dato';
+  }
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatOwnReviewCount(value: number) {
+  return value === 1 ? '1 review tuya' : `${accountNumberFormatter.format(value)} reviews tuyas`;
+}
+
+function getAccountReviewMotorcycleSummaries(reviews: readonly MotorcycleReview[]): readonly AccountReviewMotorcycleSummary[] {
+  const reviewsByMotorcycle = new Map<string, MotorcycleReview[]>();
+
+  reviews.forEach((review) => {
+    const currentReviews = reviewsByMotorcycle.get(review.motorcycleId) ?? [];
+    currentReviews.push(review);
+    reviewsByMotorcycle.set(review.motorcycleId, currentReviews);
+  });
+
+  return [...reviewsByMotorcycle.entries()]
+    .map(([motorcycleId, motorcycleReviews]) => {
+      const sortedByLatest = [...motorcycleReviews].sort((left, right) => getTimestamp(right.createdAt) - getTimestamp(left.createdAt));
+      const referenceReview = sortedByLatest.find((review) => review.motorcycle) ?? sortedByLatest[0]!;
+      const aggregate = getReviewAggregate(motorcycleReviews);
+
+      return {
+        averageRating: aggregate.averageRating,
+        latestReviewAt: sortedByLatest[0]?.createdAt ?? '',
+        motorcycle: getAccountReviewMotorcycleDisplay(referenceReview),
+        motorcycleId,
+        reviewCount: aggregate.reviewCount,
+      };
+    })
+    .sort((left, right) => (
+      getTimestamp(right.latestReviewAt) - getTimestamp(left.latestReviewAt) ||
+      right.reviewCount - left.reviewCount ||
+      left.motorcycle.name.localeCompare(right.motorcycle.name)
+    ));
+}
+
+function AccountReviewMotorcycleSummaryCard({ item }: Readonly<{ item: AccountReviewMotorcycleSummary }>) {
+  const reviewLabel = formatOwnReviewCount(item.reviewCount);
+  const ratingLabel = formatReviewRating(item.averageRating);
+
+  return (
+    <article className="account-page__review-summary-card" data-testid="account-review-summary-card" aria-label={`${item.motorcycle.name}: ${reviewLabel}`}>
+      <MotorcycleImage decorative className="account-page__review-summary-image" motorcycle={item.motorcycle.imageSource} />
+      <div className="account-page__review-summary-overlay" aria-hidden="true" />
+
+      <div className="account-page__review-summary-content">
+        <header className="account-page__review-summary-header">
+          <h3>{item.motorcycle.name}</h3>
+          <div className="account-page__review-summary-rating" aria-label={`Rating medio ${ratingLabel} de 5`}>
+            <span aria-hidden="true">★</span>
+            <strong>{ratingLabel}</strong>
+          </div>
+        </header>
+
+        <ul className="account-page__review-summary-meta" aria-label="Resumen de tus reviews de esta moto">
+          <li>{reviewLabel}</li>
+          <li>{`Última review: ${formatAccountReviewSummaryDate(item.latestReviewAt)}`}</li>
+        </ul>
+
+        <footer className="account-page__review-summary-actions">
+          <a href="#/cuenta/reviews">Ver mis reviews</a>
+          <a href={item.motorcycle.detailHref}>Ver ficha</a>
+        </footer>
+      </div>
+    </article>
+  );
+}
 
 export function AccountPage() {
   const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
@@ -29,7 +126,7 @@ export function AccountPage() {
   const visibleModelRequests = modelRequests.filter((request) => request.userId === user?.id);
   const recentModelRequests = visibleModelRequests.slice(0, 2);
   const visibleReviews = reviews.filter((review) => review.userId === user?.id);
-  const recentReviews = sortAccountReviewsByNewest(visibleReviews).slice(0, 3);
+  const reviewMotorcycleSummaries = getAccountReviewMotorcycleSummaries(visibleReviews).slice(0, ACCOUNT_REVIEW_SUMMARY_LIMIT);
 
   const handleSignOut = async () => {
     setError('');
@@ -215,9 +312,9 @@ export function AccountPage() {
                 <a className="account-page__button" href="#/buscador">Explorar motos</a>
               </article>
             ) : (
-              <div className="account-page__reviews-list">
-                {recentReviews.map((review) => (
-                  <AccountReviewCard headingLevel={3} key={review.id} review={review} variant="compact" />
+              <div className="account-page__review-summary-grid">
+                {reviewMotorcycleSummaries.map((item) => (
+                  <AccountReviewMotorcycleSummaryCard item={item} key={item.motorcycleId} />
                 ))}
               </div>
             )}
