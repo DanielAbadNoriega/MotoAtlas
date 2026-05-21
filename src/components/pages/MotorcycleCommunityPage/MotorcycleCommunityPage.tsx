@@ -7,8 +7,9 @@ import {
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
 import {
-  getHelpfulReactionSummary,
+  getReviewReactionSummary,
   toggleHelpfulReaction,
+  toggleNotHelpfulReaction,
   type ReviewReactionSummary,
 } from '../../../services/reviewReactionService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
@@ -419,6 +420,7 @@ function getDefaultReactionSummary(reviewId: string): ReviewReactionSummary {
   return {
     helpfulCount: 0,
     hasReactedHelpful: false,
+    hasReactedNotHelpful: false,
     reviewId,
   };
 }
@@ -463,6 +465,37 @@ function HelpfulReviewAction({
   );
 }
 
+function NotHelpfulReviewAction({
+  isOwnReview,
+  isPending,
+  onToggle,
+  summary,
+}: Readonly<{
+  isOwnReview: boolean;
+  isPending: boolean;
+  onToggle: () => void;
+  summary: ReviewReactionSummary;
+}>) {
+  if (isOwnReview) {
+    return null;
+  }
+
+  return (
+    <button
+      className="motorcycle-community__helpful-action motorcycle-community__helpful-action--not-helpful"
+      type="button"
+      aria-label={summary.hasReactedNotHelpful ? 'Quitar no útil' : 'Marcar como no útil'}
+      aria-pressed={summary.hasReactedNotHelpful}
+      data-active={summary.hasReactedNotHelpful ? 'true' : 'false'}
+      disabled={isPending}
+      onClick={onToggle}
+    >
+      <span className="material-symbols-outlined" aria-hidden="true">thumb_down</span>
+      No útil
+    </button>
+  );
+}
+
 function OwnerReportRow({
   feedbackTooltipMessage,
   feedbackTooltipVisible,
@@ -470,6 +503,7 @@ function OwnerReportRow({
   isOwnReview,
   isReactionPending,
   onToggleHelpful,
+  onToggleNotHelpful,
   reactionSummary,
   review,
 }: Readonly<{
@@ -479,6 +513,7 @@ function OwnerReportRow({
   isOwnReview: boolean;
   isReactionPending: boolean;
   onToggleHelpful: () => void;
+  onToggleNotHelpful: () => void;
   reactionSummary: ReviewReactionSummary;
   review: MotorcycleReview;
 }>) {
@@ -540,6 +575,12 @@ function OwnerReportRow({
             isOwnReview={isOwnReview}
             isPending={isReactionPending}
             onToggle={onToggleHelpful}
+            summary={reactionSummary}
+          />
+          <NotHelpfulReviewAction
+            isOwnReview={isOwnReview}
+            isPending={isReactionPending}
+            onToggle={onToggleNotHelpful}
             summary={reactionSummary}
           />
           {feedbackTooltipMessage ? (
@@ -698,7 +739,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
 
     let isMounted = true;
 
-    getHelpfulReactionSummary(visibleOwnerReportIds, reactionAuthContext)
+    getReviewReactionSummary(visibleOwnerReportIds, reactionAuthContext)
       .then((summaries) => {
         if (!isMounted) {
           return;
@@ -744,6 +785,36 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     } catch (error) {
       setReactionNotice({
         message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción útil.',
+      });
+    } finally {
+      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
+  };
+
+  const toggleNotHelpful = async (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      showHelpfulTooltip(review.id, 'Inicia sesión para valorar esta review.');
+      return;
+    }
+
+    clearHelpfulTooltipTimers();
+    setHelpfulTooltip(null);
+    setReactionNotice(null);
+    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    try {
+      const summary = await toggleNotHelpfulReaction(review.id, reactionAuthContext);
+      setReactionSummaries((currentSummaries) => ({
+        ...currentSummaries,
+        [review.id]: summary,
+      }));
+    } catch (error) {
+      setReactionNotice({
+        message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción.',
       });
     } finally {
       setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
@@ -930,6 +1001,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                         isReactionPending={reactionPendingIds.includes(review.id)}
                         key={review.id}
                         onToggleHelpful={() => toggleHelpful(review)}
+                        onToggleNotHelpful={() => toggleNotHelpful(review)}
                         feedbackTooltipMessage={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.message : undefined}
                         feedbackTooltipVisible={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.visible : false}
                         reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}

@@ -837,6 +837,21 @@
     }
   }
 
+  &__helpful-action--not-helpful {
+    .material-symbols-outlined {
+      color: rgba($color-outline, 0.88);
+    }
+
+    &[data-active='true'] {
+      background: rgba($color-outline, 0.14);
+      border-color: rgba($color-outline, 0.58);
+
+      .material-symbols-outlined {
+        color: rgba($color-on-surface, 0.94);
+      }
+    }
+  }
+
   &__helpful-feedback {
     background: rgba($color-surface-lowest, 0.96);
     border: 1px solid rgba($color-accent, 0.45);

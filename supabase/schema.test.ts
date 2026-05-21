@@ -114,13 +114,16 @@ describe('Supabase review_reactions schema', () => {
 
     expect(schemaSql).toContain('drop constraint if exists review_reactions_type_check');
     expect(schemaSql).toContain('add constraint review_reactions_type_check');
-    expect(schemaSql).toContain("check (type in ('helpful'))");
+    expect(schemaSql).toContain("check (type in ('helpful', 'not_helpful'))");
 
     expect(schemaSql).toContain('review_reactions_review_id_user_id_type_key');
     expect(schemaSql).toContain('from pg_constraint');
     expect(schemaSql).toContain("conrelid = 'public.review_reactions'::regclass");
     expect(schemaSql).toContain('add constraint review_reactions_review_id_user_id_type_key');
     expect(schemaSql).toContain('unique (review_id, user_id, type)');
+    expect(schemaSql).toContain('review_reactions_review_id_user_id_key');
+    expect(schemaSql).toContain('add constraint review_reactions_review_id_user_id_key');
+    expect(schemaSql).toContain('unique (review_id, user_id)');
 
     expect(schemaSql).toMatch(
       /create index if not exists review_reactions_review_id_idx\s+on public\.review_reactions \(review_id\);/
@@ -138,15 +141,26 @@ describe('Supabase review_reactions schema', () => {
     expect(schemaSql).toContain('for select');
     expect(schemaSql).toContain('to anon, authenticated');
     expect(schemaSql).toContain("using (type = 'helpful')");
+    expect(normalizedSchemaSql).not.toMatch(/for select\s+to anon, authenticated\s+using \(type in \('helpful', 'not_helpful'\)\)/);
+    expect(normalizedSchemaSql).not.toMatch(/for select\s+to anon\b[^;]*not_helpful/);
   });
 
-  it('solo permite insertar helpful propias a usuarios autenticados y evita autoreacción', () => {
+  it('permite a usuarios autenticados leer sus propias reacciones privadas sin abrir not_helpful públicamente', () => {
+    expect(schemaSql).toContain('drop policy if exists "Users can read own review reactions" on public.review_reactions;');
+    expect(schemaSql).toContain('create policy "Users can read own review reactions"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (user_id = auth.uid())');
+  });
+
+  it('solo permite insertar reacciones propias helpful/not_helpful a usuarios autenticados y evita autoreacción', () => {
     expect(schemaSql).toContain('drop policy if exists "Users can create own helpful reaction" on public.review_reactions;');
-    expect(schemaSql).toContain('create policy "Users can create own helpful reaction"');
+    expect(schemaSql).toContain('drop policy if exists "Users can create own review reaction" on public.review_reactions;');
+    expect(schemaSql).toContain('create policy "Users can create own review reaction"');
     expect(schemaSql).toContain('for insert');
     expect(schemaSql).toContain('to authenticated');
     expect(schemaSql).toContain('user_id = auth.uid()');
-    expect(schemaSql).toContain("type = 'helpful'");
+    expect(schemaSql).toContain("type in ('helpful', 'not_helpful')");
     expect(schemaSql).toContain('not exists (');
     expect(schemaSql).toContain('motorcycle_reviews.id = review_reactions.review_id');
     expect(schemaSql).toContain('motorcycle_reviews.user_id = auth.uid()');
@@ -156,7 +170,8 @@ describe('Supabase review_reactions schema', () => {
     const grants = getReviewReactionsGrantStatements();
 
     expect(schemaSql).toContain('drop policy if exists "Users can delete own helpful reaction" on public.review_reactions;');
-    expect(schemaSql).toContain('create policy "Users can delete own helpful reaction"');
+    expect(schemaSql).toContain('drop policy if exists "Users can delete own review reaction" on public.review_reactions;');
+    expect(schemaSql).toContain('create policy "Users can delete own review reaction"');
     expect(schemaSql).toContain('for delete');
     expect(schemaSql).toContain('to authenticated');
     expect(schemaSql).toContain('using (user_id = auth.uid())');

@@ -8,7 +8,7 @@ import {
   type MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
 import {
-  getHelpfulReactionSummary,
+  getReviewReactionSummary,
   type ReviewReactionSummary,
 } from '../../../services/reviewReactionService';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
@@ -438,6 +438,7 @@ function getDefaultReactionSummary(reviewId: string): ReviewReactionSummary {
   return {
     helpfulCount: 0,
     hasReactedHelpful: false,
+    hasReactedNotHelpful: false,
     reviewId,
   };
 }
@@ -612,7 +613,7 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
 
     let isMounted = true;
 
-    getHelpfulReactionSummary(paginatedReviewIds, reactionAuthContext)
+    getReviewReactionSummary(paginatedReviewIds, reactionAuthContext)
       .then((summaries) => {
         if (!isMounted) {
           return;

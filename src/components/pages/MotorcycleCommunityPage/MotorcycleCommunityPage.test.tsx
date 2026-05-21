@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
-import { getHelpfulReactionSummary, toggleHelpfulReaction } from '../../../services/reviewReactionService';
+import { getReviewReactionSummary, toggleHelpfulReaction, toggleNotHelpfulReaction } from '../../../services/reviewReactionService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import {
   createApprovedReviewFixture,
@@ -20,8 +20,9 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
 }));
 
 vi.mock('../../../services/reviewReactionService', () => ({
-  getHelpfulReactionSummary: vi.fn(),
+  getReviewReactionSummary: vi.fn(),
   toggleHelpfulReaction: vi.fn(),
+  toggleNotHelpfulReaction: vi.fn(),
 }));
 
 vi.mock('../../../features/auth', () => ({
@@ -30,8 +31,9 @@ vi.mock('../../../features/auth', () => ({
 
 const getApprovedReviewsMock = vi.mocked(getApprovedReviewsByMotorcycleId);
 const createReviewMock = vi.mocked(createReview);
-const getHelpfulReactionSummaryMock = vi.mocked(getHelpfulReactionSummary);
+const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
 const toggleHelpfulReactionMock = vi.mocked(toggleHelpfulReaction);
+const toggleNotHelpfulReactionMock = vi.mocked(toggleNotHelpfulReaction);
 const useAuthMock = vi.mocked(useAuth);
 
 function mockAuth(overrides = {}) {
@@ -106,15 +108,17 @@ describe('MotorcycleCommunityPage', () => {
     vi.useRealTimers();
     getApprovedReviewsMock.mockReset();
     createReviewMock.mockReset();
-    getHelpfulReactionSummaryMock.mockReset();
+    getReviewReactionSummaryMock.mockReset();
     toggleHelpfulReactionMock.mockReset();
+    toggleNotHelpfulReactionMock.mockReset();
     useAuthMock.mockReset();
     mockAuth();
     getApprovedReviewsMock.mockResolvedValue(approvedReviews);
-    getHelpfulReactionSummaryMock.mockImplementation(async (reviewIds) =>
+    getReviewReactionSummaryMock.mockImplementation(async (reviewIds) =>
       reviewIds.map((reviewId) => ({
         helpfulCount: reviewId === 'review-approved-1' ? 2 : 0,
         hasReactedHelpful: false,
+        hasReactedNotHelpful: false,
         reviewId,
       })),
     );
@@ -270,7 +274,9 @@ describe('MotorcycleCommunityPage', () => {
 
     await waitFor(() => expect(within(rows[0]).getByRole('button', { name: /Útil 2/i })).toHaveAttribute('aria-pressed', 'false'));
     expect(within(rows[1]).getByRole('button', { name: /Útil 0/i })).toBeInTheDocument();
-    expect(getHelpfulReactionSummaryMock).toHaveBeenCalledWith(['review-approved-1', 'review-approved-2'], null);
+    expect(within(rows[0]).getByRole('button', { name: /Marcar como no útil/i })).toHaveTextContent('No útil');
+    expect(within(rows[0]).getByRole('button', { name: /Marcar como no útil/i })).not.toHaveTextContent(/\d/);
+    expect(getReviewReactionSummaryMock).toHaveBeenCalledWith(['review-approved-1', 'review-approved-2'], null);
   });
 
   it('al pulsar Útil autenticado llama al toggle y actualiza aria-pressed', async () => {
@@ -283,6 +289,7 @@ describe('MotorcycleCommunityPage', () => {
     toggleHelpfulReactionMock.mockResolvedValue({
       helpfulCount: 3,
       hasReactedHelpful: true,
+      hasReactedNotHelpful: false,
       reviewId: 'review-approved-1',
     });
 
@@ -296,6 +303,99 @@ describe('MotorcycleCommunityPage', () => {
       userId: 'user-1',
     });
     await waitFor(() => expect(screen.getByRole('button', { name: /Quitar útil\. Útil 3/i })).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('usuario autenticado puede marcar No útil sin contador público', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
+    toggleNotHelpfulReactionMock.mockResolvedValue({
+      helpfulCount: 2,
+      hasReactedHelpful: false,
+      hasReactedNotHelpful: true,
+      reviewId: 'review-approved-1',
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
+    const notHelpfulButton = await waitFor(() => within(firstRow).getByRole('button', { name: /Marcar como no útil/i }));
+    await user.click(notHelpfulButton);
+
+    expect(toggleNotHelpfulReactionMock).toHaveBeenCalledWith('review-approved-1', {
+      accessToken: 'session-token',
+      userId: 'user-1',
+    });
+    await waitFor(() => expect(within(firstRow).getByRole('button', { name: /Quitar no útil/i })).toHaveAttribute('aria-pressed', 'true'));
+    expect(within(firstRow).getByRole('button', { name: /Quitar no útil/i })).toHaveTextContent('No útil');
+    expect(within(firstRow).getByRole('button', { name: /Quitar no útil/i })).not.toHaveTextContent(/\d/);
+  });
+
+  it('marcar No útil desactiva Útil y reduce el contador público de útiles', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
+    getReviewReactionSummaryMock.mockImplementation(async (reviewIds) =>
+      reviewIds.map((reviewId) => ({
+        helpfulCount: reviewId === 'review-approved-1' ? 2 : 0,
+        hasReactedHelpful: reviewId === 'review-approved-1',
+        hasReactedNotHelpful: false,
+        reviewId,
+      })),
+    );
+    toggleNotHelpfulReactionMock.mockResolvedValue({
+      helpfulCount: 1,
+      hasReactedHelpful: false,
+      hasReactedNotHelpful: true,
+      reviewId: 'review-approved-1',
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
+    await waitFor(() => expect(within(firstRow).getByRole('button', { name: /Quitar útil\. Útil 2/i })).toHaveAttribute('aria-pressed', 'true'));
+    await user.click(within(firstRow).getByRole('button', { name: /Marcar como no útil/i }));
+
+    await waitFor(() => expect(within(firstRow).getByRole('button', { name: /Marcar como útil\. Útil 1/i })).toHaveAttribute('aria-pressed', 'false'));
+    expect(within(firstRow).getByRole('button', { name: /Quitar no útil/i })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('marcar Útil desactiva No útil y sube el contador público de útiles', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
+    getReviewReactionSummaryMock.mockImplementation(async (reviewIds) =>
+      reviewIds.map((reviewId) => ({
+        helpfulCount: reviewId === 'review-approved-1' ? 2 : 0,
+        hasReactedHelpful: false,
+        hasReactedNotHelpful: reviewId === 'review-approved-1',
+        reviewId,
+      })),
+    );
+    toggleHelpfulReactionMock.mockResolvedValue({
+      helpfulCount: 3,
+      hasReactedHelpful: true,
+      hasReactedNotHelpful: false,
+      reviewId: 'review-approved-1',
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
+    await waitFor(() => expect(within(firstRow).getByRole('button', { name: /Quitar no útil/i })).toHaveAttribute('aria-pressed', 'true'));
+    await user.click(within(firstRow).getByRole('button', { name: /Marcar como útil\. Útil 2/i }));
+
+    await waitFor(() => expect(within(firstRow).getByRole('button', { name: /Quitar útil\. Útil 3/i })).toHaveAttribute('aria-pressed', 'true'));
+    expect(within(firstRow).getByRole('button', { name: /Marcar como no útil/i })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('si no hay sesión muestra tooltip temporal, no llama al toggle y reinicia timer al pulsar otra vez', async () => {
@@ -323,6 +423,19 @@ describe('MotorcycleCommunityPage', () => {
     expect(within(firstRow).queryByRole('status')).not.toBeInTheDocument();
   }, 10000);
 
+  it('si no hay sesión al pulsar No útil muestra tooltip y no llama al servicio', async () => {
+    const user = userEvent.setup();
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
+    await user.click(await waitFor(() => within(firstRow).getByRole('button', { name: /Marcar como no útil/i })));
+
+    expect(within(firstRow).getByRole('status')).toHaveTextContent('Inicia sesión para valorar esta review.');
+    expect(toggleHelpfulReactionMock).not.toHaveBeenCalled();
+    expect(toggleNotHelpfulReactionMock).not.toHaveBeenCalled();
+    expect(within(firstRow).getByRole('button', { name: /Marcar como no útil/i })).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('no permite marcar como útil una review propia y la muestra como métrica pasiva', async () => {
     mockAuth({
       user: { id: 'user-1', email: 'rider@motoatlas.com' },
@@ -336,8 +449,8 @@ describe('MotorcycleCommunityPage', () => {
         userId: 'user-1',
       }),
     ]);
-    getHelpfulReactionSummaryMock.mockResolvedValue([
-      { helpfulCount: 7, hasReactedHelpful: false, reviewId: 'own-review' },
+    getReviewReactionSummaryMock.mockResolvedValue([
+      { helpfulCount: 7, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: 'own-review' },
     ]);
 
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
@@ -346,6 +459,7 @@ describe('MotorcycleCommunityPage', () => {
 
     await waitFor(() => expect(within(row).getByLabelText('Útil 7')).toBeInTheDocument());
     expect(within(row).queryByRole('button', { name: /Útil 7/i })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
   });
 
   it('mueve Problemas comunes e insights al sidebar debajo de filtros', async () => {

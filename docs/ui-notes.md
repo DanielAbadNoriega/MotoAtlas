@@ -61,7 +61,7 @@ Los filtros de segmento/carnet usan las mismas constantes visuales que el buscad
 
 ## Comunidad por moto — Reviews
 
-La ruta `#/comunidad/[motorcycleId]` reemplaza el slider de `Verified owner reports` por un listado compacto vertical de experiencias aprobadas. Los filtros de esta fase viven en el sidebar (`rating` y `orden`), seguidos por `Problemas comunes e insights`; en mobile pasan a panel responsive y la paginación muestra 5 reviews por página. Usuarios autenticados pueden marcar una review como `Útil` una sola vez; no se permite autoreacción y los contadores se cargan desde `review_reactions`. Dislikes, reportes, respuestas, menciones y fotos quedan para fases futuras.
+La ruta `#/comunidad/[motorcycleId]` reemplaza el slider de `Verified owner reports` por un listado compacto vertical de experiencias aprobadas. Los filtros de esta fase viven en el sidebar (`rating` y `orden`), seguidos por `Problemas comunes e insights`; en mobile pasan a panel responsive y la paginación muestra 5 reviews por página. Usuarios autenticados pueden marcar una review como `Útil` o `No útil`; `Útil` muestra contador público, `No útil` queda como feedback privado sin contador público. Ambas reacciones son mutuamente excluyentes, no se permite autoreacción y los contadores se cargan desde `review_reactions`. Reportes, respuestas, menciones y fotos quedan para fases futuras.
 
 ## Mi cuenta — Reviews
 

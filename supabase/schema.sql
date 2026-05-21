@@ -318,7 +318,7 @@ alter table if exists public.review_reactions
 
 alter table if exists public.review_reactions
   add constraint review_reactions_type_check
-  check (type in ('helpful'));
+  check (type in ('helpful', 'not_helpful'));
 
 do $$
 begin
@@ -331,6 +331,20 @@ begin
     alter table public.review_reactions
       add constraint review_reactions_review_id_user_id_type_key
       unique (review_id, user_id, type);
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'review_reactions_review_id_user_id_key'
+      and conrelid = 'public.review_reactions'::regclass
+  ) then
+    alter table public.review_reactions
+      add constraint review_reactions_review_id_user_id_key
+      unique (review_id, user_id);
   end if;
 end $$;
 
@@ -349,14 +363,22 @@ for select
 to anon, authenticated
 using (type = 'helpful');
 
+drop policy if exists "Users can read own review reactions" on public.review_reactions;
+create policy "Users can read own review reactions"
+on public.review_reactions
+for select
+to authenticated
+using (user_id = auth.uid());
+
 drop policy if exists "Users can create own helpful reaction" on public.review_reactions;
-create policy "Users can create own helpful reaction"
+drop policy if exists "Users can create own review reaction" on public.review_reactions;
+create policy "Users can create own review reaction"
 on public.review_reactions
 for insert
 to authenticated
 with check (
   user_id = auth.uid()
-  and type = 'helpful'
+  and type in ('helpful', 'not_helpful')
   and not exists (
     select 1
     from public.motorcycle_reviews
@@ -366,7 +388,8 @@ with check (
 );
 
 drop policy if exists "Users can delete own helpful reaction" on public.review_reactions;
-create policy "Users can delete own helpful reaction"
+drop policy if exists "Users can delete own review reaction" on public.review_reactions;
+create policy "Users can delete own review reaction"
 on public.review_reactions
 for delete
 to authenticated

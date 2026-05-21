@@ -1,15 +1,18 @@
 import type { CreateReviewAuthContext } from './motorcycleReviewService';
 
+export type ReviewReactionType = 'helpful' | 'not_helpful';
+
 export type ReviewReactionSummary = Readonly<{
   reviewId: string;
   helpfulCount: number;
   hasReactedHelpful: boolean;
+  hasReactedNotHelpful: boolean;
 }>;
 
 type ReviewReactionRow = Readonly<{
   review_id: string;
   user_id: string;
-  type: 'helpful';
+  type: ReviewReactionType;
 }>;
 
 function getSupabaseConfig() {
@@ -56,17 +59,28 @@ async function parseSupabaseResponse<T>(response: Response, resource?: string): 
 
 function buildSummary(reviewIds: readonly string[], rows: readonly ReviewReactionRow[], userId?: string): readonly ReviewReactionSummary[] {
   return reviewIds.map((reviewId) => {
-    const reviewRows = rows.filter((row) => row.review_id === reviewId && row.type === 'helpful');
+    const reviewRows = rows.filter((row) => row.review_id === reviewId);
+    const ownRows = userId ? reviewRows.filter((row) => row.user_id === userId) : [];
 
     return {
       reviewId,
-      helpfulCount: reviewRows.length,
-      hasReactedHelpful: Boolean(userId && reviewRows.some((row) => row.user_id === userId)),
+      helpfulCount: reviewRows.filter((row) => row.type === 'helpful').length,
+      hasReactedHelpful: ownRows.some((row) => row.type === 'helpful'),
+      hasReactedNotHelpful: ownRows.some((row) => row.type === 'not_helpful'),
     };
   });
 }
 
-export async function getHelpfulReactionSummary(
+function buildHeaders(config: ReturnType<typeof getSupabaseConfig>, accessToken?: string, extraHeaders?: Record<string, string>) {
+  return {
+    Accept: 'application/json',
+    apikey: config.supabaseAnonKey,
+    Authorization: `Bearer ${accessToken ?? config.supabaseAnonKey}`,
+    ...extraHeaders,
+  };
+}
+
+export async function getReviewReactionSummary(
   reviewIds: readonly string[],
   authContext?: CreateReviewAuthContext | null,
 ): Promise<readonly ReviewReactionSummary[]> {
@@ -81,23 +95,68 @@ export async function getHelpfulReactionSummary(
   const params = new URLSearchParams({
     review_id: `in.(${normalizedReviewIds.join(',')})`,
     select: 'review_id,user_id,type',
-    type: 'eq.helpful',
+    type: normalizedAuthContext ? 'in.(helpful,not_helpful)' : 'eq.helpful',
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/review_reactions?${params.toString()}`, {
-    headers: {
-      Accept: 'application/json',
-      apikey: config.supabaseAnonKey,
-      Authorization: `Bearer ${normalizedAuthContext?.accessToken ?? config.supabaseAnonKey}`,
-    },
+    headers: buildHeaders(config, normalizedAuthContext?.accessToken),
   });
   const rows = await parseSupabaseResponse<ReviewReactionRow[]>(response);
 
   return buildSummary(normalizedReviewIds, rows, normalizedAuthContext?.userId);
 }
 
-export async function toggleHelpfulReaction(
+export function getHelpfulReactionSummary(
+  reviewIds: readonly string[],
+  authContext?: CreateReviewAuthContext | null,
+): Promise<readonly ReviewReactionSummary[]> {
+  return getReviewReactionSummary(reviewIds, authContext);
+}
+
+async function deleteOwnReaction(
+  reviewId: string,
+  authContext: NonNullable<ReturnType<typeof normalizeAuthContext>>,
+  type: ReviewReactionType,
+) {
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    review_id: `eq.${reviewId}`,
+    type: `eq.${type}`,
+    user_id: `eq.${authContext.userId}`,
+  });
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/review_reactions?${params.toString()}`, {
+    headers: buildHeaders(config, authContext.accessToken, { Prefer: 'return=minimal' }),
+    method: 'DELETE',
+  });
+
+  await assertSupabaseOk(response);
+}
+
+async function insertOwnReaction(
+  reviewId: string,
+  authContext: NonNullable<ReturnType<typeof normalizeAuthContext>>,
+  type: ReviewReactionType,
+) {
+  const config = getSupabaseConfig();
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/review_reactions`, {
+    body: JSON.stringify({
+      review_id: reviewId,
+      type,
+      user_id: authContext.userId,
+    }),
+    headers: buildHeaders(config, authContext.accessToken, {
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    }),
+    method: 'POST',
+  });
+
+  await assertSupabaseOk(response);
+}
+
+async function toggleReaction(
   reviewId: string,
   authContext: CreateReviewAuthContext,
+  type: ReviewReactionType,
 ): Promise<ReviewReactionSummary> {
   const normalizedReviewId = reviewId.trim();
   const normalizedAuthContext = normalizeAuthContext(authContext);
@@ -110,45 +169,45 @@ export async function toggleHelpfulReaction(
     throw new Error('userId y accessToken son obligatorios para reaccionar a reviews.');
   }
 
-  const config = getSupabaseConfig();
-  const [currentSummary] = await getHelpfulReactionSummary([normalizedReviewId], normalizedAuthContext);
+  const oppositeType: ReviewReactionType = type === 'helpful' ? 'not_helpful' : 'helpful';
+  const [currentSummary] = await getReviewReactionSummary([normalizedReviewId], normalizedAuthContext);
+  const isActive = type === 'helpful'
+    ? currentSummary?.hasReactedHelpful
+    : currentSummary?.hasReactedNotHelpful;
+  const hasOppositeReaction = oppositeType === 'helpful'
+    ? currentSummary?.hasReactedHelpful
+    : currentSummary?.hasReactedNotHelpful;
 
-  if (currentSummary?.hasReactedHelpful) {
-    const params = new URLSearchParams({
-      review_id: `eq.${normalizedReviewId}`,
-      type: 'eq.helpful',
-      user_id: `eq.${normalizedAuthContext.userId}`,
-    });
-    const response = await fetch(`${config.supabaseUrl}/rest/v1/review_reactions?${params.toString()}`, {
-      headers: {
-        Accept: 'application/json',
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${normalizedAuthContext.accessToken}`,
-        Prefer: 'return=minimal',
-      },
-      method: 'DELETE',
-    });
-    await assertSupabaseOk(response);
+  if (isActive) {
+    await deleteOwnReaction(normalizedReviewId, normalizedAuthContext, type);
   } else {
-    const response = await fetch(`${config.supabaseUrl}/rest/v1/review_reactions`, {
-      body: JSON.stringify({
-        review_id: normalizedReviewId,
-        type: 'helpful',
-        user_id: normalizedAuthContext.userId,
-      }),
-      headers: {
-        Accept: 'application/json',
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${normalizedAuthContext.accessToken}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      method: 'POST',
-    });
-    await assertSupabaseOk(response);
+    if (hasOppositeReaction) {
+      await deleteOwnReaction(normalizedReviewId, normalizedAuthContext, oppositeType);
+    }
+
+    await insertOwnReaction(normalizedReviewId, normalizedAuthContext, type);
   }
 
-  const [updatedSummary] = await getHelpfulReactionSummary([normalizedReviewId], normalizedAuthContext);
+  const [updatedSummary] = await getReviewReactionSummary([normalizedReviewId], normalizedAuthContext);
 
-  return updatedSummary ?? { helpfulCount: 0, hasReactedHelpful: false, reviewId: normalizedReviewId };
+  return updatedSummary ?? {
+    helpfulCount: 0,
+    hasReactedHelpful: false,
+    hasReactedNotHelpful: false,
+    reviewId: normalizedReviewId,
+  };
+}
+
+export function toggleHelpfulReaction(
+  reviewId: string,
+  authContext: CreateReviewAuthContext,
+): Promise<ReviewReactionSummary> {
+  return toggleReaction(reviewId, authContext, 'helpful');
+}
+
+export function toggleNotHelpfulReaction(
+  reviewId: string,
+  authContext: CreateReviewAuthContext,
+): Promise<ReviewReactionSummary> {
+  return toggleReaction(reviewId, authContext, 'not_helpful');
 }
