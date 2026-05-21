@@ -6,6 +6,7 @@ import { AccountPage } from './components/pages/AccountPage';
 import { AccountMotorcycleReviewsPage } from './components/pages/AccountMotorcycleReviewsPage';
 import { AccountReviewsPage } from './components/pages/AccountReviewsPage';
 import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
+import { AdminDashboardPage, AdminModerationPage } from './components/pages/AdminPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
@@ -42,6 +43,8 @@ import {
   isAccountRoute,
   isAccountRequestsRoute,
   isAccountMotorcycleReviewsRoute,
+  isAdminModerationRoute,
+  isAdminRoute,
   isCommunityReviewsRoute,
   isCommunityRoute,
   isComparatorRoute,
@@ -50,7 +53,7 @@ import {
   isSearchRoute,
   isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAdminSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -105,6 +108,8 @@ export function App() {
   const isAccountReviewsPage = isAccountReviewsRoute(route);
   const isAccountMotorcycleReviewsPage = isAccountMotorcycleReviewsRoute(route);
   const isAccountRequestsPage = isAccountRequestsRoute(route);
+  const isAdminPage = isAdminRoute(route);
+  const isAdminModerationPage = isAdminModerationRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
@@ -157,6 +162,16 @@ export function App() {
 
     if (isAccountMotorcycleReviewsPage && accountReviewMotorcycleId) {
       applySeoMetadata(buildAccountMotorcycleReviewsSeoMetadata(accountReviewMotorcycleId));
+      return;
+    }
+
+    if (isAdminModerationPage) {
+      applySeoMetadata(buildAdminSeoMetadata('moderacion'));
+      return;
+    }
+
+    if (isAdminPage) {
+      applySeoMetadata(buildAdminSeoMetadata('admin'));
       return;
     }
 
@@ -215,7 +230,7 @@ export function App() {
       description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -225,6 +240,10 @@ export function App() {
         <AuthPage mode="login" />
       ) : isRegisterPage ? (
         <AuthPage mode="register" />
+      ) : isAdminModerationPage ? (
+        <AdminModerationPage />
+      ) : isAdminPage ? (
+        <AdminDashboardPage />
       ) : isAccountMotorcycleReviewsPage ? (
         <AccountMotorcycleReviewsPage bike={accountReviewMotorcycleBike} motorcycleId={accountReviewMotorcycleId} />
       ) : isAccountReviewsPage ? (

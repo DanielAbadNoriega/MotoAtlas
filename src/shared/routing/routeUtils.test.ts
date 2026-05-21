@@ -5,6 +5,8 @@ import {
   getAccountMotorcycleReviewsCanonicalPath,
   getAccountMotorcycleReviewsHash,
   getAccountReviewMotorcycleIdFromRoute,
+  getAdminCanonicalPath,
+  getAdminModerationCanonicalPath,
   getBikeDetailIdFromRoute,
   getBikeSeoSlug,
   getCommunityMotorcycleIdFromRoute,
@@ -20,6 +22,8 @@ import {
   isAccountMotorcycleReviewsRoute,
   isAccountRequestsRoute,
   isAccountRoute,
+  isAdminModerationRoute,
+  isAdminRoute,
   isCommunityReviewsRoute,
   isLoginRoute,
   isRegisterRoute,
@@ -73,6 +77,15 @@ describe('routeUtils SEO routes', () => {
     expect(isAccountRoute('#/cuenta/reviews')).toBe(false);
     expect(isAccountRoute('#/cuenta/solicitudes')).toBe(false);
     expect(isLoginRoute('#/cuenta')).toBe(false);
+  });
+
+  it('detecta rutas admin', () => {
+    expect(getAdminCanonicalPath()).toBe('/admin');
+    expect(getAdminModerationCanonicalPath()).toBe('/admin/moderacion');
+    expect(isAdminRoute('#/admin')).toBe(true);
+    expect(isAdminRoute('#/admin/moderacion')).toBe(false);
+    expect(isAdminModerationRoute('#/admin/moderacion')).toBe(true);
+    expect(isAdminModerationRoute('/admin')).toBe(false);
   });
 
   it('detecta la ruta de motos mejor valoradas', () => {

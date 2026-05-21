@@ -9,6 +9,7 @@ MotoAtlas usa Supabase Auth con email y contraseña desde el frontend, siempre c
 - `src/features/auth/AuthProvider.tsx` expone `useAuth()` con `user`, `session`, `profile`, `isAuthenticated`, `isLoading`, `isAdmin`, `signIn`, `signUp`, `signOut` y `refreshProfile`.
 - `src/components/pages/AuthPage/` contiene login y registro.
 - `src/components/pages/AccountPage/` contiene `#/cuenta`.
+- `src/components/pages/AdminPage/` contiene `#/admin` y `#/admin/moderacion`, protegidas por `useAuth().isAdmin`.
 
 ## Supabase
 
@@ -37,6 +38,7 @@ RLS:
 - Reviews anónimas permitidas con `user_id = null`.
 - Reviews autenticadas asociadas a `auth.uid()` mediante `motorcycle_reviews.user_id`.
 - Solicitudes de modelos anónimas o autenticadas persistidas en `model_requests`.
+- Panel admin mínimo para moderación de reportes de reviews, protegido por `user_profiles.role = admin`.
 
 ## Reviews
 
@@ -45,9 +47,18 @@ RLS:
 - Toda review creada desde el formulario público entra como `status = pending`, `verified = false` y `source = user`.
 - Mi cuenta muestra reviews propias del usuario, incluyendo `pending`, `rejected` y `hidden`.
 - Las reviews `approved` siguen siendo públicas; las no aprobadas solo son visibles para su propietario.
-- Esta asociación prepara futuras funciones: “Mis reviews”, edición de reviews propias, moderación admin y reputación.
+- Esta asociación prepara futuras funciones: edición de reviews propias, avisos al autor y reputación.
+
+## Admin
+
+- El rol admin vive en `public.user_profiles.role`; usuarios normales no pueden insertar ni actualizar `role`.
+- `#/admin` muestra un dashboard mínimo con enlace a `#/admin/moderacion`.
+- `#/admin/moderacion` permite revisar reportes, actualizar su estado y ocultar/aprobar/rechazar reviews reportadas.
+- Las acciones admin se protegen también con RLS: policies admin consultan `user_profiles.role = 'admin'` y los grants de update quedan acotados a `status`.
 
 ## No implementado todavía
 
-- Panel admin.
+- Panel admin completo de reviews agrupadas.
+- Panel admin de solicitudes/modelos.
+- Avisos al autor cuando una review reportada cambia de estado.
 - Perfiles públicos, seguidores, notificaciones o gamificación.

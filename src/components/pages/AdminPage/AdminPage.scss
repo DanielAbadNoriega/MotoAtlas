@@ -1,0 +1,297 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.admin-page {
+  &__hero {
+    min-height: 260px;
+
+    .account-page__hero-content {
+      min-height: 260px;
+    }
+  }
+
+  &__admin-chip {
+    @include label-caps;
+
+    align-items: center;
+    background: rgba($color-surface-lowest, 0.58);
+    border: 1px solid rgba($color-accent, 0.38);
+    border-radius: 999px;
+    color: $color-on-surface;
+    display: inline-flex;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem;
+
+    .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 1.05rem;
+    }
+  }
+
+  &__dashboard-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  &__summary-card {
+    align-content: start;
+
+    > .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 2rem;
+    }
+
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h2 {
+      color: $color-on-surface;
+      font-family: $font-headline;
+      font-size: 1.15rem;
+    }
+
+    p {
+      color: rgba($color-on-surface-variant, 0.86);
+      line-height: 1.6;
+    }
+  }
+
+  &__summary-card--muted {
+    opacity: 0.74;
+  }
+
+  &__filters {
+    gap: 1rem;
+  }
+
+  &__filter-group {
+    display: grid;
+    gap: 0.6rem;
+
+    h2 {
+      @include label-caps;
+
+      color: $color-accent;
+      font-size: 0.68rem;
+      margin: 0;
+    }
+
+    > div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+  }
+
+  &__filter-chip {
+    @include label-caps;
+
+    background: rgba($color-surface-container-high, 0.54);
+    border: 1px solid rgba($color-outline-variant, 0.48);
+    border-radius: 999px;
+    color: rgba($color-on-surface-variant, 0.9);
+    cursor: pointer;
+    font-size: 0.62rem;
+    min-height: 2rem;
+    padding: 0.45rem 0.65rem;
+    transition: background $transition-base, border-color $transition-base, color $transition-base;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-accent, 0.1);
+      border-color: rgba($color-accent, 0.4);
+      color: $color-on-surface;
+      outline: 0;
+    }
+  }
+
+  &__filter-chip--active {
+    background: rgba($color-accent, 0.16);
+    border-color: rgba($color-accent, 0.56);
+    color: $color-on-surface;
+  }
+
+  &__moderation {
+    min-width: 0;
+  }
+
+  &__loading,
+  &__notice-message {
+    border: 1px solid rgba($color-outline-variant, 0.42);
+    border-radius: $radius-lg;
+    color: rgba($color-on-surface-variant, 0.92);
+    margin: 0;
+    padding: 0.9rem 1rem;
+  }
+
+  &__notice-message {
+    background: rgba($color-accent, 0.1);
+    border-color: rgba($color-accent, 0.34);
+    color: $color-on-surface;
+  }
+
+  &__report-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  &__report-card {
+    background:
+      radial-gradient(circle at top right, rgba($color-accent, 0.1), transparent 18rem),
+      rgba($color-surface-container, 0.94);
+    border: 1px solid rgba($color-outline-variant, 0.58);
+    border-radius: $radius-xl;
+    box-shadow: $shadow-card;
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1rem, 2vw, 1.35rem);
+
+    > header {
+      align-items: flex-start;
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+
+      h2 {
+        color: $color-on-surface;
+        font-family: $font-headline;
+        font-size: clamp(1.1rem, 2vw, 1.55rem);
+        margin: 0.25rem 0 0;
+      }
+    }
+
+    blockquote {
+      background: rgba($color-surface-lowest, 0.38);
+      border: 1px solid rgba($color-outline-variant, 0.32);
+      border-left: 3px solid rgba($color-accent, 0.75);
+      border-radius: $radius-lg;
+      margin: 0;
+      padding: 0.9rem;
+
+      strong {
+        @include label-caps;
+
+        color: $color-accent;
+        font-size: 0.64rem;
+      }
+
+      p {
+        color: rgba($color-on-surface-variant, 0.9);
+        margin: 0.45rem 0 0;
+      }
+    }
+
+    > footer {
+      border-top: 1px solid rgba($color-outline-variant, 0.38);
+      display: grid;
+      gap: 0.65rem;
+      padding-top: 0.85rem;
+
+      > div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      button {
+        @include label-caps;
+
+        background: rgba($color-surface-container-high, 0.62);
+        border: 1px solid rgba($color-outline-variant, 0.46);
+        border-radius: 999px;
+        color: rgba($color-on-surface-variant, 0.92);
+        cursor: pointer;
+        font-size: 0.6rem;
+        min-height: 2rem;
+        padding: 0.45rem 0.7rem;
+
+        &:hover:not(:disabled),
+        &:focus-visible:not(:disabled) {
+          background: rgba($color-accent, 0.1);
+          border-color: rgba($color-accent, 0.42);
+          color: $color-on-surface;
+          outline: 0;
+        }
+
+        &:disabled {
+          cursor: not-allowed;
+          opacity: 0.48;
+        }
+      }
+    }
+  }
+
+  &__reason {
+    @include label-caps;
+
+    color: $color-accent;
+    font-size: 0.68rem;
+  }
+
+  &__status-pill {
+    @include label-caps;
+
+    border: 1px solid rgba($color-accent, 0.44);
+    border-radius: 999px;
+    color: $color-on-surface;
+    flex: 0 0 auto;
+    font-size: 0.6rem;
+    padding: 0.4rem 0.58rem;
+  }
+
+  &__status-pill--review {
+    border-color: rgba($color-outline, 0.45);
+  }
+
+  &__report-meta {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+
+    dt {
+      @include label-caps;
+
+      color: rgba($color-on-surface-variant, 0.68);
+      font-size: 0.6rem;
+      margin-bottom: 0.2rem;
+    }
+
+    dd {
+      color: rgba($color-on-surface, 0.92);
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__reported-review {
+    background: rgba($color-surface-lowest, 0.26);
+    border: 1px solid rgba($color-outline-variant, 0.3);
+    border-radius: $radius-lg;
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.9rem;
+
+    p {
+      color: rgba($color-on-surface-variant, 0.9);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    strong {
+      color: $color-on-surface;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .admin-page {
+    &__dashboard-grid,
+    &__report-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+}

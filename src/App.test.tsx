@@ -206,6 +206,8 @@ describe('App navigation with mocked motorcycleService', () => {
     ['#/cuenta/reviews', /Inicia sesión para ver tus reviews/i, 'Mis reviews | MotoAtlas'],
     ['#/cuenta/reviews/test-bmw-f-900-gs', /Inicia sesión para ver tus reviews de esta moto/i, 'Mis reviews de esta moto | MotoAtlas'],
     ['#/cuenta/solicitudes', /Inicia sesión para ver tus solicitudes/i, 'Mis solicitudes | MotoAtlas'],
+    ['#/admin', /Inicia sesión para acceder al panel admin/i, 'Panel admin | MotoAtlas'],
+    ['#/admin/moderacion', /Inicia sesión para acceder al panel admin/i, 'Moderación | MotoAtlas'],
   ])('renderiza la ruta de auth %s', async (hash, heading, expectedTitle) => {
     window.location.hash = hash;
 

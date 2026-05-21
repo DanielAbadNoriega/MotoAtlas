@@ -5,6 +5,8 @@ import {
   getBikeCanonicalPath,
   getBikeSeoSlug,
   getAccountMotorcycleReviewsCanonicalPath,
+  getAdminCanonicalPath,
+  getAdminModerationCanonicalPath,
   getCommunityCanonicalPath,
   getCommunityReviewsCanonicalPath,
   getCompareCanonicalPath,
@@ -280,6 +282,33 @@ export function buildAccountMotorcycleReviewsSeoMetadata(motorcycleId: string): 
       url: absoluteUrl(canonicalPath),
     },
     title,
+  };
+}
+
+export function buildAdminSeoMetadata(route: 'admin' | 'moderacion'): SeoMetadata {
+  const content = route === 'admin'
+    ? {
+        canonicalPath: getAdminCanonicalPath(),
+        description: 'Panel privado de administración de MotoAtlas.',
+        title: `Panel admin | ${siteName}`,
+      }
+    : {
+        canonicalPath: getAdminModerationCanonicalPath(),
+        description: 'Revisa reportes de la comunidad y gestiona el estado de reviews en MotoAtlas.',
+        title: `Moderación | ${siteName}`,
+      };
+
+  return {
+    canonicalUrl: absoluteUrl(content.canonicalPath),
+    description: content.description,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      description: content.description,
+      name: content.title,
+      url: absoluteUrl(content.canonicalPath),
+    },
+    title: content.title,
   };
 }
 

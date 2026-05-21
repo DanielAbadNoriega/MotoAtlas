@@ -35,6 +35,14 @@ export function getAccountMotorcycleReviewsHash(motorcycleId: string) {
   return `#${getAccountMotorcycleReviewsCanonicalPath(motorcycleId)}`;
 }
 
+export function getAdminCanonicalPath() {
+  return '/admin';
+}
+
+export function getAdminModerationCanonicalPath() {
+  return '/admin/moderacion';
+}
+
 export function getCompareSeoSlug(bikes: readonly Pick<Bike, 'brand' | 'model'>[]) {
   return bikes.map(getBikeSeoSlug).join('-vs-');
 }
@@ -228,6 +236,16 @@ export function isAccountMotorcycleReviewsRoute(route: string) {
 export function isAccountRequestsRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return path === '/cuenta/solicitudes';
+}
+
+export function isAdminRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === getAdminCanonicalPath();
+}
+
+export function isAdminModerationRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === getAdminModerationCanonicalPath();
 }
 
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {

@@ -304,6 +304,7 @@ with check (
 
 grant select on public.motorcycle_reviews to anon, authenticated;
 grant insert on public.motorcycle_reviews to anon, authenticated;
+grant update (status) on public.motorcycle_reviews to authenticated;
 
 create table if not exists public.review_reactions (
   id uuid primary key default gen_random_uuid(),
@@ -500,6 +501,7 @@ revoke all on table public.review_reports from authenticated;
 
 grant select on public.review_reports to authenticated;
 grant insert (review_id, user_id, reason, comment, status) on public.review_reports to authenticated;
+grant update (status) on public.review_reports to authenticated;
 
 notify pgrst, 'reload schema';
 
@@ -573,6 +575,80 @@ revoke all on table public.user_profiles from authenticated;
 grant select on table public.user_profiles to authenticated;
 grant insert (id, display_name, avatar_url) on public.user_profiles to authenticated;
 grant update (display_name, avatar_url) on public.user_profiles to authenticated;
+
+drop policy if exists "Admins can read all motorcycle reviews" on public.motorcycle_reviews;
+create policy "Admins can read all motorcycle reviews"
+on public.motorcycle_reviews
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from public.user_profiles
+    where user_profiles.id = auth.uid()
+      and user_profiles.role = 'admin'
+  )
+);
+
+drop policy if exists "Admins can update motorcycle review status" on public.motorcycle_reviews;
+create policy "Admins can update motorcycle review status"
+on public.motorcycle_reviews
+for update
+to authenticated
+using (
+  exists (
+    select 1
+    from public.user_profiles
+    where user_profiles.id = auth.uid()
+      and user_profiles.role = 'admin'
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.user_profiles
+    where user_profiles.id = auth.uid()
+      and user_profiles.role = 'admin'
+  )
+  and status in ('pending', 'approved', 'rejected', 'hidden')
+);
+
+drop policy if exists "Admins can read all review reports" on public.review_reports;
+create policy "Admins can read all review reports"
+on public.review_reports
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from public.user_profiles
+    where user_profiles.id = auth.uid()
+      and user_profiles.role = 'admin'
+  )
+);
+
+drop policy if exists "Admins can update review report status" on public.review_reports;
+create policy "Admins can update review report status"
+on public.review_reports
+for update
+to authenticated
+using (
+  exists (
+    select 1
+    from public.user_profiles
+    where user_profiles.id = auth.uid()
+      and user_profiles.role = 'admin'
+  )
+)
+with check (
+  exists (
+    select 1
+    from public.user_profiles
+    where user_profiles.id = auth.uid()
+      and user_profiles.role = 'admin'
+  )
+  and status in ('pending', 'reviewed', 'dismissed', 'action_taken')
+);
 
 create table if not exists public.model_requests (
   id uuid primary key default gen_random_uuid(),
