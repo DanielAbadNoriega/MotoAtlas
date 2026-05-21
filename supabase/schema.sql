@@ -305,6 +305,80 @@ with check (
 grant select on public.motorcycle_reviews to anon, authenticated;
 grant insert on public.motorcycle_reviews to anon, authenticated;
 
+create table if not exists public.review_reactions (
+  id uuid primary key default gen_random_uuid(),
+  review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  type text not null default 'helpful',
+  created_at timestamptz not null default now()
+);
+
+alter table if exists public.review_reactions
+  drop constraint if exists review_reactions_type_check;
+
+alter table if exists public.review_reactions
+  add constraint review_reactions_type_check
+  check (type in ('helpful'));
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'review_reactions_review_id_user_id_type_key'
+      and conrelid = 'public.review_reactions'::regclass
+  ) then
+    alter table public.review_reactions
+      add constraint review_reactions_review_id_user_id_type_key
+      unique (review_id, user_id, type);
+  end if;
+end $$;
+
+create index if not exists review_reactions_review_id_idx
+on public.review_reactions (review_id);
+
+create index if not exists review_reactions_user_id_idx
+on public.review_reactions (user_id);
+
+alter table public.review_reactions enable row level security;
+
+drop policy if exists "Helpful review reactions are readable" on public.review_reactions;
+create policy "Helpful review reactions are readable"
+on public.review_reactions
+for select
+to anon, authenticated
+using (type = 'helpful');
+
+drop policy if exists "Users can create own helpful reaction" on public.review_reactions;
+create policy "Users can create own helpful reaction"
+on public.review_reactions
+for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+  and type = 'helpful'
+  and not exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = review_reactions.review_id
+      and motorcycle_reviews.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Users can delete own helpful reaction" on public.review_reactions;
+create policy "Users can delete own helpful reaction"
+on public.review_reactions
+for delete
+to authenticated
+using (user_id = auth.uid());
+
+revoke all on table public.review_reactions from anon;
+revoke all on table public.review_reactions from authenticated;
+
+grant select on public.review_reactions to anon, authenticated;
+grant insert (review_id, user_id, type) on public.review_reactions to authenticated;
+grant delete on public.review_reactions to authenticated;
+
 notify pgrst, 'reload schema';
 
 create table if not exists public.user_profiles (

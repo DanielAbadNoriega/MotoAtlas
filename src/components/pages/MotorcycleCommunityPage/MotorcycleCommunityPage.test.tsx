@@ -1,7 +1,9 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAuth } from '../../../features/auth';
 import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { getHelpfulReactionSummary, toggleHelpfulReaction } from '../../../services/reviewReactionService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import {
   createApprovedReviewFixture,
@@ -17,8 +19,36 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
   getApprovedReviewsByMotorcycleId: vi.fn(),
 }));
 
+vi.mock('../../../services/reviewReactionService', () => ({
+  getHelpfulReactionSummary: vi.fn(),
+  toggleHelpfulReaction: vi.fn(),
+}));
+
+vi.mock('../../../features/auth', () => ({
+  useAuth: vi.fn(),
+}));
+
 const getApprovedReviewsMock = vi.mocked(getApprovedReviewsByMotorcycleId);
 const createReviewMock = vi.mocked(createReview);
+const getHelpfulReactionSummaryMock = vi.mocked(getHelpfulReactionSummary);
+const toggleHelpfulReactionMock = vi.mocked(toggleHelpfulReaction);
+const useAuthMock = vi.mocked(useAuth);
+
+function mockAuth(overrides = {}) {
+  useAuthMock.mockReturnValue({
+    user: null,
+    session: null,
+    profile: null,
+    isAuthenticated: false,
+    isAdmin: false,
+    isLoading: false,
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+    refreshProfile: vi.fn(),
+    ...overrides,
+  } as never);
+}
 
 const approvedReviews: readonly MotorcycleReview[] = [
   {
@@ -75,7 +105,18 @@ describe('MotorcycleCommunityPage', () => {
   beforeEach(() => {
     getApprovedReviewsMock.mockReset();
     createReviewMock.mockReset();
+    getHelpfulReactionSummaryMock.mockReset();
+    toggleHelpfulReactionMock.mockReset();
+    useAuthMock.mockReset();
+    mockAuth();
     getApprovedReviewsMock.mockResolvedValue(approvedReviews);
+    getHelpfulReactionSummaryMock.mockImplementation(async (reviewIds) =>
+      reviewIds.map((reviewId) => ({
+        helpfulCount: reviewId === 'review-approved-1' ? 2 : 0,
+        hasReactedHelpful: false,
+        reviewId,
+      })),
+    );
     createReviewMock.mockResolvedValue({
       id: 'review-new',
       motorcycleId: bikeFixtures[0].id,
@@ -221,6 +262,78 @@ describe('MotorcycleCommunityPage', () => {
     expect(screen.queryByRole('button', { name: /Ver reviews siguientes/i })).not.toBeInTheDocument();
   });
 
+  it('muestra acción Útil con contador en cada owner report', async () => {
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const rows = await screen.findAllByTestId('owner-report-row');
+
+    await waitFor(() => expect(within(rows[0]).getByRole('button', { name: /Útil 2/i })).toHaveAttribute('aria-pressed', 'false'));
+    expect(within(rows[1]).getByRole('button', { name: /Útil 0/i })).toBeInTheDocument();
+    expect(getHelpfulReactionSummaryMock).toHaveBeenCalledWith(['review-approved-1', 'review-approved-2'], null);
+  });
+
+  it('al pulsar Útil autenticado llama al toggle y actualiza aria-pressed', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
+    toggleHelpfulReactionMock.mockResolvedValue({
+      helpfulCount: 3,
+      hasReactedHelpful: true,
+      reviewId: 'review-approved-1',
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const usefulButton = await screen.findByRole('button', { name: /Marcar como útil\. Útil 2/i });
+    await user.click(usefulButton);
+
+    expect(toggleHelpfulReactionMock).toHaveBeenCalledWith('review-approved-1', {
+      accessToken: 'session-token',
+      userId: 'user-1',
+    });
+    await waitFor(() => expect(screen.getByRole('button', { name: /Quitar útil\. Útil 3/i })).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('si no hay sesión muestra mensaje y no llama al toggle', async () => {
+    const user = userEvent.setup();
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const firstRow = (await screen.findAllByTestId('owner-report-row'))[0];
+    await user.click(within(firstRow).getByRole('button', { name: /Útil 2/i }));
+
+    expect(within(firstRow).getByText('Inicia sesión para marcar esta review como útil.')).toBeInTheDocument();
+    expect(toggleHelpfulReactionMock).not.toHaveBeenCalled();
+    expect(within(firstRow).getByRole('button', { name: /Útil 2/i })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('no permite marcar como útil una review propia y la muestra como métrica pasiva', async () => {
+    mockAuth({
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
+    getApprovedReviewsMock.mockResolvedValue([
+      createApprovedReviewFixture({
+        id: 'own-review',
+        comment: 'Mi propia review publicada.',
+        userId: 'user-1',
+      }),
+    ]);
+    getHelpfulReactionSummaryMock.mockResolvedValue([
+      { helpfulCount: 7, hasReactedHelpful: false, reviewId: 'own-review' },
+    ]);
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const row = (await screen.findAllByTestId('owner-report-row'))[0];
+
+    await waitFor(() => expect(within(row).getByLabelText('Útil 7')).toBeInTheDocument());
+    expect(within(row).queryByRole('button', { name: /Útil 7/i })).not.toBeInTheDocument();
+  });
+
   it('mueve Problemas comunes e insights al sidebar debajo de filtros', async () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
@@ -337,7 +450,7 @@ describe('MotorcycleCommunityPage', () => {
     expect(screen.queryByText('null')).not.toBeInTheDocument();
   });
 
-  it('mantiene icono de usuario sin inicial y no crea acciones funcionales de likes o respuestas', async () => {
+  it('mantiene icono de usuario sin inicial y no crea dislikes ni respuestas funcionales', async () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
     const row = (await screen.findAllByTestId('owner-report-row'))[0];
@@ -346,7 +459,7 @@ describe('MotorcycleCommunityPage', () => {
     expect(avatar).toBeInTheDocument();
     expect(avatar?.querySelector('strong')).not.toBeInTheDocument();
     expect(within(row).getByLabelText('5 de 5 estrellas')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /like|dislike|responder|respuesta/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /dislike|responder|respuesta/i })).not.toBeInTheDocument();
   });
 
   it('mantiene navegación hacia ficha y comparador', async () => {

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import { createReview, getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { getHelpfulReactionSummary } from '../../../services/reviewReactionService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { AccountMotorcycleReviewsPage } from './AccountMotorcycleReviewsPage';
 
@@ -15,9 +16,14 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
   getReviewsByUserId: vi.fn(),
 }));
 
+vi.mock('../../../services/reviewReactionService', () => ({
+  getHelpfulReactionSummary: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewsByUserIdMock = vi.mocked(getReviewsByUserId);
 const createReviewMock = vi.mocked(createReview);
+const getHelpfulReactionSummaryMock = vi.mocked(getHelpfulReactionSummary);
 const signOutMock = vi.fn();
 const bike = bikeFixtures[0];
 
@@ -90,6 +96,14 @@ describe('AccountMotorcycleReviewsPage', () => {
     signOutMock.mockReset().mockResolvedValue(undefined);
     createReviewMock.mockReset();
     getReviewsByUserIdMock.mockReset().mockResolvedValue([]);
+    getHelpfulReactionSummaryMock.mockReset();
+    getHelpfulReactionSummaryMock.mockImplementation(async (reviewIds) =>
+      reviewIds.map((reviewId) => ({
+        helpfulCount: reviewId === 'review-approved' ? 5 : 0,
+        hasReactedHelpful: false,
+        reviewId,
+      })),
+    );
     mockAuth();
   });
 
@@ -137,6 +151,12 @@ describe('AccountMotorcycleReviewsPage', () => {
     expect(screen.getByText('Review propia pendiente.')).toBeInTheDocument();
     expect(screen.queryByText('Review de otro usuario.')).not.toBeInTheDocument();
     expect(screen.queryByText('Review de otra moto.')).not.toBeInTheDocument();
+    expect(await screen.findByLabelText('Útil 5')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Útil 5/i })).not.toBeInTheDocument();
+    expect(getHelpfulReactionSummaryMock).toHaveBeenCalledWith(['review-pending', 'review-approved'], {
+      accessToken: 'session-token',
+      userId: 'user-1',
+    });
   });
 
   it('muestra estados traducidos y limpia pros/contras nulos o vacíos', async () => {

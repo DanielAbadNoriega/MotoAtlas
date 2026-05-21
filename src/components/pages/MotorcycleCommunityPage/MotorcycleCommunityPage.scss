@@ -768,6 +768,84 @@
     }
   }
 
+  &__owner-report-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.1rem;
+  }
+
+  &__helpful-action {
+    @include label-caps;
+
+    align-items: center;
+    background: rgba($color-surface-container-high, 0.42);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: 999px;
+    color: rgba($color-on-surface-variant, 0.92);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 0.62rem;
+    gap: 0.32rem;
+    min-height: 2rem;
+    padding: 0.42rem 0.68rem;
+    transition: background $transition-base, border-color $transition-base, color $transition-base, transform $transition-base;
+
+    .material-symbols-outlined {
+      color: rgba($color-accent, 0.86);
+      font-size: 1rem;
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      background: rgba($color-accent, 0.1);
+      border-color: rgba($color-accent, 0.5);
+      color: $color-on-surface;
+      outline: 0;
+      transform: translateY(-1px);
+    }
+
+    &[data-active='true'] {
+      background: rgba($color-accent, 0.14);
+      border-color: rgba($color-accent, 0.58);
+      color: white;
+
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
+      }
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.62;
+    }
+  }
+
+  &__helpful-action--passive {
+    cursor: default;
+    opacity: 0.9;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-surface-container-high, 0.42);
+      border-color: rgba($color-outline-variant, 0.34);
+      color: rgba($color-on-surface-variant, 0.92);
+      transform: none;
+    }
+  }
+
+  &__helpful-feedback {
+    @include label-caps;
+
+    color: rgba($color-accent-container, 0.94);
+    font-size: 0.6rem;
+    line-height: 1.4;
+    margin: 0;
+    text-transform: none;
+  }
+
   &__verified-badge {
     @include label-caps;
 

@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { useAuth } from '../../../features/auth';
 import {
   getApprovedReviewsByMotorcycleId,
   type MotorcycleReview,
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
+import {
+  getHelpfulReactionSummary,
+  toggleHelpfulReaction,
+  type ReviewReactionSummary,
+} from '../../../services/reviewReactionService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import { formatReviewAggregate, formatReviewRating, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
@@ -31,6 +37,11 @@ type OwnerReportsSortOption = 'recent' | 'rating-desc' | 'kilometers-desc' | 'ow
 type OwnerReportsFilters = Readonly<{
   rating: OwnerReportsRatingFilter;
   sort: OwnerReportsSortOption;
+}>;
+type ReactionSummaryMap = Record<string, ReviewReactionSummary>;
+type ReactionNotice = Readonly<{
+  message: string;
+  reviewId?: string;
 }>;
 
 const OWNER_REPORTS_PER_PAGE = 5;
@@ -397,7 +408,71 @@ function OwnerReportListBlock({ items, title }: Readonly<{ items: readonly strin
   );
 }
 
-function OwnerReportRow({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
+function getDefaultReactionSummary(reviewId: string): ReviewReactionSummary {
+  return {
+    helpfulCount: 0,
+    hasReactedHelpful: false,
+    reviewId,
+  };
+}
+
+function HelpfulReviewAction({
+  disabled = false,
+  isOwnReview,
+  isPending,
+  onToggle,
+  summary,
+}: Readonly<{
+  disabled?: boolean;
+  isOwnReview: boolean;
+  isPending: boolean;
+  onToggle: () => void;
+  summary: ReviewReactionSummary;
+}>) {
+  const count = numberFormatter.format(summary.helpfulCount);
+
+  if (isOwnReview) {
+    return (
+      <span className="motorcycle-community__helpful-action motorcycle-community__helpful-action--passive" aria-label={`Útil ${count}`}>
+        <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
+        Útil {count}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      className="motorcycle-community__helpful-action"
+      type="button"
+      aria-label={summary.hasReactedHelpful ? `Quitar útil. Útil ${count}` : `Marcar como útil. Útil ${count}`}
+      aria-pressed={summary.hasReactedHelpful}
+      data-active={summary.hasReactedHelpful ? 'true' : 'false'}
+      disabled={disabled || isPending}
+      onClick={onToggle}
+    >
+      <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
+      Útil {count}
+    </button>
+  );
+}
+
+function OwnerReportRow({
+  feedbackMessage,
+  index,
+  isOwnReview,
+  isReactionPending,
+  onToggleHelpful,
+  reactionSummary,
+  review,
+}: Readonly<{
+  feedbackMessage?: string;
+  index: number;
+  isOwnReview: boolean;
+  isReactionPending: boolean;
+  onToggleHelpful: () => void;
+  reactionSummary: ReviewReactionSummary;
+  review: MotorcycleReview;
+}>) {
   const alias = formatCommunityAlias(review.userName);
   const pros = normalizeReviewList(review.pros as readonly unknown[]);
   const cons = normalizeReviewList(review.cons as readonly unknown[]);
@@ -451,18 +526,35 @@ function OwnerReportRow({ index, review }: Readonly<{ index: number; review: Mot
           <OwnerReportListBlock title="Pros" items={pros} />
           <OwnerReportListBlock title="Contras" items={cons} />
         </div>
+        <div className="motorcycle-community__owner-report-actions" aria-label="Acciones de la review">
+          <HelpfulReviewAction
+            isOwnReview={isOwnReview}
+            isPending={isReactionPending}
+            onToggle={onToggleHelpful}
+            summary={reactionSummary}
+          />
+        </div>
+        {feedbackMessage ? (
+          <p className="motorcycle-community__helpful-feedback" role="status" aria-live="polite">
+            {feedbackMessage}
+          </p>
+        ) : null}
       </div>
     </article>
   );
 }
 
 export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommunityPageProps) {
+  const { isAuthenticated, session, user } = useAuth();
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [hasReviewError, setHasReviewError] = useState(false);
   const [ownerReportFilters, setOwnerReportFilters] = useState<OwnerReportsFilters>(defaultOwnerReportsFilters);
   const [ownerReportsPage, setOwnerReportsPage] = useState(1);
   const [isOwnerReportFiltersOpen, setIsOwnerReportFiltersOpen] = useState(false);
+  const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
+  const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
+  const [reactionNotice, setReactionNotice] = useState<ReactionNotice | null>(null);
 
   useEffect(() => {
     if (!bike) {
@@ -521,6 +613,10 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     ownerReportsPage * OWNER_REPORTS_PER_PAGE,
   );
   const hasActiveOwnerFilters = hasActiveOwnerReportFilters(ownerReportFilters);
+  const visibleOwnerReportIds = useMemo(() => paginatedOwnerReports.map((review) => review.id), [paginatedOwnerReports]);
+  const reactionAuthContext = isAuthenticated && user?.id && session?.access_token
+    ? { accessToken: session.access_token, userId: user.id }
+    : null;
 
   useEffect(() => {
     if (ownerReportsPage > ownerReportsTotalPages) {
@@ -536,6 +632,67 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const clearOwnerReportFilters = () => {
     setOwnerReportFilters(defaultOwnerReportsFilters);
     setOwnerReportsPage(1);
+  };
+
+  useEffect(() => {
+    if (visibleOwnerReportIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getHelpfulReactionSummary(visibleOwnerReportIds, reactionAuthContext)
+      .then((summaries) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setReactionSummaries((currentSummaries) => ({
+          ...currentSummaries,
+          ...Object.fromEntries(summaries.map((summary) => [summary.reviewId, summary])),
+        }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReactionNotice({ message: 'No se pudieron cargar los útiles de estas reviews.' });
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, visibleOwnerReportIds.join('|')]);
+
+  const toggleHelpful = async (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      setReactionNotice({
+        message: 'Inicia sesión para marcar esta review como útil.',
+        reviewId: review.id,
+      });
+      return;
+    }
+
+    setReactionNotice(null);
+    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    try {
+      const summary = await toggleHelpfulReaction(review.id, reactionAuthContext);
+      setReactionSummaries((currentSummaries) => ({
+        ...currentSummaries,
+        [review.id]: summary,
+      }));
+    } catch (error) {
+      setReactionNotice({
+        message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción útil.',
+        reviewId: review.id,
+      });
+    } finally {
+      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
   };
 
   if (!motorcycleId) {
@@ -701,6 +858,11 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                 No se han podido cargar las reviews. Mostramos la comunidad vacía de forma segura.
               </p>
             ) : null}
+            {reactionNotice && !reactionNotice.reviewId ? (
+              <p className="motorcycle-community__notice motorcycle-community__notice--reaction" role="status">
+                {reactionNotice.message}
+              </p>
+            ) : null}
 
             {reviews.length > 0 ? (
               filteredOwnerReports.length > 0 ? (
@@ -709,7 +871,12 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                     {paginatedOwnerReports.map((review, index) => (
                       <OwnerReportRow
                         index={(ownerReportsPage - 1) * OWNER_REPORTS_PER_PAGE + index}
+                        isOwnReview={Boolean(user?.id && review.userId === user.id)}
+                        isReactionPending={reactionPendingIds.includes(review.id)}
                         key={review.id}
+                        onToggleHelpful={() => toggleHelpful(review)}
+                        feedbackMessage={reactionNotice?.reviewId === review.id ? reactionNotice.message : undefined}
+                        reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}
                         review={review}
                       />
                     ))}

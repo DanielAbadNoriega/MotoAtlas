@@ -7,6 +7,10 @@ import {
   type MotorcycleReviewRidingStyle,
   type MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
+import {
+  getHelpfulReactionSummary,
+  type ReviewReactionSummary,
+} from '../../../services/reviewReactionService';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import type { Bike } from '../../../types/bike';
 import {
@@ -36,6 +40,7 @@ type ReviewFilters = Readonly<{
   rating: RatingFilter;
   sort: SortOption;
 }>;
+type ReactionSummaryMap = Record<string, ReviewReactionSummary>;
 
 const REVIEWS_PER_PAGE = 5;
 const defaultFilters: ReviewFilters = {
@@ -429,7 +434,32 @@ function ReviewStatusBadge({ status }: Readonly<{ status: MotorcycleReviewStatus
   );
 }
 
-function PrivateReviewRow({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
+function getDefaultReactionSummary(reviewId: string): ReviewReactionSummary {
+  return {
+    helpfulCount: 0,
+    hasReactedHelpful: false,
+    reviewId,
+  };
+}
+
+function HelpfulReceivedMetric({ summary }: Readonly<{ summary: ReviewReactionSummary }>) {
+  return (
+    <span className="motorcycle-community__helpful-action motorcycle-community__helpful-action--passive account-motorcycle-reviews-page__helpful-metric" aria-label={`Útil ${summary.helpfulCount}`}>
+      <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
+      Útil {summary.helpfulCount}
+    </span>
+  );
+}
+
+function PrivateReviewRow({
+  index,
+  reactionSummary,
+  review,
+}: Readonly<{
+  index: number;
+  reactionSummary: ReviewReactionSummary;
+  review: MotorcycleReview;
+}>) {
   const pros = normalizeReviewList(review.pros as readonly unknown[]);
   const cons = normalizeReviewList(review.cons as readonly unknown[]);
 
@@ -475,6 +505,9 @@ function PrivateReviewRow({ index, review }: Readonly<{ index: number; review: M
           <ReviewListBlock title="Pros" items={pros} />
           <ReviewListBlock title="Contras" items={cons} />
         </div>
+        <div className="motorcycle-community__owner-report-actions" aria-label="Métricas de tu review">
+          <HelpfulReceivedMetric summary={reactionSummary} />
+        </div>
       </div>
     </article>
   );
@@ -498,6 +531,7 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
   const displayName = getProfileName(profile?.displayName, user?.email);
   const email = user?.email ?? 'Email no disponible';
 
@@ -547,9 +581,13 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
   const filteredReviews = useMemo(() => filterReviews(ownMotorcycleReviews, filters), [filters, ownMotorcycleReviews]);
   const totalPages = Math.max(1, Math.ceil(filteredReviews.length / REVIEWS_PER_PAGE));
   const paginatedReviews = filteredReviews.slice((currentPage - 1) * REVIEWS_PER_PAGE, currentPage * REVIEWS_PER_PAGE);
+  const paginatedReviewIds = useMemo(() => paginatedReviews.map((review) => review.id), [paginatedReviews]);
   const activeFilters = hasActiveFilters(filters);
   const aggregate = getReviewAggregate(ownMotorcycleReviews);
   const averageRatingLabel = ownMotorcycleReviews.length > 0 ? formatReviewRating(aggregate.averageRating) : 'N/D';
+  const reactionAuthContext = isAuthenticated && user?.id && session?.access_token
+    ? { accessToken: session.access_token, userId: user.id }
+    : null;
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -566,6 +604,31 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
     setFilters(defaultFilters);
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    if (paginatedReviewIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getHelpfulReactionSummary(paginatedReviewIds, reactionAuthContext)
+      .then((summaries) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setReactionSummaries((currentSummaries) => ({
+          ...currentSummaries,
+          ...Object.fromEntries(summaries.map((summary) => [summary.reviewId, summary])),
+        }));
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [paginatedReviewIds.join('|'), reactionAuthContext?.accessToken, reactionAuthContext?.userId]);
 
   const handleSignOut = async () => {
     setError('');
@@ -699,6 +762,7 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
                     <PrivateReviewRow
                       index={(currentPage - 1) * REVIEWS_PER_PAGE + index}
                       key={review.id}
+                      reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}
                       review={review}
                     />
                   ))}

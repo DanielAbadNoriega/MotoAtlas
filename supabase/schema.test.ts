@@ -14,6 +14,11 @@ function getModelRequestsGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getReviewReactionsGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.review_reactions\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 describe('Supabase public motorcycle schema', () => {
   it('permite leer motos públicas también con sesión autenticada', () => {
     expect(schemaSql).toContain('create policy "Public motorcycles are readable"');
@@ -95,6 +100,75 @@ describe('Supabase motorcycle_reviews RLS schema', () => {
   it('incluye verified con default false para no marcar reviews públicas sin dato real', () => {
     expect(schemaSql).toContain('verified boolean not null default false');
     expect(schemaSql).toContain('add column if not exists verified boolean not null default false');
+  });
+});
+
+describe('Supabase review_reactions schema', () => {
+  it('crea tabla de reacciones útiles con claves, checks e índices esperados', () => {
+    expect(schemaSql).toContain('create table if not exists public.review_reactions');
+    expect(schemaSql).toContain('id uuid primary key default gen_random_uuid()');
+    expect(schemaSql).toContain('review_id uuid not null references public.motorcycle_reviews(id) on delete cascade');
+    expect(schemaSql).toContain('user_id uuid not null references auth.users(id) on delete cascade');
+    expect(schemaSql).toContain("type text not null default 'helpful'");
+    expect(schemaSql).toContain('created_at timestamptz not null default now()');
+
+    expect(schemaSql).toContain('drop constraint if exists review_reactions_type_check');
+    expect(schemaSql).toContain('add constraint review_reactions_type_check');
+    expect(schemaSql).toContain("check (type in ('helpful'))");
+
+    expect(schemaSql).toContain('review_reactions_review_id_user_id_type_key');
+    expect(schemaSql).toContain('from pg_constraint');
+    expect(schemaSql).toContain("conrelid = 'public.review_reactions'::regclass");
+    expect(schemaSql).toContain('add constraint review_reactions_review_id_user_id_type_key');
+    expect(schemaSql).toContain('unique (review_id, user_id, type)');
+
+    expect(schemaSql).toMatch(
+      /create index if not exists review_reactions_review_id_idx\s+on public\.review_reactions \(review_id\);/
+    );
+
+    expect(schemaSql).toMatch(
+      /create index if not exists review_reactions_user_id_idx\s+on public\.review_reactions \(user_id\);/
+    );
+  });
+
+  it('activa RLS y permite lectura de helpful para contadores públicos', () => {
+    expect(schemaSql).toContain('alter table public.review_reactions enable row level security;');
+    expect(schemaSql).toContain('drop policy if exists "Helpful review reactions are readable" on public.review_reactions;');
+    expect(schemaSql).toContain('create policy "Helpful review reactions are readable"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to anon, authenticated');
+    expect(schemaSql).toContain("using (type = 'helpful')");
+  });
+
+  it('solo permite insertar helpful propias a usuarios autenticados y evita autoreacción', () => {
+    expect(schemaSql).toContain('drop policy if exists "Users can create own helpful reaction" on public.review_reactions;');
+    expect(schemaSql).toContain('create policy "Users can create own helpful reaction"');
+    expect(schemaSql).toContain('for insert');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('user_id = auth.uid()');
+    expect(schemaSql).toContain("type = 'helpful'");
+    expect(schemaSql).toContain('not exists (');
+    expect(schemaSql).toContain('motorcycle_reviews.id = review_reactions.review_id');
+    expect(schemaSql).toContain('motorcycle_reviews.user_id = auth.uid()');
+  });
+
+  it('solo permite borrar reacciones propias y no concede update a usuarios normales', () => {
+    const grants = getReviewReactionsGrantStatements();
+
+    expect(schemaSql).toContain('drop policy if exists "Users can delete own helpful reaction" on public.review_reactions;');
+    expect(schemaSql).toContain('create policy "Users can delete own helpful reaction"');
+    expect(schemaSql).toContain('for delete');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (user_id = auth.uid())');
+    expect(schemaSql).toContain('revoke all on table public.review_reactions from anon;');
+    expect(schemaSql).toContain('revoke all on table public.review_reactions from authenticated;');
+    expect(grants).toEqual([
+      'grant select on public.review_reactions to anon, authenticated;',
+      'grant insert (review_id, user_id, type) on public.review_reactions to authenticated;',
+      'grant delete on public.review_reactions to authenticated;',
+    ]);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.review_reactions\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/on public\.review_reactions for update to authenticated/);
   });
 });
 
