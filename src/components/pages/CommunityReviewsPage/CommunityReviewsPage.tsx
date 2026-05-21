@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import communityHeroImage from '../../../assets/hero-community.png';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountReviewsEmptyState } from '../AccountReviewsPage/AccountReviewsEmptyState';
-import { AccountReviewCard, getAccountReviewMotorcycleDisplay } from '../../reviews/AccountReviewCard';
+import {
+  AccountReviewCard,
+  accountReviewRidingStyleLabels,
+  getAccountReviewMotorcycleDisplay,
+} from '../../reviews/AccountReviewCard';
 import {
   getApprovedCommunityReviews,
   type MotorcycleReview,
@@ -15,6 +19,7 @@ import {
   type MotorcycleSegmentFilterValue,
 } from '../../../shared/filters/motorcycleFilterOptions';
 import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import './CommunityReviewsPage.scss';
 
 type ReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -30,6 +35,19 @@ type CommunityReviewFilters = Readonly<{
   search: string;
   segment: MotorcycleSegmentFilterValue;
   sort: SortOption;
+}>;
+
+type CommunityInsights = Readonly<{
+  averageRating?: number;
+  highestKilometersReview?: MotorcycleReview;
+  mostReviewedMotorcycle?: Readonly<{
+    count: number;
+    name: string;
+  }>;
+  topRidingStyle?: Readonly<{
+    count: number;
+    label: string;
+  }>;
 }>;
 
 const REVIEWS_PER_PAGE = 9;
@@ -102,6 +120,77 @@ function sortReviews(reviews: readonly MotorcycleReview[], sort: SortOption) {
   });
 }
 
+function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
+  return reviews.filter((review) => review.status === 'approved');
+}
+
+function getFeaturedReviews(reviews: readonly MotorcycleReview[]) {
+  return [...reviews]
+    .sort((left, right) => (
+      (right.kilometers ?? -1) - (left.kilometers ?? -1) ||
+      right.rating - left.rating ||
+      right.comment.length - left.comment.length ||
+      getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
+    ))
+    .slice(0, 3);
+}
+
+function getLatestReviews(reviews: readonly MotorcycleReview[]) {
+  return sortReviews(reviews, 'recent').slice(0, 3);
+}
+
+function getCommunityInsights(reviews: readonly MotorcycleReview[]): CommunityInsights {
+  if (reviews.length === 0) {
+    return {};
+  }
+
+  const motorcycleCounts = new Map<string, { count: number; latestTimestamp: number; name: string }>();
+  const ridingStyleCounts = new Map<MotorcycleReviewRidingStyle, number>();
+
+  reviews.forEach((review) => {
+    const motorcycle = getAccountReviewMotorcycleDisplay(review);
+    const currentMotorcycle = motorcycleCounts.get(review.motorcycleId);
+    const currentTimestamp = getTimestamp(review.createdAt);
+
+    motorcycleCounts.set(review.motorcycleId, {
+      count: (currentMotorcycle?.count ?? 0) + 1,
+      latestTimestamp: Math.max(currentMotorcycle?.latestTimestamp ?? 0, currentTimestamp),
+      name: currentMotorcycle?.name ?? motorcycle.name,
+    });
+
+    ridingStyleCounts.set(review.ridingStyle, (ridingStyleCounts.get(review.ridingStyle) ?? 0) + 1);
+  });
+
+  const mostReviewedMotorcycle = [...motorcycleCounts.values()].sort((left, right) => (
+    right.count - left.count ||
+    right.latestTimestamp - left.latestTimestamp ||
+    left.name.localeCompare(right.name)
+  ))[0];
+  const topRidingStyleEntry = [...ridingStyleCounts.entries()].sort((left, right) => (
+    right[1] - left[1] ||
+    accountReviewRidingStyleLabels[left[0]].localeCompare(accountReviewRidingStyleLabels[right[0]])
+  ))[0];
+  const highestKilometersReview = [...reviews]
+    .filter((review) => review.kilometers !== null)
+    .sort((left, right) => (
+      (right.kilometers ?? -1) - (left.kilometers ?? -1) ||
+      right.rating - left.rating ||
+      getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
+    ))[0];
+  const aggregate = getReviewAggregate(reviews);
+
+  return {
+    averageRating: aggregate.reviewCount > 0 ? aggregate.averageRating : undefined,
+    highestKilometersReview,
+    mostReviewedMotorcycle: mostReviewedMotorcycle
+      ? { count: mostReviewedMotorcycle.count, name: mostReviewedMotorcycle.name }
+      : undefined,
+    topRidingStyle: topRidingStyleEntry
+      ? { count: topRidingStyleEntry[1], label: accountReviewRidingStyleLabels[topRidingStyleEntry[0]] }
+      : undefined,
+  };
+}
+
 function filterReviews(reviews: readonly MotorcycleReview[], filters: CommunityReviewFilters) {
   const normalizedSearch = filters.search.trim().toLowerCase();
 
@@ -145,6 +234,95 @@ function ReviewSkeletonList() {
         </article>
       ))}
     </div>
+  );
+}
+
+function EditorialReviewSection({
+  emptyMessage,
+  id,
+  reviews,
+  title,
+}: Readonly<{
+  emptyMessage: string;
+  id: string;
+  reviews: readonly MotorcycleReview[];
+  title: string;
+}>) {
+  return (
+    <section className="community-reviews-page__editorial-section" aria-labelledby={id}>
+      <header className="community-reviews-page__editorial-header">
+        <h2 id={id}>{title}</h2>
+      </header>
+
+      {reviews.length === 0 ? (
+        <p className="community-reviews-page__editorial-empty">{emptyMessage}</p>
+      ) : (
+        <div className="community-reviews-page__editorial-list">
+          {reviews.map((review) => (
+            <AccountReviewCard headingLevel={3} key={review.id} review={review} variant="community" />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function InsightValue({ children }: Readonly<{ children?: ReactNode }>) {
+  return children ? <strong>{children}</strong> : <strong>Sin datos suficientes</strong>;
+}
+
+function CommunityInsightsPanel({ insights }: Readonly<{ insights: CommunityInsights }>) {
+  const highestKilometersMotorcycle = insights.highestKilometersReview
+    ? getAccountReviewMotorcycleDisplay(insights.highestKilometersReview)
+    : undefined;
+
+  return (
+    <aside className="community-reviews-page__insights" aria-labelledby="community-reviews-insights-title">
+      <header>
+        <span>Lectura rápida</span>
+        <h2 id="community-reviews-insights-title">Insights en vivo</h2>
+      </header>
+
+      <div className="community-reviews-page__insight-list">
+        <article>
+          <span>Modelo con más reviews</span>
+          <InsightValue>{insights.mostReviewedMotorcycle?.name}</InsightValue>
+          <p>
+            {insights.mostReviewedMotorcycle
+              ? `${numberFormatter.format(insights.mostReviewedMotorcycle.count)} reviews`
+              : 'Sin datos suficientes'}
+          </p>
+        </article>
+
+        <article>
+          <span>Uso más repetido</span>
+          <InsightValue>{insights.topRidingStyle?.label}</InsightValue>
+          <p>
+            {insights.topRidingStyle
+              ? `${numberFormatter.format(insights.topRidingStyle.count)} reportes`
+              : 'Sin datos suficientes'}
+          </p>
+        </article>
+
+        <article>
+          <span>Review con más kilómetros</span>
+          <InsightValue>{highestKilometersMotorcycle?.name}</InsightValue>
+          <p>
+            {insights.highestKilometersReview?.kilometers !== null && insights.highestKilometersReview?.kilometers !== undefined
+              ? `${numberFormatter.format(insights.highestKilometersReview.kilometers)} km`
+              : 'Sin datos suficientes'}
+          </p>
+        </article>
+
+        <article>
+          <span>Rating medio global</span>
+          <InsightValue>
+            {insights.averageRating !== undefined ? `${formatReviewRating(insights.averageRating)}/5` : undefined}
+          </InsightValue>
+          <p>Sobre reviews aprobadas</p>
+        </article>
+      </div>
+    </aside>
   );
 }
 
@@ -412,7 +590,11 @@ export function CommunityReviewsPage() {
     };
   }, []);
 
-  const filteredReviews = useMemo(() => sortReviews(filterReviews(reviews, filters), filters.sort), [filters, reviews]);
+  const approvedReviews = useMemo(() => getApprovedReviews(reviews), [reviews]);
+  const featuredReviews = useMemo(() => getFeaturedReviews(approvedReviews), [approvedReviews]);
+  const latestReviews = useMemo(() => getLatestReviews(approvedReviews), [approvedReviews]);
+  const communityInsights = useMemo(() => getCommunityInsights(approvedReviews), [approvedReviews]);
+  const filteredReviews = useMemo(() => sortReviews(filterReviews(approvedReviews, filters), filters.sort), [approvedReviews, filters]);
   const totalPages = Math.max(1, Math.ceil(filteredReviews.length / REVIEWS_PER_PAGE));
   const paginatedReviews = filteredReviews.slice((currentPage - 1) * REVIEWS_PER_PAGE, currentPage * REVIEWS_PER_PAGE);
   const activeFilters = hasActiveFilters(filters);
@@ -457,6 +639,27 @@ export function CommunityReviewsPage() {
         </div>
       </section>
 
+      <section className="community-reviews-page__editorial" aria-label="Bloque editorial de reviews">
+        <div className="community-reviews-page__editorial-grid">
+          <div className="community-reviews-page__editorial-main">
+            <EditorialReviewSection
+              emptyMessage="Todavía no hay reviews destacadas."
+              id="community-featured-reviews-title"
+              reviews={featuredReviews}
+              title="Destacadas del mes"
+            />
+            <EditorialReviewSection
+              emptyMessage="Todavía no hay actividad reciente."
+              id="community-latest-reviews-title"
+              reviews={latestReviews}
+              title="Últimos reportes"
+            />
+          </div>
+
+          <CommunityInsightsPanel insights={communityInsights} />
+        </div>
+      </section>
+
       <div className="community-reviews-page__mobile-filter-trigger">
         <button type="button" onClick={() => setIsFilterPanelOpen(true)}>
           <span className="material-symbols-outlined" aria-hidden="true">tune</span>
@@ -464,7 +667,7 @@ export function CommunityReviewsPage() {
         </button>
       </div>
 
-      <section id="community-reviews-list" className="community-reviews-page__content" aria-label="Archivo de reviews aprobadas">
+      <section id="community-reviews-list" className="community-reviews-page__content" aria-label="Explorar todas las reviews">
         <CommunityReviewFiltersPanel
           filters={filters}
           isOpen={isFilterPanelOpen}
@@ -477,9 +680,9 @@ export function CommunityReviewsPage() {
         <div className="community-reviews-page__results">
           <header className="community-reviews-page__results-header">
             <div>
-              <span>Últimos reportes</span>
-              <h2>{numberFormatter.format(filteredReviews.length)} reviews aprobadas</h2>
-              <p>Orden inicial por fecha: las opiniones más recientes aparecen primero.</p>
+              <span>Listado filtrable</span>
+              <h2>Explorar todas las reviews</h2>
+              <p>{numberFormatter.format(filteredReviews.length)} reviews aprobadas. Orden inicial por fecha: las opiniones más recientes aparecen primero.</p>
             </div>
           </header>
 

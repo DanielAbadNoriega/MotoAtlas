@@ -118,6 +118,7 @@
   display: flex;
   gap: 1rem;
   justify-content: space-between;
+  align-items: center;
 
   h2,
   h3 {
@@ -180,7 +181,7 @@
   padding-inline: 0;
 
   .account-review-card__rating-icon {
-    padding-bottom: 3px;
+    padding-bottom: 8px;
     color: $color-accent;
     font-size: 2rem;
     line-height: 1;
