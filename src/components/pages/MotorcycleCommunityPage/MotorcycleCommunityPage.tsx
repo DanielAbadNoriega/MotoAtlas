@@ -605,37 +605,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             onReset={clearOwnerReportFilters}
           />
 
-          <section className="motorcycle-community__panel motorcycle-community__panel--hud" aria-labelledby="community-score-title">
-            <h2 id="community-score-title">Resumen comunidad</h2>
-            <div className="motorcycle-community__metrics">
-              {metrics.map((metric) => (
-                <article key={metric.label}>
-                  <span>{metric.label}</span>
-                  <strong>{metric.value}</strong>
-                  {metric.detail ? <small>{metric.detail}</small> : null}
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="motorcycle-community__panel" aria-labelledby="community-distribution-title">
-            <h2 id="community-distribution-title">Distribución rating</h2>
-            <div className="motorcycle-community__distribution">
-              {starDistribution.map(({ count, rating }) => (
-                <div key={rating}>
-                  <span>{rating}★</span>
-                  <div aria-hidden="true">
-                    <span style={{ width: reviews.length === 0 ? '0%' : `${(count / reviews.length) * 100}%` }} />
-                  </div>
-                  <strong>{count}</strong>
-                </div>
-              ))}
-            </div>
-          </section>
-        </aside>
-
-        <div className="motorcycle-community__main">
-          <section className="motorcycle-community__insights" aria-labelledby="community-insights-title">
+          <section className="motorcycle-community__insights motorcycle-community__insights--sidebar" aria-labelledby="community-insights-title">
             <div>
               <span>Community DNA</span>
               <h2 id="community-insights-title">Problemas comunes e insights</h2>
@@ -684,6 +654,36 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             )}
           </section>
 
+          <section className="motorcycle-community__panel motorcycle-community__panel--hud" aria-labelledby="community-score-title">
+            <h2 id="community-score-title">Resumen comunidad</h2>
+            <div className="motorcycle-community__metrics">
+              {metrics.map((metric) => (
+                <article key={metric.label}>
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                  {metric.detail ? <small>{metric.detail}</small> : null}
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="motorcycle-community__panel" aria-labelledby="community-distribution-title">
+            <h2 id="community-distribution-title">Distribución rating</h2>
+            <div className="motorcycle-community__distribution">
+              {starDistribution.map(({ count, rating }) => (
+                <div key={rating}>
+                  <span>{rating}★</span>
+                  <div aria-hidden="true">
+                    <span style={{ width: reviews.length === 0 ? '0%' : `${(count / reviews.length) * 100}%` }} />
+                  </div>
+                  <strong>{count}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+        </aside>
+
+        <div className="motorcycle-community__main">
           <section className="motorcycle-community__reviews" aria-labelledby="community-reviews-title">
             <div className="motorcycle-community__section-header">
               <div>

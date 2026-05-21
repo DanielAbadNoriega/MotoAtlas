@@ -221,6 +221,23 @@ describe('MotorcycleCommunityPage', () => {
     expect(screen.queryByRole('button', { name: /Ver reviews siguientes/i })).not.toBeInTheDocument();
   });
 
+  it('mueve Problemas comunes e insights al sidebar debajo de filtros', async () => {
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const sidebar = screen.getByRole('complementary', { name: /Resumen de comunidad/i });
+    const insightsHeading = screen.getByRole('heading', { name: /Problemas comunes e insights/i });
+    const insightsSection = insightsHeading.closest('section');
+    const filters = sidebar.querySelector('.motorcycle-community__filters');
+
+    expect(screen.getAllByRole('heading', { name: /Problemas comunes e insights/i })).toHaveLength(1);
+    expect(insightsSection).not.toBeNull();
+    expect(filters).toBeInTheDocument();
+    expect(sidebar).toContainElement(insightsSection as HTMLElement);
+    expect(Array.from(sidebar.children).indexOf(filters as Element)).toBe(0);
+    expect(Array.from(sidebar.children).indexOf(insightsSection as Element)).toBe(1);
+    expect(await screen.findByRole('list', { name: /Listado compacto de owner reports/i })).toBeInTheDocument();
+  });
+
   it('pagina 5 owner reports por página y no muestra paginación con una sola página', async () => {
     const user = userEvent.setup();
     getApprovedReviewsMock.mockResolvedValue(createReviewFixtures(12));
