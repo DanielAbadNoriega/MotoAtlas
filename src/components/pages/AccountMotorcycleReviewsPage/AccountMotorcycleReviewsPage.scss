@@ -107,6 +107,10 @@
   color: $color-error;
 }
 
+.account-motorcycle-reviews-page__helpful-metric {
+  justify-self: start;
+}
+
 .account-motorcycle-reviews-page__empty,
 .account-motorcycle-reviews-page__loading {
   @include glass-hud;

@@ -1,10 +1,23 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { useAuth } from '../../../features/auth';
 import {
   getApprovedReviewsByMotorcycleId,
   type MotorcycleReview,
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
+import {
+  clearMyReviewReaction,
+  getReviewReactionSummary,
+  toggleHelpfulReaction,
+  toggleNotHelpfulReaction,
+  type ReviewReactionSummary,
+} from '../../../services/reviewReactionService';
+import {
+  createReviewReport,
+  getMyReviewReports,
+  type ReviewReportReason,
+} from '../../../services/reviewReportService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import { formatReviewAggregate, formatReviewRating, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
@@ -32,8 +45,27 @@ type OwnerReportsFilters = Readonly<{
   rating: OwnerReportsRatingFilter;
   sort: OwnerReportsSortOption;
 }>;
+type ReactionSummaryMap = Record<string, ReviewReactionSummary>;
+type ReactionNotice = Readonly<{
+  message: string;
+}>;
+type ReviewReportMap = Record<string, boolean>;
+type ReviewReportFormState = Readonly<{
+  comment: string;
+  isSubmitting: boolean;
+  reason: ReviewReportReason;
+  reviewId: string;
+}>;
+type HelpfulTooltipState = Readonly<{
+  message: string;
+  reviewId: string;
+  ticket: number;
+  visible: boolean;
+}>;
 
 const OWNER_REPORTS_PER_PAGE = 5;
+const HELPFUL_TOOLTIP_VISIBLE_MS = 2000;
+const HELPFUL_TOOLTIP_EXIT_MS = 220;
 const defaultOwnerReportsFilters: OwnerReportsFilters = {
   rating: 'all',
   sort: 'recent',
@@ -67,6 +99,14 @@ const ownerReportsSortOptions = [
   { label: 'Más kilómetros', value: 'kilometers-desc' },
   { label: 'Más tiempo con la moto', value: 'ownership-desc' },
 ] satisfies readonly { label: string; value: OwnerReportsSortOption }[];
+
+const reviewReportReasonOptions = [
+  { label: 'Spam', value: 'spam' },
+  { label: 'Ofensivo', value: 'offensive' },
+  { label: 'Información falsa', value: 'false_information' },
+  { label: 'Acoso', value: 'harassment' },
+  { label: 'Otro', value: 'other' },
+] satisfies readonly { label: string; value: ReviewReportReason }[];
 
 function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
   return (reviews ?? []).filter((review) => review?.status === 'approved');
@@ -397,7 +437,235 @@ function OwnerReportListBlock({ items, title }: Readonly<{ items: readonly strin
   );
 }
 
-function OwnerReportRow({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
+function getDefaultReactionSummary(reviewId: string): ReviewReactionSummary {
+  return {
+    helpfulCount: 0,
+    hasReactedHelpful: false,
+    hasReactedNotHelpful: false,
+    reviewId,
+  };
+}
+
+function HelpfulReviewAction({
+  disabled = false,
+  isBlocked,
+  isOwnReview,
+  isPending,
+  onToggle,
+  summary,
+}: Readonly<{
+  disabled?: boolean;
+  isBlocked: boolean;
+  isOwnReview: boolean;
+  isPending: boolean;
+  onToggle: () => void;
+  summary: ReviewReactionSummary;
+}>) {
+  const count = numberFormatter.format(summary.helpfulCount);
+
+  if (isOwnReview || isBlocked) {
+    return (
+      <span className="motorcycle-community__helpful-action motorcycle-community__helpful-action--passive" aria-label={`Útil ${count}`}>
+        <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
+        Útil {count}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      className="motorcycle-community__helpful-action"
+      type="button"
+      aria-label={summary.hasReactedHelpful ? `Quitar útil. Útil ${count}` : `Marcar como útil. Útil ${count}`}
+      aria-pressed={summary.hasReactedHelpful}
+      data-active={summary.hasReactedHelpful ? 'true' : 'false'}
+      disabled={disabled || isPending}
+      onClick={onToggle}
+    >
+      <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
+      Útil {count}
+    </button>
+  );
+}
+
+function NotHelpfulReviewAction({
+  isBlocked,
+  isOwnReview,
+  isPending,
+  onToggle,
+  summary,
+}: Readonly<{
+  isBlocked: boolean;
+  isOwnReview: boolean;
+  isPending: boolean;
+  onToggle: () => void;
+  summary: ReviewReactionSummary;
+}>) {
+  if (isOwnReview || isBlocked) {
+    return null;
+  }
+
+  return (
+    <button
+      className="motorcycle-community__helpful-action motorcycle-community__helpful-action--not-helpful"
+      type="button"
+      aria-label={summary.hasReactedNotHelpful ? 'Quitar no útil' : 'Marcar como no útil'}
+      aria-pressed={summary.hasReactedNotHelpful}
+      data-active={summary.hasReactedNotHelpful ? 'true' : 'false'}
+      disabled={isPending}
+      onClick={onToggle}
+    >
+      <span className="material-symbols-outlined" aria-hidden="true">thumb_down</span>
+      No útil
+    </button>
+  );
+}
+
+function ReportReviewAction({
+  hasReported,
+  isOwnReview,
+  isPending,
+  onOpen,
+}: Readonly<{
+  hasReported: boolean;
+  isOwnReview: boolean;
+  isPending: boolean;
+  onOpen: () => void;
+}>) {
+  if (isOwnReview) {
+    return null;
+  }
+
+  if (hasReported) {
+    return (
+      <span className="motorcycle-community__helpful-action motorcycle-community__helpful-action--reported" aria-label="Review reportada">
+        <span className="material-symbols-outlined" aria-hidden="true">flag</span>
+        Reportada
+      </span>
+    );
+  }
+
+  return (
+    <button
+      className="motorcycle-community__helpful-action motorcycle-community__helpful-action--report"
+      type="button"
+      aria-label="Reportar review"
+      disabled={isPending}
+      onClick={onOpen}
+    >
+      <span className="material-symbols-outlined" aria-hidden="true">flag</span>
+      Reportar
+    </button>
+  );
+}
+
+function ReviewReportForm({
+  comment,
+  isSubmitting,
+  onCancel,
+  onCommentChange,
+  onReasonChange,
+  onSubmit,
+  reason,
+  reviewId,
+}: Readonly<{
+  comment: string;
+  isSubmitting: boolean;
+  onCancel: () => void;
+  onCommentChange: (comment: string) => void;
+  onReasonChange: (reason: ReviewReportReason) => void;
+  onSubmit: () => void;
+  reason: ReviewReportReason;
+  reviewId: string;
+}>) {
+  return (
+    <form
+      className="motorcycle-community__report-panel"
+      aria-label="Reportar review"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      <fieldset>
+        <legend>Motivo</legend>
+        <div className="motorcycle-community__report-reasons">
+          {reviewReportReasonOptions.map((option) => (
+            <label key={option.value}>
+              <input
+                type="radio"
+                name={`review-report-reason-${reviewId}`}
+                value={option.value}
+                checked={reason === option.value}
+                disabled={isSubmitting}
+                onChange={() => onReasonChange(option.value)}
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <label className="motorcycle-community__report-comment">
+        <span>Comentario opcional</span>
+        <textarea
+          value={comment}
+          placeholder="Añade contexto si lo necesitas"
+          rows={3}
+          disabled={isSubmitting}
+          onChange={(event) => onCommentChange(event.target.value)}
+        />
+      </label>
+
+      <div className="motorcycle-community__report-actions">
+        <button type="button" disabled={isSubmitting} onClick={onCancel}>
+          Cancelar
+        </button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Enviando…' : 'Enviar reporte'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function OwnerReportRow({
+  feedbackTooltipMessage,
+  feedbackTooltipVisible,
+  hasReported,
+  index,
+  isOwnReview,
+  isReportFormOpen,
+  isReactionPending,
+  onCancelReport,
+  onChangeReportComment,
+  onChangeReportReason,
+  onOpenReport,
+  onSubmitReport,
+  onToggleHelpful,
+  onToggleNotHelpful,
+  reportForm,
+  reactionSummary,
+  review,
+}: Readonly<{
+  feedbackTooltipMessage?: string;
+  feedbackTooltipVisible?: boolean;
+  hasReported: boolean;
+  index: number;
+  isOwnReview: boolean;
+  isReportFormOpen: boolean;
+  isReactionPending: boolean;
+  onCancelReport: () => void;
+  onChangeReportComment: (comment: string) => void;
+  onChangeReportReason: (reason: ReviewReportReason) => void;
+  onOpenReport: () => void;
+  onSubmitReport: () => void;
+  onToggleHelpful: () => void;
+  onToggleNotHelpful: () => void;
+  reportForm: ReviewReportFormState | null;
+  reactionSummary: ReviewReactionSummary;
+  review: MotorcycleReview;
+}>) {
   const alias = formatCommunityAlias(review.userName);
   const pros = normalizeReviewList(review.pros as readonly unknown[]);
   const cons = normalizeReviewList(review.cons as readonly unknown[]);
@@ -451,18 +719,70 @@ function OwnerReportRow({ index, review }: Readonly<{ index: number; review: Mot
           <OwnerReportListBlock title="Pros" items={pros} />
           <OwnerReportListBlock title="Contras" items={cons} />
         </div>
+        <div className="motorcycle-community__owner-report-actions" aria-label="Acciones de la review">
+          <HelpfulReviewAction
+            isBlocked={hasReported}
+            isOwnReview={isOwnReview}
+            isPending={isReactionPending}
+            onToggle={onToggleHelpful}
+            summary={reactionSummary}
+          />
+          <NotHelpfulReviewAction
+            isBlocked={hasReported}
+            isOwnReview={isOwnReview}
+            isPending={isReactionPending}
+            onToggle={onToggleNotHelpful}
+            summary={reactionSummary}
+          />
+          <ReportReviewAction
+            hasReported={hasReported}
+            isOwnReview={isOwnReview}
+            isPending={isReportFormOpen && Boolean(reportForm?.isSubmitting)}
+            onOpen={onOpenReport}
+          />
+          {feedbackTooltipMessage ? (
+            <p
+              className={`motorcycle-community__helpful-feedback ${feedbackTooltipVisible ? 'motorcycle-community__helpful-feedback--visible' : ''}`}
+              role="status"
+              aria-live="polite"
+            >
+              {feedbackTooltipMessage}
+            </p>
+          ) : null}
+        </div>
+        {isReportFormOpen && reportForm ? (
+          <ReviewReportForm
+            comment={reportForm.comment}
+            isSubmitting={reportForm.isSubmitting}
+            onCancel={onCancelReport}
+            onCommentChange={onChangeReportComment}
+            onReasonChange={onChangeReportReason}
+            onSubmit={onSubmitReport}
+            reason={reportForm.reason}
+            reviewId={review.id}
+          />
+        ) : null}
       </div>
     </article>
   );
 }
 
 export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommunityPageProps) {
+  const { isAuthenticated, session, user } = useAuth();
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [hasReviewError, setHasReviewError] = useState(false);
   const [ownerReportFilters, setOwnerReportFilters] = useState<OwnerReportsFilters>(defaultOwnerReportsFilters);
   const [ownerReportsPage, setOwnerReportsPage] = useState(1);
   const [isOwnerReportFiltersOpen, setIsOwnerReportFiltersOpen] = useState(false);
+  const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
+  const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
+  const [reactionNotice, setReactionNotice] = useState<ReactionNotice | null>(null);
+  const [reportedReviewIds, setReportedReviewIds] = useState<ReviewReportMap>({});
+  const [reportForm, setReportForm] = useState<ReviewReportFormState | null>(null);
+  const [helpfulTooltip, setHelpfulTooltip] = useState<HelpfulTooltipState | null>(null);
+  const tooltipHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tooltipClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!bike) {
@@ -521,12 +841,32 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     ownerReportsPage * OWNER_REPORTS_PER_PAGE,
   );
   const hasActiveOwnerFilters = hasActiveOwnerReportFilters(ownerReportFilters);
+  const visibleOwnerReportIds = useMemo(() => paginatedOwnerReports.map((review) => review.id), [paginatedOwnerReports]);
+  const reactionAuthContext = isAuthenticated && user?.id && session?.access_token
+    ? { accessToken: session.access_token, userId: user.id }
+    : null;
 
   useEffect(() => {
     if (ownerReportsPage > ownerReportsTotalPages) {
       setOwnerReportsPage(ownerReportsTotalPages);
     }
   }, [ownerReportsPage, ownerReportsTotalPages]);
+
+  const clearHelpfulTooltipTimers = () => {
+    if (tooltipHideTimeoutRef.current) {
+      clearTimeout(tooltipHideTimeoutRef.current);
+      tooltipHideTimeoutRef.current = null;
+    }
+
+    if (tooltipClearTimeoutRef.current) {
+      clearTimeout(tooltipClearTimeoutRef.current);
+      tooltipClearTimeoutRef.current = null;
+    }
+  };
+
+  useEffect(() => () => {
+    clearHelpfulTooltipTimers();
+  }, []);
 
   const updateOwnerReportFilters = (nextFilters: Partial<OwnerReportsFilters>) => {
     setOwnerReportFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }));
@@ -536,6 +876,257 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const clearOwnerReportFilters = () => {
     setOwnerReportFilters(defaultOwnerReportsFilters);
     setOwnerReportsPage(1);
+  };
+
+  const showHelpfulTooltip = (reviewId: string, message: string) => {
+    clearHelpfulTooltipTimers();
+    const ticket = Date.now();
+    setHelpfulTooltip({
+      message,
+      reviewId,
+      ticket,
+      visible: true,
+    });
+
+    tooltipHideTimeoutRef.current = setTimeout(() => {
+      setHelpfulTooltip((currentTooltip) => {
+        if (!currentTooltip || currentTooltip.ticket !== ticket) {
+          return currentTooltip;
+        }
+
+        return { ...currentTooltip, visible: false };
+      });
+    }, HELPFUL_TOOLTIP_VISIBLE_MS);
+
+    tooltipClearTimeoutRef.current = setTimeout(() => {
+      setHelpfulTooltip((currentTooltip) => (currentTooltip?.ticket === ticket ? null : currentTooltip));
+    }, HELPFUL_TOOLTIP_VISIBLE_MS + HELPFUL_TOOLTIP_EXIT_MS);
+  };
+
+  useEffect(() => {
+    if (visibleOwnerReportIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getReviewReactionSummary(visibleOwnerReportIds, reactionAuthContext)
+      .then((summaries) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setReactionSummaries((currentSummaries) => ({
+          ...currentSummaries,
+          ...Object.fromEntries(summaries.map((summary) => [summary.reviewId, summary])),
+        }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReactionNotice({ message: 'No se pudieron cargar los útiles de estas reviews.' });
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, visibleOwnerReportIds.join('|')]);
+
+  useEffect(() => {
+    if (!reactionAuthContext) {
+      setReportedReviewIds({});
+      setReportForm(null);
+      return undefined;
+    }
+
+    if (visibleOwnerReportIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getMyReviewReports(visibleOwnerReportIds, reactionAuthContext)
+      .then((reports) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setReportedReviewIds((currentReports) => ({
+          ...currentReports,
+          ...Object.fromEntries(reports.map((report) => [report.reviewId, true])),
+        }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReactionNotice({ message: 'No se pudo cargar el estado de reportes.' });
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, visibleOwnerReportIds.join('|')]);
+
+  const toggleHelpful = async (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (reportedReviewIds[review.id]) {
+      showHelpfulTooltip(review.id, 'Ya reportaste esta review.');
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      showHelpfulTooltip(review.id, 'Inicia sesión para marcar esta review como útil.');
+      return;
+    }
+
+    clearHelpfulTooltipTimers();
+    setHelpfulTooltip(null);
+    setReactionNotice(null);
+    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    try {
+      const summary = await toggleHelpfulReaction(review.id, reactionAuthContext);
+      setReactionSummaries((currentSummaries) => ({
+        ...currentSummaries,
+        [review.id]: summary,
+      }));
+    } catch (error) {
+      setReactionNotice({
+        message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción útil.',
+      });
+    } finally {
+      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
+  };
+
+  const toggleNotHelpful = async (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (reportedReviewIds[review.id]) {
+      showHelpfulTooltip(review.id, 'Ya reportaste esta review.');
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      showHelpfulTooltip(review.id, 'Inicia sesión para valorar esta review.');
+      return;
+    }
+
+    clearHelpfulTooltipTimers();
+    setHelpfulTooltip(null);
+    setReactionNotice(null);
+    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    try {
+      const summary = await toggleNotHelpfulReaction(review.id, reactionAuthContext);
+      setReactionSummaries((currentSummaries) => ({
+        ...currentSummaries,
+        [review.id]: summary,
+      }));
+    } catch (error) {
+      setReactionNotice({
+        message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción.',
+      });
+    } finally {
+      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
+  };
+
+  const openReportForm = (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      showHelpfulTooltip(review.id, 'Inicia sesión para reportar esta review.');
+      return;
+    }
+
+    if (reportedReviewIds[review.id]) {
+      showHelpfulTooltip(review.id, 'Ya has reportado esta review.');
+      return;
+    }
+
+    clearHelpfulTooltipTimers();
+    setHelpfulTooltip(null);
+    setReactionNotice(null);
+    setReportForm({
+      comment: '',
+      isSubmitting: false,
+      reason: 'spam',
+      reviewId: review.id,
+    });
+  };
+
+  const updateReportFormReason = (reason: ReviewReportReason) => {
+    setReportForm((currentForm) => (currentForm ? { ...currentForm, reason } : currentForm));
+  };
+
+  const updateReportFormComment = (comment: string) => {
+    setReportForm((currentForm) => (currentForm ? { ...currentForm, comment } : currentForm));
+  };
+
+  const submitReport = async (review: MotorcycleReview) => {
+    if (!reactionAuthContext || !reportForm || reportForm.reviewId !== review.id) {
+      return;
+    }
+
+    setReportForm((currentForm) => (currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: true } : currentForm));
+    setReactionNotice(null);
+    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    const applyReactionCleanup = async (messageOnError?: string) => {
+      try {
+        const cleanedSummary = await clearMyReviewReaction(review.id, reactionAuthContext);
+        setReactionSummaries((currentSummaries) => ({
+          ...currentSummaries,
+          [review.id]: cleanedSummary,
+        }));
+      } catch (cleanupError) {
+        setReactionNotice({
+          message: messageOnError ?? (cleanupError instanceof Error
+            ? cleanupError.message
+            : 'No se pudieron limpiar tus reacciones en esta review.'),
+        });
+      }
+    };
+
+    try {
+      await createReviewReport(
+        {
+          comment: reportForm.comment,
+          reason: reportForm.reason,
+          reviewId: review.id,
+        },
+        reactionAuthContext,
+      );
+      await applyReactionCleanup('Reporte enviado, pero no se pudo actualizar tu reacción previa.');
+      setReportedReviewIds((currentReports) => ({ ...currentReports, [review.id]: true }));
+      setReportForm(null);
+      showHelpfulTooltip(review.id, 'Gracias. Revisaremos esta review.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo enviar el reporte.';
+
+      if (message === 'Ya has reportado esta review.') {
+        await applyReactionCleanup();
+        setReportedReviewIds((currentReports) => ({ ...currentReports, [review.id]: true }));
+        setReportForm(null);
+        showHelpfulTooltip(review.id, message);
+        return;
+      }
+
+      setReportForm((currentForm) => (
+        currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: false } : currentForm
+      ));
+      setReactionNotice({ message });
+    } finally {
+      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
   };
 
   if (!motorcycleId) {
@@ -701,6 +1292,11 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                 No se han podido cargar las reviews. Mostramos la comunidad vacía de forma segura.
               </p>
             ) : null}
+            {reactionNotice ? (
+              <p className="motorcycle-community__notice motorcycle-community__notice--reaction" role="status">
+                {reactionNotice.message}
+              </p>
+            ) : null}
 
             {reviews.length > 0 ? (
               filteredOwnerReports.length > 0 ? (
@@ -709,7 +1305,22 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                     {paginatedOwnerReports.map((review, index) => (
                       <OwnerReportRow
                         index={(ownerReportsPage - 1) * OWNER_REPORTS_PER_PAGE + index}
+                        hasReported={Boolean(reportedReviewIds[review.id])}
+                        isOwnReview={Boolean(user?.id && review.userId === user.id)}
+                        isReportFormOpen={reportForm?.reviewId === review.id}
+                        isReactionPending={reactionPendingIds.includes(review.id)}
                         key={review.id}
+                        onCancelReport={() => setReportForm(null)}
+                        onChangeReportComment={updateReportFormComment}
+                        onChangeReportReason={updateReportFormReason}
+                        onOpenReport={() => openReportForm(review)}
+                        onSubmitReport={() => submitReport(review)}
+                        onToggleHelpful={() => toggleHelpful(review)}
+                        onToggleNotHelpful={() => toggleNotHelpful(review)}
+                        feedbackTooltipMessage={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.message : undefined}
+                        feedbackTooltipVisible={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.visible : false}
+                        reportForm={reportForm}
+                        reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}
                         review={review}
                       />
                     ))}
