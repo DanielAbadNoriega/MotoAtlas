@@ -44,10 +44,11 @@ const reports: readonly AdminReviewReport[] = [
     createdAt: '2026-05-21T10:00:00.000Z',
     id: 'report-1',
     reason: 'false_information',
+    reporterDisplayName: 'Fromen_01',
     reporterUserId: 'reporter-1',
     review: {
       comment: 'Tiene cruise control de serie.',
-      cons: ['peso'],
+      cons: ['peso', 'calor'],
       id: 'review-1',
       motorcycle: {
         brand: 'BMW',
@@ -57,7 +58,7 @@ const reports: readonly AdminReviewReport[] = [
         year: 2024,
       },
       motorcycleId: 'test-bmw-f-900-gs',
-      pros: ['motor'],
+      pros: ['fiabilidad', 'consumo'],
       rating: 4,
       status: 'approved',
       userName: 'Curvasypuños',
@@ -122,18 +123,29 @@ describe('AdminPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Moderación' })).toBeInTheDocument();
     expect(await screen.findByText('Información falsa')).toBeInTheDocument();
+    expect(screen.getByText(/Reportado por/i)).toBeInTheDocument();
+    const reporterName = screen.getByText('Fromen_01');
+    expect(reporterName).toBeInTheDocument();
+    expect(reporterName).toHaveAttribute('title', 'reporter-1');
     expect(screen.getByText('BMW F 900 GS 2024')).toBeInTheDocument();
     expect(screen.getByText(/Review de @Curvasypuños · ★ 4/i)).toBeInTheDocument();
-    expect(screen.getByText('Tiene cruise control de serie.')).toBeInTheDocument();
+    expect(screen.getByText('Publicada')).toBeInTheDocument();
+    expect(screen.getByText(/Tiene cruise control de serie/i)).toBeInTheDocument();
+    expect(screen.getByText('Pros:')).toBeInTheDocument();
+    expect(screen.getByText('fiabilidad, consumo')).toBeInTheDocument();
+    expect(screen.getByText('Contras:')).toBeInTheDocument();
+    expect(screen.getByText('peso, calor')).toBeInTheDocument();
     expect(screen.getByText(/Dice que tiene control de crucero/i)).toBeInTheDocument();
     expect(getReviewReportsMock).toHaveBeenCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
       { reason: 'all', sort: 'recent', status: 'pending' },
     );
     expect(screen.getByRole('button', { name: 'Descartar reporte' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Marcar acción tomada' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Marcar como resuelto' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Gestionar reporte' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Gestionar review' })).toBeInTheDocument();
+    expect(screen.queryByText('Acción tomada')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^null$/i)).not.toBeInTheDocument();
   });
 
   it('filtra por estado, motivo y orden', async () => {
@@ -153,6 +165,7 @@ describe('AdminPage', () => {
     await user.click(within(statusGroup as HTMLElement).getByRole('button', { name: 'Todos' }));
     await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Ofensivo' }));
     await user.click(within(orderGroup as HTMLElement).getByRole('button', { name: 'Más antiguos' }));
+    expect(within(statusGroup as HTMLElement).getByRole('button', { name: 'Resueltos' })).toBeInTheDocument();
 
     await waitFor(() => expect(getReviewReportsMock).toHaveBeenLastCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
@@ -180,33 +193,33 @@ describe('AdminPage', () => {
     });
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Reporte descartado.'));
 
-    await user.click(within(card).getByRole('button', { name: 'Marcar acción tomada' }));
+    await user.click(within(card).getByRole('button', { name: 'Marcar como resuelto' }));
     expect(updateReviewReportStatusMock).toHaveBeenCalledWith('report-1', 'action_taken', {
       accessToken: 'admin-token',
       userId: 'admin-1',
     });
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Reporte marcado como acción tomada.'));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Reporte marcado como resuelto.'));
 
-    await user.click(within(card).getByRole('button', { name: /Ocultar review/i }));
+    await user.click(within(card).getByRole('button', { name: /^Ocultar$/i }));
     expect(resolveReportWithReviewStatusMock).toHaveBeenCalledWith('report-1', 'review-1', 'hidden', {
       accessToken: 'admin-token',
       userId: 'admin-1',
     });
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review ocultada y reporte marcado como acción tomada.'));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review ocultada y reporte marcado como resuelto.'));
 
-    await user.click(within(card).getByRole('button', { name: /Aprobar review/i }));
+    await user.click(within(card).getByRole('button', { name: /^Aprobar$/i }));
     expect(resolveReportWithReviewStatusMock).toHaveBeenCalledWith('report-1', 'review-1', 'approved', {
       accessToken: 'admin-token',
       userId: 'admin-1',
     });
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review aprobada y reporte marcado como acción tomada.'));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review aprobada y reporte marcado como resuelto.'));
 
-    await user.click(within(card).getByRole('button', { name: /Rechazar review/i }));
+    await user.click(within(card).getByRole('button', { name: /^Rechazar$/i }));
     expect(resolveReportWithReviewStatusMock).toHaveBeenCalledWith('report-1', 'review-1', 'rejected', {
       accessToken: 'admin-token',
       userId: 'admin-1',
     });
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review rechazada y reporte marcado como acción tomada.'));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Review rechazada y reporte marcado como resuelto.'));
   });
 
   it('muestra empty, loading y error', async () => {
@@ -236,8 +249,31 @@ describe('AdminPage', () => {
     render(<AdminModerationPage />);
 
     const card = (await screen.findAllByTestId('admin-report-card'))[0];
-    expect(within(card).getByRole('button', { name: 'Marcar acción tomada' })).toBeDisabled();
-    expect(within(card).getByRole('button', { name: /Ocultar review/i })).toBeDisabled();
+    expect(within(card).getByRole('button', { name: 'Marcar como resuelto' })).toBeDisabled();
+    expect(within(card).getByRole('button', { name: /^Ocultar$/i })).toBeDisabled();
+    expect(within(card).getByText('Resuelto')).toBeInTheDocument();
+  });
+
+  it('oculta comentario/pros/contras cuando vienen vacíos y usa fallback de reportante', async () => {
+    getReviewReportsMock.mockResolvedValueOnce([{
+      ...reports[0],
+      comment: null,
+      reporterDisplayName: 'Usuario sin alias',
+      review: reports[0].review
+        ? {
+            ...reports[0].review,
+            pros: [],
+            cons: ['null'],
+          }
+        : reports[0].review,
+    }]);
+    render(<AdminModerationPage />);
+
+    expect(await screen.findByText('Usuario sin alias')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Comentario del reporte')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Pros reportados')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Contras reportados')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^null$/i)).not.toBeInTheDocument();
   });
 
   it('muestra error claro si falla una acción de moderación', async () => {

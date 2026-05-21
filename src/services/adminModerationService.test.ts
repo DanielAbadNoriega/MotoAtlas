@@ -49,62 +49,70 @@ describe('adminModerationService', () => {
 
   it('obtiene reportes con bearer token, filtros y orden pending primero', async () => {
     stubSupabaseEnv();
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse([
-      {
-        id: 'report-reviewed',
-        review_id: 'review-2',
-        user_id: 'reporter-2',
-        reason: 'spam',
-        comment: null,
-        status: 'reviewed',
-        created_at: '2026-05-21T09:00:00.000Z',
-        updated_at: '2026-05-21T09:00:00.000Z',
-        motorcycle_reviews: {
-          id: 'review-2',
-          motorcycle_id: 'bike-2',
-          user_name: 'Ana',
-          rating: 4,
-          comment: 'Comentario 2',
-          pros: ['motor'],
-          cons: [],
-          status: 'approved',
-          motorcycles: { id: 'bike-2', brand: 'Yamaha', model: 'MT-09', year: 2024, image_url: '/mt.jpg' },
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse([
+        {
+          id: 'report-reviewed',
+          review_id: 'review-2',
+          user_id: 'reporter-2',
+          reason: 'spam',
+          comment: null,
+          status: 'reviewed',
+          created_at: '2026-05-21T09:00:00.000Z',
+          updated_at: '2026-05-21T09:00:00.000Z',
+          motorcycle_reviews: {
+            id: 'review-2',
+            motorcycle_id: 'bike-2',
+            user_name: 'Ana',
+            rating: 4,
+            comment: 'Comentario 2',
+            pros: ['motor'],
+            cons: [],
+            status: 'approved',
+            motorcycles: { id: 'bike-2', brand: 'Yamaha', model: 'MT-09', year: 2024, image_url: '/mt.jpg' },
+          },
         },
-      },
-      {
-        id: 'report-pending',
-        review_id: 'review-1',
-        user_id: 'reporter-1',
-        reason: 'false_information',
-        comment: 'No coincide con ficha.',
-        status: 'pending',
-        created_at: '2026-05-21T08:00:00.000Z',
-        updated_at: '2026-05-21T08:00:00.000Z',
-        motorcycle_reviews: {
-          id: 'review-1',
-          motorcycle_id: 'bike-1',
-          user_name: 'Dani',
-          rating: 5,
-          comment: 'Comentario 1',
-          pros: null,
-          cons: ['peso'],
-          status: 'approved',
-          motorcycles: { id: 'bike-1', brand: 'BMW', model: 'F 900 GS', year: 2024, image_url: '/bmw.jpg' },
+        {
+          id: 'report-pending',
+          review_id: 'review-1',
+          user_id: 'reporter-1',
+          reason: 'false_information',
+          comment: 'No coincide con ficha.',
+          status: 'pending',
+          created_at: '2026-05-21T08:00:00.000Z',
+          updated_at: '2026-05-21T08:00:00.000Z',
+          motorcycle_reviews: {
+            id: 'review-1',
+            motorcycle_id: 'bike-1',
+            user_name: 'Dani',
+            rating: 5,
+            comment: 'Comentario 1',
+            pros: null,
+            cons: ['peso'],
+            status: 'approved',
+            motorcycles: { id: 'bike-1', brand: 'BMW', model: 'F 900 GS', year: 2024, image_url: '/bmw.jpg' },
+          },
         },
-      },
-    ]));
+      ]))
+      .mockResolvedValueOnce(jsonResponse([
+        { id: 'reporter-1', display_name: 'Fromen_01' },
+        { id: 'reporter-2', display_name: null },
+      ]));
     vi.stubGlobal('fetch', fetchMock);
 
     const reports = await getReviewReports(
       { accessToken: 'session-token', userId: 'admin-1' },
       { reason: 'false_information', sort: 'oldest', status: 'all' },
     );
-    const [url, requestInit] = fetchMock.mock.calls[0];
+    const [reportsUrl, reportsRequestInit] = fetchMock.mock.calls[0];
+    const [profilesUrl] = fetchMock.mock.calls[1];
 
     expect(reports.map((report) => report.id)).toEqual(['report-pending', 'report-reviewed']);
     expect(reports[0]).toMatchObject({
       comment: 'No coincide con ficha.',
       reason: 'false_information',
+      reporterDisplayName: 'Fromen_01',
       reporterUserId: 'reporter-1',
       review: {
         comment: 'Comentario 1',
@@ -114,12 +122,17 @@ describe('adminModerationService', () => {
       },
       status: 'pending',
     });
-    expect(decodeURIComponent(String(url))).toContain('/rest/v1/review_reports?');
-    expect(decodeURIComponent(String(url))).toContain('reason=eq.false_information');
-    expect(decodeURIComponent(String(url))).not.toContain('status=eq.');
-    expect(decodeURIComponent(String(url))).toContain('order=created_at.asc');
-    expect(decodeURIComponent(String(url))).toContain('motorcycle_reviews(');
-    expect(requestInit.headers).toMatchObject({
+    expect(reports[1].reporterDisplayName).toBe('Usuario sin alias');
+    expect(decodeURIComponent(String(reportsUrl))).toContain('/rest/v1/review_reports?');
+    expect(decodeURIComponent(String(reportsUrl))).toContain('reason=eq.false_information');
+    expect(decodeURIComponent(String(reportsUrl))).not.toContain('status=eq.');
+    expect(decodeURIComponent(String(reportsUrl))).toContain('order=created_at.asc');
+    expect(decodeURIComponent(String(reportsUrl))).toContain('motorcycle_reviews(');
+    expect(decodeURIComponent(String(profilesUrl))).toContain('/rest/v1/user_profiles?');
+    expect(decodeURIComponent(String(profilesUrl))).toContain('id=in.(');
+    expect(decodeURIComponent(String(profilesUrl))).toContain('reporter-1');
+    expect(decodeURIComponent(String(profilesUrl))).toContain('reporter-2');
+    expect(reportsRequestInit.headers).toMatchObject({
       Authorization: 'Bearer session-token',
       apikey: 'anon-key',
     });

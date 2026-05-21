@@ -150,16 +150,13 @@
     padding: clamp(1rem, 2vw, 1.35rem);
 
     > header {
-      align-items: flex-start;
-      display: flex;
-      gap: 1rem;
-      justify-content: space-between;
+      display: block;
 
       h2 {
         color: $color-on-surface;
         font-family: $font-headline;
-        font-size: clamp(1.1rem, 2vw, 1.55rem);
-        margin: 0.25rem 0 0;
+        font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+        margin: 0;
       }
     }
 
@@ -218,6 +215,51 @@
     }
   }
 
+  &__report-heading {
+    display: grid;
+    gap: 0.42rem;
+  }
+
+  &__reason-line {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  &__reporter {
+    color: rgba($color-on-surface-variant, 0.86);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+
+    strong {
+      color: $color-on-surface;
+      font-weight: 700;
+    }
+  }
+
+  &__review-context {
+    display: grid;
+    gap: 0.35rem;
+
+    h3 {
+      color: $color-on-surface;
+      font-family: $font-headline;
+      font-size: clamp(1rem, 1.75vw, 1.25rem);
+      margin: 0;
+    }
+
+    p {
+      align-items: center;
+      color: rgba($color-on-surface-variant, 0.9);
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin: 0;
+    }
+  }
+
   &__action-group {
     display: grid;
     gap: 0.45rem;
@@ -237,46 +279,65 @@
     }
   }
 
-  &__reason {
-    @include label-caps;
-
-    color: $color-accent;
-    font-size: 0.68rem;
-  }
-
   &__status-pill {
     @include label-caps;
 
-    border: 1px solid rgba($color-accent, 0.44);
+    border: 1px solid rgba($color-outline, 0.44);
     border-radius: 999px;
     color: $color-on-surface;
     flex: 0 0 auto;
     font-size: 0.6rem;
+    line-height: 1.1;
     padding: 0.4rem 0.58rem;
   }
 
-  &__status-pill--review {
-    border-color: rgba($color-outline, 0.45);
+  &__status-pill[data-status='pending'] {
+    background: rgba(242, 201, 76, 0.14);
+    border-color: rgba(242, 201, 76, 0.55);
+    color: #f2c94c;
   }
 
-  &__report-meta {
-    display: grid;
-    gap: 0.65rem;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 0;
+  &__status-pill[data-status='reviewed'] {
+    background: rgba(86, 204, 242, 0.14);
+    border-color: rgba(86, 204, 242, 0.55);
+    color: #56ccf2;
+  }
 
-    dt {
-      @include label-caps;
+  &__status-pill[data-status='dismissed'] {
+    background: rgba(189, 189, 189, 0.12);
+    border-color: rgba(189, 189, 189, 0.55);
+    color: #d9d9d9;
+  }
 
-      color: rgba($color-on-surface-variant, 0.68);
-      font-size: 0.6rem;
-      margin-bottom: 0.2rem;
+  &__status-pill[data-status='action_taken'] {
+    background: rgba(111, 207, 151, 0.14);
+    border-color: rgba(111, 207, 151, 0.58);
+    color: #6fcf97;
+  }
+
+  &__status-pill--review {
+    &[data-status='approved'] {
+      background: rgba(111, 207, 151, 0.14);
+      border-color: rgba(111, 207, 151, 0.58);
+      color: #6fcf97;
     }
 
-    dd {
-      color: rgba($color-on-surface, 0.92);
-      margin: 0;
-      overflow-wrap: anywhere;
+    &[data-status='pending'] {
+      background: rgba(242, 201, 76, 0.14);
+      border-color: rgba(242, 201, 76, 0.55);
+      color: #f2c94c;
+    }
+
+    &[data-status='rejected'] {
+      background: rgba(235, 87, 87, 0.14);
+      border-color: rgba(235, 87, 87, 0.55);
+      color: #eb5757;
+    }
+
+    &[data-status='hidden'] {
+      background: rgba(242, 153, 74, 0.14);
+      border-color: rgba(242, 153, 74, 0.55);
+      color: #f2994a;
     }
   }
 
@@ -298,12 +359,59 @@
       color: $color-on-surface;
     }
   }
+
+  &__report-extra {
+    display: grid;
+    gap: 0.25rem;
+
+    strong {
+      @include label-caps;
+
+      color: rgba($color-on-surface-variant, 0.85);
+      font-size: 0.62rem;
+      margin: 0;
+    }
+
+    p {
+      color: rgba($color-on-surface, 0.94);
+      margin: 0;
+    }
+  }
+
+  &__action-button--report-info {
+    border-color: rgba(86, 204, 242, 0.5) !important;
+    color: #56ccf2 !important;
+  }
+
+  &__action-button--report-danger {
+    border-color: rgba(235, 87, 87, 0.5) !important;
+    color: #eb5757 !important;
+  }
+
+  &__action-button--report-success {
+    border-color: rgba(111, 207, 151, 0.5) !important;
+    color: #6fcf97 !important;
+  }
+
+  &__action-button--review-success {
+    border-color: rgba(111, 207, 151, 0.5) !important;
+    color: #6fcf97 !important;
+  }
+
+  &__action-button--review-neutral {
+    border-color: rgba(189, 189, 189, 0.5) !important;
+    color: #d9d9d9 !important;
+  }
+
+  &__action-button--review-danger {
+    border-color: rgba(235, 87, 87, 0.5) !important;
+    color: #eb5757 !important;
+  }
 }
 
 @media (max-width: $breakpoint-tablet) {
   .admin-page {
-    &__dashboard-grid,
-    &__report-meta {
+    &__dashboard-grid {
       grid-template-columns: 1fr;
     }
   }

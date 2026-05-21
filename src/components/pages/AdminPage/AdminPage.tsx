@@ -46,14 +46,14 @@ const reasonLabels: Record<ReviewReportReason, string> = {
 };
 
 const reportStatusLabels: Record<ReviewReportStatus, string> = {
-  action_taken: 'Acción tomada',
+  action_taken: 'Resuelto',
   dismissed: 'Descartado',
   pending: 'Pendiente',
   reviewed: 'Revisado',
 };
 
 const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
-  approved: 'Aprobada',
+  approved: 'Publicada',
   hidden: 'Oculta',
   pending: 'Pendiente',
   rejected: 'Rechazada',
@@ -63,7 +63,7 @@ const reportStatusOptions = [
   { label: 'Pendientes', value: 'pending' },
   { label: 'Revisados', value: 'reviewed' },
   { label: 'Descartados', value: 'dismissed' },
-  { label: 'Acción tomada', value: 'action_taken' },
+  { label: 'Resueltos', value: 'action_taken' },
   { label: 'Todos', value: 'all' },
 ] satisfies readonly { label: string; value: AdminReportStatusFilter }[];
 
@@ -283,6 +283,12 @@ function ReviewStatusBadge({ status }: Readonly<{ status: MotorcycleReviewStatus
   return <span className="admin-page__status-pill admin-page__status-pill--review" data-status={status}>{reviewStatusLabels[status]}</span>;
 }
 
+function normalizeTextList(values: readonly string[] | null | undefined) {
+  return (values ?? [])
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter((value) => value.length > 0 && value.toLowerCase() !== 'null');
+}
+
 function AdminReportCard({
   isPending,
   onReportStatus,
@@ -298,41 +304,52 @@ function AdminReportCard({
     ? `${report.review.motorcycle.brand} ${report.review.motorcycle.model} ${report.review.motorcycle.year}`
     : report.review?.motorcycleId ?? 'Moto no disponible';
   const reviewStatus = report.review?.status;
+  const reviewStatusLabel = reviewStatus ? reviewStatusLabels[reviewStatus] : 'Sin dato';
+  const pros = normalizeTextList(report.review?.pros);
+  const cons = normalizeTextList(report.review?.cons);
 
   return (
     <article className="admin-page__report-card" data-testid="admin-report-card">
       <header>
-        <div>
-          <span className="admin-page__reason">{reasonLabels[report.reason]}</span>
-          <h2>{motorcycleName}</h2>
+        <div className="admin-page__report-heading">
+          <div className="admin-page__reason-line">
+            <ReportStatusBadge status={report.status} />
+            <h2>{reasonLabels[report.reason]}</h2>
+          </div>
+          <p className="admin-page__reporter">
+            Reportado por <strong title={report.reporterUserId}>{report.reporterDisplayName}</strong> · {formatDate(report.createdAt)}
+          </p>
         </div>
-        <ReportStatusBadge status={report.status} />
       </header>
 
-      <dl className="admin-page__report-meta">
-        <div>
-          <dt>Fecha</dt>
-          <dd>{formatDate(report.createdAt)}</dd>
-        </div>
-        <div>
-          <dt>Reporta</dt>
-          <dd>{report.reporterUserId}</dd>
-        </div>
-        <div>
-          <dt>Estado review</dt>
-          <dd>{reviewStatus ? <ReviewStatusBadge status={reviewStatus} /> : 'Sin dato'}</dd>
-        </div>
-      </dl>
-
-      <section className="admin-page__reported-review" aria-label="Review reportada">
+      <section className="admin-page__review-context">
+        <h3>{motorcycleName}</h3>
         <p>
-          <strong>Review de @{report.review?.userName || 'usuario'} · ★ {report.review?.rating ?? 'N/D'}</strong>
+          Review de @{report.review?.userName || 'usuario'} · ★ {report.review?.rating ?? 'N/D'} ·{' '}
+          {reviewStatus ? <ReviewStatusBadge status={reviewStatus} /> : reviewStatusLabel}
         </p>
-        <p>{report.review?.comment ?? 'Review no disponible.'}</p>
       </section>
 
+      <section className="admin-page__reported-review" aria-label="Review reportada">
+        <p>“{report.review?.comment ?? 'Review no disponible.'}”</p>
+      </section>
+
+      {pros.length > 0 ? (
+        <section className="admin-page__report-extra" aria-label="Pros reportados">
+          <strong>Pros:</strong>
+          <p>{pros.join(', ')}</p>
+        </section>
+      ) : null}
+
+      {cons.length > 0 ? (
+        <section className="admin-page__report-extra" aria-label="Contras reportados">
+          <strong>Contras:</strong>
+          <p>{cons.join(', ')}</p>
+        </section>
+      ) : null}
+
       {report.comment ? (
-        <blockquote>
+        <blockquote aria-label="Comentario del reporte">
           <strong>Comentario del reporte:</strong>
           <p>{report.comment}</p>
         </blockquote>
@@ -342,14 +359,29 @@ function AdminReportCard({
         <div className="admin-page__action-group" aria-label="Acciones sobre reporte">
           <h3>Gestionar reporte</h3>
           <div>
-            <button type="button" disabled={isPending || report.status === 'reviewed'} onClick={() => onReportStatus(report, 'reviewed')}>
+            <button
+              className="admin-page__action-button admin-page__action-button--report-info"
+              type="button"
+              disabled={isPending || report.status === 'reviewed'}
+              onClick={() => onReportStatus(report, 'reviewed')}
+            >
               Marcar revisado
             </button>
-            <button type="button" disabled={isPending || report.status === 'dismissed'} onClick={() => onReportStatus(report, 'dismissed')}>
+            <button
+              className="admin-page__action-button admin-page__action-button--report-danger"
+              type="button"
+              disabled={isPending || report.status === 'dismissed'}
+              onClick={() => onReportStatus(report, 'dismissed')}
+            >
               Descartar reporte
             </button>
-            <button type="button" disabled={isPending || report.status === 'action_taken'} onClick={() => onReportStatus(report, 'action_taken')}>
-              Marcar acción tomada
+            <button
+              className="admin-page__action-button admin-page__action-button--report-success"
+              type="button"
+              disabled={isPending || report.status === 'action_taken'}
+              onClick={() => onReportStatus(report, 'action_taken')}
+            >
+              Marcar como resuelto
             </button>
           </div>
         </div>
@@ -358,14 +390,29 @@ function AdminReportCard({
           <div className="admin-page__action-group" aria-label="Acciones sobre review">
             <h3>Gestionar review</h3>
             <div>
-              <button type="button" disabled={isPending || reviewStatus === 'hidden'} onClick={() => onReviewStatus(report, 'hidden')}>
-                Ocultar review
+              <button
+                className="admin-page__action-button admin-page__action-button--review-neutral"
+                type="button"
+                disabled={isPending || reviewStatus === 'hidden'}
+                onClick={() => onReviewStatus(report, 'hidden')}
+              >
+                Ocultar
               </button>
-              <button type="button" disabled={isPending || reviewStatus === 'approved'} onClick={() => onReviewStatus(report, 'approved')}>
-                Aprobar review
+              <button
+                className="admin-page__action-button admin-page__action-button--review-success"
+                type="button"
+                disabled={isPending || reviewStatus === 'approved'}
+                onClick={() => onReviewStatus(report, 'approved')}
+              >
+                Aprobar
               </button>
-              <button type="button" disabled={isPending || reviewStatus === 'rejected'} onClick={() => onReviewStatus(report, 'rejected')}>
-                Rechazar review
+              <button
+                className="admin-page__action-button admin-page__action-button--review-danger"
+                type="button"
+                disabled={isPending || reviewStatus === 'rejected'}
+                onClick={() => onReviewStatus(report, 'rejected')}
+              >
+                Rechazar
               </button>
             </div>
           </div>
@@ -407,21 +454,21 @@ export function AdminModerationPage() {
     loadReports();
   }, [loadReports]);
 
-const updateFilters = (next: Partial<AdminFilters>) => {
-  setFilters((currentFilters) => ({ ...currentFilters, ...next }));
-};
+  const updateFilters = (next: Partial<AdminFilters>) => {
+    setFilters((currentFilters) => ({ ...currentFilters, ...next }));
+  };
 
-const reportActionNotices: Record<Exclude<ReviewReportStatus, 'pending'>, string> = {
-  reviewed: 'Reporte marcado como revisado.',
-  dismissed: 'Reporte descartado.',
-  action_taken: 'Reporte marcado como acción tomada.',
-};
+  const reportActionNotices: Record<Exclude<ReviewReportStatus, 'pending'>, string> = {
+    reviewed: 'Reporte marcado como revisado.',
+    dismissed: 'Reporte descartado.',
+    action_taken: 'Reporte marcado como resuelto.',
+  };
 
-const reviewActionNotices: Record<Exclude<MotorcycleReviewStatus, 'pending'>, string> = {
-  hidden: 'Review ocultada y reporte marcado como acción tomada.',
-  approved: 'Review aprobada y reporte marcado como acción tomada.',
-  rejected: 'Review rechazada y reporte marcado como acción tomada.',
-};
+  const reviewActionNotices: Record<Exclude<MotorcycleReviewStatus, 'pending'>, string> = {
+    hidden: 'Review ocultada y reporte marcado como resuelto.',
+    approved: 'Review aprobada y reporte marcado como resuelto.',
+    rejected: 'Review rechazada y reporte marcado como resuelto.',
+  };
 
   const handleReportStatus = async (report: AdminReviewReport, status: Exclude<ReviewReportStatus, 'pending'>) => {
     if (!authContext) {

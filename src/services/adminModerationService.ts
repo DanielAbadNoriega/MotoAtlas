@@ -16,6 +16,7 @@ export type AdminReviewReport = Readonly<{
   createdAt: string;
   id: string;
   reason: ReviewReportReason;
+  reporterDisplayName: string;
   reporterUserId: string;
   review: {
     comment: string;
@@ -71,8 +72,14 @@ type ReportRow = Readonly<{
   user_id: string;
 }>;
 
+type UserProfileRow = Readonly<{
+  id: string;
+  display_name: string | null;
+}>;
+
 const reportStatuses = new Set<ReviewReportStatus>(['reviewed', 'dismissed', 'action_taken']);
 const reviewStatuses = new Set<MotorcycleReviewStatus>(['approved', 'rejected', 'hidden']);
+const reporterNameFallback = 'Usuario sin alias';
 
 function getSupabaseConfig() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
@@ -142,6 +149,7 @@ function mapReportRow(row: ReportRow): AdminReviewReport {
     createdAt: row.created_at,
     id: row.id,
     reason: row.reason,
+    reporterDisplayName: reporterNameFallback,
     reporterUserId: row.user_id,
     review: review
       ? {
@@ -168,6 +176,46 @@ function mapReportRow(row: ReportRow): AdminReviewReport {
     status: row.status,
     updatedAt: row.updated_at,
   };
+}
+
+function getReporterDisplayName(value: string | null | undefined) {
+  const normalized = value?.trim();
+  return normalized && normalized.length > 0 ? normalized : reporterNameFallback;
+}
+
+async function getReporterDisplayNameMap(
+  reporterIds: readonly string[],
+  config: ReturnType<typeof getSupabaseConfig>,
+  accessToken: string,
+) {
+  if (reporterIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const normalizedReporterIds = Array.from(new Set(
+    reporterIds
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0),
+  ));
+
+  if (normalizedReporterIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const params = new URLSearchParams({
+    select: 'id,display_name',
+    id: `in.(${normalizedReporterIds.join(',')})`,
+  });
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/user_profiles?${params.toString()}`, {
+    headers: buildHeaders(config, accessToken),
+  });
+  await assertSupabaseOk(response, 'user_profiles');
+
+  return ((await response.json()) as UserProfileRow[]).reduce((accumulator, profile) => {
+    accumulator.set(profile.id, getReporterDisplayName(profile.display_name));
+    return accumulator;
+  }, new Map<string, string>());
 }
 
 export async function getReviewReports(
@@ -207,8 +255,17 @@ export async function getReviewReports(
   });
 
   await assertSupabaseOk(response, 'review_reports');
+  const mappedReports = ((await response.json()) as ReportRow[]).map(mapReportRow);
+  const reporterDisplayNameMap = await getReporterDisplayNameMap(
+    mappedReports.map((report) => report.reporterUserId),
+    config,
+    normalizedAuthContext.accessToken,
+  );
 
-  return sortReports(((await response.json()) as ReportRow[]).map(mapReportRow), sort);
+  return sortReports(mappedReports.map((report) => ({
+    ...report,
+    reporterDisplayName: reporterDisplayNameMap.get(report.reporterUserId) ?? reporterNameFallback,
+  })), sort);
 }
 
 export async function updateReviewReportStatus(
