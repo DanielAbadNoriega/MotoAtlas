@@ -183,6 +183,7 @@ describe('CommunityReviewsPage', () => {
     ]);
 
     const insights = screen.getByRole('complementary', { name: 'Insights en vivo' });
+    const insightIcons = insights.querySelectorAll('.material-symbols-outlined[aria-hidden="true"]');
 
     expect(within(insights).getByText('Modelo con más reviews')).toBeInTheDocument();
     expect(within(insights).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
@@ -195,6 +196,7 @@ describe('CommunityReviewsPage', () => {
     expect(within(insights).getByText('30.000 km')).toBeInTheDocument();
     expect(within(insights).getByText('Rating medio global')).toBeInTheDocument();
     expect(within(insights).getByText('4.3/5')).toBeInTheDocument();
+    expect([...insightIcons].map((icon) => icon.textContent)).toEqual(['monitoring', 'forum', 'route', 'speed', 'star']);
     expect(insights).not.toHaveTextContent(/neumáticos|fallos/i);
   });
 

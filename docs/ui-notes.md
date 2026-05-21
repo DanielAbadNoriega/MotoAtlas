@@ -53,7 +53,7 @@ La ruta `#/comunidad/reviews` funciona como archivo público de reviews `approve
 
 El hero de `#/comunidad/reviews` replica el patrón visual del hero oficial de Home: imagen full-bleed con overlay/degradado, texto centrado y CTAs. Usa `src/assets/hero-community.png`.
 
-Debajo del hero hay un bloque editorial separado del listado filtrable: `Destacadas del mes`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Explorar todas las reviews`.
+Debajo del hero hay un bloque editorial separado del listado filtrable: `Destacadas del mes`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Explorar todas las reviews`. El aside `Insights en vivo` usa un panel técnico compacto inspirado en `comunidad-reviews.html`, con iconos Material Symbols y datos reales calculados.
 
 Reutiliza `AccountReviewCard` con variante `community`: muestra alias público, rating con estrella alineado con el título, metadatos compactos con iconos y oculta el badge de estado. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas y fotos de usuario quedan para fases futuras.
 

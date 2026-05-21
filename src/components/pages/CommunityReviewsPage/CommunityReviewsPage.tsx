@@ -268,7 +268,30 @@ function EditorialReviewSection({
 }
 
 function InsightValue({ children }: Readonly<{ children?: ReactNode }>) {
-  return children ? <strong>{children}</strong> : <strong>Sin datos suficientes</strong>;
+  return <strong className="community-reviews-page__insight-value">{children || 'Sin datos suficientes'}</strong>;
+}
+
+function CommunityInsightItem({
+  icon,
+  label,
+  meta,
+  value,
+}: Readonly<{
+  icon: string;
+  label: string;
+  meta: string;
+  value?: ReactNode;
+}>) {
+  return (
+    <article className="community-reviews-page__insight-item">
+      <span className="community-reviews-page__insight-icon material-symbols-outlined" aria-hidden="true">{icon}</span>
+      <div className="community-reviews-page__insight-content">
+        <span className="community-reviews-page__insight-label">{label}</span>
+        <InsightValue>{value}</InsightValue>
+        <p>{meta}</p>
+      </div>
+    </article>
+  );
 }
 
 function CommunityInsightsPanel({ insights }: Readonly<{ insights: CommunityInsights }>) {
@@ -278,49 +301,48 @@ function CommunityInsightsPanel({ insights }: Readonly<{ insights: CommunityInsi
 
   return (
     <aside className="community-reviews-page__insights" aria-labelledby="community-reviews-insights-title">
-      <header>
-        <span>Lectura rápida</span>
-        <h2 id="community-reviews-insights-title">Insights en vivo</h2>
+      <header className="community-reviews-page__insights-header">
+        <span className="community-reviews-page__insights-kicker">Lectura rápida</span>
+        <h2 id="community-reviews-insights-title">
+          <span className="material-symbols-outlined" aria-hidden="true">monitoring</span>
+          Insights en vivo
+        </h2>
       </header>
 
       <div className="community-reviews-page__insight-list">
-        <article>
-          <span>Modelo con más reviews</span>
-          <InsightValue>{insights.mostReviewedMotorcycle?.name}</InsightValue>
-          <p>
-            {insights.mostReviewedMotorcycle
-              ? `${numberFormatter.format(insights.mostReviewedMotorcycle.count)} reviews`
-              : 'Sin datos suficientes'}
-          </p>
-        </article>
+        <CommunityInsightItem
+          icon="forum"
+          label="Modelo con más reviews"
+          value={insights.mostReviewedMotorcycle?.name}
+          meta={insights.mostReviewedMotorcycle
+            ? `${numberFormatter.format(insights.mostReviewedMotorcycle.count)} reviews`
+            : 'Sin datos suficientes'}
+        />
 
-        <article>
-          <span>Uso más repetido</span>
-          <InsightValue>{insights.topRidingStyle?.label}</InsightValue>
-          <p>
-            {insights.topRidingStyle
-              ? `${numberFormatter.format(insights.topRidingStyle.count)} reportes`
-              : 'Sin datos suficientes'}
-          </p>
-        </article>
+        <CommunityInsightItem
+          icon="route"
+          label="Uso más repetido"
+          value={insights.topRidingStyle?.label}
+          meta={insights.topRidingStyle
+            ? `${numberFormatter.format(insights.topRidingStyle.count)} reportes`
+            : 'Sin datos suficientes'}
+        />
 
-        <article>
-          <span>Review con más kilómetros</span>
-          <InsightValue>{highestKilometersMotorcycle?.name}</InsightValue>
-          <p>
-            {insights.highestKilometersReview?.kilometers !== null && insights.highestKilometersReview?.kilometers !== undefined
-              ? `${numberFormatter.format(insights.highestKilometersReview.kilometers)} km`
-              : 'Sin datos suficientes'}
-          </p>
-        </article>
+        <CommunityInsightItem
+          icon="speed"
+          label="Review con más kilómetros"
+          value={highestKilometersMotorcycle?.name}
+          meta={insights.highestKilometersReview?.kilometers !== null && insights.highestKilometersReview?.kilometers !== undefined
+            ? `${numberFormatter.format(insights.highestKilometersReview.kilometers)} km`
+            : 'Sin datos suficientes'}
+        />
 
-        <article>
-          <span>Rating medio global</span>
-          <InsightValue>
-            {insights.averageRating !== undefined ? `${formatReviewRating(insights.averageRating)}/5` : undefined}
-          </InsightValue>
-          <p>Sobre reviews aprobadas</p>
-        </article>
+        <CommunityInsightItem
+          icon="star"
+          label="Rating medio global"
+          value={insights.averageRating !== undefined ? `${formatReviewRating(insights.averageRating)}/5` : undefined}
+          meta="Sobre reviews aprobadas"
+        />
       </div>
     </aside>
   );
