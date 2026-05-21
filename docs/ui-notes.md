@@ -67,7 +67,7 @@ La ruta `#/comunidad/[motorcycleId]` muestra las reviews aprobadas en un slider 
 
 La ruta `#/cuenta/reviews` muestra todas las reviews asociadas al usuario autenticado.
 
-En `#/cuenta`, el bloque “Mis reviews” reutiliza la misma card visual en variante compacta y muestra solo las 3 reviews más recientes (`created_at desc`) con enlace a `#/cuenta/reviews`.
+En `#/cuenta`, el bloque “Mis reviews” agrupa las reviews propias por moto, muestra hasta 3 modelos ordenados por última review y usa una card visual tipo garage con CTAs `Ver mis reviews` y `Ver ficha`. El detalle filtrado por moto queda pendiente para una futura ruta `#/cuenta/reviews/[motorcycleId]`.
 
 `AccountReviewCard` mantiene una estructura visual compartida en cuenta y comunidad: imagen izquierda, título + rating en cabecera, metadatos con iconos, acciones inferiores y enlace secundario `Más reviews`. La estructura de autor queda preparada para un badge futuro de reviewer verificado mediante clases dedicadas, sin mostrar badges falsos.
 

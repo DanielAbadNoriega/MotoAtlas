@@ -189,7 +189,7 @@ describe('AccountPage', () => {
     expect(screen.getByRole('link', { name: /Solicitar otro modelo/i })).toHaveAttribute('href', '#/solicitar-modelo');
   });
 
-  it('mantiene Mis reviews funcionando con card unificada, status y enlaces', async () => {
+  it('muestra Mis reviews agrupadas por moto con resumen y enlaces', async () => {
     getReviewsByUserIdMock.mockResolvedValue([
       createOwnReview({ status: 'approved' }),
       createOwnReview({ id: 'review-other', userId: 'other-user', motorcycleId: 'yamaha-tenere-700-2024', status: 'rejected' }),
@@ -203,20 +203,23 @@ describe('AccountPage', () => {
 
     render(<AccountPage />);
 
-    const card = await screen.findByTestId('account-review-card');
+    const reviewsSection = screen.getByRole('region', { name: /Mis reviews/i });
+    const card = await within(reviewsSection).findByTestId('account-review-summary-card');
 
-    expect(within(card).getByText('Publicada')).toBeInTheDocument();
     expect(within(card).getByRole('heading', { name: /BMW F 900 GS 2024/i })).toBeInTheDocument();
-    expect(within(card).getByLabelText('Rating 5 de 5')).toBeInTheDocument();
-    expect(within(card).getByText('Viaje')).toBeInTheDocument();
-    expect(within(card).getByText('10 meses')).toBeInTheDocument();
-    expect(within(card).getByText('12.000 km')).toBeInTheDocument();
-    expect(within(card).getByText(/Muy buena para viajar/i)).toBeInTheDocument();
-    expect(within(card).getByText('+ Motor lleno')).toBeInTheDocument();
+    expect(within(card).getByLabelText('Rating medio 5 de 5')).toBeInTheDocument();
+    expect(within(card).getByText('1 review tuya')).toBeInTheDocument();
+    expect(within(card).getByText('Última review: 14 may 2026')).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: /Ver mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(within(card).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
-    expect(within(card).getByRole('link', { name: /Más reviews/i })).toHaveAttribute('href', '#/comunidad/bmw-f-900-gs-2024');
-    expect(card).toHaveClass('account-review-card--compact');
     expect(screen.getByRole('link', { name: /Ver todas mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
+    expect(within(reviewsSection).queryByText('Publicada')).not.toBeInTheDocument();
+    expect(within(reviewsSection).queryByText('Viaje')).not.toBeInTheDocument();
+    expect(within(reviewsSection).queryByText('10 meses')).not.toBeInTheDocument();
+    expect(within(reviewsSection).queryByText('12.000 km')).not.toBeInTheDocument();
+    expect(within(reviewsSection).queryByText(/Muy buena para viajar/i)).not.toBeInTheDocument();
+    expect(within(reviewsSection).queryByText('+ Motor lleno')).not.toBeInTheDocument();
+    expect(within(reviewsSection).queryByRole('link', { name: /Más reviews/i })).not.toBeInTheDocument();
     expect(screen.queryByText('Yamaha Ténéré 700')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /borrar/i })).not.toBeInTheDocument();
@@ -278,13 +281,45 @@ describe('AccountPage', () => {
     expect(screen.queryByText('Rechazada')).not.toBeInTheDocument();
   });
 
-  it('muestra máximo 3 reviews y usa las más recientes', async () => {
+  it('muestra máximo 3 motos agrupadas y usa la última review más reciente', async () => {
     getReviewsByUserIdMock.mockResolvedValue([
-      createOwnReview({ id: 'review-oldest', comment: 'Review más antigua', createdAt: '2026-05-10T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'old-bike', model: 'Old Bike' } }),
-      createOwnReview({ id: 'review-newest', status: 'pending', createdAt: '2026-05-20T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'new-bike', model: 'Newest Bike' } }),
-      createOwnReview({ id: 'review-second', status: 'approved', createdAt: '2026-05-19T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'second-bike', model: 'Second Bike' } }),
-      createOwnReview({ id: 'review-third', status: 'rejected', createdAt: '2026-05-18T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'third-bike', model: 'Third Bike' } }),
-      createOwnReview({ id: 'review-fourth', status: 'hidden', createdAt: '2026-05-17T10:00:00.000Z', motorcycle: { ...ownReview.motorcycle, id: 'fourth-bike', model: 'Fourth Bike' } }),
+      createOwnReview({
+        id: 'review-kawasaki-newest',
+        motorcycleId: 'kawasaki-z900-2024',
+        rating: 5,
+        comment: 'Comentario individual oculto 1',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'kawasaki-z900-2024', brand: 'Kawasaki', model: 'Z900', year: 2024, imageUrl: '/images/motorcycles/kawasaki-z900-2024.webp' },
+      }),
+      createOwnReview({
+        id: 'review-ducati-second',
+        motorcycleId: 'ducati-monster-2026',
+        rating: 5,
+        createdAt: '2026-05-19T10:00:00.000Z',
+        motorcycle: { id: 'ducati-monster-2026', brand: 'Ducati', model: 'Monster', year: 2026, imageUrl: '/images/motorcycles/ducati-monster-2026.webp' },
+      }),
+      createOwnReview({
+        id: 'review-kawasaki-older',
+        motorcycleId: 'kawasaki-z900-2024',
+        rating: 3,
+        comment: 'Comentario individual oculto 2',
+        createdAt: '2026-05-18T10:00:00.000Z',
+        motorcycle: { id: 'kawasaki-z900-2024', brand: 'Kawasaki', model: 'Z900', year: 2024, imageUrl: '/images/motorcycles/kawasaki-z900-2024.webp' },
+      }),
+      createOwnReview({
+        id: 'review-honda-third',
+        motorcycleId: 'honda-transalp-2025',
+        rating: 4,
+        createdAt: '2026-05-17T10:00:00.000Z',
+        motorcycle: { id: 'honda-transalp-2025', brand: 'Honda', model: 'Transalp', year: 2025, imageUrl: '/images/motorcycles/honda-transalp-2025.webp' },
+      }),
+      createOwnReview({
+        id: 'review-bmw-fourth',
+        motorcycleId: 'bmw-old-bike-2024',
+        rating: 4,
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'bmw-old-bike-2024', brand: 'BMW', model: 'Old Bike', year: 2024, imageUrl: '/images/motorcycles/bmw-old-bike-2024.webp' },
+      }),
     ]);
     mockAuth({
       isAuthenticated: true,
@@ -295,15 +330,18 @@ describe('AccountPage', () => {
 
     render(<AccountPage />);
 
-    expect(await screen.findByText('Pendiente')).toBeInTheDocument();
-    expect(screen.getAllByTestId('account-review-card')).toHaveLength(3);
-    expect(screen.getByRole('heading', { name: /BMW Newest Bike 2024/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /BMW Second Bike 2024/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /BMW Third Bike 2024/i })).toBeInTheDocument();
-    expect(screen.getByText('Publicada')).toBeInTheDocument();
-    expect(screen.getByText('Rechazada')).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /BMW Fourth Bike 2024/i })).not.toBeInTheDocument();
+    const cards = await screen.findAllByTestId('account-review-summary-card');
+
+    expect(cards).toHaveLength(3);
+    expect(within(cards[0]).getByRole('heading', { name: /Kawasaki Z900 2024/i })).toBeInTheDocument();
+    expect(within(cards[0]).getByLabelText('Rating medio 4 de 5')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('2 reviews tuyas')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('Última review: 20 may 2026')).toBeInTheDocument();
+    expect(within(cards[1]).getByRole('heading', { name: /Ducati Monster 2026/i })).toBeInTheDocument();
+    expect(within(cards[2]).getByRole('heading', { name: /Honda Transalp 2025/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /BMW Old Bike 2024/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Comentario individual oculto 1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Comentario individual oculto 2')).not.toBeInTheDocument();
   });
 
   it('muestra error si falla la carga de reviews propias', async () => {

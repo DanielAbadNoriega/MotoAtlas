@@ -444,9 +444,151 @@
   }
 }
 
-.account-page__reviews-list {
+.account-page__review-summary-grid {
   display: grid;
   gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.account-page__review-summary-card {
+  @include image-zoom;
+
+  background: $color-surface-container;
+  border: 1px solid rgba($color-outline-variant, 0.5);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  min-height: 15.25rem;
+  overflow: hidden;
+  position: relative;
+
+  .motorcycle-image {
+    height: 100%;
+    inset: 0;
+    position: absolute;
+    width: 100%;
+
+    img {
+      filter: grayscale(0.28) contrast(1.08) saturate(0.95);
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      width: 100%;
+    }
+  }
+}
+
+.account-page__review-summary-overlay {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba($color-surface, 0.58) 42%, rgba($color-surface-lowest, 0.96)),
+    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.16), transparent 12rem);
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.account-page__review-summary-content {
+  bottom: 0;
+  display: grid;
+  gap: 0.75rem;
+  left: 0;
+  padding: 1rem;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+}
+
+.account-page__review-summary-header {
+  align-items: flex-end;
+  display: flex;
+  gap: 0.85rem;
+  justify-content: space-between;
+
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: clamp(1rem, 1vw, 1.35rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin: 0;
+    text-transform: uppercase;
+  }
+}
+
+.account-page__review-summary-rating {
+  align-items: center;
+  color: $color-on-surface;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.28rem;
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+
+  span {
+    color: $color-accent;
+    font-size: 1rem;
+  }
+
+  strong {
+    font-family: $font-headline;
+    font-size: 1.24rem;
+    font-weight: 900;
+  }
+}
+
+.account-page__review-summary-meta {
+  display: grid;
+  gap: 0.42rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    @include label-caps;
+
+    color: rgba($color-on-surface, 0.92);
+    font-size: 0.62rem;
+    line-height: 1.25;
+  }
+}
+
+.account-page__review-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  a {
+    @include label-caps;
+
+    align-items: center;
+    border: 1px solid rgba($color-outline-variant, 0.75);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: inline-flex;
+    flex: 1 1 6.75rem;
+    justify-content: center;
+    min-height: 2.25rem;
+    padding: 0.58rem 0.75rem;
+    text-decoration: none;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+
+    &:first-child {
+      background: $color-accent-container;
+      border-color: $color-accent-container;
+      color: #fff;
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: $color-accent;
+      outline: 0;
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .account-page__request-cta-card {
@@ -594,6 +736,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .account-page__review-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .account-page__hero-content {
     align-items: flex-start;
     flex-direction: column;
@@ -630,5 +776,13 @@
 
   .account-page__requests-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .account-page__review-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-page__review-summary-card {
+    min-height: 14.75rem;
   }
 }
