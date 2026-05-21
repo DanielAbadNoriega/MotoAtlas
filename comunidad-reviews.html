@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Reviews de la comunidad - MotoAtlas</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700;800&amp;family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-surface": "#e5e2e1",
+                        "on-background": "#e5e2e1",
+                        "inverse-on-surface": "#313030",
+                        "surface-variant": "#353434",
+                        "secondary-container": "#d6042f",
+                        "surface-container": "#201f1f",
+                        "surface": "#141313",
+                        "secondary": "#ffb3b1",
+                        "inverse-primary": "#5f5e5f",
+                        "primary-fixed": "#e5e2e3",
+                        "primary": "#c8c6c7",
+                        "on-secondary": "#680011",
+                        "on-primary-container": "#848283",
+                        "tertiary-container": "#181a1b",
+                        "secondary-fixed-dim": "#ffb3b1",
+                        "secondary-fixed": "#ffdad8",
+                        "primary-container": "#1a1a1b",
+                        "surface-tint": "#c8c6c7",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "tertiary": "#c6c6c7",
+                        "on-secondary-fixed-variant": "#92001d",
+                        "on-tertiary-container": "#818284",
+                        "on-surface-variant": "#c7c6ca",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#3a3939",
+                        "background": "#141313",
+                        "on-secondary-fixed": "#410007",
+                        "outline-variant": "#46474a",
+                        "inverse-surface": "#e5e2e1",
+                        "primary-fixed-dim": "#c8c6c7",
+                        "surface-container-highest": "#353434",
+                        "on-error": "#690005",
+                        "on-primary": "#303031",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#1c1b1b",
+                        "tertiary-fixed": "#e2e2e3",
+                        "on-primary-fixed": "#1b1b1c",
+                        "on-tertiary-fixed": "#1a1c1d",
+                        "surface-container-lowest": "#0e0e0e",
+                        "error": "#ffb4ab",
+                        "outline": "#909094",
+                        "on-tertiary": "#2f3132",
+                        "on-secondary-container": "#ffe7e5",
+                        "surface-dim": "#141313",
+                        "on-primary-fixed-variant": "#474647",
+                        "surface-container-high": "#2b2a2a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "gutter": "24px",
+                        "margin-desktop": "80px",
+                        "margin-mobile": "20px",
+                        "section-gap": "120px"
+                    },
+                    "fontFamily": {
+                        "headline": [
+                            "Hanken Grotesk"
+                        ],
+                        "display": [
+                            "Hanken Grotesk"
+                        ],
+                        "body": [
+                            "Inter"
+                        ],
+                        "label": [
+                            "JetBrains Mono"
+                        ]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { lineHeight: "1", letterSpacing: "0.1em", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+
+        .carbon-bg {
+            background-image: radial-gradient(circle at center, rgba(42, 42, 43, 0.1) 0%, transparent 100%);
+        }
+    </style>
+</head>
+
+<body class="font-body antialiased min-h-screen flex flex-col carbon-bg">
+
+    <!-- Main Content Canvas -->
+    <main
+        class="flex-grow pt-[100px] pb-section-gap px-margin-mobile md:px-margin-desktop max-w-[1440px] mx-auto w-full">
+        <!-- Hero Section -->
+        <section
+            class="mb-section-gap relative rounded-xl overflow-hidden bg-surface-container-low border border-outline-variant/30 flex flex-col md:flex-row items-center p-8 md:p-12">
+            <div class="flex-1 z-10 space-y-6">
+                <h1
+                    class="font-headline text-[40px] md:text-[64px] font-extrabold leading-[1.1] tracking-[-0.02em] text-on-surface">
+                    REVIEWS DE LA COMUNIDAD</h1>
+                <p class="font-body text-body-lg text-on-surface-variant max-w-2xl"> Datos empíricos generados
+                    por usuarios. Analiza el rendimiento real, la durabilidad y la experiencia de conducción
+                    en condiciones no controladas para refinar tu toma de decisiones. </p>
+                <div class="flex flex-wrap gap-6 pt-4">
+                    <div
+                        class="bg-surface-container border border-outline-variant/50 px-6 py-4 rounded-lg min-w-[140px]">
+                        <div class="font-label text-label-caps text-secondary mb-1">DATA POINTS</div>
+                        <div class="font-headline text-headline-md text-on-surface">12,450</div>
+                    </div>
+                    <div
+                        class="bg-surface-container border border-outline-variant/50 px-6 py-4 rounded-lg min-w-[140px]">
+                        <div class="font-label text-label-caps text-secondary mb-1">MODELS LOGGED</div>
+                        <div class="font-headline text-headline-md text-on-surface">842</div>
+                    </div>
+                    <div
+                        class="bg-surface-container border border-outline-variant/50 px-6 py-4 rounded-lg min-w-[140px]">
+                        <div class="font-label text-label-caps text-secondary mb-1">TOTAL KM DRIVEN</div>
+                        <div class="font-headline text-headline-md text-on-surface">8.4M</div>
+                    </div>
+                    <div
+                        class="bg-surface-container border border-outline-variant/50 px-6 py-4 rounded-lg min-w-[140px]">
+                        <div class="font-label text-label-caps text-secondary mb-1">ACTIVE RIDERS</div>
+                        <div class="font-headline text-headline-md text-on-surface">4,120</div>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute right-0 top-0 h-full w-1/2 opacity-20 md:opacity-40 bg-cover bg-center"
+                data-alt="A dynamic action shot of a high-performance motorcycle leaning into a sharp corner on a dark, wet asphalt track. The lighting is cinematic, highlighting the mechanical details of the bike against a moody, blurred background. The overall aesthetic is dark and gritty, emphasizing speed and precision. Shot in high resolution, capturing the intense atmosphere of technical motorcycling."
+                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRcZeUm18HpTu51VqCS3k4btVelo70KFsusRNYG_eIXy6ZWVbIIWmmuxOF93FvuMHoRk0-LEQBLZjrLNxTC6t7DcmyWNQj7jfElTMak9owD7YSMMUDKoX9n7dUy-dYzXvWjtZSSwcCS7YhqAxR4kFQeQroDOCtp6jChdefH0Otzui_MsE2My5bej43FRsREURdpZ4R76tcCDDF8xDgPTPWIdNF8SFkmSJ9hWnmTZtEHpyCtF4CPcfOz70ruUl1RDQtTaUWwlT-Fucd');">
+                <div class="absolute inset-0 bg-gradient-to-r from-surface-container-low to-transparent">
+                </div>
+            </div>
+        </section>
+        <!-- Filters Bar -->
+        <section class="mb-gutter">
+            <div
+                class="bg-surface-container border border-outline-variant/50 rounded-lg p-4 flex flex-wrap gap-4 items-center">
+                <div class="flex-grow min-w-[200px] relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <input
+                        class="w-full bg-surface border border-outline-variant/50 rounded lg pl-10 pr-4 py-2 font-label text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary focus:ring-0 transition-colors"
+                        placeholder="BUSCAR MODELO O MARCA" type="text" />
+                </div>
+                <select
+                    class="bg-surface border border-outline-variant/50 rounded lg px-4 py-2 font-label text-sm text-on-surface focus:border-secondary focus:ring-0">
+                    <option>SEGMENTO: TODOS</option>
+                    <option>SPORT</option>
+                    <option>NAKED</option>
+                    <option>ADVENTURE</option>
+                </select>
+                <select
+                    class="bg-surface border border-outline-variant/50 rounded lg px-4 py-2 font-label text-sm text-on-surface focus:border-secondary focus:ring-0">
+                    <option>CARNET: TODOS</option>
+                    <option>A</option>
+                    <option>A2</option>
+                </select>
+                <select
+                    class="bg-surface border border-outline-variant/50 rounded lg px-4 py-2 font-label text-sm text-on-surface focus:border-secondary focus:ring-0">
+                    <option>RATING: +4</option>
+                    <option>TODOS</option>
+                </select>
+                <button
+                    class="bg-secondary text-on-secondary font-headline font-bold px-6 py-2 rounded lg uppercase hover:bg-secondary-fixed transition-colors">
+                    Filtrar </button>
+            </div>
+        </section>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+            <!-- Main Content Area -->
+            <div class="lg:col-span-8 space-y-gutter">
+                <!-- Destacadas -->
+                <div>
+                    <h2
+                        class="font-headline text-headline-md font-bold text-on-surface mb-6 uppercase border-l-4 border-secondary pl-4">
+                        Destacadas del mes</h2>
+                    <div class="grid grid-cols-1 gap-6">
+                        <!-- Card Destacada 1 -->
+                        <div
+                            class="bg-surface-container border border-outline-variant/40 rounded-xl overflow-hidden flex flex-col sm:flex-row group hover:border-outline-variant transition-colors">
+                            <div class="sm:w-1/3 h-48 sm:h-auto bg-cover bg-center relative"
+                                data-alt="A sleek, modern naked motorcycle parked in an urban industrial environment. The bike features sharp, angular lines and a dark grey finish with subtle red accents, matching a premium, aggressive aesthetic. The lighting is low-key, highlighting the metallic components and carbon fiber textures. The background consists of concrete textures and steel structures, emphasizing an engineered, raw atmosphere."
+                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDoCC1efnPBe5NE6vImlxDST1XF57yxF24h1bBwVr_FSYV9FaUuD0X6G07Hb1RXL_O2znQTjjjj7KuUw_lCfZ9H89R-a4VOaUluMPnpu7232kHGWA-VV2V-GZT61OcPJxB57YmvSNCoAnetNSZ7FHaSMDrSZzr8Zl6cdoLsOvGJLOO2wKKYHu2DUG32W1MM2VFwvJc6LpOpj9A14C1yje3hb7FGNVTHWByZ13spWHCP4hKW4crmF0GC1KhFQXtCQffYum_YZCoe1GF1');">
+                                <div
+                                    class="absolute top-2 left-2 bg-secondary text-on-secondary font-label text-[10px] px-2 py-1 rounded">
+                                    FEATURED</div>
+                            </div>
+                            <div class="p-6 flex flex-col justify-between sm:w-2/3">
+                                <div>
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <div class="font-label text-label-caps text-on-surface-variant">
+                                                YAMAHA MT-09 SP / 2023</div>
+                                            <h3 class="font-headline text-[20px] font-bold text-on-surface">
+                                                Precisión absoluta en circuito y calle</h3>
+                                        </div>
+                                        <div class="flex items-center text-secondary">
+                                            <span class="material-symbols-outlined text-[18px]">star</span>
+                                            <span class="font-label ml-1">4.8</span>
+                                        </div>
+                                    </div>
+                                    <p class="font-body text-sm text-on-surface-variant mb-4 line-clamp-3">
+                                        Después de 15,000 km, el comportamiento de la suspensión Öhlins
+                                        trasera sigue siendo impecable. El par motor en medios es brutal,
+                                        aunque el consumo en modo de mapa agresivo se dispara notablemente
+                                        comparado con la versión estándar. </p>
+                                </div>
+                                <div
+                                    class="flex justify-between items-center border-t border-outline-variant/30 pt-4">
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center font-label text-[10px] text-on-surface">
+                                            AX</div>
+                                        <span
+                                            class="font-label text-xs text-on-surface-variant">@ApexRider</span>
+                                    </div>
+                                    <button
+                                        class="text-secondary font-label text-xs hover:text-secondary-fixed transition-colors flex items-center">
+                                        VER FICHA <span
+                                            class="material-symbols-outlined text-[14px] ml-1">chevron_right</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Listado Principal -->
+                <div>
+                    <h2
+                        class="font-headline text-headline-md font-bold text-on-surface mb-6 uppercase border-l-4 border-surface-bright pl-4">
+                        Últimos reportes</h2>
+                    <div class="space-y-4">
+                        <!-- Review Item 1 -->
+                        <div
+                            class="bg-surface border border-outline-variant/30 rounded-lg p-5 flex flex-col md:flex-row gap-6 hover:bg-surface-container-low transition-colors">
+                            <div class="w-full md:w-[200px] h-[120px] rounded bg-surface-bright bg-cover bg-center flex-shrink-0"
+                                data-alt="Detailed close-up of a high-performance motorcycle engine and exhaust system. The mechanical parts are immaculate, showcasing precision engineering with a mix of matte black and polished chrome finishes. The lighting emphasizes the complex textures of the cooling fins and structural frame. The overall mood is technical and industrial, fitting a dark, analytical visual style."
+                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCYaQJQYsUTCvFf8Hqzi9lT6naT2qIgvJO-Bq5y_Gni4mLltM304MN60Kpx-hznWlYKDiy-UK-ObsbOwAh7my33AazQjIp4snQDSOIeQO-2psrZ6pAtHVYzwDHBd2NhAOifvpn5DFRxBghRW4fg1me-PIA2X3259H-JHl0YnLUYss43FXVSzyu_0ZSKQrHvHZX3WH-cpPG4VwKeCIjGgYyWSEMIVV0WI4_ieTY1BywSTqj1Kv8ipq_COS3_MJTw6DFWwbYzKpCd-U0Z');">
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start mb-1">
+                                    <div class="font-label text-label-caps text-on-surface-variant">DUCATI
+                                        PANIGALE V2 / 2022</div>
+                                    <div class="font-label text-sm text-secondary flex items-center">
+                                        <span class="material-symbols-outlined text-[16px] mr-1">star</span>
+                                        4.5
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center gap-4 mb-3 font-label text-[11px] text-on-surface-variant/70">
+                                    <span class="flex items-center"><span
+                                            class="material-symbols-outlined text-[14px] mr-1">speed</span>
+                                        8,500 KM</span>
+                                    <span class="flex items-center"><span
+                                            class="material-symbols-outlined text-[14px] mr-1">schedule</span>
+                                        14 MESES</span>
+                                    <span class="flex items-center"><span
+                                            class="material-symbols-outlined text-[14px] mr-1">route</span>
+                                        DEPORTIVO/CIRCUITO</span>
+                                </div>
+                                <p class="font-body text-sm text-on-surface mb-4"> Electrónica muy refinada.
+                                    El quickshifter bidireccional es el mejor que he probado. Sin embargo, el
+                                    calor que emite el escape en tráfico lento es casi insoportable.
+                                    Mantenimiento caro pero predecible. </p>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <span
+                                        class="border border-green-500/30 text-green-400 font-label text-[10px] px-2 py-1 rounded">ELECTRÓNICA
+                                        TOP</span>
+                                    <span
+                                        class="border border-green-500/30 text-green-400 font-label text-[10px] px-2 py-1 rounded">CHASIS</span>
+                                    <span
+                                        class="border border-secondary/30 text-secondary font-label text-[10px] px-2 py-1 rounded">CALOR
+                                        MOTOR</span>
+                                </div>
+                                <div
+                                    class="flex justify-between items-center mt-auto border-t border-outline-variant/20 pt-3">
+                                    <span
+                                        class="font-label text-xs text-on-surface-variant">@DesmoJunkie</span>
+                                    <div class="flex gap-4">
+                                        <button
+                                            class="text-on-surface-variant hover:text-on-surface font-label text-xs transition-colors">VER
+                                            FICHA</button>
+                                        <button
+                                            class="text-secondary hover:text-secondary-fixed font-label text-xs transition-colors">DEBATE
+                                            (12)</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="mt-8 flex justify-center items-center gap-2 font-label text-sm">
+                        <button
+                            class="w-8 h-8 flex items-center justify-center border border-outline-variant/30 rounded text-on-surface-variant hover:bg-surface-container"><span
+                                class="material-symbols-outlined text-[16px]">keyboard_double_arrow_left</span></button>
+                        <button
+                            class="w-8 h-8 flex items-center justify-center border border-outline-variant/30 rounded text-on-surface-variant hover:bg-surface-container"><span
+                                class="material-symbols-outlined text-[16px]">chevron_left</span></button>
+                        <button
+                            class="w-8 h-8 flex items-center justify-center border border-secondary rounded text-secondary bg-secondary/10">1</button>
+                        <button
+                            class="w-8 h-8 flex items-center justify-center border border-outline-variant/30 rounded text-on-surface-variant hover:bg-surface-container">2</button>
+                        <button
+                            class="w-8 h-8 flex items-center justify-center border border-outline-variant/30 rounded text-on-surface-variant hover:bg-surface-container">3</button>
+                        <button
+                            class="w-8 h-8 flex items-center justify-center border border-outline-variant/30 rounded text-on-surface-variant hover:bg-surface-container"><span
+                                class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+                        <button
+                            class="w-8 h-8 flex items-center justify-center border border-outline-variant/30 rounded text-on-surface-variant hover:bg-surface-container"><span
+                                class="material-symbols-outlined text-[16px]">keyboard_double_arrow_right</span></button>
+                    </div>
+                </div>
+            </div>
+            <!-- Insights Sidebar -->
+            <aside class="lg:col-span-4 space-y-6">
+                <div
+                    class="bg-surface-container-low border border-outline-variant/30 rounded-xl p-6 sticky top-[100px]">
+                    <h3
+                        class="font-headline text-lg font-bold text-on-surface mb-6 flex items-center border-b border-outline-variant/30 pb-3">
+                        <span class="material-symbols-outlined mr-2 text-secondary">monitoring</span> INSIGHTS
+                        EN VIVO
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="font-label text-xs text-on-surface-variant mb-2">MODELO MÁS DISCUTIDO
+                                (24H)</div>
+                            <div
+                                class="bg-surface p-3 rounded border border-outline-variant/20 flex justify-between items-center">
+                                <span class="font-headline text-sm font-bold text-on-surface">BMW R 1300
+                                    GS</span>
+                                <span class="text-secondary font-label text-xs flex items-center"><span
+                                        class="material-symbols-outlined text-[14px] mr-1">trending_up</span>
+                                    +42 revs</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-label text-xs text-on-surface-variant mb-2">FALLO MÁS REPORTADO
+                                (MES)</div>
+                            <div class="bg-surface p-3 rounded border border-outline-variant/20">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-headline text-sm font-bold text-on-surface">Sensor
+                                        Quickshifter</span>
+                                    <span class="text-secondary font-label text-xs">12%</span>
+                                </div>
+                                <div class="text-[10px] font-label text-on-surface-variant">Afecta principal:
+                                    Aprilia RS 660</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-label text-xs text-on-surface-variant mb-2">NEUMÁTICO MEJOR
+                                VALORADO</div>
+                            <div
+                                class="bg-surface p-3 rounded border border-outline-variant/20 flex justify-between items-center">
+                                <span class="font-headline text-sm font-bold text-on-surface">Pirelli Diablo
+                                    Rosso IV</span>
+                                <span class="text-on-surface font-label text-xs flex items-center"><span
+                                        class="material-symbols-outlined text-[14px] mr-1 text-secondary">star</span>
+                                    4.9</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full mt-6 border border-outline-variant text-on-surface-variant font-headline text-sm uppercase py-2 rounded hover:bg-surface-variant transition-colors flex justify-center items-center">
+                        VER DATASET COMPLETO </button>
+                </div>
+            </aside>
+        </div>
+    </main>
+</body>
+
+</html>

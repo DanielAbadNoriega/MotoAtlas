@@ -559,7 +559,8 @@
 
   a {
     @include label-caps;
-
+    font-family: $font-body;
+    font-size: 0.55rem;
     align-items: center;
     border: 1px solid rgba($color-outline-variant, 0.75);
     border-radius: $radius-md;
