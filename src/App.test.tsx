@@ -204,6 +204,7 @@ describe('App navigation with mocked motorcycleService', () => {
     ['#/registro', /Crear cuenta/i, 'Crear cuenta | MotoAtlas'],
     ['#/cuenta', /Inicia sesión para ver Mi cuenta/i, 'Mi cuenta | MotoAtlas'],
     ['#/cuenta/reviews', /Inicia sesión para ver tus reviews/i, 'Mis reviews | MotoAtlas'],
+    ['#/cuenta/reviews/test-bmw-f-900-gs', /Inicia sesión para ver tus reviews de esta moto/i, 'Mis reviews de esta moto | MotoAtlas'],
     ['#/cuenta/solicitudes', /Inicia sesión para ver tus solicitudes/i, 'Mis solicitudes | MotoAtlas'],
   ])('renderiza la ruta de auth %s', async (hash, heading, expectedTitle) => {
     window.location.hash = hash;
@@ -220,7 +221,7 @@ describe('App navigation with mocked motorcycleService', () => {
     await renderApp();
 
     expect(await screen.findByRole('heading', { name: /Reviews BMW F 900 GS/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Volver a ficha/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+    expect(screen.getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
     expect(getApprovedReviewsMock).toHaveBeenCalledWith('test-bmw-f-900-gs');
   });
 

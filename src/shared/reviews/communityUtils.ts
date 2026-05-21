@@ -62,7 +62,7 @@ export function getTopCommunityItemsSafe(reviews: readonly MotorcycleReview[], f
 
     for (const rawItem of items) {
       const item = String(rawItem ?? '').trim()
-      if (!item) continue
+      if (!item || item.toLowerCase() === 'null' || item.toLowerCase() === 'undefined') continue
       counts.set(item, (counts.get(item) ?? 0) + 1)
     }
   }

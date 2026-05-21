@@ -5,6 +5,7 @@ import '../AccountPage/AccountPage.scss';
 import { accountReviewRidingStyleLabels, getAccountReviewMotorcycleDisplay } from '../../reviews/AccountReviewCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { useAuth } from '../../../features/auth';
+import { getAccountMotorcycleReviewsHash } from '../../../shared/routing/routeUtils';
 import {
   getReviewsByUserId,
   type MotorcycleReview,
@@ -248,7 +249,7 @@ function AccountReviewMotorcycleSummaryCard({ item }: Readonly<{ item: AccountRe
         </ul>
 
         <footer className="account-page__review-summary-actions">
-          <a href="#/cuenta/reviews">Ver mis reviews</a>
+          <a href={getAccountMotorcycleReviewsHash(item.motorcycleId)}>Ver mis reviews</a>
           <a href={item.motorcycle.detailHref}>Ver ficha</a>
         </footer>
       </div>

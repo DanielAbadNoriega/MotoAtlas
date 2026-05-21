@@ -158,6 +158,9 @@
       color: $color-on-surface-variant;
       min-height: 2.75rem;
       padding: 0.72rem 0.95rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
       &:hover,
       &:focus-visible {
@@ -184,8 +187,247 @@
     top: 7rem;
   }
 
+  &__mobile-filter-trigger {
+    @include label-caps;
+
+    align-items: center;
+    background: rgba($color-surface-container-high, 0.72);
+    border: 1px solid rgba($color-outline-variant, 0.42);
+    border-radius: $radius-lg;
+    color: $color-on-surface;
+    cursor: pointer;
+    display: none;
+    gap: 0.55rem;
+    justify-content: center;
+    min-height: 2.9rem;
+    padding-inline: 1rem;
+  }
+
+  &__filters {
+    backdrop-filter: blur(22px);
+    background:
+      linear-gradient(180deg, rgba($color-surface-container-high, 0.74), rgba($color-surface-low, 0.88)),
+      radial-gradient(circle at top left, rgba($color-accent, 0.12), transparent 17rem);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-xl;
+    box-shadow: $shadow-glass;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 7rem);
+    overflow: hidden;
+  }
+
+  &__filters-backdrop,
+  &__sheet-handle {
+    display: none;
+  }
+
+  &__filters-header {
+    align-items: center;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.2);
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr auto;
+    padding: 1.35rem 1.35rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    h2 {
+      @include headline-md;
+
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    button:not(.motorcycle-community__filters-close) {
+      @include label-caps;
+
+      background: transparent;
+      border: 0;
+      color: $color-accent;
+      cursor: pointer;
+      padding: 0;
+
+      &:hover,
+      &:focus-visible {
+        color: white;
+        outline: 0;
+      }
+    }
+  }
+
+  &__filters-close {
+    align-items: center;
+    background: rgba($color-surface-container-highest, 0.72);
+    border: 1px solid rgba($color-outline-variant, 0.4);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: none;
+    height: 42px;
+    justify-content: center;
+    width: 42px;
+  }
+
+  &__filters-body {
+    overflow-y: auto;
+    padding: 0 1.35rem;
+    scrollbar-color: rgba($color-outline-variant, 0.48) transparent;
+    scrollbar-width: thin;
+  }
+
+  &__filter-group {
+    border-top: 1px solid rgba($color-outline-variant, 0.24);
+    padding-block: 1.25rem;
+
+    summary {
+      align-items: center;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      list-style: none;
+      user-select: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      .material-symbols-outlined {
+        color: $color-outline;
+        transition: transform $transition-base;
+      }
+    }
+
+    summary > span:first-child {
+      @include label-caps;
+
+      color: $color-on-surface;
+    }
+
+    &[open] summary .material-symbols-outlined {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__filter-group-body {
+    padding-top: 1rem;
+  }
+
+  &__filter-group:not([open]) {
+    padding-bottom: 1.25rem;
+
+    .motorcycle-community__filter-group-body {
+      display: none;
+    }
+  }
+
+  &__rating-grid,
+  &__sort-grid {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  &__rating-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__filter-option {
+    @include label-caps;
+
+    align-items: center;
+    background: rgba($color-surface-container, 0.72);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-lg;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.45rem;
+    justify-content: flex-start;
+    min-height: 46px;
+    padding: 0.75rem;
+    text-align: left;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+
+    &:hover,
+    &:focus-visible,
+    &--active {
+      background: rgba($color-accent, 0.16);
+      border-color: rgba($color-accent, 0.74);
+      color: $color-accent;
+      outline: 0;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  &__filter-option--rating {
+    align-items: flex-start;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  &__filter-stars {
+    display: flex;
+    gap: 0.12rem;
+
+    > span {
+      color: rgba($color-outline, 0.34);
+      font-family: 'Material Symbols Outlined';
+      font-size: 1rem;
+      font-style: normal;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      letter-spacing: 0;
+      line-height: 1;
+      text-transform: none;
+    }
+
+    .motorcycle-community__filter-star--filled {
+      color: $color-accent;
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20;
+    }
+  }
+
+  &__filters-footer {
+    align-items: center;
+    background: rgba($color-surface-lowest, 0.58);
+    border-top: 1px solid rgba($color-outline-variant, 0.22);
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr;
+    padding: 1rem 1.35rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+
+    button {
+      @include label-caps;
+
+      border-radius: $radius-md;
+      cursor: pointer;
+      min-height: 44px;
+      padding: 0.75rem 0.85rem;
+    }
+
+    button:first-child {
+      background: transparent;
+      border: 1px solid rgba($color-outline-variant, 0.42);
+      color: $color-on-surface-variant;
+    }
+
+    button:last-child {
+      background: $color-accent;
+      border: 1px solid $color-accent;
+      color: white;
+    }
+  }
+
   &__panel,
-  &__review-card,
   &__empty,
   &__insights {
     @include glass-hud;
@@ -346,6 +588,42 @@
     }
   }
 
+  &__insights--sidebar {
+    padding: clamp(1.1rem, 2vw, 1.35rem);
+
+    > div:first-child {
+      align-items: start;
+      display: grid;
+      gap: 0.35rem;
+      justify-content: stretch;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: clamp(1.15rem, 2vw, 1.35rem);
+      margin: 0;
+    }
+
+    .motorcycle-community__insight-grid {
+      gap: 0.7rem;
+      grid-template-columns: 1fr;
+
+      article {
+        padding: 0.85rem;
+      }
+
+      h3 {
+        margin-bottom: 0.55rem;
+      }
+
+      li,
+      p {
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+    }
+  }
+
   &__pending,
   &__notice {
     color: $color-on-surface-variant;
@@ -357,245 +635,194 @@
     overflow: hidden;
   }
 
-  &__review-controls {
-    display: flex;
-    gap: 0.55rem;
-
-    button {
-      align-items: center;
-      background: rgba($color-surface-container, 0.72);
-      border: 1px solid rgba($color-outline-variant, 0.28);
-      border-radius: 999px;
-      color: $color-on-surface-variant;
-      cursor: pointer;
-      display: inline-flex;
-      height: 2.8rem;
-      justify-content: center;
-      width: 2.8rem;
-      transition:
-        background $transition-base,
-        border-color $transition-base,
-        color $transition-base,
-        transform $transition-fast;
-
-      &:hover,
-      &:focus-visible {
-        background: rgba($color-accent, 0.14);
-        border-color: rgba($color-accent, 0.58);
-        color: $color-accent;
-        outline: 0;
-      }
-
-      &:active {
-        transform: scale(0.95);
-      }
-
-      .material-symbols-outlined {
-        -webkit-font-feature-settings: 'liga';
-        font-feature-settings: 'liga';
-        font-size: 1.35rem;
-        line-height: 1;
-      }
-    }
-  }
-
-  &__review-viewport {
-    inline-size: 100%;
-    margin-inline: 0;
-    max-inline-size: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-inline: contain;
-    padding: 0.25rem 0.25rem 1rem;
-    scroll-behavior: smooth;
-    scroll-padding-inline: 0.25rem;
-    scroll-snap-type: x mandatory;
-    scrollbar-color: rgba($color-outline, 0.34) transparent;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-      height: 0.4rem;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgba($color-outline, 0.28);
-      border-radius: 999px;
-    }
-  }
-
-  &__review-list {
-    align-items: stretch;
-    display: flex;
-    gap: clamp(0.9rem, 2vw, 1.25rem);
-    inline-size: max-content;
-    min-inline-size: 100%;
-  }
-
-  &__review-list > .motorcycle-review-card {
-    flex: 0 0 clamp(18rem, 42vw, 28rem);
-    max-inline-size: 28rem;
-    min-block-size: 100%;
-    scroll-snap-align: start;
-
-    > header,
-    > header > div:first-child,
-    > header > div:first-child > div {
-      min-width: 0;
-    }
-
-    h3,
-    small,
-    > p,
-    dd,
-    li {
-      overflow-wrap: anywhere;
-    }
-  }
-
-  &__review-card {
-    flex: 0 0 min(27rem, calc(100vw - 3rem));
+  &__owner-report-list {
+    border: 1px solid rgba($color-outline-variant, 0.24);
+    border-radius: $radius-xl;
+    display: grid;
     overflow: hidden;
-    position: relative;
-    scroll-snap-align: start;
+  }
 
-    &::after {
-      background: rgba($color-accent, 0.08);
-      border-radius: 999px;
-      content: '';
-      filter: blur(40px);
-      height: 7rem;
-      pointer-events: none;
-      position: absolute;
-      right: -2rem;
-      top: -2rem;
-      width: 7rem;
+  &__owner-report-row {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(16rem, 0.42fr) minmax(0, 1fr);
+    padding: clamp(1rem, 2vw, 1.25rem);
+
+    &[data-row-tone='even'] {
+      background: rgba($color-surface-lowest, 0.52);
     }
 
-    > header {
-      align-items: start;
-      display: flex;
-      gap: 1rem;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-      position: relative;
-      z-index: 1;
+    &[data-row-tone='odd'] {
+      background: rgba($color-surface-container, 0.48);
     }
 
-    > header > div:first-child {
-      align-items: center;
-      display: flex;
-      gap: 0.8rem;
+    & + & {
+      border-top: 1px solid rgba($color-outline-variant, 0.22);
     }
+  }
 
-    .motorcycle-community__review-avatar {
-      align-items: center;
-      background: rgba($color-accent, 0.18);
-      border: 1px solid rgba($color-accent, 0.34);
-      border-radius: 999px;
-      color: $color-accent;
-      display: inline-flex;
-      font-family: $font-headline;
-      font-weight: 800;
-      height: 2.5rem;
-      justify-content: center;
-      position: relative;
-      width: 2.5rem;
+  &__owner-report-identity,
+  &__owner-report-summary {
+    min-width: 0;
+  }
 
-      .material-symbols-outlined {
-        font-size: 1.35rem;
-        opacity: 0.3;
-        position: absolute;
-      }
+  &__owner-report-identity {
+    display: grid;
+    gap: 0.75rem;
+    border-right: 1px solid rgba($color-outline-variant, 0.22);
+  }
 
-      strong {
-        color: $color-accent;
-        font-size: 0.72rem;
-        position: relative;
-        z-index: 1;
-      }
-    }
+  &__owner-report-owner {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    min-width: 0;
 
     h3 {
       color: white;
       font-family: $font-headline;
       font-size: 1rem;
+      line-height: 1.15;
       margin: 0;
-      text-transform: uppercase;
+      overflow-wrap: anywhere;
     }
+  }
 
-    small,
-    dt,
+  &__owner-avatar {
+    .motorcycle-community__owner-user-icon {
+      opacity: 0.55;
+      position: static;
+    }
+  }
+
+  &__owner-report-rating {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+
     strong {
       @include label-caps;
 
       color: $color-outline;
       font-size: 0.62rem;
     }
+  }
 
-    .motorcycle-community__verified-badge {
+  &__owner-report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
       @include label-caps;
 
       align-items: center;
-      color: $color-accent;
+      color: rgba($color-on-surface-variant, 0.84);
       display: inline-flex;
       font-size: 0.58rem;
-      gap: 0.25rem;
-      margin-top: 0.35rem;
-
-      .material-symbols-outlined {
-        font-size: 0.95rem;
-      }
+      gap: 0.24rem;
+      line-height: 1.25;
     }
 
-    .motorcycle-community__review-avatar strong {
-      color: $color-accent;
-      font-size: 0.72rem;
-    }
-
-    > header > div:last-child {
-      align-items: end;
-      display: grid;
-      justify-items: end;
-    }
-
-    > p {
-      color: $color-on-surface-variant;
-      font-size: 0.98rem;
-      font-style: italic;
-      line-height: 1.7;
-      margin: 0 0 1.2rem;
-    }
-
-    dl {
-      border-top: 1px solid rgba($color-outline-variant, 0.2);
-      display: grid;
-      gap: 0.75rem;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin: 0;
-      padding-top: 1rem;
-    }
-
-    dd {
-      color: white;
-      margin: 0.25rem 0 0;
+    .material-symbols-outlined {
+      color: rgba($color-accent, 0.9);
+      font-size: 0.96rem;
     }
   }
 
-  &__review-pros-cons {
+  &__owner-report-summary {
+    align-content: start;
     display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 1rem;
+    gap: 0.8rem;
 
-    ul {
-      color: $color-on-surface-variant;
-      line-height: 1.6;
-      margin: 0.5rem 0 0;
-      padding-left: 1.1rem;
+    > p {
+      color: rgba($color-on-surface-variant, 0.94);
+      line-height: 1.65;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__owner-report-pros-cons {
+    display: grid;
+    gap: 0.5rem;
+
+    p {
+      @include label-caps;
+
+      color: rgba($color-on-surface-variant, 0.84);
+      font-size: 0.62rem;
+      line-height: 1.45;
+      margin: 0;
+      overflow-wrap: anywhere;
+      text-transform: none;
+    }
+
+    strong {
+      color: $color-accent;
+      text-transform: uppercase;
+    }
+  }
+
+  &__verified-badge {
+    @include label-caps;
+
+    align-items: center;
+    color: $color-accent;
+    display: inline-flex;
+    font-size: 0.58rem;
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+
+    .material-symbols-outlined {
+      font-size: 0.95rem;
+    }
+  }
+
+  &__pagination {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    justify-content: center;
+    margin-top: 1.25rem;
+
+    button {
+      align-items: center;
+      background: rgba($color-surface-container, 0.92);
+      border: 1px solid rgba($color-outline-variant, 0.36);
+      border-radius: $radius-md;
+      color: rgba($color-on-surface-variant, 0.9);
+      cursor: pointer;
+      display: inline-flex;
+      font-family: $font-mono;
+      font-weight: 800;
+      height: 2.5rem;
+      justify-content: center;
+      min-width: 2.5rem;
+
+      &:hover:not(:disabled),
+      &:focus-visible:not(:disabled) {
+        background: rgba($color-surface-bright, 0.5);
+        border-color: rgba($color-accent, 0.52);
+        color: $color-on-surface;
+        outline: 0;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.42;
+      }
+    }
+
+    .motorcycle-community__pagination-current {
+      background: $color-accent;
+      border-color: $color-accent;
+      color: white;
     }
   }
 
@@ -668,6 +895,54 @@
     &__sidebar {
       position: static;
     }
+
+    &__mobile-filter-trigger {
+      display: inline-flex;
+    }
+
+    &__filters {
+      border-radius: 0 20px 20px 0;
+      bottom: 0;
+      left: 0;
+      max-height: 100dvh;
+      max-width: 390px;
+      position: fixed;
+      top: 0;
+      transform: translateX(-105%);
+      transition: transform $transition-base;
+      width: min(88vw, 390px);
+      z-index: 150;
+
+      &--open {
+        transform: translateX(0);
+      }
+    }
+
+    &__filters-backdrop {
+      backdrop-filter: blur(7px);
+      background: rgba(0, 0, 0, 0.62);
+      border: 0;
+      display: block;
+      inset: 0;
+      position: fixed;
+      z-index: 140;
+    }
+
+    &__filters-header {
+      grid-template-columns: 1fr auto auto;
+    }
+
+    &__filters-close {
+      display: inline-flex;
+    }
+
+    &__owner-report-row {
+      grid-template-columns: 1fr;
+    }
+
+    &__owner-report-identity {
+      border-right: 0; 
+    }
   }
 }
 
@@ -685,8 +960,7 @@
 
     &__hero-actions,
     &__section-header,
-    &__insights > div:first-child,
-    &__review-card > header {
+    &__insights > div:first-child {
       align-items: stretch;
       flex-direction: column;
     }
@@ -700,22 +974,51 @@
       margin-top: -1.2rem;
     }
 
-    &__review-controls {
-      align-self: flex-start;
+    &__filters {
+      border-radius: 28px 28px 0 0;
+      bottom: 0;
+      left: 0;
+      max-height: min(86dvh, 760px);
+      max-width: none;
+      position: fixed;
+      right: 0;
+      top: auto;
+      transform: translateY(105%);
+      width: 100%;
+
+      &--open {
+        transform: translateY(0);
+      }
     }
 
-    &__review-list {
-      gap: 0.85rem;
+    &__sheet-handle {
+      display: flex;
+      justify-content: center;
+      padding: 0.75rem 0 0.25rem;
+
+      &::before {
+        background: rgba($color-outline, 0.5);
+        border-radius: 999px;
+        content: '';
+        height: 0.35rem;
+        width: 3rem;
+      }
     }
 
-    &__review-list > .motorcycle-review-card {
-      flex-basis: min(100%, calc(100vw - #{2 * $margin-mobile}));
-      max-inline-size: calc(100vw - #{2 * $margin-mobile});
+    &__filters-body {
+      padding-inline: $margin-mobile;
     }
 
-    &__review-pros-cons,
-    &__review-card dl {
+    &__filters-footer {
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    }
+
+    &__rating-grid {
       grid-template-columns: 1fr;
+    }
+
+    &__owner-report-row {
+      gap: 1rem;
     }
   }
 }

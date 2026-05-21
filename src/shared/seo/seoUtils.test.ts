@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { bikeFixtures } from '../../test/fixtures/bikes';
 import {
   applySeoMetadata,
+  buildAccountMotorcycleReviewsSeoMetadata,
   buildBikeJsonLd,
   buildAuthSeoMetadata,
   buildBikeSeoMetadata,
@@ -112,6 +113,11 @@ describe('seoUtils', () => {
       title: 'Mis solicitudes | MotoAtlas',
       canonicalUrl: 'https://motoatlas.com/cuenta/solicitudes',
       description: 'Consulta las solicitudes de modelos que has enviado a MotoAtlas.',
+    });
+    expect(buildAccountMotorcycleReviewsSeoMetadata('test-bmw-f-900-gs')).toMatchObject({
+      title: 'Mis reviews de esta moto | MotoAtlas',
+      canonicalUrl: 'https://motoatlas.com/cuenta/reviews/test-bmw-f-900-gs',
+      description: 'Revisa tus experiencias, valoraciones y comentarios sobre esta moto.',
     });
   });
 

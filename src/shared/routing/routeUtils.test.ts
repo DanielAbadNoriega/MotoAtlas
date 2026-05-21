@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { bikeFixtures } from '../../test/fixtures/bikes';
 import {
   getBikeCanonicalPath,
+  getAccountMotorcycleReviewsCanonicalPath,
+  getAccountMotorcycleReviewsHash,
+  getAccountReviewMotorcycleIdFromRoute,
   getBikeDetailIdFromRoute,
   getBikeSeoSlug,
   getCommunityMotorcycleIdFromRoute,
@@ -14,6 +17,7 @@ import {
   getStaticInfoRouteKey,
   getSearchTextFromRoute,
   isAccountReviewsRoute,
+  isAccountMotorcycleReviewsRoute,
   isAccountRequestsRoute,
   isAccountRoute,
   isCommunityReviewsRoute,
@@ -60,6 +64,11 @@ describe('routeUtils SEO routes', () => {
     expect(isAccountRoute('#/cuenta')).toBe(true);
     expect(isAccountRoute('#/perfil')).toBe(true);
     expect(isAccountReviewsRoute('#/cuenta/reviews')).toBe(true);
+    expect(isAccountReviewsRoute('#/cuenta/reviews/test-bmw-f-900-gs')).toBe(false);
+    expect(isAccountMotorcycleReviewsRoute('#/cuenta/reviews/test-bmw-f-900-gs')).toBe(true);
+    expect(getAccountReviewMotorcycleIdFromRoute('#/cuenta/reviews/test-bmw-f-900-gs', bikeFixtures)).toBe('test-bmw-f-900-gs');
+    expect(getAccountMotorcycleReviewsCanonicalPath('test-bmw-f-900-gs')).toBe('/cuenta/reviews/test-bmw-f-900-gs');
+    expect(getAccountMotorcycleReviewsHash('test-bmw-f-900-gs')).toBe('#/cuenta/reviews/test-bmw-f-900-gs');
     expect(isAccountRequestsRoute('#/cuenta/solicitudes')).toBe(true);
     expect(isAccountRoute('#/cuenta/reviews')).toBe(false);
     expect(isAccountRoute('#/cuenta/solicitudes')).toBe(false);
