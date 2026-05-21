@@ -63,16 +63,16 @@ function getLatestSection() {
   return screen.getByRole('region', { name: 'Últimos reportes' });
 }
 
-function getGeneralReviewsSection() {
-  return screen.getByRole('region', { name: 'Explorar todas las reviews' });
+function getGarageSection() {
+  return screen.getByRole('region', { name: 'Garaje de la comunidad' });
 }
 
-function getGeneralReviewsList() {
-  return screen.getByRole('region', { name: 'Listado público de reviews aprobadas' });
+function getGarageList() {
+  return screen.getByRole('region', { name: 'Modelos con reviews de la comunidad' });
 }
 
-function getGeneralReviewCards() {
-  return within(getGeneralReviewsList()).getAllByTestId('account-review-card');
+function getGarageCards() {
+  return within(getGarageList()).getAllByTestId('community-garage-card');
 }
 
 describe('CommunityReviewsPage', () => {
@@ -94,7 +94,10 @@ describe('CommunityReviewsPage', () => {
     expect(screen.getByRole('heading', { name: 'Destacadas del mes' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Últimos reportes' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Insights en vivo' })).toBeInTheDocument();
-    expect(getGeneralReviewsSection()).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Garaje de la comunidad' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Explorar todas las reviews' })).not.toBeInTheDocument();
+    expect(screen.getByText('Explora los modelos con opiniones reales de propietarios y entra en cada comunidad para leer todas sus reviews.')).toBeInTheDocument();
+    expect(getGarageSection()).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filtros de reviews' })).toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: /Buscar por marca o modelo/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Segmento: Trail' })).toBeInTheDocument();
@@ -110,6 +113,50 @@ describe('CommunityReviewsPage', () => {
 
     const fiveStarsButton = screen.getByRole('button', { name: '5 estrellas' });
     expect(within(fiveStarsButton).getAllByText('star')).toHaveLength(5);
+  });
+
+  it('agrupa reviews por moto y muestra métricas calculadas en el garaje', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'garage-1',
+        motorcycleId: 'kawasaki-z900-2024',
+        rating: 4,
+        ridingStyle: 'deportivo',
+        kilometers: 50000,
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'kawasaki-z900-2024', brand: 'Kawasaki', model: 'Z900', year: 2024, imageUrl: '/z900.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'garage-2',
+        motorcycleId: 'kawasaki-z900-2024',
+        rating: 5,
+        ridingStyle: 'deportivo',
+        kilometers: 70000,
+        createdAt: '2026-05-19T10:00:00.000Z',
+        motorcycle: { id: 'kawasaki-z900-2024', brand: 'Kawasaki', model: 'Z900', year: 2024, imageUrl: '/z900.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'garage-3',
+        motorcycleId: 'yamaha-mt07-2024',
+        rating: 3,
+        ridingStyle: 'ciudad',
+        kilometers: 10000,
+        motorcycle: { id: 'yamaha-mt07-2024', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/mt07.webp', segment: 'naked', license: 'A2' },
+      }),
+    ]);
+
+    const garageCards = getGarageCards();
+    const kawasakiCard = within(getGarageList()).getByRole('article', { name: /Kawasaki Z900 2024: 2 reviews/i });
+
+    expect(garageCards).toHaveLength(2);
+    expect(within(kawasakiCard).getByText('Kawasaki Z900 2024')).toBeInTheDocument();
+    expect(within(kawasakiCard).getByLabelText('Rating medio 4.5 de 5')).toBeInTheDocument();
+    expect(within(kawasakiCard).getByText('2 reviews')).toBeInTheDocument();
+    expect(within(kawasakiCard).getByText('Deportivo')).toBeInTheDocument();
+    expect(within(kawasakiCard).getByText('120.000 km')).toBeInTheDocument();
+    expect(within(kawasakiCard).getByText('19 may 2026')).toBeInTheDocument();
+    expect(within(kawasakiCard).getByRole('link', { name: 'Ver reviews' })).toHaveAttribute('href', '#/comunidad/kawasaki-z900-2024');
+    expect(within(kawasakiCard).getByRole('link', { name: 'Ver ficha' })).toHaveAttribute('href', '#/motos/kawasaki-z900-2024');
   });
 
   it('renderiza máximo 2 destacadas por kilómetros, rating, comentario y fecha', async () => {
@@ -223,31 +270,55 @@ describe('CommunityReviewsPage', () => {
 
     expect(within(getFeaturedSection()).getByText(/BMW editorial permanece/i)).toBeInTheDocument();
     expect(within(getLatestSection()).getByText(/BMW editorial permanece/i)).toBeInTheDocument();
-    expect(within(getGeneralReviewsList()).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
-    expect(within(getGeneralReviewsList()).queryByText('BMW F 900 GS 2024')).not.toBeInTheDocument();
+    expect(within(getGarageList()).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
+    expect(within(getGarageList()).queryByText('BMW F 900 GS 2024')).not.toBeInTheDocument();
   });
 
-  it('solo muestra reviews approved y oculta pending/rejected/hidden', async () => {
+  it('solo agrupa reviews approved y oculta pending/rejected/hidden', async () => {
     await renderPage([
-      createCommunityReview({ id: 'approved-1', status: 'approved', comment: 'Approved visible' }),
-      createCommunityReview({ id: 'pending-1', status: 'pending' as MotorcycleReviewStatus, comment: 'Pending invisible' }),
-      createCommunityReview({ id: 'rejected-1', status: 'rejected', comment: 'Rejected invisible' }),
-      createCommunityReview({ id: 'hidden-1', status: 'hidden', comment: 'Hidden invisible' }),
+      createCommunityReview({
+        id: 'approved-1',
+        status: 'approved',
+        motorcycle: { id: 'approved-bike', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'pending-1',
+        status: 'pending' as MotorcycleReviewStatus,
+        motorcycle: { id: 'pending-bike', brand: 'Honda', model: 'Invisible Pending', year: 2024, imageUrl: '/honda.webp', segment: 'trail', license: 'A2' },
+      }),
+      createCommunityReview({
+        id: 'rejected-1',
+        status: 'rejected',
+        motorcycle: { id: 'rejected-bike', brand: 'Ducati', model: 'Invisible Rejected', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'hidden-1',
+        status: 'hidden',
+        motorcycle: { id: 'hidden-bike', brand: 'Yamaha', model: 'Invisible Hidden', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A2' },
+      }),
     ]);
 
-    expect(within(getGeneralReviewsList()).getByText(/Approved visible/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Pending invisible/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Rejected invisible/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Hidden invisible/i)).not.toBeInTheDocument();
+    expect(within(getGarageList()).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
+    expect(screen.queryByText(/Invisible Pending/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Invisible Rejected/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Invisible Hidden/i)).not.toBeInTheDocument();
   });
 
-  it('ordena por fecha descendente por defecto', async () => {
+  it('ordena el garaje por última review descendente por defecto', async () => {
     await renderPage([
-      createCommunityReview({ id: 'old-1', comment: 'Review antigua', createdAt: '2026-05-01T10:00:00.000Z' }),
-      createCommunityReview({ id: 'new-1', comment: 'Review reciente', createdAt: '2026-05-20T10:00:00.000Z' }),
+      createCommunityReview({
+        id: 'old-1',
+        createdAt: '2026-05-01T10:00:00.000Z',
+        motorcycle: { id: 'old-bike', brand: 'BMW', model: 'Old GS', year: 2024, imageUrl: '/old.webp', segment: 'trail', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'new-1',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'new-bike', brand: 'Yamaha', model: 'New MT', year: 2024, imageUrl: '/new.webp', segment: 'naked', license: 'A2' },
+      }),
     ]);
 
-    expect(within(getGeneralReviewCards()[0]).getByText(/Review reciente/i)).toBeInTheDocument();
+    expect(within(getGarageCards()[0]).getByText('Yamaha New MT 2024')).toBeInTheDocument();
   });
 
   it('filtra por búsqueda, segmento, carnet, rating y uso', async () => {
@@ -268,24 +339,24 @@ describe('CommunityReviewsPage', () => {
     ]);
 
     await user.type(screen.getByRole('searchbox', { name: 'Buscar por marca o modelo' }), 'yamaha');
-    expect(within(getGeneralReviewsList()).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
-    expect(within(getGeneralReviewsList()).queryByText('BMW F 900 GS 2024')).not.toBeInTheDocument();
+    expect(within(getGarageList()).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
+    expect(within(getGarageList()).queryByText('BMW F 900 GS 2024')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Limpiar filtros de reviews' }));
     await user.click(screen.getByRole('button', { name: 'Segmento: Trail' }));
-    expect(within(getGeneralReviewsList()).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
-    expect(within(getGeneralReviewsList()).queryByText('Yamaha MT-07 2024')).not.toBeInTheDocument();
+    expect(within(getGarageList()).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
+    expect(within(getGarageList()).queryByText('Yamaha MT-07 2024')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
-    expect(screen.getByRole('heading', { name: /No hay reviews con estos filtros/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /No hay motos con reviews para estos filtros/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Limpiar filtros de reviews' }));
     await user.click(screen.getByRole('button', { name: '3 estrellas o menos' }));
-    expect(within(getGeneralReviewsList()).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
-    expect(within(getGeneralReviewsList()).queryByText('BMW F 900 GS 2024')).not.toBeInTheDocument();
+    expect(within(getGarageList()).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
+    expect(within(getGarageList()).queryByText('BMW F 900 GS 2024')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Uso principal: Viaje' }));
-    expect(screen.getByRole('heading', { name: /No hay reviews con estos filtros/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /No hay motos con reviews para estos filtros/i })).toBeInTheDocument();
   });
 
   it('filtra por A2 limitable usando el catálogo cuando está disponible', async () => {
@@ -321,56 +392,91 @@ describe('CommunityReviewsPage', () => {
       }),
     ]);
 
-    expect(await within(getGeneralReviewsList()).findByText(/A2 limitable visible/i)).toBeInTheDocument();
-    expect(within(getGeneralReviewsList()).getByText(/A2 directa visible/i)).toBeInTheDocument();
+    expect(await within(getGarageList()).findByText('Aprilia Tuareg 660 2024')).toBeInTheDocument();
+    expect(within(getGarageList()).getByText('Honda CB500X 2024')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'A2 limitable' }));
 
-    expect(await within(getGeneralReviewsList()).findByText(/A2 limitable visible/i)).toBeInTheDocument();
-    expect(within(getGeneralReviewsList()).queryByText(/A2 directa visible/i)).not.toBeInTheDocument();
+    expect(await within(getGarageList()).findByText('Aprilia Tuareg 660 2024')).toBeInTheDocument();
+    expect(within(getGarageList()).queryByText('Honda CB500X 2024')).not.toBeInTheDocument();
   });
 
-  it('ordena por rating y por kilómetros', async () => {
+  it('ordena por rating, cantidad de reviews y kilómetros', async () => {
     const user = userEvent.setup();
     await renderPage([
-      createCommunityReview({ id: 'review-1', rating: 2, kilometers: 20000, comment: 'Más kilómetros' }),
-      createCommunityReview({ id: 'review-2', rating: 5, kilometers: 3000, comment: 'Mejor rating' }),
+      createCommunityReview({
+        id: 'sort-km-1',
+        motorcycleId: 'km-bike',
+        rating: 2,
+        kilometers: 20000,
+        motorcycle: { id: 'km-bike', brand: 'BMW', model: 'Kilometers GS', year: 2024, imageUrl: '/km.webp', segment: 'trail', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'sort-rating-1',
+        motorcycleId: 'rating-bike',
+        rating: 5,
+        kilometers: 3000,
+        motorcycle: { id: 'rating-bike', brand: 'Yamaha', model: 'Rating MT', year: 2024, imageUrl: '/rating.webp', segment: 'naked', license: 'A2' },
+      }),
+      createCommunityReview({
+        id: 'sort-reviews-1',
+        motorcycleId: 'reviews-bike',
+        rating: 3,
+        kilometers: 1000,
+        motorcycle: { id: 'reviews-bike', brand: 'Honda', model: 'Reviews CB', year: 2024, imageUrl: '/reviews.webp', segment: 'naked', license: 'A2' },
+      }),
+      createCommunityReview({
+        id: 'sort-reviews-2',
+        motorcycleId: 'reviews-bike',
+        rating: 4,
+        kilometers: 1000,
+        motorcycle: { id: 'reviews-bike', brand: 'Honda', model: 'Reviews CB', year: 2024, imageUrl: '/reviews.webp', segment: 'naked', license: 'A2' },
+      }),
     ]);
 
     await user.click(screen.getByRole('button', { name: 'Orden: Mejor valoradas' }));
-    expect(within(getGeneralReviewCards()[0]).getByText(/Mejor rating/i)).toBeInTheDocument();
+    expect(within(getGarageCards()[0]).getByText('Yamaha Rating MT 2024')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Orden: Más reviews' }));
+    expect(within(getGarageCards()[0]).getByText('Honda Reviews CB 2024')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Orden: Más kilómetros' }));
-    expect(within(getGeneralReviewCards()[0]).getByText(/Más kilómetros/i)).toBeInTheDocument();
+    expect(within(getGarageCards()[0]).getByText('BMW Kilometers GS 2024')).toBeInTheDocument();
   });
 
-  it('la card community muestra alias, estrella, metadatos, pros/contras y no muestra estado', async () => {
+  it('la card del garaje muestra rating, métricas y CTAs sin datos de review individual', async () => {
     await renderPage([
-      createCommunityReview({ id: 'review-1', userName: 'Fromen 01', rating: 5, pros: ['Suspensión'], cons: ['Calor'] }),
+      createCommunityReview({
+        id: 'garage-card-1',
+        userName: 'Fromen 01',
+        rating: 5,
+        pros: ['Suspensión'],
+        cons: ['Calor'],
+        motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' },
+      }),
     ]);
 
-    const card = getGeneralReviewCards()[0];
+    const card = getGarageCards()[0];
 
-    expect(within(card).getByText('@Fromen_01')).toBeInTheDocument();
+    expect(within(card).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
+    expect(within(card).getByLabelText('Rating medio 5 de 5')).toBeInTheDocument();
+    expect(within(card).getByText('1 review')).toBeInTheDocument();
+    expect(within(card).getByText('Uso más repetido')).toBeInTheDocument();
+    expect(within(card).queryByText('@Fromen_01')).not.toBeInTheDocument();
     expect(within(card).queryByText('Publicada')).not.toBeInTheDocument();
-    expect(within(card).getByLabelText('Rating 5 de 5')).toBeInTheDocument();
-    expect(within(card).getByText('speed')).toBeInTheDocument();
-    expect(within(card).getByText('schedule')).toBeInTheDocument();
-    expect(within(card).getByText('route')).toBeInTheDocument();
-    expect(within(card).getByText('calendar_month')).toBeInTheDocument();
-    expect(within(card).getByText('+ Suspensión')).toBeInTheDocument();
-    expect(within(card).getByText('- Calor')).toBeInTheDocument();
+    expect(within(card).queryByText('+ Suspensión')).not.toBeInTheDocument();
+    expect(within(card).queryByText('- Calor')).not.toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: /Ver reviews/i })).toBeInTheDocument();
     expect(within(card).getByRole('link', { name: /Ver ficha/i })).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: /Más reviews/i })).toBeInTheDocument();
   });
 
-  it('pagina 9 reviews por página y navega primera/anterior/siguiente/última con máximo 5 números', async () => {
+  it('pagina 9 motos agrupadas por página y navega primera/anterior/siguiente/última con máximo 5 números', async () => {
     const user = userEvent.setup();
     await renderPage(buildReviews(55));
 
-    expect(getGeneralReviewsList()).toBeInTheDocument();
-    expect(screen.getByRole('navigation', { name: /Paginación de reviews de comunidad/i })).toBeInTheDocument();
-    expect(getGeneralReviewCards()).toHaveLength(9);
+    expect(getGarageList()).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: /Paginación del garaje de comunidad/i })).toBeInTheDocument();
+    expect(getGarageCards()).toHaveLength(9);
     expect(screen.getAllByRole('button', { name: /^Página \d+$/ })).toHaveLength(5);
     expect(screen.getByRole('button', { name: 'Primera página' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Página anterior' })).toBeDisabled();
@@ -394,7 +500,7 @@ describe('CommunityReviewsPage', () => {
     const user = userEvent.setup();
     await renderPage(buildReviews(9));
 
-    expect(screen.queryByRole('navigation', { name: /Paginación de reviews de comunidad/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /Paginación del garaje de comunidad/i })).not.toBeInTheDocument();
 
     cleanup();
     getApprovedCommunityReviewsMock.mockReset();
@@ -412,11 +518,11 @@ describe('CommunityReviewsPage', () => {
 
     await user.type(screen.getByRole('searchbox', { name: 'Buscar por marca o modelo' }), 'ducati');
 
-    expect(screen.getByRole('heading', { name: 'No hay reviews con estos filtros' })).toBeInTheDocument();
-    expect(screen.getByText('Prueba a cambiar el segmento, el uso principal o la búsqueda para descubrir más opiniones.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'No hay motos con reviews para estos filtros' })).toBeInTheDocument();
+    expect(screen.getByText('Prueba a cambiar el segmento, el carnet o la búsqueda para encontrar modelos con opiniones de propietarios.')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Limpiar filtros' }));
-    expect(within(getGeneralReviewsList()).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
+    expect(within(getGarageList()).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
   });
 
   it('muestra error y permite reintentar', async () => {
@@ -427,7 +533,7 @@ describe('CommunityReviewsPage', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('permission denied');
     await user.click(screen.getByRole('button', { name: /Reintentar/i }));
-    expect(await within(getGeneralReviewsList()).findByTestId('account-review-card')).toBeInTheDocument();
+    expect(await within(getGarageList()).findByTestId('community-garage-card')).toBeInTheDocument();
     expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(2);
   });
 });

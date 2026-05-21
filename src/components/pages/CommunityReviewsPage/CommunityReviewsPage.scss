@@ -739,40 +739,220 @@ span.community-reviews-page__insight-icon {
   min-width: 0;
 }
 
-.community-reviews-page__results-header {
-  @include glass-panel;
-
+.community-reviews-page__garage-header {
   align-items: end;
-  background: rgba($color-surface-low, 0.68);
-  border-radius: $radius-xl;
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  padding: clamp(1.2rem, 3vw, 1.8rem);
-
-  span {
-    @include label-caps;
-
-    color: $color-accent;
-  }
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: 1.35rem;
 
   h2 {
     @include headline-lg;
 
-    margin: 0.35rem 0;
+    margin: 0;
     text-transform: uppercase;
   }
 
   p {
     color: rgba($color-on-surface-variant, 0.86);
+    line-height: 1.6;
+    margin: 0.55rem 0 0;
+    max-width: 46rem;
+  }
+
+  dl {
+    display: flex;
+    gap: 0.75rem;
     margin: 0;
+  }
+
+  dl > div {
+    @include glass-panel;
+
+    border-radius: $radius-lg;
+    min-width: 6.4rem;
+    padding: 0.75rem 0.95rem;
+  }
+
+  dt {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.72);
+    font-size: 0.62rem;
+  }
+
+  dd {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: 1.35rem;
+    font-weight: 900;
+    margin: 0.25rem 0 0;
   }
 }
 
-.community-reviews-page__list {
+.community-reviews-page__garage-grid {
   display: grid;
   gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.community-reviews-page__garage-card {
+  @include image-zoom;
+
+  background: $color-surface-container;
+  border: 1px solid rgba($color-outline-variant, 0.5);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  min-height: 18.5rem;
+  overflow: hidden;
+  position: relative;
+
+  .motorcycle-image {
+    height: 100%;
+    inset: 0;
+    position: absolute;
+    width: 100%;
+
+    img {
+      filter: grayscale(0.28) contrast(1.08) saturate(0.95);
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      width: 100%;
+    }
+  }
+}
+
+.community-reviews-page__garage-card-overlay {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba($color-surface, 0.6) 46%, rgba($color-surface-lowest, 0.96)),
+    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.16), transparent 13rem);
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.community-reviews-page__garage-card-content {
+  bottom: 0;
+  display: grid;
+  gap: 0.85rem;
+  left: 0;
+  padding: 1rem;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+}
+
+.community-reviews-page__garage-card-header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+
+  > div > span {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.74);
+    font-size: 0.62rem;
+  }
+
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 0.98;
+    margin: 0.25rem 0 0;
+    text-transform: uppercase;
+  }
+}
+
+.community-reviews-page__garage-rating {
+  align-items: center;
+  color: $color-on-surface;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.28rem;
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+
+  span {
+    color: $color-accent;
+    font-size: 1.08rem;
+  }
+
+  strong {
+    font-family: $font-headline;
+    font-size: 1.35rem;
+    font-weight: 900;
+  }
+}
+
+.community-reviews-page__garage-meta {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+
+  div {
+    min-width: 0;
+  }
+
+  dt {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.7);
+    font-size: 0.55rem;
+  }
+
+  dd {
+    @include label-caps;
+
+    color: $color-on-surface;
+    font-size: 0.66rem;
+    line-height: 1.2;
+    margin: 0.22rem 0 0;
+  }
+}
+
+.community-reviews-page__garage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+
+  a {
+    @include label-caps;
+
+    align-items: center;
+    border: 1px solid rgba($color-outline-variant, 0.75);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: inline-flex;
+    flex: 1 1 8rem;
+    justify-content: center;
+    min-height: 2.35rem;
+    padding: 0.65rem 0.85rem;
+    text-decoration: none;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+
+    &:first-child {
+      background: $color-accent-container;
+      border-color: $color-accent-container;
+      color: #fff;
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: $color-accent;
+      outline: 0;
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .community-reviews-page__skeleton-card {
@@ -923,6 +1103,10 @@ span.community-reviews-page__insight-icon {
     padding-block: 1.5rem 5rem;
   }
 
+  .community-reviews-page__garage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .community-reviews-page__filters {
     border-radius: 0 20px 20px 0;
     bottom: 0;
@@ -1040,9 +1224,22 @@ span.community-reviews-page__insight-icon {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 
-  .community-reviews-page__results-header {
+  .community-reviews-page__garage-header {
     align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+
+    dl {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .community-reviews-page__garage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .community-reviews-page__garage-card {
+    min-height: 17rem;
   }
 
   .community-reviews-page__skeleton-card {
