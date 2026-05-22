@@ -561,6 +561,104 @@ describe('AdminPage', () => {
     expect(screen.queryByRole('navigation', { name: 'Paginación de reportes admin' })).not.toBeInTheDocument();
   });
 
+  it('muestra y aplica filtros en la página de reviews (estado, origen, verificación)', async () => {
+    const user = userEvent.setup();
+
+    const sampleReports = [
+      {
+        ...reports[0],
+        id: 'r1',
+        createdAt: '2026-05-22T10:00:00.000Z',
+        review: {
+          ...(reports[0].review ?? {}),
+          id: 'rev1',
+          createdAt: '2026-05-22T09:00:00.000Z',
+          motorcycleId: 'bike-1',
+          motorcycle: { brand: 'A', id: 'bike-1', imageUrl: '/a.jpg', model: 'M1', year: 2024 },
+          status: 'pending',
+          source: 'user',
+          verified: true,
+          userName: 'Rider_1',
+        },
+        reviewId: 'rev1',
+      },
+      {
+        ...reports[0],
+        id: 'r2',
+        createdAt: '2026-05-21T10:00:00.000Z',
+        review: {
+          ...(reports[0].review ?? {}),
+          id: 'rev2',
+          createdAt: '2026-05-21T09:00:00.000Z',
+          motorcycleId: 'bike-2',
+          motorcycle: { brand: 'B', id: 'bike-2', imageUrl: '/b.jpg', model: 'M2', year: 2023 },
+          status: 'approved',
+          source: 'mock',
+          verified: false,
+          userName: 'Rider_2',
+        },
+        reviewId: 'rev2',
+      },
+      {
+        ...reports[0],
+        id: 'r3',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        review: {
+          ...(reports[0].review ?? {}),
+          id: 'rev3',
+          createdAt: '2026-05-20T09:00:00.000Z',
+          motorcycleId: 'bike-3',
+          motorcycle: { brand: 'C', id: 'bike-3', imageUrl: '/c.jpg', model: 'M3', year: 2022 },
+          status: 'pending',
+          source: 'seed',
+          verified: false,
+          userName: 'Rider_3',
+        },
+        reviewId: 'rev3',
+      },
+    ] as unknown as AdminReviewReport[];
+
+    getReviewReportsMock.mockResolvedValueOnce(sampleReports);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Reviews por modelo' })).toBeInTheDocument();
+    // inicialmente hay 3 tarjetas (una por moto)
+    expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(3);
+
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    expect(within(filters).getByRole('heading', { name: 'Filtros' })).toBeInTheDocument();
+
+    // filtrar por estado: Pendientes
+    const statusGroup = within(filters).getByRole('heading', { name: 'Estado' }).closest('.admin-page__filter-group');
+    expect(statusGroup).not.toBeNull();
+    await user.click(within(statusGroup as HTMLElement).getByRole('button', { name: /Estado: Pendientes/i }));
+
+    // ahora solo deben quedar las motos con reviews pendientes (bike-1 y bike-3)
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(2));
+    expect(screen.getByRole('heading', { name: 'A M1 2024' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'C M3 2022' })).toBeInTheDocument();
+
+    // limpiar filtros vuelve a mostrar las 3 tarjetas
+    const clearButtons = within(filters).getAllByRole('button', { name: 'Limpiar filtros' });
+    await user.click(clearButtons[0]);
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(3));
+
+    // abrir sección Origen y filtrar por 'Mock'
+    const sourceToggle = within(filters).getByRole('button', { name: 'Origen' });
+    await user.click(sourceToggle);
+    await user.click(within(filters).getByRole('button', { name: /Origen: Mock/i }));
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
+    expect(screen.getByRole('heading', { name: 'B M2 2023' })).toBeInTheDocument();
+
+    // probar filtro de verificación
+    await user.click(clearButtons[0]);
+    const verifiedToggle = within(filters).getByRole('button', { name: 'Verificadas' });
+    await user.click(verifiedToggle);
+    await user.click(within(filters).getByRole('button', { name: /Verificadas: Verificadas/i }));
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
+    expect(screen.getByRole('heading', { name: 'A M1 2024' })).toBeInTheDocument();
+  });
+
   it('resetea a página 1 al cambiar filtros o limpiar filtros', async () => {
     const user = userEvent.setup();
     getReviewReportsMock.mockResolvedValue(Array.from({ length: 13 }, (_, index) => buildReport(index + 1)));

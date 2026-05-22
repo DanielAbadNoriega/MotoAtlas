@@ -36,7 +36,7 @@ type AdminFilterOption<T extends string> = Readonly<{
   value: T;
 }>;
 
-type AdminFilterSectionId = 'reason' | 'sort' | 'status';
+type AdminFilterSectionId = 'reason' | 'sort' | 'status' | 'source' | 'verified';
 type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews';
 
 type AdminReviewGarageItem = Readonly<{
@@ -58,6 +58,21 @@ const defaultFilters: AdminFilters = {
   reason: 'all',
   sort: 'recent',
   status: 'pending',
+};
+
+// Filters for admin reviews page
+type AdminReviewsFilters = Readonly<{
+  status: 'all' | 'pending' | 'approved' | 'rejected' | 'hidden';
+  source: 'all' | 'user' | 'mock' | 'seed' | 'import';
+  verified: 'all' | 'verified' | 'unverified';
+  sort: 'recent' | 'old';
+}>;
+
+const defaultReviewsFilters: AdminReviewsFilters = {
+  status: 'all',
+  source: 'all',
+  verified: 'all',
+  sort: 'recent',
 };
 
 const REPORTS_PER_PAGE = 6;
@@ -111,6 +126,33 @@ const sortOptions = [
   { icon: 'schedule', label: 'Más recientes', value: 'recent' },
   { icon: 'history', label: 'Más antiguos', value: 'oldest' },
 ] satisfies readonly AdminFilterOption<AdminReportSort>[];
+
+const reviewStatusOptions = [
+  { icon: 'apps', label: 'Todas', value: 'all' },
+  { icon: 'pending', label: 'Pendientes', value: 'pending' },
+  { icon: 'task_alt', label: 'Publicadas', value: 'approved' },
+  { icon: 'block', label: 'Ocultas', value: 'hidden' },
+  { icon: 'cancel', label: 'Rechazadas', value: 'rejected' },
+] as const;
+
+const reviewSourceOptions = [
+  { icon: 'apps', label: 'Todas', value: 'all' },
+  { icon: 'person', label: 'Usuario', value: 'user' },
+  { icon: 'science', label: 'Mock', value: 'mock' },
+  { icon: 'history_edu', label: 'Seed', value: 'seed' },
+  { icon: 'cloud_upload', label: 'Import', value: 'import' },
+] as const;
+
+const reviewVerifiedOptions = [
+  { icon: 'apps', label: 'Todas', value: 'all' },
+  { icon: 'verified', label: 'Verificadas', value: 'verified' },
+  { icon: 'help', label: 'No verificadas', value: 'unverified' },
+] as const;
+
+const reviewSortOptions = [
+  { icon: 'schedule', label: 'Más recientes', value: 'recent' },
+  { icon: 'history', label: 'Más antiguos', value: 'old' },
+] as const;
 
 function hasActiveFilters(filters: AdminFilters) {
   return filters.reason !== defaultFilters.reason
@@ -426,6 +468,8 @@ function AdminModerationSidebar({
     status: true,
     reason: false,
     sort: false,
+    source: false,
+    verified: false,
   });
 
   const toggleFilterSection = (sectionId: AdminFilterSectionId) => {
@@ -502,6 +546,127 @@ function AdminModerationSidebar({
         <div>
           <p>Modera sin borrar datos.</p>
           <strong>Los reportes no son públicos y las reviews pueden ocultarse.</strong>
+        </div>
+      </article>
+    </aside>
+  );
+}
+
+function AdminReviewsSidebar({
+  filters,
+  isOpen,
+  onApplyFilters,
+  onChange,
+  onClearFilters,
+  onClose,
+}: Readonly<{
+  filters: AdminReviewsFilters;
+  isOpen: boolean;
+  onApplyFilters: () => void;
+  onChange: (next: Partial<AdminReviewsFilters>) => void;
+  onClearFilters: () => void;
+  onClose: () => void;
+}>) {
+  const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
+  const clearButtonDisabled = (filters.status === defaultReviewsFilters.status
+    && filters.source === defaultReviewsFilters.source
+    && filters.verified === defaultReviewsFilters.verified
+    && filters.sort === defaultReviewsFilters.sort);
+
+  const [filterSectionsOpenState, setFilterSectionsOpenState] = useState<Record<AdminFilterSectionId, boolean>>({
+    status: true,
+    reason: false,
+    source: false,
+    verified: false,
+    sort: false,
+  });
+
+  const toggleFilterSection = (sectionId: AdminFilterSectionId) => {
+    setFilterSectionsOpenState((currentState) => ({
+      ...currentState,
+      [sectionId]: !currentState[sectionId],
+    }));
+  };
+
+  return (
+    <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de reviews">
+      <nav className="account-page__quick-links" aria-label="Navegación de administración">
+        <a className="account-page__quick-link" href="#/admin">Panel admin</a>
+        <a className="account-page__quick-link" href="#/admin/moderacion">Moderación</a>
+        <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/reviews" aria-current="page">Reviews</a>
+      </nav>
+
+      {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de reviews" /> : null}
+
+      <section
+        className={panelClasses}
+        aria-label="Filtros admin"
+        aria-labelledby="admin-filters-title"
+        aria-modal={isOpen ? 'true' : undefined}
+        role={isOpen ? 'dialog' : undefined}
+      >
+        <div className="admin-page__sheet-handle" aria-hidden="true" />
+        <div className="admin-page__filters-header">
+          <h2 id="admin-filters-title">Filtros</h2>
+          <button type="button" onClick={onClearFilters} disabled={clearButtonDisabled}>Limpiar filtros</button>
+          <button className="admin-page__filters-close" type="button" onClick={onClose} aria-label="Cerrar filtros de reviews">
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <div className="admin-page__filters-body">
+          <AdminFilterGroup
+            sectionId="status"
+            isOpen={filterSectionsOpenState.status}
+            label="Estado"
+            options={reviewStatusOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.status}
+            onToggle={() => toggleFilterSection('status')}
+            onChange={(status) => onChange({ status: status as AdminReviewsFilters['status'] })}
+          />
+
+          <AdminFilterGroup
+            sectionId="source"
+            isOpen={filterSectionsOpenState.source}
+            label="Origen"
+            options={reviewSourceOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.source}
+            onToggle={() => toggleFilterSection('source')}
+            onChange={(source) => onChange({ source: source as AdminReviewsFilters['source'] })}
+          />
+
+          <AdminFilterGroup
+            sectionId="verified"
+            isOpen={filterSectionsOpenState.verified}
+            label="Verificadas"
+            options={reviewVerifiedOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.verified}
+            onToggle={() => toggleFilterSection('verified')}
+            onChange={(verified) => onChange({ verified: verified as AdminReviewsFilters['verified'] })}
+          />
+
+          <AdminFilterGroup
+            sectionId="sort"
+            isOpen={filterSectionsOpenState.sort}
+            label="Orden"
+            options={reviewSortOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.sort}
+            onToggle={() => toggleFilterSection('sort')}
+            onChange={(sort) => onChange({ sort: sort as AdminReviewsFilters['sort'] })}
+          />
+        </div>
+
+        <footer className="admin-page__filters-footer">
+          <button type="button" onClick={onClearFilters} disabled={clearButtonDisabled}>Limpiar filtros</button>
+          <button type="button" onClick={onApplyFilters}>Aplicar filtros</button>
+        </footer>
+      </section>
+
+      <article className="account-page__notice admin-page__notice">
+        <span className="material-symbols-outlined" aria-hidden="true">policy</span>
+        <div>
+          <p>Filtra reviews por estado, origen y verificación.</p>
+          <strong>Los filtros no cambian datos en la base.</strong>
         </div>
       </article>
     </aside>
@@ -711,6 +876,8 @@ export function AdminReviewsPage() {
   const [reports, setReports] = useState<readonly AdminReviewReport[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reviewFilters, setReviewFilters] = useState<AdminReviewsFilters>(defaultReviewsFilters);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const authContext = useMemo<CreateReviewAuthContext | null>(() => (
     user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
   ), [session?.access_token, user?.id]);
@@ -739,9 +906,64 @@ export function AdminReviewsPage() {
     loadReports();
   }, [loadReports]);
 
+  useEffect(() => {
+    if (!isFilterPanelOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsFilterPanelOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFilterPanelOpen]);
+
+  const filteredReports = useMemo(() => {
+    const base = (reports ?? []).filter((r) => Boolean(r.review));
+
+    const filtered = base.filter((r) => {
+      const rv: any = r.review as any;
+
+      if (reviewFilters.status !== 'all' && rv.status !== reviewFilters.status) {
+        return false;
+      }
+
+      if (reviewFilters.source !== 'all') {
+        if (rv.source === undefined) return false;
+        if (rv.source !== reviewFilters.source) return false;
+      }
+
+      if (reviewFilters.verified !== 'all') {
+        if (rv.verified === undefined) return false;
+        const isVerified = Boolean(rv.verified);
+        if ((reviewFilters.verified === 'verified') !== isVerified) return false;
+      }
+
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      const aTs = getTimestamp(a.review?.createdAt ?? a.createdAt ?? '');
+      const bTs = getTimestamp(b.review?.createdAt ?? b.createdAt ?? '');
+      return reviewFilters.sort === 'recent' ? bTs - aTs : aTs - bTs;
+    });
+
+    return filtered;
+  }, [reports, reviewFilters]);
+
   const garageItems = useMemo(
-    () => buildAdminReviewGarage(reports),
-    [reports],
+    () => buildAdminReviewGarage(filteredReports),
+    [filteredReports],
   );
 
   return (
@@ -763,8 +985,17 @@ export function AdminReviewsPage() {
         </CommunityHero>
 
         <main className="account-page admin-page admin-reviews-page" aria-labelledby="admin-reviews-page-title">
-          <section className="account-page__dashboard">
-          <AdminSidebar active="reviews" />
+          <section className="account-page__dashboard admin-page__layout">
+          <AdminReviewsSidebar
+            filters={reviewFilters}
+            isOpen={isFilterPanelOpen}
+            onApplyFilters={() => setIsFilterPanelOpen(false)}
+            onChange={(next) => {
+              setReviewFilters((current) => ({ ...current, ...next }));
+            }}
+            onClearFilters={() => setReviewFilters(defaultReviewsFilters)}
+            onClose={() => setIsFilterPanelOpen(false)}
+          />
           <div className="account-page__main admin-reviews-page__main">
             <section className="account-page__section admin-reviews-page__garage" aria-labelledby="admin-reviews-page-title">
               <div className="account-page__section-header">
@@ -775,6 +1006,15 @@ export function AdminReviewsPage() {
                     Reviews por modelo
                   </h2>
                 </div>
+                <button
+                  className="admin-page__mobile-filter-trigger"
+                  type="button"
+                  aria-label="Abrir filtros de reviews"
+                  onClick={() => setIsFilterPanelOpen(true)}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+                  Filtros
+                </button>
               </div>
 
               {error ? (
@@ -788,7 +1028,7 @@ export function AdminReviewsPage() {
               ) : garageItems.length === 0 ? (
                 <article className="account-page__empty-state">
                   <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">garage</span>
-                  <h3>No hay reviews para revisar por ahora.</h3>
+                  <h3>No hay reviews con estos filtros.</h3>
                 </article>
               ) : (
                 <div className="admin-reviews-page__garage-grid">
