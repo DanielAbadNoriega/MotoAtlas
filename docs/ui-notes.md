@@ -71,7 +71,13 @@ La moderación separa dos conceptos:
 - estado del reporte (`Pendiente`, `Revisado`, `Descartado`, `Resuelto`)
 - estado de la review (`Oculta`, `Aprobada`, `Rechazada`)
 
-La card muestra motivo del reporte, alias legible del reportante (con UUID como dato secundario), comentario opcional del reporte y pros/contras de la review cuando existen. Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). Avisos al autor, administración completa de reviews/solicitudes y reportes de respuestas quedan para fases futuras.
+Los filtros admin adoptan el patrón de `cuenta/reviews`: header/body/footer, iconos Material Symbols y secciones desplegables por grupo (`Estado del reporte`, `Motivo`, `Orden`) con chevron y `aria-expanded`. El panel ya no depende del padding de card heredado; el espaciado se controla solo desde header/body/footer para evitar doble padding y desalineación.
+
+Las report cards son plegables por defecto: el header deja visible estado, motivo, reportante y contexto rápido de la review; el detalle (comentario, pros/contras y acciones) se despliega bajo demanda con trigger accesible (`aria-expanded`/`aria-controls`).
+
+Los botones de acciones de moderación tienen hover por intención visual (azul para `Marcar revisado`, rojo para `Descartar`/`Rechazar`, verde para `Resuelto`/`Aprobar`, gris para `Ocultar`) sin heredar hover rojo genérico.
+
+Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). Avisos al autor, administración completa de reviews/solicitudes y reportes de respuestas quedan para fases futuras.
 
 ## Mi cuenta — Reviews
 

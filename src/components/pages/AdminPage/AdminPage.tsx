@@ -25,6 +25,14 @@ type AdminFilters = Readonly<{
   status: AdminReportStatusFilter;
 }>;
 
+type AdminFilterOption<T extends string> = Readonly<{
+  icon: string;
+  label: string;
+  value: T;
+}>;
+
+type AdminFilterSectionId = 'reason' | 'sort' | 'status';
+
 const defaultFilters: AdminFilters = {
   reason: 'all',
   sort: 'recent',
@@ -60,26 +68,32 @@ const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
 };
 
 const reportStatusOptions = [
-  { label: 'Pendientes', value: 'pending' },
-  { label: 'Revisados', value: 'reviewed' },
-  { label: 'Descartados', value: 'dismissed' },
-  { label: 'Resueltos', value: 'action_taken' },
-  { label: 'Todos', value: 'all' },
-] satisfies readonly { label: string; value: AdminReportStatusFilter }[];
+  { icon: 'apps', label: 'Todos', value: 'all' },
+  { icon: 'pending', label: 'Pendientes', value: 'pending' },
+  { icon: 'fact_check', label: 'Revisados', value: 'reviewed' },
+  { icon: 'block', label: 'Descartados', value: 'dismissed' },
+  { icon: 'task_alt', label: 'Resueltos', value: 'action_taken' },
+] satisfies readonly AdminFilterOption<AdminReportStatusFilter>[];
 
 const reasonOptions = [
-  { label: 'Todos', value: 'all' },
-  { label: 'Spam', value: 'spam' },
-  { label: 'Ofensivo', value: 'offensive' },
-  { label: 'Información falsa', value: 'false_information' },
-  { label: 'Acoso', value: 'harassment' },
-  { label: 'Otro', value: 'other' },
-] satisfies readonly { label: string; value: AdminReportReasonFilter }[];
+  { icon: 'apps', label: 'Todos', value: 'all' },
+  { icon: 'report', label: 'Spam', value: 'spam' },
+  { icon: 'warning', label: 'Ofensivo', value: 'offensive' },
+  { icon: 'error', label: 'Información falsa', value: 'false_information' },
+  { icon: 'front_hand', label: 'Acoso', value: 'harassment' },
+  { icon: 'more_horiz', label: 'Otro', value: 'other' },
+] satisfies readonly AdminFilterOption<AdminReportReasonFilter>[];
 
 const sortOptions = [
-  { label: 'Más recientes', value: 'recent' },
-  { label: 'Más antiguos', value: 'oldest' },
-] satisfies readonly { label: string; value: AdminReportSort }[];
+  { icon: 'schedule', label: 'Más recientes', value: 'recent' },
+  { icon: 'history', label: 'Más antiguos', value: 'oldest' },
+] satisfies readonly AdminFilterOption<AdminReportSort>[];
+
+function hasActiveFilters(filters: AdminFilters) {
+  return filters.reason !== defaultFilters.reason
+    || filters.sort !== defaultFilters.sort
+    || filters.status !== defaultFilters.status;
+}
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -214,43 +228,89 @@ export function AdminDashboardPage() {
 }
 
 function AdminFilterGroup<T extends string>({
+  isOpen,
   label,
   onChange,
+  onToggle,
   options,
+  sectionId,
   value,
 }: Readonly<{
+  isOpen: boolean;
   label: string;
   onChange: (value: T) => void;
-  options: readonly { label: string; value: T }[];
+  onToggle: () => void;
+  options: readonly AdminFilterOption<T>[];
+  sectionId: AdminFilterSectionId;
   value: T;
 }>) {
+  const sectionContentId = `admin-filters-${sectionId}-content`;
+
   return (
-    <div className="admin-page__filter-group">
-      <h2>{label}</h2>
-      <div>
-        {options.map((option) => (
-          <button
-            className={value === option.value ? 'admin-page__filter-chip admin-page__filter-chip--active' : 'admin-page__filter-chip'}
-            type="button"
-            aria-pressed={value === option.value}
-            key={option.value}
-            onClick={() => onChange(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
+    <section className={isOpen ? 'admin-page__filter-group admin-page__filter-group--open' : 'admin-page__filter-group'} aria-label={label}>
+      <h3>
+        <button
+          className="admin-page__filter-group-toggle"
+          type="button"
+          aria-expanded={isOpen}
+          aria-controls={sectionContentId}
+          onClick={onToggle}
+        >
+          <span>{label}</span>
+          <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
+        </button>
+      </h3>
+      <div id={sectionContentId} className="admin-page__filter-group-body" aria-hidden={!isOpen} inert={!isOpen}>
+        <div className="admin-page__filter-options">
+          {options.map((option) => (
+            <button
+              className={value === option.value ? 'admin-page__filter-option admin-page__filter-option--active' : 'admin-page__filter-option'}
+              type="button"
+              aria-label={`${label}: ${option.label}`}
+              aria-pressed={value === option.value}
+              key={option.value}
+              onClick={() => onChange(option.value)}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">{option.icon}</span>
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
 function AdminModerationSidebar({
   filters,
+  isOpen,
+  onApplyFilters,
   onChange,
+  onClearFilters,
+  onClose,
 }: Readonly<{
   filters: AdminFilters;
+  isOpen: boolean;
+  onApplyFilters: () => void;
   onChange: (next: Partial<AdminFilters>) => void;
+  onClearFilters: () => void;
+  onClose: () => void;
 }>) {
+  const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
+  const clearButtonDisabled = !hasActiveFilters(filters);
+  const [filterSectionsOpenState, setFilterSectionsOpenState] = useState<Record<AdminFilterSectionId, boolean>>({
+    status: true,
+    reason: false,
+    sort: false,
+  });
+
+  const toggleFilterSection = (sectionId: AdminFilterSectionId) => {
+    setFilterSectionsOpenState((currentState) => ({
+      ...currentState,
+      [sectionId]: !currentState[sectionId],
+    }));
+  };
+
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de moderación">
       <nav className="account-page__quick-links" aria-label="Navegación de administración">
@@ -258,16 +318,64 @@ function AdminModerationSidebar({
         <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/moderacion" aria-current="page">Moderación</a>
       </nav>
 
-      <section className="account-page__card admin-page__filters" aria-label="Filtros admin">
-        <AdminFilterGroup label="Estado del reporte" options={reportStatusOptions} value={filters.status} onChange={(status) => onChange({ status })} />
-        <AdminFilterGroup label="Motivo" options={reasonOptions} value={filters.reason} onChange={(reason) => onChange({ reason })} />
-        <AdminFilterGroup label="Orden" options={sortOptions} value={filters.sort} onChange={(sort) => onChange({ sort })} />
+      {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de moderación" /> : null}
+
+      <section
+        className={panelClasses}
+        aria-label="Filtros admin"
+        aria-labelledby="admin-filters-title"
+        aria-modal={isOpen ? 'true' : undefined}
+        role={isOpen ? 'dialog' : undefined}
+      >
+        <div className="admin-page__sheet-handle" aria-hidden="true" />
+        <div className="admin-page__filters-header">
+          <h2 id="admin-filters-title">Filtros</h2>
+          <button type="button" onClick={onClearFilters} disabled={clearButtonDisabled}>Limpiar filtros</button>
+          <button className="admin-page__filters-close" type="button" onClick={onClose} aria-label="Cerrar filtros de moderación">
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <div className="admin-page__filters-body">
+          <AdminFilterGroup
+            sectionId="status"
+            isOpen={filterSectionsOpenState.status}
+            label="Estado del reporte"
+            options={reportStatusOptions}
+            value={filters.status}
+            onToggle={() => toggleFilterSection('status')}
+            onChange={(status) => onChange({ status })}
+          />
+          <AdminFilterGroup
+            sectionId="reason"
+            isOpen={filterSectionsOpenState.reason}
+            label="Motivo"
+            options={reasonOptions}
+            value={filters.reason}
+            onToggle={() => toggleFilterSection('reason')}
+            onChange={(reason) => onChange({ reason })}
+          />
+          <AdminFilterGroup
+            sectionId="sort"
+            isOpen={filterSectionsOpenState.sort}
+            label="Orden"
+            options={sortOptions}
+            value={filters.sort}
+            onToggle={() => toggleFilterSection('sort')}
+            onChange={(sort) => onChange({ sort })}
+          />
+        </div>
+
+        <footer className="admin-page__filters-footer">
+          <button type="button" onClick={onClearFilters} disabled={clearButtonDisabled}>Limpiar filtros</button>
+          <button type="button" onClick={onApplyFilters}>Aplicar filtros</button>
+        </footer>
       </section>
 
       <article className="account-page__notice admin-page__notice">
         <span className="material-symbols-outlined" aria-hidden="true">policy</span>
         <div>
-          <p>Moderá sin borrar datos.</p>
+          <p>Modera sin borrar datos.</p>
           <strong>Los reportes no son públicos y las reviews pueden ocultarse.</strong>
         </div>
       </article>
@@ -290,12 +398,16 @@ function normalizeTextList(values: readonly string[] | null | undefined) {
 }
 
 function AdminReportCard({
+  isExpanded,
   isPending,
+  onToggle,
   onReportStatus,
   onReviewStatus,
   report,
 }: Readonly<{
+  isExpanded: boolean;
   isPending: boolean;
+  onToggle: () => void;
   onReportStatus: (report: AdminReviewReport, status: Exclude<ReviewReportStatus, 'pending'>) => void;
   onReviewStatus: (report: AdminReviewReport, status: Exclude<MotorcycleReviewStatus, 'pending'>) => void;
   report: AdminReviewReport;
@@ -307,117 +419,131 @@ function AdminReportCard({
   const reviewStatusLabel = reviewStatus ? reviewStatusLabels[reviewStatus] : 'Sin dato';
   const pros = normalizeTextList(report.review?.pros);
   const cons = normalizeTextList(report.review?.cons);
+  const cardClasses = ['admin-page__report-card', isExpanded ? 'admin-page__report-card--expanded' : ''].filter(Boolean).join(' ');
+  const detailsId = `admin-report-details-${report.id}`;
 
   return (
-    <article className="admin-page__report-card" data-testid="admin-report-card">
-      <header>
-        <div className="admin-page__report-heading">
-          <div className="admin-page__reason-line">
-            <ReportStatusBadge status={report.status} />
-            <h2>{reasonLabels[report.reason]}</h2>
-          </div>
-          <p className="admin-page__reporter">
-            Reportado por <strong title={report.reporterUserId}>{report.reporterDisplayName}</strong> · {formatDate(report.createdAt)}
-          </p>
-        </div>
+    <article className={cardClasses} data-testid="admin-report-card">
+      <header className="admin-page__report-header">
+        <h2>
+          <button
+            className="admin-page__report-toggle"
+            type="button"
+            aria-controls={detailsId}
+            aria-expanded={isExpanded}
+            aria-label={`${isExpanded ? 'Contraer' : 'Expandir'} reporte ${reasonLabels[report.reason]} de ${report.reporterDisplayName}`}
+            onClick={onToggle}
+          >
+            <span className="admin-page__report-heading">
+              <span className="admin-page__reason-line">
+                <ReportStatusBadge status={report.status} />
+                <span className="admin-page__reason-title">{reasonLabels[report.reason]}</span>
+              </span>
+              <span className="admin-page__reporter">
+                Reportado por <strong title={report.reporterUserId}>{report.reporterDisplayName}</strong> · {formatDate(report.createdAt)}
+              </span>
+              <span className="admin-page__report-summary">
+                {motorcycleName} · Review de @{report.review?.userName || 'usuario'} · ★ {report.review?.rating ?? 'N/D'} ·{' '}
+                {reviewStatus ? <ReviewStatusBadge status={reviewStatus} /> : reviewStatusLabel}
+              </span>
+            </span>
+            <span className="material-symbols-outlined admin-page__report-chevron" aria-hidden="true">expand_more</span>
+          </button>
+        </h2>
       </header>
 
-      <section className="admin-page__review-context">
-        <h3>{motorcycleName}</h3>
-        <p>
-          Review de @{report.review?.userName || 'usuario'} · ★ {report.review?.rating ?? 'N/D'} ·{' '}
-          {reviewStatus ? <ReviewStatusBadge status={reviewStatus} /> : reviewStatusLabel}
-        </p>
-      </section>
+      <div id={detailsId} className="admin-page__report-body-wrapper" aria-hidden={!isExpanded} inert={!isExpanded}>
+        <div className="admin-page__report-body">
+          <section className="admin-page__reported-review" aria-label="Review reportada">
+            <p>“{report.review?.comment ?? 'Review no disponible.'}”</p>
+          </section>
 
-      <section className="admin-page__reported-review" aria-label="Review reportada">
-        <p>“{report.review?.comment ?? 'Review no disponible.'}”</p>
-      </section>
+          {pros.length > 0 ? (
+            <section className="admin-page__report-extra" aria-label="Pros reportados">
+              <strong>Pros:</strong>
+              <p>{pros.join(', ')}</p>
+            </section>
+          ) : null}
 
-      {pros.length > 0 ? (
-        <section className="admin-page__report-extra" aria-label="Pros reportados">
-          <strong>Pros:</strong>
-          <p>{pros.join(', ')}</p>
-        </section>
-      ) : null}
+          {cons.length > 0 ? (
+            <section className="admin-page__report-extra" aria-label="Contras reportados">
+              <strong>Contras:</strong>
+              <p>{cons.join(', ')}</p>
+            </section>
+          ) : null}
 
-      {cons.length > 0 ? (
-        <section className="admin-page__report-extra" aria-label="Contras reportados">
-          <strong>Contras:</strong>
-          <p>{cons.join(', ')}</p>
-        </section>
-      ) : null}
+          {report.comment ? (
+            <blockquote aria-label="Comentario del reporte">
+              <strong>Comentario del reporte:</strong>
+              <p>{report.comment}</p>
+            </blockquote>
+          ) : null}
 
-      {report.comment ? (
-        <blockquote aria-label="Comentario del reporte">
-          <strong>Comentario del reporte:</strong>
-          <p>{report.comment}</p>
-        </blockquote>
-      ) : null}
-
-      <footer>
-        <div className="admin-page__action-group" aria-label="Acciones sobre reporte">
-          <h3>Gestionar reporte</h3>
-          <div>
-            <button
-              className="admin-page__action-button admin-page__action-button--report-info"
-              type="button"
-              disabled={isPending || report.status === 'reviewed'}
-              onClick={() => onReportStatus(report, 'reviewed')}
-            >
-              Marcar revisado
-            </button>
-            <button
-              className="admin-page__action-button admin-page__action-button--report-danger"
-              type="button"
-              disabled={isPending || report.status === 'dismissed'}
-              onClick={() => onReportStatus(report, 'dismissed')}
-            >
-              Descartar reporte
-            </button>
-            <button
-              className="admin-page__action-button admin-page__action-button--report-success"
-              type="button"
-              disabled={isPending || report.status === 'action_taken'}
-              onClick={() => onReportStatus(report, 'action_taken')}
-            >
-              Marcar como resuelto
-            </button>
-          </div>
-        </div>
-
-        {report.review ? (
-          <div className="admin-page__action-group" aria-label="Acciones sobre review">
-            <h3>Gestionar review</h3>
-            <div>
-              <button
-                className="admin-page__action-button admin-page__action-button--review-neutral"
-                type="button"
-                disabled={isPending || reviewStatus === 'hidden'}
-                onClick={() => onReviewStatus(report, 'hidden')}
-              >
-                Ocultar
-              </button>
-              <button
-                className="admin-page__action-button admin-page__action-button--review-success"
-                type="button"
-                disabled={isPending || reviewStatus === 'approved'}
-                onClick={() => onReviewStatus(report, 'approved')}
-              >
-                Aprobar
-              </button>
-              <button
-                className="admin-page__action-button admin-page__action-button--review-danger"
-                type="button"
-                disabled={isPending || reviewStatus === 'rejected'}
-                onClick={() => onReviewStatus(report, 'rejected')}
-              >
-                Rechazar
-              </button>
+          <footer>
+            <div className="admin-page__action-group" aria-label="Acciones sobre reporte">
+              <h3>Gestionar reporte</h3>
+              <div>
+                <button
+                  className="admin-page__action-button admin-page__action-button--reviewed"
+                  type="button"
+                  disabled={isPending || report.status === 'reviewed'}
+                  onClick={() => onReportStatus(report, 'reviewed')}
+                >
+                  Marcar revisado
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--dismiss"
+                  type="button"
+                  disabled={isPending || report.status === 'dismissed'}
+                  onClick={() => onReportStatus(report, 'dismissed')}
+                >
+                  Descartar reporte
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--resolved"
+                  type="button"
+                  disabled={isPending || report.status === 'action_taken'}
+                  onClick={() => onReportStatus(report, 'action_taken')}
+                >
+                  Marcar como resuelto
+                </button>
+              </div>
             </div>
-          </div>
-        ) : null}
-      </footer>
+
+            {report.review ? (
+              <div className="admin-page__action-group" aria-label="Acciones sobre review">
+                <h3>Gestionar review</h3>
+                <div>
+                  <button
+                    className="admin-page__action-button admin-page__action-button--hide"
+                    type="button"
+                    disabled={isPending || reviewStatus === 'hidden'}
+                    onClick={() => onReviewStatus(report, 'hidden')}
+                  >
+                    Ocultar
+                  </button>
+                  <button
+                    className="admin-page__action-button admin-page__action-button--approve"
+                    type="button"
+                    disabled={isPending || reviewStatus === 'approved'}
+                    onClick={() => onReviewStatus(report, 'approved')}
+                  >
+                    Aprobar
+                  </button>
+                  <button
+                    className="admin-page__action-button admin-page__action-button--reject"
+                    type="button"
+                    disabled={isPending || reviewStatus === 'rejected'}
+                    onClick={() => onReviewStatus(report, 'rejected')}
+                  >
+                    Rechazar
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </footer>
+        </div>
+      </div>
     </article>
   );
 }
@@ -430,9 +556,33 @@ export function AdminModerationPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [expandedReports, setExpandedReports] = useState<Record<string, boolean>>({});
   const authContext = useMemo<CreateReviewAuthContext | null>(() => (
     user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
   ), [session?.access_token, user?.id]);
+
+  useEffect(() => {
+    if (!isFilterPanelOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsFilterPanelOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFilterPanelOpen]);
 
   const loadReports = useCallback(() => {
     if (!authContext || !isAdmin) {
@@ -456,6 +606,21 @@ export function AdminModerationPage() {
 
   const updateFilters = (next: Partial<AdminFilters>) => {
     setFilters((currentFilters) => ({ ...currentFilters, ...next }));
+  };
+
+  const clearFilters = () => {
+    setFilters(defaultFilters);
+  };
+
+  const applyFilters = () => {
+    setIsFilterPanelOpen(false);
+  };
+
+  const toggleReportCard = (reportId: string) => {
+    setExpandedReports((currentState) => ({
+      ...currentState,
+      [reportId]: !currentState[reportId],
+    }));
   };
 
   const reportActionNotices: Record<Exclude<ReviewReportStatus, 'pending'>, string> = {
@@ -525,7 +690,14 @@ export function AdminModerationPage() {
         />
 
         <section className="account-page__dashboard admin-page__layout">
-          <AdminModerationSidebar filters={filters} onChange={updateFilters} />
+          <AdminModerationSidebar
+            filters={filters}
+            isOpen={isFilterPanelOpen}
+            onApplyFilters={applyFilters}
+            onChange={updateFilters}
+            onClearFilters={clearFilters}
+            onClose={() => setIsFilterPanelOpen(false)}
+          />
           <div className="account-page__main">
             <section className="account-page__section admin-page__moderation" aria-labelledby="admin-moderation-title">
               <div className="account-page__section-header">
@@ -536,6 +708,15 @@ export function AdminModerationPage() {
                     Reportes de reviews
                   </h2>
                 </div>
+                <button
+                  className="admin-page__mobile-filter-trigger"
+                  type="button"
+                  aria-label="Abrir filtros de moderación"
+                  onClick={() => setIsFilterPanelOpen(true)}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+                  Filtros
+                </button>
               </div>
 
               {notice ? <p className="admin-page__notice-message" role="status">{notice}</p> : null}
@@ -556,8 +737,10 @@ export function AdminModerationPage() {
                 <div className="admin-page__report-list">
                   {reports.map((report) => (
                     <AdminReportCard
+                      isExpanded={Boolean(expandedReports[report.id])}
                       isPending={Boolean(pendingAction?.startsWith(`${report.id}:`))}
                       key={report.id}
+                      onToggle={() => toggleReportCard(report.id)}
                       onReportStatus={handleReportStatus}
                       onReviewStatus={handleReviewStatus}
                       report={report}

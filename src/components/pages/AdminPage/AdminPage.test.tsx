@@ -119,6 +119,7 @@ describe('AdminPage', () => {
   });
 
   it('admin ve moderación y reportes con datos de review', async () => {
+    const user = userEvent.setup();
     render(<AdminModerationPage />);
 
     expect(screen.getByRole('heading', { name: 'Moderación' })).toBeInTheDocument();
@@ -127,23 +128,31 @@ describe('AdminPage', () => {
     const reporterName = screen.getByText('Fromen_01');
     expect(reporterName).toBeInTheDocument();
     expect(reporterName).toHaveAttribute('title', 'reporter-1');
-    expect(screen.getByText('BMW F 900 GS 2024')).toBeInTheDocument();
-    expect(screen.getByText(/Review de @Curvasypuños · ★ 4/i)).toBeInTheDocument();
+    expect(screen.getByText(/BMW F 900 GS 2024 · Review de @Curvasypuños · ★ 4/i)).toBeInTheDocument();
     expect(screen.getByText('Publicada')).toBeInTheDocument();
-    expect(screen.getByText(/Tiene cruise control de serie/i)).toBeInTheDocument();
-    expect(screen.getByText('Pros:')).toBeInTheDocument();
-    expect(screen.getByText('fiabilidad, consumo')).toBeInTheDocument();
-    expect(screen.getByText('Contras:')).toBeInTheDocument();
-    expect(screen.getByText('peso, calor')).toBeInTheDocument();
-    expect(screen.getByText(/Dice que tiene control de crucero/i)).toBeInTheDocument();
     expect(getReviewReportsMock).toHaveBeenCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
       { reason: 'all', sort: 'recent', status: 'pending' },
     );
-    expect(screen.getByRole('button', { name: 'Descartar reporte' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Marcar como resuelto' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Gestionar reporte' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Gestionar review' })).toBeInTheDocument();
+
+    const card = (await screen.findAllByTestId('admin-report-card'))[0];
+    const toggleButton = within(card).getByRole('button', { name: /Expandir reporte Información falsa de Fromen_01/i });
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+    expect(within(card).queryByRole('button', { name: /Marcar revisado/i })).not.toBeInTheDocument();
+
+    await user.click(toggleButton);
+
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+    expect(within(card).getByText(/Tiene cruise control de serie/i)).toBeVisible();
+    expect(within(card).getByText('Pros:')).toBeInTheDocument();
+    expect(within(card).getByText('fiabilidad, consumo')).toBeInTheDocument();
+    expect(within(card).getByText('Contras:')).toBeInTheDocument();
+    expect(within(card).getByText('peso, calor')).toBeInTheDocument();
+    expect(within(card).getByText(/Dice que tiene control de crucero/i)).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Descartar reporte' })).toHaveClass('admin-page__action-button--dismiss');
+    expect(within(card).getByRole('button', { name: 'Marcar como resuelto' })).toHaveClass('admin-page__action-button--resolved');
+    expect(within(card).getByRole('heading', { name: 'Gestionar reporte' })).toBeInTheDocument();
+    expect(within(card).getByRole('heading', { name: 'Gestionar review' })).toBeInTheDocument();
     expect(screen.queryByText('Acción tomada')).not.toBeInTheDocument();
     expect(screen.queryByText(/^null$/i)).not.toBeInTheDocument();
   });
@@ -153,7 +162,13 @@ describe('AdminPage', () => {
     render(<AdminModerationPage />);
 
     await screen.findByText('Información falsa');
-    const filters = screen.getByLabelText('Filtros admin');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    expect(within(filters).getByRole('heading', { name: 'Filtros' })).toBeInTheDocument();
+    expect(filters.querySelector('.admin-page__filters-header')).toBeInTheDocument();
+    expect(filters.querySelector('.admin-page__filters-body')).toBeInTheDocument();
+    expect(filters.querySelector('.admin-page__filters-footer')).toBeInTheDocument();
+    expect(within(filters).getAllByRole('button', { name: 'Limpiar filtros' }).length).toBeGreaterThan(0);
+    expect(within(filters).getByRole('button', { name: 'Aplicar filtros' })).toBeInTheDocument();
     const statusGroup = within(filters).getByRole('heading', { name: 'Estado del reporte' }).closest('.admin-page__filter-group');
     const reasonGroup = within(filters).getByRole('heading', { name: 'Motivo' }).closest('.admin-page__filter-group');
     const orderGroup = within(filters).getByRole('heading', { name: 'Orden' }).closest('.admin-page__filter-group');
@@ -161,11 +176,20 @@ describe('AdminPage', () => {
     expect(statusGroup).not.toBeNull();
     expect(reasonGroup).not.toBeNull();
     expect(orderGroup).not.toBeNull();
+    expect(filters.querySelectorAll('.material-symbols-outlined').length).toBeGreaterThan(0);
+    expect(within(statusGroup as HTMLElement).getByRole('button', { name: 'Estado del reporte' })).toHaveAttribute('aria-expanded', 'true');
+    expect(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' })).toHaveAttribute('aria-expanded', 'false');
+    expect(within(orderGroup as HTMLElement).getByRole('button', { name: 'Orden' })).toHaveAttribute('aria-expanded', 'false');
 
-    await user.click(within(statusGroup as HTMLElement).getByRole('button', { name: 'Todos' }));
-    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Ofensivo' }));
-    await user.click(within(orderGroup as HTMLElement).getByRole('button', { name: 'Más antiguos' }));
-    expect(within(statusGroup as HTMLElement).getByRole('button', { name: 'Resueltos' })).toBeInTheDocument();
+    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' }));
+    await user.click(within(orderGroup as HTMLElement).getByRole('button', { name: 'Orden' }));
+    expect(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' })).toHaveAttribute('aria-expanded', 'true');
+    expect(within(orderGroup as HTMLElement).getByRole('button', { name: 'Orden' })).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(within(statusGroup as HTMLElement).getByRole('button', { name: /Estado del reporte: Todos/i }));
+    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: /Motivo: Ofensivo/i }));
+    await user.click(within(orderGroup as HTMLElement).getByRole('button', { name: /Orden: Más antiguos/i }));
+    expect(within(statusGroup as HTMLElement).getByRole('button', { name: /Estado del reporte: Resueltos/i })).toBeInTheDocument();
 
     await waitFor(() => expect(getReviewReportsMock).toHaveBeenLastCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
@@ -173,11 +197,38 @@ describe('AdminPage', () => {
     ));
   });
 
+  it('permite abrir y cerrar secciones desplegables de filtros admin', async () => {
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    await screen.findByText('Información falsa');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const statusToggle = within(filters).getByRole('button', { name: 'Estado del reporte' });
+    const reasonToggle = within(filters).getByRole('button', { name: 'Motivo' });
+    const sortToggle = within(filters).getByRole('button', { name: 'Orden' });
+
+    expect(statusToggle).toHaveAttribute('aria-expanded', 'true');
+    expect(reasonToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(sortToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(statusToggle).toHaveAttribute('aria-controls');
+    expect(reasonToggle).toHaveAttribute('aria-controls');
+    expect(sortToggle).toHaveAttribute('aria-controls');
+
+    await user.click(reasonToggle);
+    await user.click(sortToggle);
+    expect(reasonToggle).toHaveAttribute('aria-expanded', 'true');
+    expect(sortToggle).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(statusToggle);
+    expect(statusToggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('permite cambiar estado de reporte y de review con feedback claro', async () => {
     const user = userEvent.setup();
     render(<AdminModerationPage />);
 
     const card = (await screen.findAllByTestId('admin-report-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir reporte/i }));
     await user.click(within(card).getByRole('button', { name: /Marcar revisado/i }));
 
     expect(updateReviewReportStatusMock).toHaveBeenCalledWith('report-1', 'reviewed', {
@@ -249,6 +300,7 @@ describe('AdminPage', () => {
     render(<AdminModerationPage />);
 
     const card = (await screen.findAllByTestId('admin-report-card'))[0];
+    await userEvent.setup().click(within(card).getByRole('button', { name: /Expandir reporte/i }));
     expect(within(card).getByRole('button', { name: 'Marcar como resuelto' })).toBeDisabled();
     expect(within(card).getByRole('button', { name: /^Ocultar$/i })).toBeDisabled();
     expect(within(card).getByText('Resuelto')).toBeInTheDocument();
@@ -282,8 +334,41 @@ describe('AdminPage', () => {
     render(<AdminModerationPage />);
 
     const card = (await screen.findAllByTestId('admin-report-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir reporte/i }));
     await user.click(within(card).getByRole('button', { name: /Marcar revisado/i }));
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('No se pudo completar la acción de moderación.'));
+  });
+
+  it('permite expandir y colapsar cards, y abrir varias a la vez', async () => {
+    const user = userEvent.setup();
+    getReviewReportsMock.mockResolvedValueOnce([
+      reports[0],
+      {
+        ...reports[0],
+        id: 'report-2',
+        reporterDisplayName: 'RoadWolf',
+        reporterUserId: 'reporter-2',
+      },
+    ]);
+    render(<AdminModerationPage />);
+
+    const cards = await screen.findAllByTestId('admin-report-card');
+    expect(cards).toHaveLength(2);
+
+    const firstToggle = within(cards[0]).getByRole('button', { name: /Expandir reporte/i });
+    const secondToggle = within(cards[1]).getByRole('button', { name: /Expandir reporte/i });
+
+    expect(firstToggle).toHaveAttribute('aria-expanded', 'false');
+    expect(secondToggle).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(firstToggle);
+    await user.click(secondToggle);
+
+    expect(firstToggle).toHaveAttribute('aria-expanded', 'true');
+    expect(secondToggle).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(firstToggle);
+    expect(firstToggle).toHaveAttribute('aria-expanded', 'false');
   });
 });
