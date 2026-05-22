@@ -69,6 +69,26 @@ const reports: readonly AdminReviewReport[] = [
   },
 ];
 
+function buildReport(index: number, overrides: Partial<AdminReviewReport> = {}): AdminReviewReport {
+  const baseReport = reports[0];
+
+  return {
+    ...baseReport,
+    id: `report-${index}`,
+    reporterDisplayName: `Reporter_${index}`,
+    reporterUserId: `reporter-${index}`,
+    review: baseReport.review
+      ? {
+          ...baseReport.review,
+          id: `review-${index}`,
+          userName: `Rider_${index}`,
+        }
+      : baseReport.review,
+    reviewId: `review-${index}`,
+    ...overrides,
+  };
+}
+
 function mockAuth(overrides = {}) {
   useAuthMock.mockReturnValue({ ...adminAuth, ...overrides } as never);
 }
@@ -370,5 +390,95 @@ describe('AdminPage', () => {
 
     await user.click(firstToggle);
     expect(firstToggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('pagina reportes de 6 en 6 y actualiza resumen', async () => {
+    const user = userEvent.setup();
+    getReviewReportsMock.mockResolvedValueOnce(Array.from({ length: 13 }, (_, index) => buildReport(index + 1)));
+    render(<AdminModerationPage />);
+
+    expect(await screen.findByText('Información falsa')).toBeInTheDocument();
+    expect(screen.getAllByTestId('admin-report-card')).toHaveLength(6);
+    expect(screen.getByText('Mostrando 1-6 de 13 reportes')).toBeInTheDocument();
+
+    const pagination = screen.getByRole('navigation', { name: 'Paginación de reportes admin' });
+    expect(pagination).toBeInTheDocument();
+    expect(within(pagination).getByRole('button', { name: /Primera página/i })).toBeDisabled();
+    expect(within(pagination).getByRole('button', { name: /Página anterior/i })).toBeDisabled();
+    expect(within(pagination).getByRole('button', { name: /Página 1/i })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+    expect(screen.getAllByTestId('admin-report-card')).toHaveLength(6);
+    expect(screen.getByText('Mostrando 7-12 de 13 reportes')).toBeInTheDocument();
+    expect(within(pagination).getByRole('button', { name: /Página 2/i })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+    expect(screen.getAllByTestId('admin-report-card')).toHaveLength(1);
+    expect(screen.getByText('Mostrando 13-13 de 13 reportes')).toBeInTheDocument();
+    expect(within(pagination).getByRole('button', { name: /Última página/i })).toBeDisabled();
+    expect(within(pagination).getByRole('button', { name: /Página 3/i })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(within(pagination).getByRole('button', { name: /Página anterior/i }));
+    expect(screen.getByText('Mostrando 7-12 de 13 reportes')).toBeInTheDocument();
+    expect(within(pagination).getByRole('button', { name: /Página 2/i })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('no muestra paginación cuando hay 6 reportes o menos', async () => {
+    getReviewReportsMock.mockResolvedValueOnce(Array.from({ length: 6 }, (_, index) => buildReport(index + 1)));
+    render(<AdminModerationPage />);
+
+    expect(await screen.findByText('Información falsa')).toBeInTheDocument();
+    expect(screen.getAllByTestId('admin-report-card')).toHaveLength(6);
+    expect(screen.queryByRole('navigation', { name: 'Paginación de reportes admin' })).not.toBeInTheDocument();
+  });
+
+  it('resetea a página 1 al cambiar filtros o limpiar filtros', async () => {
+    const user = userEvent.setup();
+    getReviewReportsMock.mockResolvedValue(Array.from({ length: 13 }, (_, index) => buildReport(index + 1)));
+    render(<AdminModerationPage />);
+
+    expect(await screen.findByText('Información falsa')).toBeInTheDocument();
+    let pagination = screen.getByRole('navigation', { name: 'Paginación de reportes admin' });
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+    expect(screen.getByText('Mostrando 7-12 de 13 reportes')).toBeInTheDocument();
+
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const reasonGroup = within(filters).getByRole('heading', { name: 'Motivo' }).closest('.admin-page__filter-group');
+    expect(reasonGroup).not.toBeNull();
+    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' }));
+    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: /Motivo: Ofensivo/i }));
+    expect(screen.getByText('Mostrando 1-6 de 13 reportes')).toBeInTheDocument();
+
+    pagination = screen.getByRole('navigation', { name: 'Paginación de reportes admin' });
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+    expect(screen.getByText('Mostrando 7-12 de 13 reportes')).toBeInTheDocument();
+
+    const clearButtons = within(filters).getAllByRole('button', { name: 'Limpiar filtros' });
+    await user.click(clearButtons[0]);
+    expect(screen.getByText('Mostrando 1-6 de 13 reportes')).toBeInTheDocument();
+    expect(getReviewReportsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { reason: 'all', sort: 'recent', status: 'pending' },
+    );
+  });
+
+  it('cierra cards abiertas cuando cambia de página', async () => {
+    const user = userEvent.setup();
+    getReviewReportsMock.mockResolvedValueOnce(Array.from({ length: 13 }, (_, index) => buildReport(index + 1)));
+    render(<AdminModerationPage />);
+
+    const firstPageCards = await screen.findAllByTestId('admin-report-card');
+    expect(firstPageCards).toHaveLength(6);
+    const firstCardToggle = within(firstPageCards[0]).getByRole('button', { name: /Expandir reporte/i });
+    await user.click(firstCardToggle);
+    expect(firstCardToggle).toHaveAttribute('aria-expanded', 'true');
+
+    const pagination = screen.getByRole('navigation', { name: 'Paginación de reportes admin' });
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+
+    await user.click(within(pagination).getByRole('button', { name: /Página anterior/i }));
+    const firstPageCardsAgain = await screen.findAllByTestId('admin-report-card');
+    const firstCardToggleAgain = within(firstPageCardsAgain[0]).getByRole('button', { name: /Expandir reporte/i });
+    expect(firstCardToggleAgain).toHaveAttribute('aria-expanded', 'false');
   });
 });

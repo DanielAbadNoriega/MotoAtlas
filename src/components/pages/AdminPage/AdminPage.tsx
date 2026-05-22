@@ -11,6 +11,7 @@ import {
 } from '../../../services/adminModerationService';
 import type { CreateReviewAuthContext, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
+import { AccountPagination } from '../AccountPage/AccountPagination';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
 
@@ -38,6 +39,8 @@ const defaultFilters: AdminFilters = {
   sort: 'recent',
   status: 'pending',
 };
+
+const REPORTS_PER_PAGE = 6;
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: '2-digit',
@@ -556,11 +559,20 @@ export function AdminModerationPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [expandedReports, setExpandedReports] = useState<Record<string, boolean>>({});
   const authContext = useMemo<CreateReviewAuthContext | null>(() => (
     user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
   ), [session?.access_token, user?.id]);
+  const totalReports = reports.length;
+  const totalPages = Math.max(1, Math.ceil(totalReports / REPORTS_PER_PAGE));
+  const rangeStart = totalReports > 0 ? ((currentPage - 1) * REPORTS_PER_PAGE) + 1 : 0;
+  const rangeEnd = totalReports > 0 ? Math.min(currentPage * REPORTS_PER_PAGE, totalReports) : 0;
+  const paginatedReports = useMemo(
+    () => reports.slice((currentPage - 1) * REPORTS_PER_PAGE, currentPage * REPORTS_PER_PAGE),
+    [currentPage, reports],
+  );
 
   useEffect(() => {
     if (!isFilterPanelOpen) {
@@ -604,12 +616,26 @@ export function AdminModerationPage() {
     loadReports();
   }, [loadReports]);
 
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    setExpandedReports({});
+  }, [currentPage]);
+
   const updateFilters = (next: Partial<AdminFilters>) => {
     setFilters((currentFilters) => ({ ...currentFilters, ...next }));
+    setCurrentPage(1);
+    setExpandedReports({});
   };
 
   const clearFilters = () => {
     setFilters(defaultFilters);
+    setCurrentPage(1);
+    setExpandedReports({});
   };
 
   const applyFilters = () => {
@@ -621,6 +647,11 @@ export function AdminModerationPage() {
       ...currentState,
       [reportId]: !currentState[reportId],
     }));
+  };
+
+  const goToPage = (page: number) => {
+    const nextPage = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(nextPage);
   };
 
   const reportActionNotices: Record<Exclude<ReviewReportStatus, 'pending'>, string> = {
@@ -734,19 +765,32 @@ export function AdminModerationPage() {
                   <h3>No hay reportes con estos filtros.</h3>
                 </article>
               ) : (
-                <div className="admin-page__report-list">
-                  {reports.map((report) => (
-                    <AdminReportCard
-                      isExpanded={Boolean(expandedReports[report.id])}
-                      isPending={Boolean(pendingAction?.startsWith(`${report.id}:`))}
-                      key={report.id}
-                      onToggle={() => toggleReportCard(report.id)}
-                      onReportStatus={handleReportStatus}
-                      onReviewStatus={handleReviewStatus}
-                      report={report}
-                    />
-                  ))}
-                </div>
+                <>
+                  <p className="admin-page__results-summary" aria-live="polite">
+                    Mostrando {rangeStart}-{rangeEnd} de {totalReports} reportes
+                  </p>
+                  <div className="admin-page__report-list">
+                    {paginatedReports.map((report) => (
+                      <AdminReportCard
+                        isExpanded={Boolean(expandedReports[report.id])}
+                        isPending={Boolean(pendingAction?.startsWith(`${report.id}:`))}
+                        key={report.id}
+                        onToggle={() => toggleReportCard(report.id)}
+                        onReportStatus={handleReportStatus}
+                        onReviewStatus={handleReviewStatus}
+                        report={report}
+                      />
+                    ))}
+                  </div>
+                  <AccountPagination
+                    ariaLabel="Paginación de reportes admin"
+                    className="admin-page__pagination"
+                    currentClassName="admin-page__pagination-current"
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                  />
+                </>
               )}
             </section>
           </div>
