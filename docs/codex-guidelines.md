@@ -1,21 +1,38 @@
-# Codex - Guía rápida para cambios (MotoAtlas)
+# Codex / Copilot — Reglas mínimas (MotoAtlas)
 
-Breve reglas internas para trabajar con Copilot/Codex en este repo.
+Breve y práctica: reglas mínimas para usar Codex/Copilot en este repo.
 
-- Cambios pequeños y acotados: preferir PRs/edits minimalistas que resuelvan un problema puntual.
-- Reutilizar patrones existentes antes de crear nuevos componentes o estilos.
-- No tocar schema / RLS / Supabase salvo indicación explícita y con aprobación del equipo.
-- No ejecutar build, ni `git commit` ni `git push` salvo cuando se solicite explícitamente.
-- Siempre ejecutar y verificar antes de pedir revisión:
-  - `npm run typecheck`
-  - `npm run test`
-- Rutas principales de referencia: `#/cuenta`, `#/comunidad`, `#/admin`.
-- Patrones UI a preferir: filtros (panel + sheet en móvil), paginación centralizada, cards (summary + detail), `CommunityHero` para hero compartido.
-- Admin: la zona admin está protegida por RLS y el rol en `user_profiles.role = 'admin'` — respetar checks en frontend y backend.
-- Prompts para AI:
-  - Prompts largos y detallados SOLO para cambios en schema / RLS / auth.
-  - Prompts cortos y concretos para UI, SCSS, tests y refactors pequeños.
-- Tests: añade/actualiza tests cuando cambies comportamiento; evita cambios que rompan la suite sin justificación.
-- Documentá decisiones importantes (arquitectura, bugfixes, convenciones) en `/memories/repo/` o en `docs/`.
+- Alcance
+  - No tocar schema / RLS / Supabase salvo indicación explícita.
+  - Admin protegido por RLS: `user_profiles.role = 'admin'`.
 
-Mantener este archivo corto y práctico; actualizar cuando cambien convenciones del equipo.
+- Operaciones
+  - No ejecutar build, `git commit` ni `git push` salvo indicación explícita.
+  - Antes de pedir review siempre ejecutar:
+    - `npm run typecheck`
+    - `npm test`
+
+- Prompts
+  - UI / SCSS: prompts cortos y concretos (1–2 frases: propósito + componente/clases/responsive).
+  - Schema / RLS / Auth: prompts largos y detallados (incluye esquema, políticas, ejemplos y casos de uso).
+
+- Reutilizar patrones
+  - Reusar componentes y estilos existentes (ej.: `CommunityHero`, `AccountPagination`, `admin-page__filters`, `account-page__card`).
+  - Preferir patrones ya usados antes que introducir nuevos paradigmas.
+
+- Rutas principales (referencia en repo)
+  - Cuenta: `#/login` y páginas que usan `account-page`.
+  - Comunidad: `#/motos` y fichas `#/motos/:id`.
+  - Admin: `#/admin`, `#/admin/moderacion`, `#/admin/reviews`.
+
+- Patrones UI a preferir
+  - Filtros (panel + sheet en móvil), paginación (`AccountPagination`), cards (summary → detail), hero (ancho completo, `CommunityHero`).
+
+- Flujo para maquetación nueva
+  - Diseño → Stitch/Gemini → Codex/Copilot para convertir maqueta a markup y clases; luego PR con typecheck y tests.
+
+- Tests y documentación
+  - Añadir/actualizar tests para cambios funcionales.
+  - Documentar decisiones importantes en `docs/` o `/memories/repo/`.
+
+Mantener estas reglas cortas; si hay dudas sobre permisos o cambios en backend, preguntar antes de actuar.
