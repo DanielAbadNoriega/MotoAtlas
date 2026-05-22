@@ -3,6 +3,7 @@ import { bikeFixtures } from '../../test/fixtures/bikes';
 import {
   applySeoMetadata,
   buildAccountMotorcycleReviewsSeoMetadata,
+  buildAdminSeoMetadata,
   buildBikeJsonLd,
   buildAuthSeoMetadata,
   buildBikeSeoMetadata,
@@ -118,6 +119,20 @@ describe('seoUtils', () => {
       title: 'Mis reviews de esta moto | MotoAtlas',
       canonicalUrl: 'https://motoatlas.com/cuenta/reviews/test-bmw-f-900-gs',
       description: 'Revisa tus experiencias, valoraciones y comentarios sobre esta moto.',
+    });
+    expect(buildAdminSeoMetadata('admin')).toMatchObject({
+      title: 'Panel admin | MotoAtlas',
+      canonicalUrl: 'https://motoatlas.com/admin',
+    });
+    expect(buildAdminSeoMetadata('moderacion')).toMatchObject({
+      title: 'Moderación | MotoAtlas',
+      canonicalUrl: 'https://motoatlas.com/admin/moderacion',
+      description: 'Revisa reportes de la comunidad y gestiona el estado de reviews en MotoAtlas.',
+    });
+    expect(buildAdminSeoMetadata('reviews')).toMatchObject({
+      title: 'Reviews por modelo | MotoAtlas',
+      canonicalUrl: 'https://motoatlas.com/admin/reviews',
+      description: 'Garaje admin para revisar reviews agrupadas por modelo en MotoAtlas.',
     });
   });
 

@@ -18,6 +18,7 @@ import {
   type TopRatedSort,
 } from '../../../shared/reviews/topRatedMotorcycles';
 import type { Bike, BikeSegment } from '../../../types/bike';
+import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './TopRatedMotorcyclesPage.scss';
 
@@ -407,20 +408,17 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
 
   return (
     <main className="top-rated" aria-labelledby="top-rated-title">
-      <section className="top-rated__hero">
-        <img src={rankingHeroImage} alt="" aria-hidden="true" />
-        <div>
-          <span>Opiniones reales</span>
-          <h1 id="top-rated-title">Comunidad MotoAtlas</h1>
-          <p>
-            Opiniones reales, rankings vivos y actividad de propietarios para elegir mejor.
-          </p>
-          <div className="top-rated__hero-actions">
-            <button type="button" onClick={scrollToPodium}>Explorar comunidades</button>
-            <a href="#/comparador">Comparar motos</a>
-          </div>
-        </div>
-      </section>
+      <CommunityHero
+        titleId="top-rated-title"
+        imageSrc={rankingHeroImage}
+        eyebrow="Opiniones reales"
+        title="Comunidad MotoAtlas"
+        description="Opiniones reales, rankings vivos y actividad de propietarios para elegir mejor."
+        actions={[
+          { label: 'Explorar comunidades', onClick: scrollToPodium },
+          { label: 'Comparar motos', href: '#/comparador' },
+        ]}
+      />
 
       <section className="top-rated__content" id="community-podium" aria-label="Ranking de motos mejor valoradas">
         <div className="top-rated__toolbar">

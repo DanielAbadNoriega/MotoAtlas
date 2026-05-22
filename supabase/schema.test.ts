@@ -19,6 +19,11 @@ function getReviewReactionsGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getMotorcycleReviewsGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 function getReviewReportsGrantStatements() {
   return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+[^;]+;/gi) ?? [])
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
@@ -88,6 +93,33 @@ describe('Supabase motorcycle_reviews RLS schema', () => {
     expect(schemaSql).toContain('for select');
     expect(schemaSql).toContain('to authenticated');
     expect(schemaSql).toContain('using (user_id = auth.uid())');
+  });
+
+  it('permite a admins leer todas las reviews y actualizar solo status', () => {
+    const grants = getMotorcycleReviewsGrantStatements();
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can read all motorcycle reviews" on public.motorcycle_reviews;');
+    expect(schemaSql).toContain('create policy "Admins can read all motorcycle reviews"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can update motorcycle review status" on public.motorcycle_reviews;');
+    expect(schemaSql).toContain('create policy "Admins can update motorcycle review status"');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toContain('with check (');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("status in ('pending', 'approved', 'rejected', 'hidden')");
+
+    expect(grants).toEqual([
+      'grant select on public.motorcycle_reviews to anon, authenticated;',
+      'grant insert on public.motorcycle_reviews to anon, authenticated;',
+      'grant update (status) on public.motorcycle_reviews to authenticated;',
+    ]);
+
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toContain('grant update (comment) on public.motorcycle_reviews to authenticated;');
   });
 
   it('no abre lectura total de motorcycle_reviews pendientes a anon', () => {
@@ -252,23 +284,63 @@ describe('Supabase review_reports schema', () => {
     expect(schemaSql).toContain('motorcycle_reviews.user_id = auth.uid()');
   });
 
-  it('usa grants mínimos y no concede update/delete a usuarios normales', () => {
+  it('permite administración por rol y usa grants mínimos sin delete', () => {
     const grants = getReviewReportsGrantStatements();
 
+    expect(schemaSql).toContain('drop policy if exists "Admins can read all review reports" on public.review_reports;');
+    expect(schemaSql).toContain('create policy "Admins can read all review reports"');
+    expect(schemaSql).toContain('drop policy if exists "Admins can update review report status" on public.review_reports;');
+    expect(schemaSql).toContain('create policy "Admins can update review report status"');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toContain("status in ('pending', 'reviewed', 'dismissed', 'action_taken')");
     expect(schemaSql).toContain('revoke all on table public.review_reports from anon;');
     expect(schemaSql).toContain('revoke all on table public.review_reports from authenticated;');
     expect(grants).toEqual([
       'grant select on public.review_reports to authenticated;',
       'grant insert (review_id, user_id, reason, comment, status) on public.review_reports to authenticated;',
+      'grant update (status) on public.review_reports to authenticated;',
     ]);
     expect(normalizedSchemaSql).not.toMatch(/grant\s+select\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+anon/);
-    expect(normalizedSchemaSql).not.toMatch(/grant\s+(update|delete)\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+(anon|authenticated)/);
-    expect(normalizedSchemaSql).not.toMatch(/on public\.review_reports for update to authenticated/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toContain('grant update (reason, comment) on public.review_reports to authenticated;');
     expect(normalizedSchemaSql).not.toMatch(/on public\.review_reports for delete to authenticated/);
   });
 });
 
 describe('Supabase user_profiles auth schema', () => {
+  it('permite a admins leer y actualizar estados de reportes sin abrir permisos a usuarios normales', () => {
+    const grants = getReviewReportsGrantStatements();
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can read all review reports" on public.review_reports;');
+    expect(schemaSql).toContain('create policy "Admins can read all review reports"');
+    expect(schemaSql).toContain('on public.review_reports');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can update review report status" on public.review_reports;');
+    expect(schemaSql).toContain('create policy "Admins can update review report status"');
+    expect(schemaSql).toContain('on public.review_reports');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toContain('with check (');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("status in ('pending', 'reviewed', 'dismissed', 'action_taken')");
+
+    expect(schemaSql).toContain('revoke all on table public.review_reports from anon;');
+    expect(schemaSql).toContain('revoke all on table public.review_reports from authenticated;');
+
+    expect(grants).toEqual([
+      'grant select on public.review_reports to authenticated;',
+      'grant insert (review_id, user_id, reason, comment, status) on public.review_reports to authenticated;',
+      'grant update (status) on public.review_reports to authenticated;',
+    ]);
+
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+anon/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.review_reports\s+to\s+(anon|authenticated)/);
+  });
   it('crea tabla de perfiles con role user/admin y default user', () => {
     expect(schemaSql).toContain('create table if not exists public.user_profiles');
     expect(schemaSql).toContain('id uuid primary key references auth.users(id) on delete cascade');
@@ -297,6 +369,22 @@ describe('Supabase user_profiles auth schema', () => {
     expect(schemaSql).toContain('for update');
     expect(schemaSql).toContain('to authenticated');
     expect(schemaSql).toContain('with check (auth.uid() = id)');
+  });
+
+  it('permite lectura total de perfiles solo a admins', () => {
+    expect(schemaSql).toContain('create or replace function public.is_admin()');
+    expect(schemaSql).toContain('returns boolean');
+    expect(schemaSql).toContain('security definer');
+    expect(schemaSql).toContain('grant execute on function public.is_admin() to authenticated;');
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can read all profiles" on public.user_profiles;');
+    expect(schemaSql).toContain('create policy "Admins can read all profiles"');
+    expect(schemaSql).toContain('on public.user_profiles');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+
+    expect(normalizedSchemaSql).not.toMatch(/on public\.user_profiles for select to anon\b/);
   });
 
   it('revoca permisos amplios y solo permite editar campos seguros', () => {

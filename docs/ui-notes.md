@@ -61,7 +61,36 @@ Los filtros de segmento/carnet usan las mismas constantes visuales que el buscad
 
 ## Comunidad por moto — Reviews
 
-La ruta `#/comunidad/[motorcycleId]` reemplaza el slider de `Verified owner reports` por un listado compacto vertical de experiencias aprobadas. Los filtros de esta fase viven en el sidebar (`rating` y `orden`), seguidos por `Problemas comunes e insights`; en mobile pasan a panel responsive y la paginación muestra 5 reviews por página. Usuarios autenticados pueden marcar una review como `Útil` o `No útil`; `Útil` muestra contador público, `No útil` queda como feedback privado sin contador público. Ambas reacciones son mutuamente excluyentes y no se permite autoreacción. También pueden reportar reviews ajenas con un motivo controlado; hay un reporte por usuario/review, no se muestra contador público y la moderación/admin queda para una fase futura. Respuestas, menciones, reportes de respuestas y fotos quedan pendientes.
+La ruta `#/comunidad/[motorcycleId]` reemplaza el slider de `Verified owner reports` por un listado compacto vertical de experiencias aprobadas. Los filtros de esta fase viven en el sidebar (`rating` y `orden`), seguidos por `Problemas comunes e insights`; en mobile pasan a panel responsive y la paginación muestra 5 reviews por página. Usuarios autenticados pueden marcar una review como `Útil` o `No útil`; `Útil` muestra contador público, `No útil` queda como feedback privado sin contador público. Ambas reacciones son mutuamente excluyentes y no se permite autoreacción. También pueden reportar reviews ajenas con un motivo controlado; hay un reporte por usuario/review y no se muestra contador público. Respuestas, menciones, reportes de respuestas y fotos quedan pendientes.
+
+## Admin — Moderación
+
+Las rutas `#/admin` y `#/admin/moderacion` son privadas para perfiles con `user_profiles.role = admin`. El dashboard admin es mínimo y enlaza a moderación; `#/admin/moderacion` lista reportes de reviews con filtros por estado, motivo y orden.
+
+La moderación separa dos conceptos:
+- estado del reporte (`Pendiente`, `Revisado`, `Descartado`, `Resuelto`)
+- estado de la review (`Oculta`, `Aprobada`, `Rechazada`)
+
+Los filtros admin adoptan el patrón de `cuenta/reviews`: header/body/footer, iconos Material Symbols y secciones desplegables por grupo (`Estado del reporte`, `Motivo`, `Orden`) con chevron y `aria-expanded`. El panel ya no depende del padding de card heredado; el espaciado se controla solo desde header/body/footer para evitar doble padding y desalineación.
+
+`#/admin/moderacion` pagina el listado de reportes en bloques de 6. El orden/filtros de admin se aplican primero y luego se recorta la página activa; al cambiar filtros o limpiar filtros, la paginación vuelve a la página 1.
+
+Las report cards son plegables por defecto: el header deja visible estado, motivo, reportante y contexto rápido de la review; el detalle (comentario, pros/contras y acciones) se despliega bajo demanda con trigger accesible (`aria-expanded`/`aria-controls`).
+
+Los botones de acciones de moderación tienen hover por intención visual (azul para `Marcar revisado`, rojo para `Descartar`/`Rechazar`, verde para `Resuelto`/`Aprobar`, gris para `Ocultar`) sin heredar hover rojo genérico.
+
+Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). Avisos al autor, administración completa de reviews/solicitudes y reportes de respuestas quedan para fases futuras.
+
+## Admin — Reviews por modelo
+
+La ruta `#/admin/reviews` reutiliza el patrón visual de `#/cuenta/reviews` para un “garaje admin” inicial: cards agrupadas por `motorcycleId` con imagen, metadatos y CTAs.
+
+En esta fase no hay filtros ni detalle por moto. Cada card muestra:
+- `X reviews nuevas` (conteo de reviews con `status = pending` en esa moto).
+- `Última review: ...` calculada por la review más reciente del grupo.
+- CTAs `Revisar reviews` (temporalmente `#/admin/reviews`) y `Ver ficha` (`#/motos/[moto-id]`).
+
+La agrupación prioriza motos con reviews pendientes y deduplica reviews repetidas en reportes múltiples.
 
 ## Mi cuenta — Reviews
 
