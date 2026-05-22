@@ -161,7 +161,7 @@ describe('AdminPage', () => {
   it('renderiza dashboard admin mínimo', () => {
     render(<AdminDashboardPage />);
 
-    expect(screen.getByRole('heading', { name: 'Panel admin' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Panel de administración' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ir a moderación/i })).toHaveAttribute('href', '#/admin/moderacion');
     expect(screen.getByRole('navigation', { name: /Navegación de administración/i })).toBeInTheDocument();
   });

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import adminHeroImage from '../../../assets/hero-admin.png';
 import { useAuth } from '../../../features/auth';
 import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
@@ -12,6 +13,7 @@ import {
 } from '../../../services/adminModerationService';
 import type { CreateReviewAuthContext, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
+import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import '../AccountPage/AccountPage.scss';
@@ -295,42 +297,38 @@ function AdminSidebar({ active }: Readonly<{ active: AdminSidebarActiveItem }>) 
   );
 }
 
-function AdminHero({ subtitle, title }: Readonly<{ subtitle: string; title: string }>) {
+// Nota: usamos `CommunityHero` para el hero en las páginas admin (estilos base
+// compartidos). El chip de admin se inyecta como `children` cuando se necesita.
+
+export function AdminDashboardPage() {
   const { profile, user } = useAuth();
 
   return (
-    <header className="account-page__hero admin-page__hero">
-      <div className="account-page__hero-content">
-        <div>
-          <span className="account-page__eyebrow">Admin MotoAtlas</span>
-          <h1>{title}</h1>
-          <p>{subtitle}</p>
-        </div>
-        <div className="admin-page__admin-chip" aria-label="Administrador activo">
-          <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
-          {getDisplayName(profile?.displayName, user?.email)}
-        </div>
-      </div>
-    </header>
-  );
-}
-
-export function AdminDashboardPage() {
-  return (
     <AdminGate>
-      <main className="account-page admin-page" aria-labelledby="admin-dashboard-title">
-        <AdminHero
-          title="Panel admin"
-          subtitle="Primer panel privado para revisar señales de comunidad y preparar moderación."
-        />
+        <CommunityHero
+          className="admin-page__community-hero admin-page__hero"
+          titleId="admin-dashboard-title"
+          imageSrc={adminHeroImage}
+          eyebrow="ADMIN STUDIO"
+          title="Panel de administración"
+          description="Gestiona la actividad crítica de MotoAtlas desde un espacio privado."
+        >
+          <div className="admin-page__hero-meta">
+            <div className="admin-page__admin-chip" aria-label="Administrador activo">
+              <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
+              {getDisplayName(profile?.displayName, user?.email)}
+            </div>
+          </div>
+        </CommunityHero>
 
-        <section className="account-page__dashboard">
+        <main className="account-page admin-page" aria-labelledby="admin-dashboard-title">
+          <section className="account-page__dashboard">
           <AdminSidebar active="dashboard" />
           <div className="account-page__main">
-            <section className="admin-page__dashboard-grid" aria-labelledby="admin-dashboard-title">
+            <section className="admin-page__dashboard-grid" aria-labelledby="admin-dashboard-cards-title">
               <article className="account-page__card admin-page__summary-card">
                 <span className="material-symbols-outlined" aria-hidden="true">flag</span>
-                <h2 id="admin-dashboard-title">Reportes pendientes</h2>
+                <h2 id="admin-dashboard-cards-title">Reportes pendientes</h2>
                 <p>Revisá reportes de reviews, actualizá su estado y actuá sobre la review si corresponde.</p>
                 <a className="account-page__button" href="#/admin/moderacion">Ir a moderación</a>
               </article>
@@ -709,7 +707,7 @@ function AdminReviewSummaryCard({ item }: Readonly<{ item: AdminReviewGarageItem
 }
 
 export function AdminReviewsPage() {
-  const { isAdmin, isAuthenticated, isLoading, session, user } = useAuth();
+  const { isAdmin, isAuthenticated, isLoading, session, user, profile } = useAuth();
   const [reports, setReports] = useState<readonly AdminReviewReport[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -748,13 +746,24 @@ export function AdminReviewsPage() {
 
   return (
     <AdminGate>
-      <main className="account-page admin-page admin-reviews-page" aria-labelledby="admin-reviews-page-title">
-        <AdminHero
+        <CommunityHero
+          className="admin-page__community-hero admin-page__hero"
+          titleId="admin-reviews-page-title"
+          imageSrc={adminHeroImage}
+          eyebrow="ADMIN STUDIO"
           title="Reviews por modelo"
-          subtitle="Revisa las motos con reviews pendientes o enviadas por la comunidad."
-        />
+          description="Revisa las motos con reviews pendientes o enviadas por la comunidad."
+        >
+          <div className="admin-page__hero-meta">
+            <div className="admin-page__admin-chip" aria-label="Administrador activo">
+              <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
+              {getDisplayName(profile?.displayName, user?.email)}
+            </div>
+          </div>
+        </CommunityHero>
 
-        <section className="account-page__dashboard">
+        <main className="account-page admin-page admin-reviews-page" aria-labelledby="admin-reviews-page-title">
+          <section className="account-page__dashboard">
           <AdminSidebar active="reviews" />
           <div className="account-page__main admin-reviews-page__main">
             <section className="account-page__section admin-reviews-page__garage" aria-labelledby="admin-reviews-page-title">
@@ -797,7 +806,7 @@ export function AdminReviewsPage() {
 }
 
 export function AdminModerationPage() {
-  const { isAdmin, isAuthenticated, isLoading, session, user } = useAuth();
+  const { isAdmin, isAuthenticated, isLoading, session, user, profile } = useAuth();
   const [filters, setFilters] = useState<AdminFilters>(defaultFilters);
   const [reports, setReports] = useState<readonly AdminReviewReport[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
@@ -959,13 +968,24 @@ export function AdminModerationPage() {
 
   return (
     <AdminGate>
-      <main className="account-page admin-page" aria-labelledby="admin-moderation-title">
-        <AdminHero
+        <CommunityHero
+          className="admin-page__community-hero admin-page__hero"
+          titleId="admin-moderation-title"
+          imageSrc={adminHeroImage}
+          eyebrow="ADMIN STUDIO"
           title="Moderación"
-          subtitle="Revisa reportes de la comunidad y gestiona el estado de las reviews."
-        />
+          description="Revisa reportes de la comunidad y gestiona el estado de las reviews."
+        >
+          <div className="admin-page__hero-meta">
+            <div className="admin-page__admin-chip" aria-label="Administrador activo">
+              <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
+              {getDisplayName(profile?.displayName, user?.email)}
+            </div>
+          </div>
+        </CommunityHero>
 
-        <section className="account-page__dashboard admin-page__layout">
+        <main className="account-page admin-page" aria-labelledby="admin-moderation-title">
+          <section className="account-page__dashboard admin-page__layout">
           <AdminModerationSidebar
             filters={filters}
             isOpen={isFilterPanelOpen}
