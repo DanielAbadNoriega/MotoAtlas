@@ -21,6 +21,7 @@ export type AdminReviewReport = Readonly<{
   review: {
     comment: string;
     cons: readonly string[];
+    createdAt?: string;
     id: string;
     motorcycle: {
       brand: string;
@@ -51,6 +52,7 @@ type MotorcycleRow = Readonly<{
 type ReviewRow = Readonly<{
   comment: string;
   cons: readonly string[] | null;
+  created_at?: string;
   id: string;
   motorcycle_id: string;
   motorcycles?: MotorcycleRow | null;
@@ -155,6 +157,7 @@ function mapReportRow(row: ReportRow): AdminReviewReport {
       ? {
           comment: review.comment,
           cons: review.cons ?? [],
+          createdAt: review.created_at,
           id: review.id,
           motorcycle: motorcycle
             ? {
@@ -238,7 +241,7 @@ export async function getReviewReports(
       'status',
       'created_at',
       'updated_at',
-      'motorcycle_reviews(id,motorcycle_id,user_name,rating,comment,pros,cons,status,motorcycles(id,brand,model,year,image_url))',
+      'motorcycle_reviews(id,motorcycle_id,user_name,rating,comment,pros,cons,status,created_at,motorcycles(id,brand,model,year,image_url))',
     ].join(','),
   });
 

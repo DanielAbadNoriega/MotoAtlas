@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useAuth } from '../../../features/auth';
+import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   getReviewReports,
   resolveReportWithReviewStatus,
@@ -11,6 +12,7 @@ import {
 } from '../../../services/adminModerationService';
 import type { CreateReviewAuthContext, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
+import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
@@ -33,6 +35,22 @@ type AdminFilterOption<T extends string> = Readonly<{
 }>;
 
 type AdminFilterSectionId = 'reason' | 'sort' | 'status';
+type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews';
+
+type AdminReviewGarageItem = Readonly<{
+  detailHref: string;
+  imageSource: Readonly<{
+    brand?: string;
+    imageUrl?: string;
+    model?: string;
+    name?: string;
+  }>;
+  latestReviewAt: string;
+  motorcycleId: string;
+  motorcycleName: string;
+  pendingReviewCount: number;
+  reviewCount: number;
+}>;
 
 const defaultFilters: AdminFilters = {
   reason: 'all',
@@ -103,8 +121,109 @@ function formatDate(value: string) {
   return Number.isNaN(date.getTime()) ? 'Fecha pendiente' : dateFormatter.format(date);
 }
 
+function getTimestamp(value: string) {
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function formatPendingReviewCount(value: number) {
+  return value === 1 ? '1 review nueva' : `${value} reviews nuevas`;
+}
+
 function getDisplayName(profileName: string | null | undefined, email: string | undefined) {
   return profileName?.trim() || email || 'Admin MotoAtlas';
+}
+
+function buildAdminReviewGarage(reports: readonly AdminReviewReport[]): readonly AdminReviewGarageItem[] {
+  type AdminGarageReview = {
+    createdAt: string;
+    motorcycle: NonNullable<AdminReviewReport['review']>['motorcycle'];
+    motorcycleId: string;
+    status: MotorcycleReviewStatus;
+  };
+
+  const reviewsById = new Map<string, AdminGarageReview>();
+
+  reports.forEach((report) => {
+    if (!report.review) {
+      return;
+    }
+
+    const reviewId = report.review.id || report.reviewId || report.id;
+    const createdAt = report.review.createdAt ?? report.createdAt;
+    const currentReview = reviewsById.get(reviewId);
+
+    if (!currentReview || getTimestamp(createdAt) >= getTimestamp(currentReview.createdAt)) {
+      reviewsById.set(reviewId, {
+        createdAt,
+        motorcycle: report.review.motorcycle,
+        motorcycleId: report.review.motorcycleId,
+        status: report.review.status,
+      });
+    }
+  });
+
+  const reviewsByMotorcycle = new Map<string, AdminGarageReview[]>();
+
+  reviewsById.forEach((review) => {
+    const motorcycleId = review.motorcycleId.trim();
+
+    if (!motorcycleId) {
+      return;
+    }
+
+    const currentReviews = reviewsByMotorcycle.get(motorcycleId) ?? [];
+    currentReviews.push(review);
+    reviewsByMotorcycle.set(motorcycleId, currentReviews);
+  });
+
+  return [...reviewsByMotorcycle.entries()]
+    .map(([motorcycleId, motorcycleReviews]) => {
+      const sortedReviews = [...motorcycleReviews].sort((left, right) => getTimestamp(right.createdAt) - getTimestamp(left.createdAt));
+      const latestReview = sortedReviews[0];
+      const reviewWithMotorcycle = sortedReviews.find((review) => Boolean(review.motorcycle)) ?? latestReview;
+      const catalogBike = findBikeById(motorcycleId);
+      const motorcycle = reviewWithMotorcycle?.motorcycle;
+      const motorcycleName = motorcycle
+        ? `${motorcycle.brand} ${motorcycle.model} ${motorcycle.year}`
+        : catalogBike
+          ? `${getBikeDisplayName(catalogBike)} ${catalogBike.year}`
+          : motorcycleId;
+      const detailHref = catalogBike ? getBikeDetailHash(catalogBike) : `#/motos/${motorcycleId}`;
+      const imageSource = motorcycle
+        ? {
+            brand: motorcycle.brand,
+            imageUrl: motorcycle.imageUrl,
+            model: motorcycle.model,
+            name: motorcycleName,
+          }
+        : catalogBike
+          ? {
+              brand: catalogBike.brand,
+              imageUrl: catalogBike.imageUrl,
+              model: catalogBike.model,
+              name: motorcycleName,
+            }
+          : {
+              name: motorcycleName,
+            };
+      const pendingReviewCount = motorcycleReviews.filter((review) => review.status === 'pending').length;
+
+      return {
+        detailHref,
+        imageSource,
+        latestReviewAt: latestReview?.createdAt ?? '',
+        motorcycleId,
+        motorcycleName,
+        pendingReviewCount,
+        reviewCount: motorcycleReviews.length,
+      };
+    })
+    .sort((left, right) => (
+      right.pendingReviewCount - left.pendingReviewCount
+      || getTimestamp(right.latestReviewAt) - getTimestamp(left.latestReviewAt)
+      || left.motorcycleName.localeCompare(right.motorcycleName, 'es')
+    ));
 }
 
 function AdminState({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
@@ -150,7 +269,7 @@ function AdminGate({ children }: AdminGateProps) {
   return children;
 }
 
-function AdminSidebar({ active }: Readonly<{ active: 'dashboard' | 'moderation' }>) {
+function AdminSidebar({ active }: Readonly<{ active: AdminSidebarActiveItem }>) {
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Navegación admin">
       <article className="account-page__notice admin-page__notice">
@@ -167,6 +286,9 @@ function AdminSidebar({ active }: Readonly<{ active: 'dashboard' | 'moderation' 
         </a>
         <a className={active === 'moderation' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/moderacion" aria-current={active === 'moderation' ? 'page' : undefined}>
           Moderación
+        </a>
+        <a className={active === 'reviews' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/reviews" aria-current={active === 'reviews' ? 'page' : undefined}>
+          Reviews
         </a>
       </nav>
     </aside>
@@ -215,7 +337,8 @@ export function AdminDashboardPage() {
               <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
                 <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
                 <h2>Reviews pendientes</h2>
-                <p>Panel específico pendiente para una fase posterior.</p>
+                <p>Garaje admin agrupado por moto para revisar reviews de la comunidad.</p>
+                <a className="account-page__button account-page__button--glass" href="#/admin/reviews">Ir a reviews</a>
               </article>
               <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
                 <span className="material-symbols-outlined" aria-hidden="true">fact_check</span>
@@ -319,6 +442,7 @@ function AdminModerationSidebar({
       <nav className="account-page__quick-links" aria-label="Navegación de administración">
         <a className="account-page__quick-link" href="#/admin">Panel admin</a>
         <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/moderacion" aria-current="page">Moderación</a>
+        <a className="account-page__quick-link" href="#/admin/reviews">Reviews</a>
       </nav>
 
       {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de moderación" /> : null}
@@ -548,6 +672,127 @@ function AdminReportCard({
         </div>
       </div>
     </article>
+  );
+}
+
+function AdminReviewSummaryCard({ item }: Readonly<{ item: AdminReviewGarageItem }>) {
+  return (
+    <article
+      className="account-page__review-summary-card admin-page__review-summary-card"
+      data-testid="admin-review-summary-card"
+      aria-label={`${item.motorcycleName}: ${formatPendingReviewCount(item.pendingReviewCount)}`}
+    >
+      <MotorcycleImage decorative className="account-page__review-summary-image" motorcycle={item.imageSource} />
+      <div className="account-page__review-summary-overlay" aria-hidden="true" />
+
+      <div className="account-page__review-summary-content">
+        <header className="account-page__review-summary-header">
+          <h2>{item.motorcycleName}</h2>
+          <div className="account-page__review-summary-rating" aria-label={formatPendingReviewCount(item.pendingReviewCount)}>
+            <span className="material-symbols-outlined" aria-hidden="true">pending</span>
+            <strong>{item.pendingReviewCount}</strong>
+          </div>
+        </header>
+
+        <ul className="account-page__review-summary-meta admin-page__review-summary-meta" aria-label="Resumen de reviews a revisar">
+          <li>{formatPendingReviewCount(item.pendingReviewCount)}</li>
+          <li>{`Última review: ${formatDate(item.latestReviewAt)}`}</li>
+        </ul>
+
+        <footer className="account-page__review-summary-actions admin-page__review-summary-actions">
+          <a href="#/admin/reviews">Revisar reviews</a>
+          <a href={item.detailHref}>Ver ficha</a>
+        </footer>
+      </div>
+    </article>
+  );
+}
+
+export function AdminReviewsPage() {
+  const { isAdmin, isAuthenticated, isLoading, session, user } = useAuth();
+  const [reports, setReports] = useState<readonly AdminReviewReport[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const authContext = useMemo<CreateReviewAuthContext | null>(() => (
+    user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
+  ), [session?.access_token, user?.id]);
+
+  const loadReports = useCallback(() => {
+    if (!authContext || !isAdmin) {
+      return;
+    }
+
+    setIsLoadingReviews(true);
+    setError(null);
+    getReviewReports(authContext, {
+      reason: 'all',
+      sort: 'recent',
+      status: 'all',
+    })
+      .then((nextReports) => setReports(nextReports))
+      .catch(() => {
+        setReports([]);
+        setError('No se pudieron cargar las reviews para admin.');
+      })
+      .finally(() => setIsLoadingReviews(false));
+  }, [authContext, isAdmin]);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
+
+  const garageItems = useMemo(
+    () => buildAdminReviewGarage(reports),
+    [reports],
+  );
+
+  return (
+    <AdminGate>
+      <main className="account-page admin-page admin-reviews-page" aria-labelledby="admin-reviews-page-title">
+        <AdminHero
+          title="Reviews por modelo"
+          subtitle="Revisa las motos con reviews pendientes o enviadas por la comunidad."
+        />
+
+        <section className="account-page__dashboard">
+          <AdminSidebar active="reviews" />
+          <div className="account-page__main admin-reviews-page__main">
+            <section className="account-page__section admin-reviews-page__garage" aria-labelledby="admin-reviews-page-title">
+              <div className="account-page__section-header">
+                <div>
+                  <span>Garage admin</span>
+                  <h2 id="admin-reviews-page-title">
+                    <span className="material-symbols-outlined" aria-hidden="true">garage</span>
+                    Reviews por modelo
+                  </h2>
+                </div>
+              </div>
+
+              {error ? (
+                <article className="account-page__empty-state account-page__empty-state--error" role="alert">
+                  <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">error</span>
+                  <h3>{error}</h3>
+                  <button className="account-page__button" type="button" onClick={loadReports}>Reintentar</button>
+                </article>
+              ) : isLoading || (isAuthenticated && isLoadingReviews) ? (
+                <p className="admin-page__loading" role="status">Cargando reviews para admin...</p>
+              ) : garageItems.length === 0 ? (
+                <article className="account-page__empty-state">
+                  <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">garage</span>
+                  <h3>No hay reviews para revisar por ahora.</h3>
+                </article>
+              ) : (
+                <div className="admin-reviews-page__garage-grid">
+                  {garageItems.map((item) => (
+                    <AdminReviewSummaryCard item={item} key={item.motorcycleId} />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </section>
+      </main>
+    </AdminGate>
   );
 }
 

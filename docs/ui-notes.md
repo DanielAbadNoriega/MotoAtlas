@@ -81,6 +81,17 @@ Los botones de acciones de moderación tienen hover por intención visual (azul 
 
 Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). Avisos al autor, administración completa de reviews/solicitudes y reportes de respuestas quedan para fases futuras.
 
+## Admin — Reviews por modelo
+
+La ruta `#/admin/reviews` reutiliza el patrón visual de `#/cuenta/reviews` para un “garaje admin” inicial: cards agrupadas por `motorcycleId` con imagen, metadatos y CTAs.
+
+En esta fase no hay filtros ni detalle por moto. Cada card muestra:
+- `X reviews nuevas` (conteo de reviews con `status = pending` en esa moto).
+- `Última review: ...` calculada por la review más reciente del grupo.
+- CTAs `Revisar reviews` (temporalmente `#/admin/reviews`) y `Ver ficha` (`#/motos/[moto-id]`).
+
+La agrupación prioriza motos con reviews pendientes y deduplica reviews repetidas en reportes múltiples.
+
 ## Mi cuenta — Reviews
 
 La ruta `#/cuenta/reviews` funciona como “Mi garaje de reviews”: agrupa las reviews del usuario autenticado por moto, pagina modelos agrupados y aplica filtros sobre marca/modelo, segmento, carnet, rating medio, uso principal y orden. Los filtros replican el patrón visual de `#/comunidad/reviews` con header/body/footer y botones/chips sin selects; en desktop viven dentro del sidebar de cuenta antes del notice y en tablet/mobile usan panel responsive. El CTA `Ver mis reviews` de cada moto apunta al detalle privado `#/cuenta/reviews/[motorcycleId]`.

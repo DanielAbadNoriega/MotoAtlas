@@ -43,6 +43,10 @@ export function getAdminModerationCanonicalPath() {
   return '/admin/moderacion';
 }
 
+export function getAdminReviewsCanonicalPath() {
+  return '/admin/reviews';
+}
+
 export function getCompareSeoSlug(bikes: readonly Pick<Bike, 'brand' | 'model'>[]) {
   return bikes.map(getBikeSeoSlug).join('-vs-');
 }
@@ -246,6 +250,11 @@ export function isAdminRoute(route: string) {
 export function isAdminModerationRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return path === getAdminModerationCanonicalPath();
+}
+
+export function isAdminReviewsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === getAdminReviewsCanonicalPath();
 }
 
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {

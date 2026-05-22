@@ -8,7 +8,7 @@ import {
   updateReviewReportStatus,
   type AdminReviewReport,
 } from '../../../services/adminModerationService';
-import { AdminDashboardPage, AdminModerationPage } from './AdminPage';
+import { AdminDashboardPage, AdminModerationPage, AdminReviewsPage } from './AdminPage';
 
 vi.mock('../../../features/auth', () => ({
   useAuth: vi.fn(),
@@ -130,12 +130,141 @@ describe('AdminPage', () => {
     expect(getReviewReportsMock).not.toHaveBeenCalled();
   });
 
+  it('bloquea admin reviews sin sesión', () => {
+    mockAuth({
+      user: null,
+      session: null,
+      profile: null,
+      isAuthenticated: false,
+      isAdmin: false,
+    });
+
+    render(<AdminReviewsPage />);
+
+    expect(screen.getByRole('heading', { name: /Inicia sesión para acceder al panel admin/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Iniciar sesión/i })).toHaveAttribute('href', '#/login');
+    expect(getReviewReportsMock).not.toHaveBeenCalled();
+  });
+
+  it('bloquea admin reviews para usuario no admin', () => {
+    mockAuth({
+      profile: { id: 'user-1', displayName: 'User', avatarUrl: null, role: 'user' },
+      isAdmin: false,
+    });
+
+    render(<AdminReviewsPage />);
+
+    expect(screen.getByRole('heading', { name: /No tienes permisos para acceder a esta zona/i })).toBeInTheDocument();
+    expect(getReviewReportsMock).not.toHaveBeenCalled();
+  });
+
   it('renderiza dashboard admin mínimo', () => {
     render(<AdminDashboardPage />);
 
     expect(screen.getByRole('heading', { name: 'Panel admin' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ir a moderación/i })).toHaveAttribute('href', '#/admin/moderacion');
     expect(screen.getByRole('navigation', { name: /Navegación de administración/i })).toBeInTheDocument();
+  });
+
+  it('admin ve reviews agrupadas por moto con pendientes y última review', async () => {
+    getReviewReportsMock.mockResolvedValueOnce([
+      {
+        ...reports[0],
+        createdAt: '2026-05-21T10:00:00.000Z',
+        id: 'report-bike-1-pending',
+        review: reports[0].review
+          ? {
+              ...reports[0].review,
+              createdAt: '2026-05-20T08:00:00.000Z',
+              id: 'review-bike-1-pending',
+              motorcycleId: 'test-bmw-f-900-gs',
+              status: 'pending',
+            }
+          : null,
+        reviewId: 'review-bike-1-pending',
+      },
+      {
+        ...reports[0],
+        createdAt: '2026-05-20T10:00:00.000Z',
+        id: 'report-bike-1-approved',
+        review: reports[0].review
+          ? {
+              ...reports[0].review,
+              createdAt: '2026-05-19T08:00:00.000Z',
+              id: 'review-bike-1-approved',
+              motorcycleId: 'test-bmw-f-900-gs',
+              status: 'approved',
+            }
+          : null,
+        reviewId: 'review-bike-1-approved',
+      },
+      {
+        ...reports[0],
+        createdAt: '2026-05-22T10:00:00.000Z',
+        id: 'report-bike-2-pending',
+        review: reports[0].review
+          ? {
+              ...reports[0].review,
+              createdAt: '2026-05-21T09:00:00.000Z',
+              id: 'review-bike-2-pending',
+              motorcycle: {
+                brand: 'Aprilia',
+                id: 'test-aprilia-tuareg-660',
+                imageUrl: '/aprilia.jpg',
+                model: 'Tuareg 660',
+                year: 2024,
+              },
+              motorcycleId: 'test-aprilia-tuareg-660',
+              status: 'pending',
+            }
+          : null,
+        reviewId: 'review-bike-2-pending',
+      },
+      {
+        ...reports[0],
+        createdAt: '2026-05-22T11:00:00.000Z',
+        id: 'report-bike-2-duplicate',
+        review: reports[0].review
+          ? {
+              ...reports[0].review,
+              createdAt: '2026-05-21T09:00:00.000Z',
+              id: 'review-bike-2-pending',
+              motorcycle: {
+                brand: 'Aprilia',
+                id: 'test-aprilia-tuareg-660',
+                imageUrl: '/aprilia.jpg',
+                model: 'Tuareg 660',
+                year: 2024,
+              },
+              motorcycleId: 'test-aprilia-tuareg-660',
+              status: 'pending',
+            }
+          : null,
+        reviewId: 'review-bike-2-pending',
+      },
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Reviews por modelo' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Aprilia Tuareg 660 2024' })).toBeInTheDocument();
+    expect(getReviewReportsMock).toHaveBeenCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { reason: 'all', sort: 'recent', status: 'all' },
+    );
+
+    const cards = screen.getAllByTestId('admin-review-summary-card');
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveClass('account-page__review-summary-card');
+    expect(cards[0]).toHaveClass('admin-page__review-summary-card');
+
+    expect(within(cards[0]).getByText('1 review nueva')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('Última review: 21 may 2026')).toBeInTheDocument();
+    expect(within(cards[0]).getByRole('link', { name: 'Revisar reviews' })).toHaveAttribute('href', '#/admin/reviews');
+    expect(within(cards[0]).getByRole('link', { name: 'Ver ficha' })).toHaveAttribute('href', '#/motos/test-aprilia-tuareg-660');
+
+    expect(within(cards[1]).getByRole('heading', { name: 'BMW F 900 GS 2024' })).toBeInTheDocument();
+    expect(within(cards[1]).getByText('1 review nueva')).toBeInTheDocument();
+    expect(within(cards[1]).getByText('Última review: 20 may 2026')).toBeInTheDocument();
   });
 
   it('admin ve moderación y reportes con datos de review', async () => {

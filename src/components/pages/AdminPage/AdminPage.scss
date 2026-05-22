@@ -790,6 +790,20 @@
   }
 }
 
+.admin-reviews-page {
+  &__main {
+    align-content: start;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  &__garage-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: $breakpoint-tablet) {
   .admin-page {
     &__dashboard-grid {
@@ -841,6 +855,10 @@
       bottom: 0;
       z-index: 2;
     }
+  }
+
+  .admin-reviews-page__garage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -917,5 +935,9 @@
       height: 2.35rem;
       min-width: 2.35rem;
     }
+  }
+
+  .admin-reviews-page__garage-grid {
+    grid-template-columns: 1fr;
   }
 }

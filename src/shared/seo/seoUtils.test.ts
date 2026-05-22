@@ -129,6 +129,11 @@ describe('seoUtils', () => {
       canonicalUrl: 'https://motoatlas.com/admin/moderacion',
       description: 'Revisa reportes de la comunidad y gestiona el estado de reviews en MotoAtlas.',
     });
+    expect(buildAdminSeoMetadata('reviews')).toMatchObject({
+      title: 'Reviews por modelo | MotoAtlas',
+      canonicalUrl: 'https://motoatlas.com/admin/reviews',
+      description: 'Garaje admin para revisar reviews agrupadas por modelo en MotoAtlas.',
+    });
   });
 
   it('aplica meta tags, canonical y JSON-LD al documento', () => {

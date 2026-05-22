@@ -7,6 +7,7 @@ import {
   getAccountReviewMotorcycleIdFromRoute,
   getAdminCanonicalPath,
   getAdminModerationCanonicalPath,
+  getAdminReviewsCanonicalPath,
   getBikeDetailIdFromRoute,
   getBikeSeoSlug,
   getCommunityMotorcycleIdFromRoute,
@@ -23,6 +24,7 @@ import {
   isAccountRequestsRoute,
   isAccountRoute,
   isAdminModerationRoute,
+  isAdminReviewsRoute,
   isAdminRoute,
   isCommunityReviewsRoute,
   isLoginRoute,
@@ -82,9 +84,13 @@ describe('routeUtils SEO routes', () => {
   it('detecta rutas admin', () => {
     expect(getAdminCanonicalPath()).toBe('/admin');
     expect(getAdminModerationCanonicalPath()).toBe('/admin/moderacion');
+    expect(getAdminReviewsCanonicalPath()).toBe('/admin/reviews');
     expect(isAdminRoute('#/admin')).toBe(true);
     expect(isAdminRoute('#/admin/moderacion')).toBe(false);
     expect(isAdminModerationRoute('#/admin/moderacion')).toBe(true);
+    expect(isAdminModerationRoute('#/admin/reviews')).toBe(false);
+    expect(isAdminReviewsRoute('#/admin/reviews')).toBe(true);
+    expect(isAdminReviewsRoute('/admin/moderacion')).toBe(false);
     expect(isAdminModerationRoute('/admin')).toBe(false);
   });
 
