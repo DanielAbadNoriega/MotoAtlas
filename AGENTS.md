@@ -93,3 +93,29 @@ E2E futuro: Playwright, local/staging, usuarios admin/userA/userB, flujo review�
 - `docs/admin.md` — admin en detalle
 - `docs/ui-notes.md` — páginas y componentes
 - `docs/codex-guidelines.md` — reglas mínimas Codex/Copilot
+
+## Plantilla de prompt corto
+
+Usar para tareas que necesitan el contexto completo del proyecto:
+
+```
+Lee AGENTS.md.
+
+Tarea:
+...
+
+Objetivo:
+...
+
+No tocar:
+...
+
+Requisitos:
+...
+
+Ejecuta:
+- npm run typecheck
+- npm run test
+
+No hagas build, commit ni push.
+```
