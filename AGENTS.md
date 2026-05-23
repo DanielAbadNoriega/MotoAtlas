@@ -36,10 +36,10 @@ Admin se protege con `user_profiles.role = 'admin'`. Helper SQL: `public.is_admi
 
 ## Patrones UI (reutilizar, no crear nuevos)
 
-- **Filtros**: `#/cuenta/reviews`, `#/admin/moderacion`, `#/admin/reviews` — header/body/footer, secciones desplegables, chips, Material Symbols, responsive sheet/drawer, `Limpiar filtros` + `Aplicar filtros`
+- **Filtros**: reutilizar siempre el patrón existente (`account-reviews-page__filter-group` o `admin-page__filter-group`). No crear variantes nuevas. Header/body/footer, chips, Material Symbols, responsive sheet/drawer, `Limpiar filtros` + `Aplicar filtros`. Referencias: `#/cuenta/reviews`, `#/admin/moderacion`, `#/admin/reviews`.
 - **Paginación**: `.community-reviews-page__pagination` — Material Symbols, active/hover/focus/disabled, `aria-label`, `aria-current="page"`
 - **Cards review**: `.account-page__review-summary-card`, `.admin-page__review-summary-card`, compactas por moto
-- **Hero admin**: basado en `CommunityHero`, full-width bajo navbar, sin CTAs salvo indicación
+- **Hero admin**: basado en `motorcycle-community__hero` con `MotorcycleImage`, eyebrow `ADMIN STUDIO`, y hero-rating con métricas si aplica. CTAs solo si la página las necesita (ficha, reviews públicas).
 
 ## Rutas
 
