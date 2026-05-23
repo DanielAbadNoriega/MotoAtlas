@@ -1,0 +1,1 @@
+export { AdminMotorcycleReviewsPage } from './AdminMotorcycleReviewsPage';

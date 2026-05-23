@@ -673,20 +673,31 @@ function OwnerReportRow({
   return (
     <article className="motorcycle-community__owner-report-row" data-testid="owner-report-row" data-row-tone={index % 2 === 0 ? 'even' : 'odd'} role="listitem">
       <div className="motorcycle-community__owner-report-identity">
-        <div className="motorcycle-community__owner-report-owner">
-          <span className="motorcycle-review-card__avatar motorcycle-community__owner-avatar" aria-hidden="true">
-            <UserIcon />
-          </span>
-          <div>
-            <h3>{alias}</h3>
-            {isReviewVerified(review) ? (
-              <span className="motorcycle-community__verified-badge">
-                <span className="material-symbols-outlined" aria-hidden="true">verified</span>
-                Review verificada
-              </span>
-            ) : null}
+          <div className="motorcycle-community__owner-report-owner">
+            <span className="motorcycle-review-card__avatar motorcycle-community__owner-avatar" aria-hidden="true">
+              <UserIcon />
+            </span>
+            <div>
+              <div className="motorcycle-community__owner-report-name-row">
+                <h3>{alias}</h3>
+                {isReviewVerified(review) ? (
+                  <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--verified" aria-label="Usuario verificado">
+                    <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                  </span>
+                ) : (
+                  <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--unverified" aria-label="Usuario no verificado">
+                    <span className="material-symbols-outlined" aria-hidden="true">person</span>
+                  </span>
+                )}
+              </div>
+              {isReviewVerified(review) ? (
+                <span className="motorcycle-community__verified-badge">
+                  <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                  Review verificada
+                </span>
+              ) : null}
+            </div>
           </div>
-        </div>
 
         <div className="motorcycle-community__owner-report-rating">
           <RatingStars rating={review.rating} />

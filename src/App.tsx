@@ -7,6 +7,7 @@ import { AccountMotorcycleReviewsPage } from './components/pages/AccountMotorcyc
 import { AccountReviewsPage } from './components/pages/AccountReviewsPage';
 import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
 import { AdminDashboardPage, AdminModerationPage, AdminReviewsPage } from './components/pages/AdminPage';
+import { AdminMotorcycleReviewsPage } from './components/pages/AdminMotorcycleReviewsPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
@@ -36,6 +37,7 @@ import {
   getBikeDetailIdFromRoute,
   getAccountReviewMotorcycleIdFromRoute,
   getCommunityMotorcycleIdFromRoute,
+  getAdminMotorcycleIdFromRoute,
   getComparatorSelectionFromRoute,
   getCurrentAppRoute,
   getStaticInfoRouteKey,
@@ -45,6 +47,7 @@ import {
   isAccountMotorcycleReviewsRoute,
   isAdminModerationRoute,
   isAdminReviewsRoute,
+  isAdminMotorcycleReviewsRoute,
   isAdminRoute,
   isCommunityReviewsRoute,
   isCommunityRoute,
@@ -96,6 +99,7 @@ export function App() {
   const legacyComparisonIds = legacyComparison?.bikes.map((bike) => bike.bikeId) ?? [];
   const bikeDetailId = getBikeDetailIdFromRoute(route, motorcycles);
   const accountReviewMotorcycleId = getAccountReviewMotorcycleIdFromRoute(route, motorcycles);
+  const adminMotorcycleId = getAdminMotorcycleIdFromRoute(route, motorcycles);
   const communityMotorcycleId = getCommunityMotorcycleIdFromRoute(route, motorcycles);
   const findMotorcycleById = (id: Bike['id']) => motorcycles.find((bike) => bike.id === id);
   const detailBike = bikeDetailId ? findMotorcycleById(bikeDetailId) : undefined;
@@ -112,6 +116,7 @@ export function App() {
   const isAdminPage = isAdminRoute(route);
   const isAdminModerationPage = isAdminModerationRoute(route);
   const isAdminReviewsPage = isAdminReviewsRoute(route);
+  const isAdminMotorcycleReviewsPage = isAdminMotorcycleReviewsRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
@@ -169,6 +174,11 @@ export function App() {
 
     if (isAdminModerationPage) {
       applySeoMetadata(buildAdminSeoMetadata('moderacion'));
+      return;
+    }
+
+    if (isAdminMotorcycleReviewsPage && adminMotorcycleId) {
+      applySeoMetadata(buildAdminSeoMetadata('reviews'));
       return;
     }
 
@@ -249,6 +259,8 @@ export function App() {
         <AuthPage mode="register" />
       ) : isAdminModerationPage ? (
         <AdminModerationPage />
+      ) : isAdminMotorcycleReviewsPage ? (
+        <AdminMotorcycleReviewsPage bike={adminMotorcycleId ? findMotorcycleById(adminMotorcycleId) : undefined} motorcycleId={adminMotorcycleId} />
       ) : isAdminReviewsPage ? (
         <AdminReviewsPage />
       ) : isAdminPage ? (
