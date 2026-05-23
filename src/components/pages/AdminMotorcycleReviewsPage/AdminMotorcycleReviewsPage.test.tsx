@@ -188,6 +188,45 @@ describe('AdminMotorcycleReviewsPage', () => {
     });
   });
 
+  it('data-row-tone alterna even/odd', async () => {
+    mockAuth();
+    const reviews = [
+      createReview({ id: 'r1' }),
+      createReview({ id: 'r2' }),
+    ];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    await waitFor(() => {
+      const rows = screen.getAllByTestId('admin-moto-review-row');
+      expect(rows).toHaveLength(2);
+      expect(rows[0].getAttribute('data-row-tone')).toBe('even');
+      expect(rows[1].getAttribute('data-row-tone')).toBe('odd');
+    });
+  });
+
+  it('fila muestra riding style, ownership, kilometers, date', async () => {
+    mockAuth();
+    const reviews = [
+      createReview({
+        id: 'r1',
+        ridingStyle: 'viaje',
+        ownershipMonths: 12,
+        kilometers: 15000,
+        createdAt: '2026-05-21T10:00:00.000Z',
+      }),
+    ];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    await waitFor(() => {
+      const row = screen.getByTestId('admin-moto-review-row');
+      expect(within(row).getByText('Viaje')).toBeTruthy();
+      expect(within(row).getByText('12 meses')).toBeTruthy();
+      expect(within(row).getByText('15.000 km')).toBeTruthy();
+    });
+  });
+
   it('listado muestra status, source, verified', async () => {
     mockAuth();
     const reviews = [
@@ -237,6 +276,25 @@ describe('AdminMotorcycleReviewsPage', () => {
       const row = screen.getByTestId('admin-moto-review-row');
       expect(within(row).getByText(/Bueno/)).toBeTruthy();
       expect(within(row).getByText(/Malo/)).toBeTruthy();
+    });
+  });
+
+  it('no renderiza pros/contras vacíos', async () => {
+    mockAuth();
+    const reviews = [
+      createReview({
+        id: 'r1',
+        pros: [],
+        cons: [],
+      }),
+    ];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    await waitFor(() => {
+      const row = screen.getByTestId('admin-moto-review-row');
+      expect(within(row).queryByText('Pros:')).toBeNull();
+      expect(within(row).queryByText('Contras:')).toBeNull();
     });
   });
 });

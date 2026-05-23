@@ -123,97 +123,24 @@
 }
 
 .admin-moto-reviews__list {
+  border: 1px solid rgba($color-outline-variant, 0.24);
+  border-radius: $radius-xl;
+  display: grid;
+  overflow: hidden;
+}
+
+.admin-motorcycle-reviews-page__review-row {
+  grid-template-columns: minmax(14rem, 0.34fr) minmax(0, 1fr);
+}
+
+.admin-motorcycle-reviews-page__review-identity {
+  align-content: start;
+}
+
+.admin-motorcycle-reviews-page__review-heading {
   display: grid;
   gap: 0.75rem;
-}
-
-.admin-moto-reviews__row {
-  background:
-    radial-gradient(circle at top right, rgba($color-accent, 0.1), transparent 18rem),
-    rgba($color-surface-container, 0.94);
-  border: 1px solid rgba($color-outline-variant, 0.58);
-  border-radius: $radius-xl;
-  box-shadow: $shadow-card;
-  overflow: hidden;
-  padding: clamp(1rem, 2vw, 1.35rem);
-  transition: border-color $transition-base;
-}
-
-.admin-moto-reviews__row-header {
-  margin-bottom: 0.75rem;
-}
-
-.admin-moto-reviews__row-heading {
-  display: grid;
-  gap: 0.65rem;
-}
-
-.admin-moto-reviews__row-identity {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.admin-moto-reviews__row-user {
-  font-weight: 600;
-  font-size: 0.92rem;
-  color: $color-on-surface;
-  margin-right: 0.2rem;
-}
-
-.admin-moto-reviews__row-meta {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-
-  time {
-    color: rgba($color-on-surface-variant, 0.76);
-    font-size: 0.82rem;
-  }
-}
-
-.admin-moto-reviews__stars {
-  display: inline-flex;
-
-  .material-symbols-outlined {
-    font-size: 1.05rem;
-  }
-
-  [data-filled='true'] {
-    color: #f59e0b;
-  }
-
-  [data-filled='false'] {
-    color: rgba($color-outline, 0.42);
-  }
-}
-
-.admin-moto-reviews__row-body {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.admin-moto-reviews__row-comment {
-  color: rgba($color-on-surface, 0.92);
-  line-height: 1.6;
-  margin: 0;
-}
-
-.admin-moto-reviews__row-pros-cons {
-  display: grid;
-  gap: 0.25rem;
-
-  p {
-    color: rgba($color-on-surface-variant, 0.86);
-    font-size: 0.88rem;
-    margin: 0;
-  }
-
-  strong {
-    color: $color-on-surface;
-  }
+  justify-items: start;
 }
 
 .admin-moto-reviews__source-badge {
@@ -239,6 +166,10 @@
 
 @media (max-width: $breakpoint-tablet) {
   .admin-moto-reviews__dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-motorcycle-reviews-page__review-row {
     grid-template-columns: 1fr;
   }
 }

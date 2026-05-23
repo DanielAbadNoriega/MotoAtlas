@@ -8,6 +8,12 @@ import {
 } from '../../../services/motorcycleReviewService';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import type { Bike } from '../../../types/bike';
+import {
+  accountReviewRidingStyleLabels,
+  formatAccountReviewDate,
+  formatAccountReviewKilometers,
+  formatAccountReviewOwnershipMonths,
+} from '../../reviews/AccountReviewCard/accountReviewPresentation';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AdminSidebar } from '../AdminPage';
@@ -301,35 +307,51 @@ function ReviewSourceBadge({ source }: Readonly<{ source?: string | null }>) {
   return <span className="admin-moto-reviews__source-badge">{source ?? 'user'}</span>;
 }
 
-function ReviewRow({ review }: Readonly<{ review: MotorcycleReview }>) {
+function ReviewRow({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
   const pros = normalizeList(review.pros as readonly unknown[]);
   const cons = normalizeList(review.cons as readonly unknown[]);
 
   return (
-    <article className="admin-moto-reviews__row" data-testid="admin-moto-review-row" role="listitem">
-      <header className="admin-moto-reviews__row-header">
-        <div className="admin-moto-reviews__row-heading">
-          <div className="admin-moto-reviews__row-identity">
-            <span className="admin-moto-reviews__row-user">{review.userName || 'Usuario MotoAtlas'}</span>
-            <ReviewStatusBadge status={review.status} />
-            <ReviewSourceBadge source={review.source} />
-            {review.verified ? <span className="admin-moto-reviews__verified-badge">Verificada</span> : null}
-          </div>
-          <div className="admin-moto-reviews__row-meta">
-            <span className="admin-moto-reviews__stars" aria-label={`${review.rating} de 5 estrellas`}>
-              {[1, 2, 3, 4, 5].map((s) => (
-                <span className="material-symbols-outlined" aria-hidden="true" key={s} data-filled={review.rating >= s ? 'true' : 'false'}>star</span>
-              ))}
-            </span>
+    <article
+      className="motorcycle-community__owner-report-row admin-motorcycle-reviews-page__review-row"
+      data-testid="admin-moto-review-row"
+      data-row-tone={index % 2 === 0 ? 'even' : 'odd'}
+      role="listitem"
+    >
+      <div className="motorcycle-community__owner-report-identity admin-motorcycle-reviews-page__review-identity">
+        <div className="admin-motorcycle-reviews-page__review-heading">
+          <ReviewStatusBadge status={review.status} />
+          <ReviewSourceBadge source={review.source} />
+          {review.verified ? <span className="admin-moto-reviews__verified-badge">Verificada</span> : null}
+          <div className="motorcycle-community__owner-report-rating">
+            <RatingStars rating={review.rating} />
             <strong>{review.rating}/5</strong>
-            <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</time>
           </div>
         </div>
-      </header>
 
-      <div className="admin-moto-reviews__row-body">
-        <p className="admin-moto-reviews__row-comment">{(review.comment ?? '').toString().trim() || '—'}</p>
-        <div className="admin-moto-reviews__row-pros-cons">
+        <ul className="motorcycle-community__owner-report-meta" aria-label="Metadatos de la review">
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">route</span>
+            {accountReviewRidingStyleLabels[review.ridingStyle]}
+          </li>
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
+            {formatAccountReviewOwnershipMonths(review.ownershipMonths)}
+          </li>
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">speed</span>
+            {formatAccountReviewKilometers(review.kilometers)}
+          </li>
+          <li>
+            <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+            {formatAccountReviewDate(review.createdAt)}
+          </li>
+        </ul>
+      </div>
+
+      <div className="motorcycle-community__owner-report-summary">
+        <p>{(review.comment ?? '').toString().trim() || '—'}</p>
+        <div className="motorcycle-community__owner-report-pros-cons">
           {pros.length > 0 ? <p><strong>Pros:</strong> {pros.join(', ')}</p> : null}
           {cons.length > 0 ? <p><strong>Contras:</strong> {cons.join(', ')}</p> : null}
         </div>
@@ -531,8 +553,8 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
             ) : (
               <section aria-label={`Reviews de ${bikeName}`}>
                 <div className="admin-moto-reviews__list" role="list">
-                  {paginated.map((review) => (
-                    <ReviewRow key={review.id || `${review.userName}-${review.createdAt}`} review={review} />
+                  {paginated.map((review, index) => (
+                    <ReviewRow key={review.id || `${review.userName}-${review.createdAt}`} index={index} review={review} />
                   ))}
                 </div>
 
