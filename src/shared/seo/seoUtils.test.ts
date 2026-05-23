@@ -121,7 +121,7 @@ describe('seoUtils', () => {
       description: 'Revisa tus experiencias, valoraciones y comentarios sobre esta moto.',
     });
     expect(buildAdminSeoMetadata('admin')).toMatchObject({
-      title: 'Panel admin | MotoAtlas',
+      title: 'Panel de administración | MotoAtlas',
       canonicalUrl: 'https://motoatlas.com/admin',
     });
     expect(buildAdminSeoMetadata('moderacion')).toMatchObject({

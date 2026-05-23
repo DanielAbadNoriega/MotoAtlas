@@ -47,6 +47,14 @@ export function getAdminReviewsCanonicalPath() {
   return '/admin/reviews';
 }
 
+export function getAdminMotorcycleReviewsCanonicalPath(motorcycleId: string) {
+  return `/admin/reviews/${encodeURIComponent(motorcycleId)}`;
+}
+
+export function getAdminMotorcycleReviewsHash(motorcycleId: string) {
+  return `#${getAdminMotorcycleReviewsCanonicalPath(motorcycleId)}`;
+}
+
 export function getCompareSeoSlug(bikes: readonly Pick<Bike, 'brand' | 'model'>[]) {
   return bikes.map(getBikeSeoSlug).join('-vs-');
 }
@@ -255,6 +263,23 @@ export function isAdminModerationRoute(route: string) {
 export function isAdminReviewsRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return path === getAdminReviewsCanonicalPath();
+}
+
+export function isAdminMotorcycleReviewsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return /^\/admin\/reviews\/[^/?#]+$/.test(path);
+}
+
+export function getAdminMotorcycleIdFromRoute(route: string, motorcycles: readonly Bike[]) {
+  const { path } = routeToPathAndSearch(route);
+  const match = path.match(/^\/admin\/reviews\/([^/?#]+)/);
+
+  if (!match) {
+    return undefined;
+  }
+
+  const slugOrId = decodeURIComponent(match[1]);
+  return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
 }
 
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {

@@ -259,7 +259,7 @@ describe('AdminPage', () => {
 
     expect(within(cards[0]).getByText('1 review nueva')).toBeInTheDocument();
     expect(within(cards[0]).getByText('Última review: 21 may 2026')).toBeInTheDocument();
-    expect(within(cards[0]).getByRole('link', { name: 'Revisar reviews' })).toHaveAttribute('href', '#/admin/reviews');
+    expect(within(cards[0]).getByRole('link', { name: 'Revisar reviews' })).toHaveAttribute('href', '#/admin/reviews/test-aprilia-tuareg-660');
     expect(within(cards[0]).getByRole('link', { name: 'Ver ficha' })).toHaveAttribute('href', '#/motos/test-aprilia-tuareg-660');
 
     expect(within(cards[1]).getByRole('heading', { name: 'BMW F 900 GS 2024' })).toBeInTheDocument();
