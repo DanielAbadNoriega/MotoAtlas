@@ -6,7 +6,7 @@ import {
   type MotorcycleReview,
   type MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
-import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { formatReviewRating, getReviewAggregate, isReviewVerified } from '../../../shared/reviews/reviewUtils';
 import type { Bike } from '../../../types/bike';
 import {
   accountReviewRidingStyleLabels,
@@ -307,53 +307,114 @@ function ReviewSourceBadge({ source }: Readonly<{ source?: string | null }>) {
   return <span className="admin-moto-reviews__source-badge">{source ?? 'user'}</span>;
 }
 
-function ReviewRow({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
+function AdminReviewCard({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
   const pros = normalizeList(review.pros as readonly unknown[]);
   const cons = normalizeList(review.cons as readonly unknown[]);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const detailsId = `admin-moto-review-details-${review.id}`;
+  const cardClasses = [
+    'admin-motorcycle-reviews-page__review-card',
+    isExpanded ? 'admin-motorcycle-reviews-page__review-card--expanded' : '',
+  ].filter(Boolean).join(' ');
 
   return (
     <article
-      className="motorcycle-community__owner-report-row admin-motorcycle-reviews-page__review-row"
+      className={cardClasses}
       data-testid="admin-moto-review-row"
       data-row-tone={index % 2 === 0 ? 'even' : 'odd'}
-      role="listitem"
     >
-      <div className="motorcycle-community__owner-report-identity admin-motorcycle-reviews-page__review-identity">
-        <div className="admin-motorcycle-reviews-page__review-heading">
-          <ReviewStatusBadge status={review.status} />
-          <ReviewSourceBadge source={review.source} />
-          {review.verified ? <span className="admin-moto-reviews__verified-badge">Verificada</span> : null}
-          <div className="motorcycle-community__owner-report-rating">
-            <RatingStars rating={review.rating} />
-            <strong>{review.rating}/5</strong>
-          </div>
-        </div>
+      <header>
+        <button
+          className="admin-motorcycle-reviews-page__review-card-toggle"
+          type="button"
+          aria-controls={detailsId}
+          aria-expanded={isExpanded}
+          aria-label={`${isExpanded ? 'Contraer' : 'Expandir'} review de ${review.userName || 'Anónimo'}`}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <span className="admin-motorcycle-reviews-page__review-card-heading">
+            <span className="admin-motorcycle-reviews-page__review-card-line">
+              <span className="admin-motorcycle-reviews-page__review-card-row">
+                <span className="admin-motorcycle-reviews-page__review-card-user">
+                  {review.userName || 'Anónimo'}
+                  {isReviewVerified(review) ? (
+                    <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--verified" aria-label="Usuario verificado">
+                      <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                    </span>
+                  ) : (
+                    <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--unverified" aria-label="Usuario no verificado">
+                      <span className="material-symbols-outlined" aria-hidden="true">person</span>
+                    </span>
+                  )}
+                </span>
+              </span>
+              <span className="admin-motorcycle-reviews-page__review-card-row">
+                <ReviewStatusBadge status={review.status} />
+                {review.verified ? (
+                  <span className="admin-moto-reviews__verified-badge" aria-label="Review verificada">
+                    <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                    Verificada
+                  </span>
+                ) : (
+                  <span className="admin-moto-reviews__verified-badge admin-moto-reviews__verified-badge--unverified" aria-label="Review no verificada">
+                    <span className="material-symbols-outlined" aria-hidden="true">person</span>
+                    No verificada
+                  </span>
+                )}
+              </span>
+              <span className="admin-motorcycle-reviews-page__review-card-row">
+                <ReviewSourceBadge source={review.source} />
+              </span>
+              <span className="motorcycle-community__owner-report-rating">
+                <RatingStars rating={review.rating} />
+                <strong>{review.rating}/5</strong>
+              </span>
+            </span>
+            <span className="admin-motorcycle-reviews-page__review-card-meta">
+              <span className="material-symbols-outlined" aria-hidden="true">route</span>
+              {accountReviewRidingStyleLabels[review.ridingStyle]}
+              <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
+              {formatAccountReviewOwnershipMonths(review.ownershipMonths)}
+              <span className="material-symbols-outlined" aria-hidden="true">speed</span>
+              {formatAccountReviewKilometers(review.kilometers)}
+              <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+              {formatAccountReviewDate(review.createdAt)}
+            </span>
+          </span>
+          <span className="material-symbols-outlined admin-motorcycle-reviews-page__review-card-chevron" aria-hidden="true">expand_more</span>
+        </button>
+      </header>
 
-        <ul className="motorcycle-community__owner-report-meta" aria-label="Metadatos de la review">
-          <li>
-            <span className="material-symbols-outlined" aria-hidden="true">route</span>
-            {accountReviewRidingStyleLabels[review.ridingStyle]}
-          </li>
-          <li>
-            <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
-            {formatAccountReviewOwnershipMonths(review.ownershipMonths)}
-          </li>
-          <li>
-            <span className="material-symbols-outlined" aria-hidden="true">speed</span>
-            {formatAccountReviewKilometers(review.kilometers)}
-          </li>
-          <li>
-            <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
-            {formatAccountReviewDate(review.createdAt)}
-          </li>
-        </ul>
-      </div>
+      <div id={detailsId} className="admin-motorcycle-reviews-page__review-card-body-wrapper" aria-hidden={!isExpanded} inert={!isExpanded ? true : undefined}>
+        <div className="admin-motorcycle-reviews-page__review-card-body">
+          <section className="admin-page__reported-review" aria-label="Comentario de la review">
+            <p>{(review.comment ?? '').toString().trim() || '—'}</p>
+          </section>
 
-      <div className="motorcycle-community__owner-report-summary">
-        <p>{(review.comment ?? '').toString().trim() || '—'}</p>
-        <div className="motorcycle-community__owner-report-pros-cons">
-          {pros.length > 0 ? <p><strong>Pros:</strong> {pros.join(', ')}</p> : null}
-          {cons.length > 0 ? <p><strong>Contras:</strong> {cons.join(', ')}</p> : null}
+          {pros.length > 0 ? (
+            <section className="admin-page__report-extra" aria-label="Pros">
+              <strong>Pros:</strong>
+              <p>{pros.join(', ')}</p>
+            </section>
+          ) : null}
+
+          {cons.length > 0 ? (
+            <section className="admin-page__report-extra" aria-label="Contras">
+              <strong>Contras:</strong>
+              <p>{cons.join(', ')}</p>
+            </section>
+          ) : null}
+
+          <footer>
+            <div className="admin-page__action-group" aria-label="Acciones sobre la review">
+              <h3>Gestionar review</h3>
+              <div>
+                <button className="admin-page__action-button admin-page__action-button--approve" type="button" disabled>Aprobar</button>
+                <button className="admin-page__action-button admin-page__action-button--hide" type="button" disabled>Ocultar</button>
+                <button className="admin-page__action-button admin-page__action-button--reject" type="button" disabled>Rechazar</button>
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
     </article>
@@ -554,7 +615,7 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
               <section aria-label={`Reviews de ${bikeName}`}>
                 <div className="admin-moto-reviews__list" role="list">
                   {paginated.map((review, index) => (
-                    <ReviewRow key={review.id || `${review.userName}-${review.createdAt}`} index={index} review={review} />
+                    <AdminReviewCard key={review.id || `${review.userName}-${review.createdAt}`} index={index} review={review} />
                   ))}
                 </div>
 

@@ -688,6 +688,29 @@
     }
   }
 
+  &__owner-report-name-row {
+    align-items: center;
+    display: flex;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  &__owner-verified-icon {
+    display: inline-flex;
+
+    .material-symbols-outlined {
+      font-size: 1.1rem;
+    }
+
+    &--verified {
+      color: $color-accent;
+    }
+
+    &--unverified {
+      color: rgba($color-outline, 0.5);
+    }
+  }
+
   &__owner-avatar {
     .motorcycle-community__owner-user-icon {
       opacity: 0.55;

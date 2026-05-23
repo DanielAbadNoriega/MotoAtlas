@@ -221,9 +221,59 @@ describe('AdminMotorcycleReviewsPage', () => {
 
     await waitFor(() => {
       const row = screen.getByTestId('admin-moto-review-row');
-      expect(within(row).getByText('Viaje')).toBeTruthy();
-      expect(within(row).getByText('12 meses')).toBeTruthy();
-      expect(within(row).getByText('15.000 km')).toBeTruthy();
+      expect(row.textContent).toContain('Viaje');
+      expect(row.textContent).toContain('12 meses');
+      expect(row.textContent).toContain('15.000 km');
+    });
+  });
+
+  it('admin fila muestra icono verificado junto al nombre', async () => {
+    mockAuth();
+    const reviews = [createReview({ id: 'r1', verified: true })];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    await waitFor(() => {
+      const row = screen.getByTestId('admin-moto-review-row');
+      expect(within(row).getByLabelText('Usuario verificado')).toBeTruthy();
+    });
+  });
+
+  it('admin fila muestra icono no verificado junto al nombre', async () => {
+    mockAuth();
+    const reviews = [createReview({ id: 'r1', verified: false })];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    await waitFor(() => {
+      const row = screen.getByTestId('admin-moto-review-row');
+      expect(within(row).getByLabelText('Usuario no verificado')).toBeTruthy();
+    });
+  });
+
+  it('badge muestra Verificada cuando verified es true', async () => {
+    mockAuth();
+    const reviews = [createReview({ id: 'r1', verified: true })];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    await waitFor(() => {
+      const row = screen.getByTestId('admin-moto-review-row');
+      expect(within(row).getByText('Verificada')).toBeTruthy();
+      expect(within(row).getByLabelText('Review verificada')).toBeTruthy();
+    });
+  });
+
+  it('badge muestra No verificada cuando verified es false', async () => {
+    mockAuth();
+    const reviews = [createReview({ id: 'r1', verified: false })];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    await waitFor(() => {
+      const row = screen.getByTestId('admin-moto-review-row');
+      expect(within(row).getByText('No verificada')).toBeTruthy();
+      expect(within(row).getByLabelText('Review no verificada')).toBeTruthy();
     });
   });
 
@@ -244,6 +294,7 @@ describe('AdminMotorcycleReviewsPage', () => {
     const firstRow = screen.getAllByTestId('admin-moto-review-row')[0];
     expect(within(firstRow).getByText('Pendiente')).toBeTruthy();
     expect(within(firstRow).getByText('user')).toBeTruthy();
+    expect(within(firstRow).getByText('No verificada')).toBeTruthy();
 
     const secondRow = screen.getAllByTestId('admin-moto-review-row')[1];
     expect(within(secondRow).getByText('Publicada')).toBeTruthy();
@@ -296,5 +347,52 @@ describe('AdminMotorcycleReviewsPage', () => {
       expect(within(row).queryByText('Pros:')).toBeNull();
       expect(within(row).queryByText('Contras:')).toBeNull();
     });
+  });
+
+  it('filas aparecen plegadas inicialmente', async () => {
+    mockAuth();
+    getReviewsByMotorcycleIdMock.mockResolvedValue([createReview({ id: 'r1' })]);
+    renderPage();
+
+    await waitFor(() => {
+      const trigger = screen.getByRole('button', { name: /Expandir/ });
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    });
+  });
+
+  it('trigger expande/colapsa la fila', async () => {
+    mockAuth();
+    getReviewsByMotorcycleIdMock.mockResolvedValue([createReview({ id: 'r1', comment: 'Review expandible' })]);
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Review expandible')).toBeTruthy();
+    });
+
+    const trigger = screen.getByRole('button', { name: /Expandir/ });
+    await userEvent.click(trigger);
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+
+    await userEvent.click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('footer de acciones contiene Aprobar, Ocultar, Rechazar', async () => {
+    mockAuth();
+    getReviewsByMotorcycleIdMock.mockResolvedValue([createReview({ id: 'r1', comment: 'Review con acciones' })]);
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Review con acciones')).toBeTruthy();
+    });
+
+    const trigger = screen.getByRole('button', { name: /Expandir/ });
+    await userEvent.click(trigger);
+
+    expect(screen.getByRole('button', { name: /Aprobar/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Ocultar/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Rechazar/i })).toBeTruthy();
+    expect(screen.getByText('Gestionar review')).toBeTruthy();
   });
 });

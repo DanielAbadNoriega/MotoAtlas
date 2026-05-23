@@ -249,6 +249,22 @@ describe('MotorcycleCommunityPage', () => {
     expect(await screen.findByText('Review verificada')).toBeInTheDocument();
   });
 
+  it('muestra icono verificado junto al nombre cuando verified es true', async () => {
+    getApprovedReviewsMock.mockResolvedValue([{ ...approvedReviews[0], verified: true }]);
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    expect(await screen.findByLabelText('Usuario verificado')).toBeInTheDocument();
+  });
+
+  it('muestra icono no verificado junto al nombre cuando verified es false', async () => {
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    await screen.findByText('Fantástica para viajar con equipaje.');
+
+    expect(screen.getAllByLabelText('Usuario no verificado').length).toBeGreaterThan(0);
+  });
+
   it('calcula rating medio y uso principal más común', async () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
