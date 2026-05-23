@@ -291,7 +291,7 @@ export function buildAdminSeoMetadata(route: 'admin' | 'moderacion' | 'reviews')
     ? {
         canonicalPath: getAdminCanonicalPath(),
         description: 'Panel privado de administración de MotoAtlas.',
-        title: `Panel admin | ${siteName}`,
+        title: `Panel de administración | ${siteName}`,
       }
     : route === 'moderacion'
       ? {

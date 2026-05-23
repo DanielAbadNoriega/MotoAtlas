@@ -997,11 +997,11 @@ export function AdminReviewsPage() {
             onClose={() => setIsFilterPanelOpen(false)}
           />
           <div className="account-page__main admin-reviews-page__main">
-            <section className="account-page__section admin-reviews-page__garage" aria-labelledby="admin-reviews-page-title">
+            <section className="account-page__section admin-reviews-page__garage" aria-labelledby="admin-reviews-garage-title">
               <div className="account-page__section-header">
                 <div>
                   <span>Garage admin</span>
-                  <h2 id="admin-reviews-page-title">
+                  <h2 id="admin-reviews-garage-title">
                     <span className="material-symbols-outlined" aria-hidden="true">garage</span>
                     Reviews por modelo
                   </h2>
@@ -1235,11 +1235,11 @@ export function AdminModerationPage() {
             onClose={() => setIsFilterPanelOpen(false)}
           />
           <div className="account-page__main">
-            <section className="account-page__section admin-page__moderation" aria-labelledby="admin-moderation-title">
+            <section className="account-page__section admin-page__moderation" aria-labelledby="admin-moderation-reports-title">
               <div className="account-page__section-header">
                 <div>
                   <span>Review reports</span>
-                  <h2 id="admin-moderation-title">
+                  <h2 id="admin-moderation-reports-title">
                     <span className="material-symbols-outlined" aria-hidden="true">flag</span>
                     Reportes de reviews
                   </h2>
