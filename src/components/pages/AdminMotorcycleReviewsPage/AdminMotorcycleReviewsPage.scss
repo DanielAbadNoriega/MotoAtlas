@@ -1,0 +1,259 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.admin-moto-reviews {
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: clamp(5rem, 10vw, 8rem);
+}
+
+.admin-moto-reviews__hero {
+  min-height: clamp(28rem, 62vh, 42rem);
+}
+
+.admin-moto-reviews__hero-actions {
+  .button--ghost {
+    background: rgba($color-surface-container, 0.92);
+    border-color: rgba($color-outline-variant, 0.58);
+    color: $color-on-surface;
+
+    &:hover {
+      background: $color-surface-container-highest;
+      border-color: $color-outline;
+    }
+  }
+}
+
+.admin-moto-reviews__dashboard {
+  @include container;
+
+  grid-template-columns: minmax(18rem, 0.34fr) minmax(0, 1fr);
+}
+
+.admin-moto-reviews__main {
+  align-content: start;
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.admin-motorcycle-reviews-title {
+  @include headline-md;
+
+  margin: 0;
+}
+
+.admin-moto-reviews__state {
+  align-items: center;
+  background:
+    radial-gradient(circle at top right, rgba($color-accent-container, 0.18), transparent 22rem),
+    $color-surface-low;
+  border: 1px solid rgba($color-outline-variant, 0.35);
+  border-radius: $radius-xl;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  min-height: 18rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  text-align: center;
+
+  > .material-symbols-outlined {
+    color: $color-accent;
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  p {
+    color: rgba($color-on-surface-variant, 0.9);
+    line-height: 1.65;
+    margin: 0;
+    max-width: 32rem;
+  }
+}
+
+.admin-moto-reviews__summary-title {
+  @include label-caps;
+
+  color: $color-accent-container;
+  margin: 0 0 1rem;
+}
+
+.admin-moto-reviews__summary-grid {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.admin-moto-reviews__summary-item {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+
+  dt {
+    color: rgba($color-on-surface-variant, 0.86);
+    font-size: 0.86rem;
+  }
+
+  dd {
+    font-family: $font-mono;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  &--pending dd {
+    color: #f2c94c;
+  }
+
+  &--approved dd {
+    color: #6fcf97;
+  }
+
+  &--rejected dd {
+    color: #eb5757;
+  }
+
+  &--hidden dd {
+    color: #f2994a;
+  }
+}
+
+.admin-moto-reviews__list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-moto-reviews__row {
+  background:
+    radial-gradient(circle at top right, rgba($color-accent, 0.1), transparent 18rem),
+    rgba($color-surface-container, 0.94);
+  border: 1px solid rgba($color-outline-variant, 0.58);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+  padding: clamp(1rem, 2vw, 1.35rem);
+  transition: border-color $transition-base;
+}
+
+.admin-moto-reviews__row-header {
+  margin-bottom: 0.75rem;
+}
+
+.admin-moto-reviews__row-heading {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.admin-moto-reviews__row-identity {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.admin-moto-reviews__row-user {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: $color-on-surface;
+  margin-right: 0.2rem;
+}
+
+.admin-moto-reviews__row-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+
+  time {
+    color: rgba($color-on-surface-variant, 0.76);
+    font-size: 0.82rem;
+  }
+}
+
+.admin-moto-reviews__stars {
+  display: inline-flex;
+
+  .material-symbols-outlined {
+    font-size: 1.05rem;
+  }
+
+  [data-filled='true'] {
+    color: #f59e0b;
+  }
+
+  [data-filled='false'] {
+    color: rgba($color-outline, 0.42);
+  }
+}
+
+.admin-moto-reviews__row-body {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.admin-moto-reviews__row-comment {
+  color: rgba($color-on-surface, 0.92);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.admin-moto-reviews__row-pros-cons {
+  display: grid;
+  gap: 0.25rem;
+
+  p {
+    color: rgba($color-on-surface-variant, 0.86);
+    font-size: 0.88rem;
+    margin: 0;
+  }
+
+  strong {
+    color: $color-on-surface;
+  }
+}
+
+.admin-moto-reviews__source-badge {
+  @include label-caps;
+
+  background: rgba($color-surface-container-highest, 0.5);
+  border: 1px solid rgba($color-outline-variant, 0.4);
+  border-radius: 999px;
+  font-size: 0.58rem;
+  padding: 0.3rem 0.55rem;
+}
+
+.admin-moto-reviews__verified-badge {
+  @include label-caps;
+
+  background: rgba(111, 207, 151, 0.12);
+  border: 1px solid rgba(111, 207, 151, 0.5);
+  border-radius: 999px;
+  color: #6fcf97;
+  font-size: 0.58rem;
+  padding: 0.3rem 0.55rem;
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .admin-moto-reviews__dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .admin-moto-reviews {
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+
+  .admin-moto-reviews__hero {
+    min-height: 34rem;
+  }
+
+  .admin-moto-reviews__hero-actions {
+    margin-bottom: 2rem;
+    margin-top: -1.2rem;
+  }
+}

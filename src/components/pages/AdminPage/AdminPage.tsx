@@ -313,7 +313,7 @@ function AdminGate({ children }: AdminGateProps) {
   return children;
 }
 
-function AdminSidebar({ active }: Readonly<{ active: AdminSidebarActiveItem }>) {
+export function AdminSidebar({ active, children }: Readonly<{ active: AdminSidebarActiveItem; children?: ReactNode }>) {
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Navegación admin">
       <article className="account-page__notice admin-page__notice">
@@ -335,6 +335,7 @@ function AdminSidebar({ active }: Readonly<{ active: AdminSidebarActiveItem }>) 
           Reviews
         </a>
       </nav>
+      {children}
     </aside>
   );
 }
@@ -863,7 +864,7 @@ function AdminReviewSummaryCard({ item }: Readonly<{ item: AdminReviewGarageItem
         </ul>
 
         <footer className="account-page__review-summary-actions admin-page__review-summary-actions">
-          <a href="#/admin/reviews">Revisar reviews</a>
+          <a href={`#/admin/reviews/${item.motorcycleId}`}>Revisar reviews</a>
           <a href={item.detailHref}>Ver ficha</a>
         </footer>
       </div>

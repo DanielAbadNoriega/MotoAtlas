@@ -138,7 +138,7 @@ function assertValidReview(input: MotorcycleReviewInput) {
   }
 }
 
-function normalizeAuthContext(authContext: CreateReviewAuthContext | undefined) {
+function normalizeAuthContext(authContext: CreateReviewAuthContext | null | undefined) {
   const userId = authContext?.userId.trim();
   const accessToken = authContext?.accessToken.trim();
 
@@ -331,6 +331,32 @@ export async function getReviewsByUserId(authContext?: CreateReviewAuthContext |
       Authorization: `Bearer ${normalizedAuthContext?.accessToken}`,
     },
   });
+  const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);
+
+  return rows.map(mapReviewRow);
+}
+
+export async function getReviewsByMotorcycleId(motorcycleId: string, authContext?: CreateReviewAuthContext | null): Promise<readonly MotorcycleReview[]> {
+  if (!motorcycleId.trim()) {
+    throw new Error('motorcycleId es obligatorio.');
+  }
+
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    motorcycle_id: `eq.${motorcycleId}`,
+    order: 'created_at.desc',
+    select: 'id,motorcycle_id,user_id,user_name,rating,riding_style,ownership_months,kilometers,comment,pros,cons,status,verified,source,created_at,updated_at,motorcycles(id,brand,model,year,image_url)',
+  });
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews?${params.toString()}`, {
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${normalizedAuthContext?.accessToken ?? config.supabaseAnonKey}`,
+    },
+  });
+
   const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);
 
   return rows.map(mapReviewRow);
