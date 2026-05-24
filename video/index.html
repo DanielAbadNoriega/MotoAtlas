@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotoAtlas — Product Video</title>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face {
+      font-family: 'Hanken Grotesk';
+      src: url('capture/assets/fonts/HankenGrotesk-Variable.woff2') format('woff2');
+      font-weight: 600 900;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Inter';
+      src: url('capture/assets/fonts/Inter-Variable.woff2') format('woff2');
+      font-weight: 300 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('capture/assets/fonts/JetBrainsMono-Variable.woff2') format('woff2');
+      font-weight: 400 700;
+      font-style: normal;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #141313;
+      font-family: 'Inter', sans-serif;
+      color: #e5e2e1;
+    }
+
+    #root {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+    }
+
+    .scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+
+    #scene1 { z-index: 7; }
+    #scene2 { z-index: 6; opacity: 0; }
+    #scene3 { z-index: 5; opacity: 0; }
+    #scene4 { z-index: 4; opacity: 0; }
+    #scene5 { z-index: 3; opacity: 0; }
+    #scene6 { z-index: 2; opacity: 0; }
+    #scene7 { z-index: 1; opacity: 0; }
+
+    /* Shared utilities */
+    .scene-content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      padding: 80px 120px;
+      gap: 16px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .scene-content--center {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .scene-content--split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      padding: 80px 120px;
+    }
+
+    /* Typography */
+    .hd {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .hd-xl { font-size: 96px; }
+    .hd-lg { font-size: 72px; }
+    .hd-md { font-size: 48px; }
+
+    .body-lg {
+      font-family: 'Inter', sans-serif;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    .body-md {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    .label-caps {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .label-sm {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .tabular { font-variant-numeric: tabular-nums; }
+
+    /* Decorative */
+    .bg-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+    }
+
+    .bg-hairline {
+      position: absolute;
+      background: rgba(144, 144, 148, 0.12);
+      pointer-events: none;
+    }
+
+    .ghost-text {
+      position: absolute;
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 900;
+      color: rgba(229, 226, 225, 0.04);
+      font-size: 240px;
+      letter-spacing: -0.03em;
+      pointer-events: none;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* UI mock components */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 800px;
+      background: #0e0e0e;
+      border: 1px solid #46474a;
+      border-radius: 4px;
+      padding: 16px 24px;
+      gap: 12px;
+    }
+    .search-bar__icon { font-size: 24px; opacity: 0.5; }
+    .search-bar__input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: #e5e2e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      outline: none;
+    }
+    .search-bar__hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: rgba(199, 198, 202, 0.5);
+      letter-spacing: 0.05em;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 8px 16px;
+      border: 1px solid #46474a;
+      border-radius: 4px;
+      color: #c7c6ca;
+      background: transparent;
+      text-transform: uppercase;
+    }
+    .filter-chip--active {
+      background: rgba(227, 24, 55, 0.15);
+      border-color: #e31837;
+      color: #e31837;
+    }
+
+    .bike-card {
+      background: #201f1f;
+      border: 1px solid rgba(70, 71, 74, 0.5);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .bike-card__image {
+      height: 160px;
+      background: linear-gradient(135deg, #2b2a2a 0%, #1c1b1b 100%);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bike-card__image-inner {
+      width: 80%;
+      height: 70%;
+      background: linear-gradient(160deg, rgba(229,226,225,0.06) 0%, rgba(229,226,225,0.02) 100%);
+      border-radius: 4px;
+      position: relative;
+    }
+    .bike-card__body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .bike-card__title {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #e5e2e1;
+    }
+    .bike-card__meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #909094;
+      letter-spacing: 0.05em;
+    }
+    .bike-card__rating {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .bike-card__stars {
+      display: flex;
+      gap: 2px;
+    }
+    .bike-card__star {
+      color: rgba(199, 198, 202, 0.25);
+      font-size: 14px;
+    }
+    .bike-card__star--filled { color: #e31837; }
+    .bike-card__star-count {
+      font-size: 12px;
+      color: #c7c6ca;
+    }
+
+    .bike-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    .spec-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      padding: 80px 120px;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .spec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .spec-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(70, 71, 74, 0.3);
+    }
+    .spec-item__label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #c7c6ca;
+      letter-spacing: 0.05em;
+    }
+    .spec-item__value {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #e5e2e1;
+    }
+    .spec-item__value--accent { color: #e31837; }
+
+    .rating-hero {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .rating-hero__number {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 80px;
+      font-weight: 800;
+      color: #e5e2e1;
+      line-height: 1;
+    }
+    .rating-hero__stars {
+      display: flex;
+      gap: 6px;
+    }
+    .rating-hero__star {
+      font-size: 32px;
+      color: rgba(199, 198, 202, 0.25);
+    }
+    .rating-hero__star--filled { color: #e31837; }
+    .rating-hero__count {
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      color: #c7c6ca;
+    }
+
+    .review-card {
+      background: rgba(32, 31, 31, 0.8);
+      border: 1px solid rgba(70, 71, 74, 0.4);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .review-card__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .review-card__avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e31837 0%, #92001d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: #fff;
+    }
+    .review-card__name {
+      font-weight: 600;
+      font-size: 18px;
+    }
+    .review-card__stars {
+      display: flex;
+      gap: 3px;
+      margin-left: auto;
+    }
+    .review-card__star {
+      font-size: 18px;
+      color: rgba(199, 198, 202, 0.25);
+    }
+    .review-card__star--filled { color: #e31837; }
+    .review-card__text {
+      font-size: 16px;
+      line-height: 1.6;
+      color: rgba(199, 198, 202, 0.9);
+    }
+    .review-card__meta {
+      display: flex;
+      gap: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #909094;
+    }
+    .review-card__reaction {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .review-card__reaction-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #c7c6ca;
+      padding: 6px 14px;
+      border: 1px solid rgba(70, 71, 74, 0.4);
+      border-radius: 4px;
+      background: transparent;
+    }
+    .review-card__reaction-btn--active {
+      color: #e31837;
+      border-color: rgba(227, 24, 55, 0.4);
+      background: rgba(227, 24, 55, 0.08);
+    }
+
+    .review-cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 40px;
+      width: 100%;
+      height: 100%;
+    }
+    .dashboard-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .dashboard-main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .sidebar-card {
+      background: #201f1f;
+      border: 1px solid rgba(70, 71, 74, 0.4);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sidebar-card__title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: #e31837;
+      text-transform: uppercase;
+    }
+    .sidebar-link {
+      font-size: 16px;
+      color: #c7c6ca;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(70, 71, 74, 0.2);
+    }
+    .sidebar-link--active {
+      color: #e5e2e1;
+      font-weight: 600;
+    }
+
+    .review-summary-card {
+      background: #201f1f;
+      border: 1px solid rgba(70, 71, 74, 0.4);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .review-summary-card__image {
+      width: 80px;
+      height: 60px;
+      background: linear-gradient(135deg, #2b2a2a 0%, #1c1b1b 100%);
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .review-summary-card__info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .review-summary-card__title {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .review-summary-card__meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #909094;
+    }
+    .review-summary-card__status {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+    .review-summary-card__status--pending {
+      background: rgba(242, 201, 76, 0.15);
+      color: #f2c94c;
+    }
+    .review-summary-card__status--approved {
+      background: rgba(111, 207, 151, 0.15);
+      color: #6fcf97;
+    }
+
+    .admin-panel {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 40px;
+      width: 100%;
+      height: 100%;
+    }
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .report-item {
+      background: #201f1f;
+      border: 1px solid rgba(70, 71, 74, 0.4);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .report-item__badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .report-item__badge--pending {
+      background: rgba(242, 201, 76, 0.15);
+      color: #f2c94c;
+    }
+    .report-item__badge--reviewed {
+      background: rgba(144, 144, 148, 0.15);
+      color: #909094;
+    }
+    .report-item__badge--action_taken {
+      background: rgba(111, 207, 151, 0.15);
+      color: #6fcf97;
+    }
+    .report-item__info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .report-item__title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .report-item__meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #909094;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .action-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .action-btn--approve {
+      border-color: rgba(111, 207, 151, 0.4);
+      color: #6fcf97;
+    }
+    .action-btn--reject {
+      border-color: rgba(235, 87, 87, 0.4);
+      color: #eb5757;
+    }
+    .action-btn--hide {
+      border-color: rgba(144, 144, 148, 0.4);
+      color: #909094;
+    }
+
+    /* Brand mark */
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-mark__icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #e31837 0%, #92001d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 900;
+      font-size: 28px;
+      color: #fff;
+    }
+    .brand-mark__text {
+      font-family: 'Hanken Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 36px;
+      letter-spacing: -0.02em;
+      color: #e5e2e1;
+    }
+
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: #e31837;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div
+    id="root"
+    data-composition-id="main"
+    data-width="1920"
+    data-height="1080"
+    data-start="0"
+    data-duration="44"
+  >
+
+    <!-- ═══════════════════════ SCENE 1: OPENING HERO ═══════════════════════ -->
+    <div id="scene1" class="scene">
+      <div class="bg-glow" style="width:800px;height:800px;background:rgba(227,24,55,0.12);top:-200px;right:-200px;" data-deco></div>
+      <div class="bg-glow" style="width:600px;height:600px;background:rgba(227,24,55,0.06);bottom:-300px;left:-100px;" data-deco></div>
+      <div class="bg-hairline" style="width:1px;height:100%;left:80px;top:0;" data-deco></div>
+      <div class="bg-hairline" style="width:calc(100% - 160px);height:1px;bottom:160px;left:80px;" data-deco></div>
+      <div class="ghost-text" style="top:40px;right:-40px;font-size:360px;" data-deco>MOTOATLAS</div>
+      <div class="ghost-text" style="bottom:-60px;left:-20px;font-size:200px;" data-deco>RIDE</div>
+
+      <div class="scene-content scene-content--center" style="gap:32px;">
+        <div class="brand-mark" id="s1-logo">
+          <div class="brand-mark__icon">M</div>
+          <span class="brand-mark__text">MOTOATLAS</span>
+        </div>
+        <div style="height:24px;"></div>
+        <h1 class="hd hd-xl" id="s1-title" style="max-width:1000px;">
+          The Rider's<br>Compass
+        </h1>
+        <p class="body-lg" id="s1-subtitle" style="color:rgba(199,198,202,0.8);max-width:650px;">
+          Explore. Compare. Ride with confidence.
+        </p>
+        <div style="height:8px;"></div>
+        <div id="s1-tag" class="label-caps" style="color:rgba(227,24,55,0.9);font-size:16px;">
+          Premium Motorcycle Platform
+        </div>
+      </div>
+
+      <div id="s1-meta" style="position:absolute;bottom:50px;right:120px;text-align:right;">
+        <div class="label-sm" style="color:#909094;">Technical Precision</div>
+        <div class="label-sm" style="color:#c7c6ca;">Community Driven</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ SCENE 2: SEARCH & CATALOG ═══════════════════════ -->
+    <div id="scene2" class="scene">
+      <div class="bg-glow" style="width:500px;height:500px;background:rgba(227,24,55,0.06);top:50%;right:10%;" data-deco></div>
+      <div class="bg-glow" style="width:400px;height:400px;background:rgba(32,31,31,0.5);bottom:-100px;left:20%;" data-deco></div>
+      <div class="ghost-text" style="top:80px;left:60px;font-size:180px;color:rgba(229,226,225,0.03);" data-deco>CATALOG</div>
+
+      <div class="scene-content" style="gap:28px;">
+        <div id="s2-eyebrow" class="eyebrow">Catalog</div>
+        <h2 class="hd hd-lg" id="s2-heading" style="max-width:700px;">
+          Find Your Machine
+        </h2>
+
+        <div id="s2-search" class="search-bar">
+          <span class="search-bar__icon" style="color:#909094;">⌕</span>
+          <input class="search-bar__input" placeholder="Search by brand, model, or category..." readonly>
+          <span class="search-bar__hint">⌘K</span>
+        </div>
+
+        <div id="s2-filters" class="filter-row">
+          <span class="filter-chip filter-chip--active">All</span>
+          <span class="filter-chip">Sport</span>
+          <span class="filter-chip">Touring</span>
+          <span class="filter-chip">Adventure</span>
+          <span class="filter-chip">Naked</span>
+          <span class="filter-chip" style="border-style:dashed;">+ Filter</span>
+        </div>
+
+        <div style="height:8px;"></div>
+
+        <div id="s2-grid" class="bike-card-grid">
+          <div class="bike-card">
+            <div class="bike-card__image"><div class="bike-card__image-inner"></div></div>
+            <div class="bike-card__body">
+              <div class="bike-card__title">Panigale V4</div>
+              <div class="bike-card__meta">Ducati · 2024 · 1103 cc</div>
+              <div class="bike-card__rating">
+                <div class="bike-card__stars">
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star">★</span>
+                </div>
+                <span class="bike-card__star-count">4.0 (24)</span>
+              </div>
+            </div>
+          </div>
+          <div class="bike-card">
+            <div class="bike-card__image"><div class="bike-card__image-inner"></div></div>
+            <div class="bike-card__body">
+              <div class="bike-card__title">GSX-8R</div>
+              <div class="bike-card__meta">Suzuki · 2025 · 776 cc</div>
+              <div class="bike-card__rating">
+                <div class="bike-card__stars">
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                </div>
+                <span class="bike-card__star-count">5.0 (8)</span>
+              </div>
+            </div>
+          </div>
+          <div class="bike-card">
+            <div class="bike-card__image"><div class="bike-card__image-inner"></div></div>
+            <div class="bike-card__body">
+              <div class="bike-card__title">Africa Twin</div>
+              <div class="bike-card__meta">Honda · 2025 · 1084 cc</div>
+              <div class="bike-card__rating">
+                <div class="bike-card__stars">
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star bike-card__star--filled">★</span>
+                  <span class="bike-card__star">★</span>
+                </div>
+                <span class="bike-card__star-count">4.2 (31)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s2-stat" class="label-caps" style="color:#909094;margin-top:8px;">
+          500+ Motorcycles · 15 Brands · Verified Data
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ SCENE 3: MOTORCYCLE DETAIL ═══════════════════════ -->
+    <div id="scene3" class="scene">
+      <div class="bg-glow" style="width:700px;height:700px;background:rgba(227,24,55,0.08);top:-200px;right:-100px;" data-deco></div>
+      <div class="bg-hairline" style="width:1px;height:100%;left:50%;top:0;" data-deco></div>
+      <div class="ghost-text" style="bottom:40px;right:80px;font-size:160px;color:rgba(229,226,225,0.03);" data-deco>SPEC</div>
+
+      <div class="spec-split">
+        <!-- Left: Spec Data -->
+        <div class="scene-content" style="padding:100px 0 80px;gap:20px;">
+          <div id="s3-eyebrow" class="eyebrow">Ducati Panigale V4</div>
+          <h2 class="hd hd-lg" id="s3-heading" style="font-size:56px;max-width:500px;">
+            Technical Specifications
+          </h2>
+
+          <div id="s3-rating" class="rating-hero" style="margin-top:12px;">
+            <span class="rating-hero__number">4.0</span>
+            <div>
+              <div class="rating-hero__stars">
+                <span class="rating-hero__star rating-hero__star--filled">★</span>
+                <span class="rating-hero__star rating-hero__star--filled">★</span>
+                <span class="rating-hero__star rating-hero__star--filled">★</span>
+                <span class="rating-hero__star rating-hero__star--filled">★</span>
+                <span class="rating-hero__star">★</span>
+              </div>
+              <span class="rating-hero__count">24 reviews</span>
+            </div>
+          </div>
+
+          <div id="s3-specs" class="spec-list" style="margin-top:12px;">
+            <div class="spec-item">
+              <span class="spec-item__label">Engine</span>
+              <span class="spec-item__value">1103 cc</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-item__label">Power</span>
+              <span class="spec-item__value spec-item__value--accent">214 HP</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-item__label">Torque</span>
+              <span class="spec-item__value">124 Nm</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-item__label">Weight</span>
+              <span class="spec-item__value">187 kg</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-item__label">Top Speed</span>
+              <span class="spec-item__value spec-item__value--accent">305 km/h</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-item__label">Segment</span>
+              <span class="spec-item__value">Superbike</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Visual -->
+        <div class="scene-content scene-content--center" style="padding:100px 40px 80px;gap:24px;">
+          <div id="s3-visual" style="width:100%;max-width:520px;aspect-ratio:16/10;background:linear-gradient(160deg,#2b2a2a 0%,#1c1b1b 100%);border-radius:12px;border:1px solid rgba(70,71,74,0.4);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            <div style="width:90%;height:75%;background:linear-gradient(135deg,rgba(229,226,225,0.04) 0%,rgba(229,226,225,0.01) 100%);border-radius:8px;position:relative;">
+              <div style="position:absolute;bottom:20px;left:20px;display:flex;gap:6px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:#e31837;"></span>
+                <span style="width:8px;height:8px;border-radius:50%;background:rgba(229,226,225,0.15);"></span>
+                <span style="width:8px;height:8px;border-radius:50%;background:rgba(229,226,225,0.15);"></span>
+              </div>
+            </div>
+          </div>
+
+          <div id="s3-badges" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+            <span class="label-caps" style="padding:8px 16px;border:1px solid rgba(227,24,55,0.4);border-radius:4px;color:#e31837;">Superbike</span>
+            <span class="label-caps" style="padding:8px 16px;border:1px solid rgba(70,71,74,0.5);border-radius:4px;color:#909094;">Carnet A</span>
+            <span class="label-caps" style="padding:8px 16px;border:1px solid rgba(111,207,151,0.4);border-radius:4px;color:#6fcf97;">Verified</span>
+          </div>
+
+          <div id="s3-compare-btn" class="label-caps" style="padding:14px 32px;background:rgba(227,24,55,0.9);border-radius:4px;color:#fff;margin-top:8px;">
+            Add to Compare
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ SCENE 4: COMMUNITY REVIEWS ═══════════════════════ -->
+    <div id="scene4" class="scene">
+      <div class="bg-glow" style="width:600px;height:600px;background:rgba(227,24,55,0.06);top:-150px;left:-150px;" data-deco></div>
+      <div class="bg-glow" style="width:450px;height:450px;background:rgba(32,31,31,0.6);bottom:-100px;right:10%;" data-deco></div>
+      <div class="ghost-text" style="top:60px;right:40px;font-size:200px;color:rgba(229,226,225,0.03);" data-deco>REVIEWS</div>
+
+      <div style="display:grid;grid-template-columns:1fr 480px;gap:40px;width:100%;height:100%;padding:80px 120px;box-sizing:border-box;">
+
+        <!-- Left: Review cards -->
+        <div class="scene-content" style="padding:0;gap:20px;">
+          <div id="s4-eyebrow" class="eyebrow">Owner Reports</div>
+          <h2 class="hd hd-lg" id="s4-heading" style="font-size:56px;max-width:500px;">
+            Real Riders, Real Data
+          </h2>
+
+          <div id="s4-cards" class="review-cards-stack" style="margin-top:8px;">
+            <div class="review-card">
+              <div class="review-card__header">
+                <div class="review-card__avatar">JM</div>
+                <span class="review-card__name">Javier M.</span>
+                <div class="review-card__stars">
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star">★</span>
+                </div>
+              </div>
+              <p class="review-card__text">
+                "Increíble en carretera. La estabilidad en curvas rápidas es brutal. 
+                El control de tracción en mojado me salvó varias veces."
+              </p>
+              <div class="review-card__meta">
+                <span>Viaje</span>
+                <span>·</span>
+                <span>24 meses</span>
+                <span>·</span>
+                <span>18.000 km</span>
+              </div>
+              <div class="review-card__reaction">
+                <span class="review-card__reaction-btn review-card__reaction-btn--active">👍 Útil 12</span>
+                <span class="review-card__reaction-btn">👎 No útil</span>
+              </div>
+            </div>
+
+            <div class="review-card">
+              <div class="review-card__header">
+                <div class="review-card__avatar">AG</div>
+                <span class="review-card__name">Andrea G.</span>
+                <div class="review-card__stars">
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star review-card__star--filled">★</span>
+                  <span class="review-card__star review-card__star--filled">★</span>
+                </div>
+              </div>
+              <p class="review-card__text">
+                "Mi primera superbike y no podría estar más feliz. 
+                El sonido del V4 a 12.000 rpm es adictivo."
+              </p>
+              <div class="review-card__meta">
+                <span>Sport</span>
+                <span>·</span>
+                <span>8 meses</span>
+                <span>·</span>
+                <span>5.200 km</span>
+              </div>
+              <div class="review-card__reaction">
+                <span class="review-card__reaction-btn">👍 Útil 8</span>
+                <span class="review-card__reaction-btn">👎 No útil</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Sidebar stats -->
+        <div class="scene-content scene-content--center" style="padding:100px 0;gap:20px;">
+          <div id="s4-stat-total" style="text-align:center;">
+            <div class="hd hd-xl" style="color:#e31837;font-size:96px;">2,847</div>
+            <div class="label-caps" style="color:#c7c6ca;">Verified Reviews</div>
+          </div>
+          <div id="s4-stat-riders" style="text-align:center;">
+            <div class="hd hd-xl" style="font-size:72px;">1.2K</div>
+            <div class="label-caps" style="color:#c7c6ca;">Active Riders</div>
+          </div>
+          <div id="s4-stat-models" style="text-align:center;">
+            <div class="hd hd-xl" style="font-size:72px;">180+</div>
+            <div class="label-caps" style="color:#c7c6ca;">Models Reviewed</div>
+          </div>
+          <div id="s4-cta" class="label-caps" style="padding:14px 32px;border:1px solid rgba(227,24,55,0.6);border-radius:4px;color:#e31837;margin-top:16px;">
+            Join the Community
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ SCENE 5: USER ACCOUNT ═══════════════════════ -->
+    <div id="scene5" class="scene">
+      <div class="bg-glow" style="width:400px;height:400px;background:rgba(227,24,55,0.05);bottom:10%;left:5%;" data-deco></div>
+      <div class="bg-hairline" style="width:calc(100% - 240px);height:1px;top:80px;left:120px;" data-deco></div>
+      <div class="ghost-text" style="bottom:20px;right:60px;font-size:180px;color:rgba(229,226,225,0.02);" data-deco>GARAGE</div>
+
+      <div style="width:100%;height:100%;padding:80px 120px;box-sizing:border-box;">
+        <div class="dashboard-grid">
+          <div class="dashboard-sidebar">
+            <div id="s5-profile" class="sidebar-card">
+              <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e31837 0%,#92001d 100%);display:flex;align-items:center;justify-content:center;font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-size:24px;color:#fff;">AR</div>
+              <div style="font-size:20px;font-weight:700;">Alex Rider</div>
+              <div class="label-sm" style="color:#909094;">alex@example.com</div>
+              <div class="label-caps" style="color:#6fcf97;margin-top:4px;">Verified Rider</div>
+            </div>
+            <div id="s5-nav" class="sidebar-card" style="gap:0;">
+              <div class="sidebar-card__title">Menu</div>
+              <div class="sidebar-link sidebar-link--active">Mis Reviews</div>
+              <div class="sidebar-link">Solicitudes</div>
+              <div class="sidebar-link">Perfil</div>
+            </div>
+          </div>
+
+          <div class="dashboard-main">
+            <div id="s5-section-header" style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="eyebrow" style="margin-bottom:4px;">My Garage</div>
+                <h2 class="hd hd-md" style="font-size:36px;">Mis Reviews</h2>
+              </div>
+              <div class="label-caps" style="color:#909094;">3 reviews · 2 approved</div>
+            </div>
+
+            <div id="s5-cards" style="display:flex;flex-direction:column;gap:12px;">
+              <div class="review-summary-card">
+                <div class="review-summary-card__image"></div>
+                <div class="review-summary-card__info">
+                  <div class="review-summary-card__title">Ducati Panigale V4</div>
+                  <div class="review-summary-card__meta">Publicada · 24 feb 2026</div>
+                  <div style="display:flex;gap:4px;">
+                    <span style="color:#e31837;">★★★★</span><span style="color:rgba(199,198,202,0.25);">★</span>
+                    <span style="font-size:12px;color:#c7c6ca;margin-left:4px;">4.0</span>
+                  </div>
+                </div>
+                <span class="review-summary-card__status review-summary-card__status--approved">Publicada</span>
+              </div>
+
+              <div class="review-summary-card">
+                <div class="review-summary-card__image"></div>
+                <div class="review-summary-card__info">
+                  <div class="review-summary-card__title">BMW F 900 GS</div>
+                  <div class="review-summary-card__meta">Pendiente · 10 ene 2026</div>
+                  <div style="display:flex;gap:4px;">
+                    <span style="color:#e31837;">★★★</span><span style="color:rgba(199,198,202,0.25);">★★</span>
+                    <span style="font-size:12px;color:#c7c6ca;margin-left:4px;">3.0</span>
+                  </div>
+                </div>
+                <span class="review-summary-card__status review-summary-card__status--pending">Pendiente</span>
+              </div>
+
+              <div class="review-summary-card">
+                <div class="review-summary-card__image"></div>
+                <div class="review-summary-card__info">
+                  <div class="review-summary-card__title">Suzuki GSX-8R</div>
+                  <div class="review-summary-card__meta">Publicada · 3 dic 2025</div>
+                  <div style="display:flex;gap:4px;">
+                    <span style="color:#e31837;">★★★★★</span>
+                    <span style="font-size:12px;color:#c7c6ca;margin-left:4px;">5.0</span>
+                  </div>
+                </div>
+                <span class="review-summary-card__status review-summary-card__status--approved">Publicada</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ SCENE 6: ADMIN MODERATION ═══════════════════════ -->
+    <div id="scene6" class="scene">
+      <div class="bg-glow" style="width:500px;height:500px;background:rgba(227,24,55,0.07);top:20%;right:-100px;" data-deco></div>
+      <div class="bg-hairline" style="width:1px;height:100%;left:380px;top:0;" data-deco></div>
+      <div class="ghost-text" style="top:-20px;left:-40px;font-size:220px;color:rgba(229,226,225,0.02);" data-deco>ADMIN</div>
+
+      <div style="width:100%;height:100%;padding:80px 120px;box-sizing:border-box;">
+        <div class="admin-panel">
+          <!-- Admin sidebar -->
+          <div class="dashboard-sidebar">
+            <div id="s6-sidebar" class="sidebar-card">
+              <div class="sidebar-card__title">Admin Studio</div>
+              <div class="sidebar-link">Dashboard</div>
+              <div class="sidebar-link sidebar-link--active">Moderación</div>
+              <div class="sidebar-link">Reviews</div>
+              <div class="sidebar-link" style="border:none;">Solicitudes</div>
+            </div>
+            <div id="s6-summary" class="sidebar-card">
+              <div class="sidebar-card__title">Summary</div>
+              <div style="display:flex;justify-content:space-between;">
+                <span class="label-sm" style="color:#c7c6ca;">Pending</span>
+                <span class="label-sm tabular" style="color:#f2c94c;">14</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+                <span class="label-sm" style="color:#c7c6ca;">Reviewed</span>
+                <span class="label-sm tabular" style="color:#909094;">28</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+                <span class="label-sm" style="color:#c7c6ca;">Resolved</span>
+                <span class="label-sm tabular" style="color:#6fcf97;">156</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main content -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <div id="s6-header">
+              <div class="eyebrow" style="margin-bottom:4px;">Admin Panel</div>
+              <h2 class="hd hd-md" style="font-size:36px;">Report Moderation</h2>
+            </div>
+
+            <div id="s6-filters" class="filter-row">
+              <span class="filter-chip filter-chip--active">All</span>
+              <span class="filter-chip">Pending</span>
+              <span class="filter-chip">Reviewed</span>
+              <span class="filter-chip">Action Taken</span>
+            </div>
+
+            <div id="s6-reports" class="report-list">
+              <div class="report-item">
+                <span class="report-item__badge report-item__badge--pending">Pending</span>
+                <div class="report-item__info">
+                  <div class="report-item__title">Inappropriate content</div>
+                  <div class="report-item__meta">Reported by @rider88 · Review #142 · 2h ago</div>
+                </div>
+                <div class="action-buttons">
+                  <span class="action-btn action-btn--approve">Approve</span>
+                  <span class="action-btn action-btn--hide">Hide</span>
+                  <span class="action-btn action-btn--reject">Reject</span>
+                </div>
+              </div>
+
+              <div class="report-item">
+                <span class="report-item__badge report-item__badge--reviewed">Reviewed</span>
+                <div class="report-item__info">
+                  <div class="report-item__title">Spam suspected</div>
+                  <div class="report-item__meta">Reported by @moto42 · Review #138 · 1d ago</div>
+                </div>
+                <div class="action-buttons">
+                  <span class="action-btn action-btn--approve">Approve</span>
+                  <span class="action-btn action-btn--hide">Hide</span>
+                  <span class="action-btn action-btn--reject">Reject</span>
+                </div>
+              </div>
+
+              <div class="report-item">
+                <span class="report-item__badge report-item__badge--action_taken">Resolved</span>
+                <div class="report-item__info">
+                  <div class="report-item__title">Duplicate review</div>
+                  <div class="report-item__meta">Reported by @rider99 · Review #130 · 3d ago</div>
+                </div>
+                <div class="action-buttons">
+                  <span class="action-btn action-btn--approve">Approve</span>
+                  <span class="action-btn action-btn--hide">Hide</span>
+                  <span class="action-btn action-btn--reject">Reject</span>
+                </div>
+              </div>
+
+              <div class="report-item">
+                <span class="report-item__badge report-item__badge--pending">Pending</span>
+                <div class="report-item__info">
+                  <div class="report-item__title">Misleading rating</div>
+                  <div class="report-item__meta">Reported by @motoatlas_team · Review #155 · 5h ago</div>
+                </div>
+                <div class="action-buttons">
+                  <span class="action-btn action-btn--approve">Approve</span>
+                  <span class="action-btn action-btn--hide">Hide</span>
+                  <span class="action-btn action-btn--reject">Reject</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ SCENE 7: CLOSING ═══════════════════════ -->
+    <div id="scene7" class="scene">
+      <div class="bg-glow" style="width:900px;height:900px;background:rgba(227,24,55,0.1);top:50%;left:50%;transform:translate(-50%,-50%);" data-deco></div>
+      <div class="bg-hairline" style="width:1px;height:80%;left:50%;top:10%;" data-deco></div>
+      <div class="bg-hairline" style="width:60%;height:1px;top:50%;left:20%;" data-deco></div>
+      <div class="ghost-text" style="top:-10px;left:10%;font-size:300px;color:rgba(229,226,225,0.02);" data-deco>M</div>
+      <div class="ghost-text" style="bottom:-40px;right:10%;font-size:280px;color:rgba(229,226,225,0.02);" data-deco>A</div>
+
+      <div class="scene-content scene-content--center" style="gap:40px;">
+        <div id="s7-logo" class="brand-mark">
+          <div class="brand-mark__icon" style="width:72px;height:72px;font-size:34px;border-radius:14px;">M</div>
+          <span class="brand-mark__text" style="font-size:48px;">MOTOATLAS</span>
+        </div>
+
+        <div style="height:8px;"></div>
+
+        <p class="hd hd-lg" id="s7-tagline" style="color:rgba(229,226,225,0.7);font-size:40px;font-weight:600;letter-spacing:-0.01em;">
+          The Rider's Compass
+        </p>
+
+        <div style="height:16px;"></div>
+
+        <div id="s7-url" class="label-caps" style="font-size:18px;color:#e31837;letter-spacing:0.2em;">
+          motoatlas.app
+        </div>
+
+        <div style="height:24px;"></div>
+
+        <div id="s7-pillars" style="display:flex;gap:48px;">
+          <div style="text-align:center;">
+            <div class="label-caps" style="color:#c7c6ca;font-size:13px;">Explore</div>
+          </div>
+          <div style="width:1px;height:24px;background:rgba(70,71,74,0.4);align-self:center;"></div>
+          <div style="text-align:center;">
+            <div class="label-caps" style="color:#c7c6ca;font-size:13px;">Compare</div>
+          </div>
+          <div style="width:1px;height:24px;background:rgba(70,71,74,0.4);align-self:center;"></div>
+          <div style="text-align:center;">
+            <div class="label-caps" style="color:#c7c6ca;font-size:13px;">Ride</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="s7-copyright" class="label-sm" style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);color:#46474a;font-size:12px;">
+        © 2026 MotoAtlas — Technical Precision, Community Driven
+      </div>
+    </div>
+
+  </div><!-- /root -->
+
+  <script>
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    // ─── SCENE 1: Hero (0s → 7s) ───
+    // Decorative ambient
+    tl.from('[data-deco]', { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 0);
+    tl.to('.bg-glow', { scale: 1.08, duration: 3.5, ease: 'sine.inOut', repeat: 1, yoyo: true }, 0.5);
+    tl.to('.ghost-text', { x: 20, duration: 4, ease: 'sine.inOut', repeat: 1, yoyo: true }, 1);
+
+    // Content entrances
+    tl.from('#s1-logo', { y: -40, opacity: 0, duration: 0.8, ease: 'expo.out' }, 0.3);
+    tl.from('#s1-title', { y: 50, opacity: 0, duration: 0.9, ease: 'power3.out' }, 0.6);
+    tl.from('#s1-subtitle', { y: 30, opacity: 0, duration: 0.7, ease: 'power2.out' }, 1.0);
+    tl.from('#s1-tag', { y: 20, opacity: 0, duration: 0.5, ease: 'back.out(1.4)' }, 1.4);
+    tl.from('#s1-meta', { opacity: 0, duration: 0.6, ease: 'power1.out' }, 2.5);
+
+    // ─── SCENE 1→2 TRANSITION ───
+    tl.to('#scene1', { y: -80, opacity: 0, duration: 0.5, ease: 'power2.in' }, 6.2);
+    tl.set('#scene2', { opacity: 1 }, 6.2);
+    tl.set('#scene1', { visibility: 'hidden' }, 6.8);
+
+    // ─── SCENE 2: Catalog (7s → 13s) ───
+    tl.from('#s2-eyebrow', { y: 30, opacity: 0, duration: 0.5, ease: 'power2.out' }, 6.5);
+    tl.from('#s2-heading', { y: 40, opacity: 0, duration: 0.6, ease: 'expo.out' }, 6.7);
+    tl.from('#s2-search', { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out' }, 7.0);
+    tl.from('#s2-filters', { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out' }, 7.3);
+    tl.from('.bike-card', { y: 50, opacity: 0, duration: 0.6, ease: 'back.out(1.2)', stagger: 0.1 }, 7.5);
+    tl.from('#s2-stat', { y: 20, opacity: 0, duration: 0.5, ease: 'power1.out' }, 8.5);
+
+    // ─── SCENE 2→3 TRANSITION ───
+    tl.to('#scene2', { x: -100, blur: '12px', opacity: 0, duration: 0.45, ease: 'power2.in' }, 12.2);
+    tl.set('#scene3', { opacity: 1 }, 12.2);
+    tl.set('#scene2', { visibility: 'hidden' }, 12.7);
+
+    // ─── SCENE 3: Detail (13s → 19s) ───
+    tl.from('#s3-eyebrow', { y: 30, opacity: 0, duration: 0.5, ease: 'power2.out' }, 12.5);
+    tl.from('#s3-heading', { y: 40, opacity: 0, duration: 0.6, ease: 'expo.out' }, 12.7);
+    tl.from('#s3-rating', { scale: 0.9, opacity: 0, duration: 0.6, ease: 'back.out(1.3)' }, 13.0);
+    tl.from('.spec-item', { x: -30, opacity: 0, duration: 0.4, ease: 'power2.out', stagger: 0.06 }, 13.3);
+    tl.from('#s3-visual', { scale: 0.85, opacity: 0, duration: 0.7, ease: 'expo.out' }, 13.0);
+    tl.from('#s3-badges > *', { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out', stagger: 0.08 }, 14.0);
+    tl.from('#s3-compare-btn', { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' }, 14.5);
+
+    // ─── SCENE 3→4 TRANSITION ───
+    tl.to('#scene3', { y: -100, blur: '16px', opacity: 0, duration: 0.5, ease: 'power2.in' }, 18.2);
+    tl.set('#scene4', { opacity: 1 }, 18.2);
+    tl.set('#scene3', { visibility: 'hidden' }, 18.8);
+
+    // ─── SCENE 4: Community (19s → 25s) ───
+    tl.from('#s4-eyebrow', { y: 30, opacity: 0, duration: 0.5, ease: 'sine.out' }, 18.5);
+    tl.from('#s4-heading', { y: 40, opacity: 0, duration: 0.6, ease: 'expo.out' }, 18.7);
+    tl.from('.review-card:first-child', { x: -40, opacity: 0, duration: 0.6, ease: 'power3.out' }, 19.2);
+    tl.from('.review-card:last-child', { x: -40, opacity: 0, duration: 0.6, ease: 'power3.out' }, 19.6);
+    tl.from('#s4-stat-total', { y: 30, opacity: 0, duration: 0.5, ease: 'back.out(1.2)' }, 19.8);
+    tl.from('#s4-stat-riders', { y: 30, opacity: 0, duration: 0.5, ease: 'back.out(1.2)' }, 20.1);
+    tl.from('#s4-stat-models', { y: 30, opacity: 0, duration: 0.5, ease: 'back.out(1.2)' }, 20.4);
+    tl.from('#s4-cta', { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' }, 20.8);
+
+    // ─── SCENE 4→5 TRANSITION ───
+    tl.to('#scene4', { x: 120, blur: '14px', opacity: 0, duration: 0.45, ease: 'power2.in' }, 24.2);
+    tl.set('#scene5', { opacity: 1 }, 24.2);
+    tl.set('#scene4', { visibility: 'hidden' }, 24.7);
+
+    // ─── SCENE 5: Account (25s → 30s) ───
+    tl.from('#s5-profile', { y: 30, opacity: 0, duration: 0.5, ease: 'power2.out' }, 24.5);
+    tl.from('#s5-nav', { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out' }, 24.8);
+    tl.from('#s5-section-header', { y: 30, opacity: 0, duration: 0.5, ease: 'expo.out' }, 25.0);
+    tl.from('.review-summary-card', { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out', stagger: 0.1 }, 25.3);
+
+    // ─── SCENE 5→6 TRANSITION ───
+    tl.to('#scene5', { y: -80, opacity: 0, duration: 0.4, ease: 'power2.in' }, 29.2);
+    tl.set('#scene6', { opacity: 1 }, 29.2);
+    tl.set('#scene5', { visibility: 'hidden' }, 29.7);
+
+    // ─── SCENE 6: Admin (30s → 36s) ───
+    tl.from('#s6-sidebar', { y: 30, opacity: 0, duration: 0.5, ease: 'power2.out' }, 29.5);
+    tl.from('#s6-summary', { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out' }, 29.8);
+    tl.from('#s6-header', { y: 30, opacity: 0, duration: 0.5, ease: 'expo.out' }, 30.0);
+    tl.from('#s6-filters', { y: 20, opacity: 0, duration: 0.4, ease: 'power2.out' }, 30.2);
+    tl.from('.report-item', { x: -30, opacity: 0, duration: 0.4, ease: 'power3.out', stagger: 0.08 }, 30.5);
+
+    // ─── SCENE 6→7 TRANSITION ───
+    tl.to('#scene6', { scale: 1.1, blur: '20px', opacity: 0, duration: 0.6, ease: 'power2.in' }, 35.2);
+    tl.set('#scene7', { opacity: 1 }, 35.2);
+    tl.set('#scene6', { visibility: 'hidden' }, 35.9);
+
+    // ─── SCENE 7: Closing (36s → 44s) ───
+    tl.fromTo('#s7-logo', { scale: 0.6, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 1.0, ease: 'expo.out' }, 35.5);
+    tl.from('#s7-tagline', { y: 30, opacity: 0, duration: 0.8, ease: 'sine.out' }, 36.0);
+    tl.from('#s7-url', { y: 20, opacity: 0, duration: 0.6, ease: 'back.out(1.4)' }, 36.5);
+    tl.from('#s7-pillars > *', { y: 20, opacity: 0, duration: 0.5, ease: 'power2.out', stagger: 0.1 }, 37.0);
+    tl.from('#s7-copyright', { opacity: 0, duration: 0.5, ease: 'power1.out' }, 38.0);
+
+    // Final scene ambient
+    tl.to('.bg-glow', { scale: 1.12, duration: 4, ease: 'sine.inOut', repeat: 1, yoyo: true }, 36);
+
+    // Exit — last scene ONLY (allowed per rules)
+    tl.to('#s7-logo', { y: -20, opacity: 0, duration: 0.6, ease: 'power2.in' }, 42.0);
+    tl.to('#s7-tagline', { opacity: 0, duration: 0.5, ease: 'power1.in' }, 42.2);
+    tl.to('#s7-url', { opacity: 0, duration: 0.4, ease: 'power1.in' }, 42.3);
+    tl.to('#s7-pillars', { opacity: 0, duration: 0.4, ease: 'power1.in' }, 42.4);
+    tl.to('#s7-copyright', { opacity: 0, duration: 0.3, ease: 'power1.in' }, 42.5);
+    tl.to('#scene7', { opacity: 0, duration: 0.8, ease: 'power2.in' }, 42.8);
+    tl.set('#scene7', { visibility: 'hidden' }, 44);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>
