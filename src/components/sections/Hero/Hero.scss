@@ -37,6 +37,16 @@
     text-align: center;
   }
 
+  .hero__eyebrow {
+    @include label-caps;
+
+    color: $color-accent;
+    display: block;
+    letter-spacing: 0.22em;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.88);
+  }
+
   h1 {
     @include headline-xl;
 

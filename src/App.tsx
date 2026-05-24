@@ -244,7 +244,7 @@ export function App() {
 
     applySeoMetadata({
       canonicalUrl: 'https://motoatlas.com/',
-      description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
+      description: 'Explora el catálogo técnico de motos, compara modelos y lee reviews reales de la comunidad motera. Decisiones informadas para moteros exigentes.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
   }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
