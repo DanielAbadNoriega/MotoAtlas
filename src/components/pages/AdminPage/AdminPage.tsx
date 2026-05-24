@@ -395,7 +395,7 @@ export function AdminDashboardPage() {
               <article className="account-page__card admin-page__summary-card">
                 <span className="material-symbols-outlined" aria-hidden="true">flag</span>
                 <h2 id="admin-dashboard-cards-title">Reportes pendientes</h2>
-                <p>Revisá reportes de reviews, actualizá su estado y actuá sobre la review si corresponde.</p>
+                <p>Revisa reportes de reviews, actualiza su estado y actúa sobre la review si corresponde.</p>
                 <a className="account-page__button" href="#/admin/moderacion">Ir a moderación</a>
               </article>
               <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
