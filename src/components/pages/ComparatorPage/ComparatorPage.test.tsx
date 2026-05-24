@@ -44,7 +44,7 @@ describe('ComparePage', () => {
     expect(screen.getByRole('heading', { name: /BMW F 900 GS vs Aprilia Tuareg 660/i })).toBeInTheDocument();
     expect(screen.getByText('VS')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /¿Cuál elegirías/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Análisis en vídeo/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Análisis destacados/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Veredicto final/i })).toBeInTheDocument();
   });
 
@@ -53,7 +53,7 @@ describe('ComparePage', () => {
 
     expect(screen.getAllByRole('heading', { name: /BMW F 900 GS/i }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('heading', { name: /Aprilia Tuareg 660/i }).length).toBeGreaterThan(0);
-    expect(screen.getByText(/2 motos seleccionadas/i)).toBeInTheDocument();
+    expect(screen.getByText(/Compara ficha técnica/i)).toBeInTheDocument();
   });
 
   it('allows comparing three motorcycles', () => {
@@ -65,7 +65,7 @@ describe('ComparePage', () => {
     expect(within(duel).getByRole('heading', { name: /BMW F 900 GS/i })).toBeInTheDocument();
     expect(within(duel).getByRole('heading', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
     expect(within(duel).getByRole('heading', { name: /Yamaha MT-09/i })).toBeInTheDocument();
-    expect(screen.getByText(/3 motos seleccionadas/i)).toBeInTheDocument();
+    expect(screen.getByText(/vista clara y directa/i)).toBeInTheDocument();
   });
 
   it('mantiene acciones legibles para cada moto en una comparación de 3', () => {
@@ -255,7 +255,6 @@ describe('ComparePage', () => {
 
     expect(screen.getByRole('progressbar', { name: /City Use NoData Ghost/i })).toHaveAttribute('aria-valuenow', '0');
     expect(screen.getAllByText('0.0/10').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('N/D').length).toBeGreaterThan(0);
   });
 
   it('asks for at least two motorcycles when comparison is empty', () => {

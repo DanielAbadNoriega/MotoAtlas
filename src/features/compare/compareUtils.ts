@@ -550,7 +550,7 @@ function buildVideos(bikes: readonly Bike[]) {
       bike,
       duration: hasScore ? `${Math.max(10, Math.round(overallScore + getBikePros(bike).length + getBikeCons(bike).length))}:00` : NOT_AVAILABLE_LABEL,
       imageUrl: getBikeImageUrl(bike),
-      title: `${getSafeBikeDisplayName(bike)}: análisis técnico y uso real`,
+      title: `${getSafeBikeDisplayName(bike)}: datos destacados`,
     };
   }) satisfies readonly CompareVideoAnalysis[];
 }
