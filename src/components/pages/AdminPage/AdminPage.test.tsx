@@ -8,6 +8,8 @@ import {
   updateReviewReportStatus,
   type AdminReviewReport,
 } from '../../../services/adminModerationService';
+import { getAllReviews } from '../../../services/adminReviewService';
+import type { MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { AdminDashboardPage, AdminModerationPage, AdminReviewsPage } from './AdminPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -20,8 +22,13 @@ vi.mock('../../../services/adminModerationService', () => ({
   updateReviewReportStatus: vi.fn(),
 }));
 
+vi.mock('../../../services/adminReviewService', () => ({
+  getAllReviews: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
+const getAllReviewsMock = vi.mocked(getAllReviews);
 const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
 
@@ -89,6 +96,34 @@ function buildReport(index: number, overrides: Partial<AdminReviewReport> = {}):
   };
 }
 
+function buildReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
+  return {
+    id: overrides.id ?? 'review-1',
+    motorcycleId: overrides.motorcycleId ?? 'test-bmw-f-900-gs',
+    userId: overrides.userId ?? null,
+    motorcycle: overrides.motorcycle ?? {
+      id: 'test-bmw-f-900-gs',
+      brand: 'BMW',
+      model: 'F 900 GS',
+      year: 2024,
+      imageUrl: '/bmw.jpg',
+    },
+    userName: overrides.userName ?? 'Rider_X',
+    rating: overrides.rating ?? 4,
+    ridingStyle: overrides.ridingStyle ?? 'viaje',
+    ownershipMonths: overrides.ownershipMonths ?? null,
+    kilometers: overrides.kilometers ?? null,
+    comment: overrides.comment ?? 'Review de prueba.',
+    pros: overrides.pros ?? ['bueno'],
+    cons: overrides.cons ?? ['malo'],
+    verified: overrides.verified ?? false,
+    status: overrides.status ?? 'pending',
+    source: overrides.source ?? 'user',
+    createdAt: overrides.createdAt ?? '2026-05-21T10:00:00.000Z',
+    updatedAt: overrides.updatedAt ?? '2026-05-21T10:00:00.000Z',
+  };
+}
+
 function mockAuth(overrides = {}) {
   useAuthMock.mockReturnValue({ ...adminAuth, ...overrides } as never);
 }
@@ -97,6 +132,7 @@ describe('AdminPage', () => {
   beforeEach(() => {
     useAuthMock.mockReset();
     getReviewReportsMock.mockReset().mockResolvedValue(reports);
+    getAllReviewsMock.mockReset().mockResolvedValue([]);
     resolveReportWithReviewStatusMock.mockReset().mockResolvedValue(undefined);
     updateReviewReportStatusMock.mockReset().mockResolvedValue(undefined);
     mockAuth();
@@ -143,6 +179,7 @@ describe('AdminPage', () => {
 
     expect(screen.getByRole('heading', { name: /Inicia sesión para acceder al panel admin/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Iniciar sesión/i })).toHaveAttribute('href', '#/login');
+    expect(getAllReviewsMock).not.toHaveBeenCalled();
     expect(getReviewReportsMock).not.toHaveBeenCalled();
   });
 
@@ -155,6 +192,7 @@ describe('AdminPage', () => {
     render(<AdminReviewsPage />);
 
     expect(screen.getByRole('heading', { name: /No tienes permisos para acceder a esta zona/i })).toBeInTheDocument();
+    expect(getAllReviewsMock).not.toHaveBeenCalled();
     expect(getReviewReportsMock).not.toHaveBeenCalled();
   });
 
@@ -167,90 +205,35 @@ describe('AdminPage', () => {
   });
 
   it('admin ve reviews agrupadas por moto con pendientes y última review', async () => {
-    getReviewReportsMock.mockResolvedValueOnce([
-      {
-        ...reports[0],
-        createdAt: '2026-05-21T10:00:00.000Z',
-        id: 'report-bike-1-pending',
-        review: reports[0].review
-          ? {
-              ...reports[0].review,
-              createdAt: '2026-05-20T08:00:00.000Z',
-              id: 'review-bike-1-pending',
-              motorcycleId: 'test-bmw-f-900-gs',
-              status: 'pending',
-            }
-          : null,
-        reviewId: 'review-bike-1-pending',
-      },
-      {
-        ...reports[0],
-        createdAt: '2026-05-20T10:00:00.000Z',
-        id: 'report-bike-1-approved',
-        review: reports[0].review
-          ? {
-              ...reports[0].review,
-              createdAt: '2026-05-19T08:00:00.000Z',
-              id: 'review-bike-1-approved',
-              motorcycleId: 'test-bmw-f-900-gs',
-              status: 'approved',
-            }
-          : null,
-        reviewId: 'review-bike-1-approved',
-      },
-      {
-        ...reports[0],
-        createdAt: '2026-05-22T10:00:00.000Z',
-        id: 'report-bike-2-pending',
-        review: reports[0].review
-          ? {
-              ...reports[0].review,
-              createdAt: '2026-05-21T09:00:00.000Z',
-              id: 'review-bike-2-pending',
-              motorcycle: {
-                brand: 'Aprilia',
-                id: 'test-aprilia-tuareg-660',
-                imageUrl: '/aprilia.jpg',
-                model: 'Tuareg 660',
-                year: 2024,
-              },
-              motorcycleId: 'test-aprilia-tuareg-660',
-              status: 'pending',
-            }
-          : null,
-        reviewId: 'review-bike-2-pending',
-      },
-      {
-        ...reports[0],
-        createdAt: '2026-05-22T11:00:00.000Z',
-        id: 'report-bike-2-duplicate',
-        review: reports[0].review
-          ? {
-              ...reports[0].review,
-              createdAt: '2026-05-21T09:00:00.000Z',
-              id: 'review-bike-2-pending',
-              motorcycle: {
-                brand: 'Aprilia',
-                id: 'test-aprilia-tuareg-660',
-                imageUrl: '/aprilia.jpg',
-                model: 'Tuareg 660',
-                year: 2024,
-              },
-              motorcycleId: 'test-aprilia-tuareg-660',
-              status: 'pending',
-            }
-          : null,
-        reviewId: 'review-bike-2-pending',
-      },
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'review-bike-1-pending',
+        createdAt: '2026-05-20T08:00:00.000Z',
+        motorcycleId: 'test-bmw-f-900-gs',
+        status: 'pending',
+      }),
+      buildReview({
+        id: 'review-bike-1-approved',
+        createdAt: '2026-05-19T08:00:00.000Z',
+        motorcycleId: 'test-bmw-f-900-gs',
+        status: 'approved',
+      }),
+      buildReview({
+        id: 'review-bike-2-pending',
+        createdAt: '2026-05-21T09:00:00.000Z',
+        motorcycleId: 'test-aprilia-tuareg-660',
+        motorcycle: { id: 'test-aprilia-tuareg-660', brand: 'Aprilia', model: 'Tuareg 660', year: 2024, imageUrl: '/aprilia.jpg' },
+        status: 'pending',
+      }),
     ]);
     render(<AdminReviewsPage />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Reviews por modelo' })).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Aprilia Tuareg 660 2024' })).toBeInTheDocument();
-    expect(getReviewReportsMock).toHaveBeenCalledWith(
+    expect(getAllReviewsMock).toHaveBeenCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
-      { reason: 'all', sort: 'recent', status: 'all' },
     );
+    expect(getReviewReportsMock).not.toHaveBeenCalled();
 
     const cards = screen.getAllByTestId('admin-review-summary-card');
     expect(cards).toHaveLength(2);
@@ -564,61 +547,35 @@ describe('AdminPage', () => {
   it('muestra y aplica filtros en la página de reviews (estado, origen, verificación)', async () => {
     const user = userEvent.setup();
 
-    const sampleReports = [
-      {
-        ...reports[0],
-        id: 'r1',
-        createdAt: '2026-05-22T10:00:00.000Z',
-        review: {
-          ...(reports[0].review ?? {}),
-          id: 'rev1',
-          createdAt: '2026-05-22T09:00:00.000Z',
-          motorcycleId: 'bike-1',
-          motorcycle: { brand: 'A', id: 'bike-1', imageUrl: '/a.jpg', model: 'M1', year: 2024 },
-          status: 'pending',
-          source: 'user',
-          verified: true,
-          userName: 'Rider_1',
-        },
-        reviewId: 'rev1',
-      },
-      {
-        ...reports[0],
-        id: 'r2',
-        createdAt: '2026-05-21T10:00:00.000Z',
-        review: {
-          ...(reports[0].review ?? {}),
-          id: 'rev2',
-          createdAt: '2026-05-21T09:00:00.000Z',
-          motorcycleId: 'bike-2',
-          motorcycle: { brand: 'B', id: 'bike-2', imageUrl: '/b.jpg', model: 'M2', year: 2023 },
-          status: 'approved',
-          source: 'mock',
-          verified: false,
-          userName: 'Rider_2',
-        },
-        reviewId: 'rev2',
-      },
-      {
-        ...reports[0],
-        id: 'r3',
-        createdAt: '2026-05-20T10:00:00.000Z',
-        review: {
-          ...(reports[0].review ?? {}),
-          id: 'rev3',
-          createdAt: '2026-05-20T09:00:00.000Z',
-          motorcycleId: 'bike-3',
-          motorcycle: { brand: 'C', id: 'bike-3', imageUrl: '/c.jpg', model: 'M3', year: 2022 },
-          status: 'pending',
-          source: 'seed',
-          verified: false,
-          userName: 'Rider_3',
-        },
-        reviewId: 'rev3',
-      },
-    ] as unknown as AdminReviewReport[];
-
-    getReviewReportsMock.mockResolvedValueOnce(sampleReports);
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'rev1',
+        createdAt: '2026-05-22T09:00:00.000Z',
+        motorcycleId: 'bike-1',
+        motorcycle: { id: 'bike-1', brand: 'A', model: 'M1', year: 2024, imageUrl: '/a.jpg' },
+        status: 'pending',
+        source: 'user',
+        verified: true,
+      }),
+      buildReview({
+        id: 'rev2',
+        createdAt: '2026-05-21T09:00:00.000Z',
+        motorcycleId: 'bike-2',
+        motorcycle: { id: 'bike-2', brand: 'B', model: 'M2', year: 2023, imageUrl: '/b.jpg' },
+        status: 'approved',
+        source: 'mock',
+        verified: false,
+      }),
+      buildReview({
+        id: 'rev3',
+        createdAt: '2026-05-20T09:00:00.000Z',
+        motorcycleId: 'bike-3',
+        motorcycle: { id: 'bike-3', brand: 'C', model: 'M3', year: 2022, imageUrl: '/c.jpg' },
+        status: 'pending',
+        source: 'seed',
+        verified: false,
+      }),
+    ]);
     render(<AdminReviewsPage />);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Reviews por modelo' })).toBeInTheDocument();
@@ -657,6 +614,41 @@ describe('AdminPage', () => {
     await user.click(within(filters).getByRole('button', { name: /Verificadas: Verificadas/i }));
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
     expect(screen.getByRole('heading', { name: 'A M1 2024' })).toBeInTheDocument();
+  });
+
+  it('muestra reviews de todos los estados con filtro "Todas" sin depender de reportes', async () => {
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({ id: 'r1', motorcycleId: 'bike-x', status: 'pending', motorcycle: { id: 'bike-x', brand: 'X', model: 'MotoX', year: 2024, imageUrl: '/x.jpg' } }),
+      buildReview({ id: 'r2', motorcycleId: 'bike-x', status: 'approved', motorcycle: { id: 'bike-x', brand: 'X', model: 'MotoX', year: 2024, imageUrl: '/x.jpg' } }),
+      buildReview({ id: 'r3', motorcycleId: 'bike-x', status: 'rejected', motorcycle: { id: 'bike-x', brand: 'X', model: 'MotoX', year: 2024, imageUrl: '/x.jpg' } }),
+      buildReview({ id: 'r4', motorcycleId: 'bike-x', status: 'hidden', motorcycle: { id: 'bike-x', brand: 'X', model: 'MotoX', year: 2024, imageUrl: '/x.jpg' } }),
+      buildReview({ id: 'r5', motorcycleId: 'bike-y', status: 'approved', motorcycle: { id: 'bike-y', brand: 'Y', model: 'MotoY', year: 2023, imageUrl: '/y.jpg' } }),
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
+    expect(screen.getByRole('heading', { name: 'X MotoX 2024' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Y MotoY 2023' })).toBeInTheDocument();
+    expect(getAllReviewsMock).toHaveBeenCalledWith({ accessToken: 'admin-token', userId: 'admin-1' });
+    expect(getReviewReportsMock).not.toHaveBeenCalled();
+  });
+
+  it('muestra motos con reviews aunque no tengan reportes asociados', async () => {
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'r1',
+        motorcycleId: 'test-bmw-f-900-gs',
+        status: 'approved',
+        createdAt: '2026-04-01T00:00:00.000Z',
+      }),
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findByRole('heading', { name: 'BMW F 900 GS 2024' })).toBeInTheDocument();
+    const card = screen.getByTestId('admin-review-summary-card');
+    expect(within(card).getByText('0 reviews nuevas')).toBeInTheDocument();
+    expect(within(card).getByText('Última review: 01 abr 2026')).toBeInTheDocument();
+    expect(getReviewReportsMock).not.toHaveBeenCalled();
   });
 
   it('resetea a página 1 al cambiar filtros o limpiar filtros', async () => {
@@ -707,5 +699,189 @@ describe('AdminPage', () => {
     const firstPageCardsAgain = await screen.findAllByTestId('admin-report-card');
     const firstCardToggleAgain = within(firstPageCardsAgain[0]).getByRole('button', { name: /Expandir reporte/i });
     expect(firstCardToggleAgain).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('admin ve todos los filtros en el orden indicado en reviews', async () => {
+    getAllReviewsMock.mockResolvedValueOnce([buildReview()]);
+    render(<AdminReviewsPage />);
+
+    await screen.findByTestId('admin-review-summary-card');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const body = filters.querySelector('.admin-page__filters-body');
+    expect(body).not.toBeNull();
+
+    const children = Array.from(body!.children);
+    expect(children).toHaveLength(8);
+    expect(children[0].querySelector('input')).toHaveAttribute('id', 'admin-reviews-search');
+    expect(children[1]).toHaveTextContent('Estado');
+    expect(children[2]).toHaveTextContent('Origen');
+    expect(children[3]).toHaveTextContent('Segmento');
+    expect(children[4]).toHaveTextContent('Verificadas');
+    expect(children[5]).toHaveTextContent('Carnet');
+    expect(children[6]).toHaveTextContent('Uso principal');
+    expect(children[7]).toHaveTextContent('Orden');
+  });
+
+  it('busca por marca o modelo en reviews', async () => {
+    const user = userEvent.setup();
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'r1',
+        createdAt: '2026-05-22T09:00:00.000Z',
+        motorcycleId: 'bike-a',
+        motorcycle: { id: 'bike-a', brand: 'BMW', model: 'M 1000 XR', year: 2024, imageUrl: '/bmw.jpg' },
+        status: 'approved',
+      }),
+      buildReview({
+        id: 'r2',
+        createdAt: '2026-05-21T09:00:00.000Z',
+        motorcycleId: 'bike-b',
+        motorcycle: { id: 'bike-b', brand: 'Aprilia', model: 'Tuareg 660', year: 2024, imageUrl: '/aprilia.jpg' },
+        status: 'approved',
+      }),
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
+
+    const searchInput = screen.getByPlaceholderText('Buscar por marca o modelo');
+    await user.type(searchInput, 'BMW');
+
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
+    expect(screen.getByRole('heading', { name: 'BMW M 1000 XR 2024' })).toBeInTheDocument();
+  });
+
+  it('filtra por segmento en reviews', async () => {
+    const user = userEvent.setup();
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'r1',
+        createdAt: '2026-05-22T09:00:00.000Z',
+        motorcycleId: 'bike-a',
+        motorcycle: { id: 'bike-a', brand: 'TrailBike', model: 'X', year: 2024, imageUrl: '/a.jpg', segment: 'trail' },
+        status: 'approved',
+      }),
+      buildReview({
+        id: 'r2',
+        createdAt: '2026-05-21T09:00:00.000Z',
+        motorcycleId: 'bike-b',
+        motorcycle: { id: 'bike-b', brand: 'SportBike', model: 'Y', year: 2024, imageUrl: '/b.jpg', segment: 'sport' },
+        status: 'approved',
+      }),
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
+
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const segmentToggle = within(filters).getByRole('button', { name: 'Segmento' });
+    await user.click(segmentToggle);
+    await user.click(within(filters).getByRole('button', { name: /Segmento: Trail/i }));
+
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
+    expect(screen.getByRole('heading', { name: 'TrailBike X 2024' })).toBeInTheDocument();
+  });
+
+  it('filtra por carnet en reviews', async () => {
+    const user = userEvent.setup();
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'r1',
+        createdAt: '2026-05-22T09:00:00.000Z',
+        motorcycleId: 'bike-a',
+        motorcycle: { id: 'bike-a', brand: 'BikeA', model: 'M1', year: 2024, imageUrl: '/a.jpg', license: 'A' },
+        status: 'approved',
+      }),
+      buildReview({
+        id: 'r2',
+        createdAt: '2026-05-21T09:00:00.000Z',
+        motorcycleId: 'bike-b',
+        motorcycle: { id: 'bike-b', brand: 'BikeB', model: 'M2', year: 2024, imageUrl: '/b.jpg', license: 'A2' },
+        status: 'approved',
+      }),
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
+
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const licenseToggle = within(filters).getByRole('button', { name: 'Carnet' });
+    await user.click(licenseToggle);
+    await user.click(within(filters).getByRole('button', { name: /Carnet: Carnet A$/i }));
+
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
+    expect(screen.getByRole('heading', { name: 'BikeA M1 2024' })).toBeInTheDocument();
+  });
+
+  it('filtra por uso principal en reviews', async () => {
+    const user = userEvent.setup();
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'r1',
+        createdAt: '2026-05-22T09:00:00.000Z',
+        motorcycleId: 'bike-a',
+        motorcycle: { id: 'bike-a', brand: 'Viajero', model: 'M1', year: 2024, imageUrl: '/a.jpg' },
+        status: 'approved',
+        ridingStyle: 'viaje',
+      }),
+      buildReview({
+        id: 'r2',
+        createdAt: '2026-05-21T09:00:00.000Z',
+        motorcycleId: 'bike-b',
+        motorcycle: { id: 'bike-b', brand: 'Urbano', model: 'M2', year: 2024, imageUrl: '/b.jpg' },
+        status: 'approved',
+        ridingStyle: 'ciudad',
+      }),
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
+
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const ridingStyleToggle = within(filters).getByRole('button', { name: 'Uso principal' });
+    await user.click(ridingStyleToggle);
+    await user.click(within(filters).getByRole('button', { name: /Uso principal: Ciudad/i }));
+
+    await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
+    expect(screen.getByRole('heading', { name: 'Urbano M2 2024' })).toBeInTheDocument();
+  });
+
+  it('cambia orden a antiguas en reviews', async () => {
+    const user = userEvent.setup();
+    getAllReviewsMock.mockResolvedValueOnce([buildReview()]);
+    render(<AdminReviewsPage />);
+
+    await screen.findByTestId('admin-review-summary-card');
+
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const sortToggle = within(filters).getByRole('button', { name: 'Orden' });
+    await user.click(sortToggle);
+
+    const oldButton = within(filters).getByRole('button', { name: /Orden: Más antiguos/i });
+    expect(oldButton).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(oldButton);
+    expect(oldButton).toHaveAttribute('aria-pressed', 'true');
+    expect(within(filters).getByRole('button', { name: /Orden: Más recientes/i })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('muestra empty state en reviews sin coincidencias con filtros', async () => {
+    const user = userEvent.setup();
+    getAllReviewsMock.mockResolvedValueOnce([
+      buildReview({
+        id: 'r1',
+        motorcycleId: 'bike-a',
+        motorcycle: { id: 'bike-a', brand: 'BMW', model: 'M1', year: 2024, imageUrl: '/a.jpg' },
+        status: 'approved',
+      }),
+    ]);
+    render(<AdminReviewsPage />);
+
+    expect(await screen.findByTestId('admin-review-summary-card')).toBeInTheDocument();
+
+    const searchInput = screen.getByPlaceholderText('Buscar por marca o modelo');
+    await user.type(searchInput, 'XYZnoexiste');
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: /No hay reviews con estos filtros/i })).toBeInTheDocument());
   });
 });

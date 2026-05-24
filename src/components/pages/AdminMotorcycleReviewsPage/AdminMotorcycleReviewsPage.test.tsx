@@ -2,6 +2,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
+import { updateAdminReviewStatus } from '../../../services/adminReviewService';
 import {
   getReviewsByMotorcycleId,
   type MotorcycleReview,
@@ -13,11 +14,16 @@ vi.mock('../../../features/auth', () => ({
   useAuth: vi.fn(),
 }));
 
+vi.mock('../../../services/adminReviewService', () => ({
+  updateAdminReviewStatus: vi.fn(),
+}));
+
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getReviewsByMotorcycleId: vi.fn(),
 }));
 
 const useAuthMock = vi.mocked(useAuth);
+const updateAdminReviewStatusMock = vi.mocked(updateAdminReviewStatus);
 const getReviewsByMotorcycleIdMock = vi.mocked(getReviewsByMotorcycleId);
 
 const adminAuth = {
@@ -83,6 +89,7 @@ function renderPage(overrides: { bike?: typeof bike; motorcycleId?: string } = {
 describe('AdminMotorcycleReviewsPage', () => {
   beforeEach(() => {
     useAuthMock.mockReset();
+    updateAdminReviewStatusMock.mockReset().mockResolvedValue(undefined);
     getReviewsByMotorcycleIdMock.mockReset();
     cleanup();
   });
@@ -394,5 +401,115 @@ describe('AdminMotorcycleReviewsPage', () => {
     expect(screen.getByRole('button', { name: /Ocultar/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Rechazar/i })).toBeTruthy();
     expect(screen.getByText('Gestionar review')).toBeTruthy();
+  });
+
+  it('admin puede aprobar review — status cambia y se refleja en UI', async () => {
+    const user = userEvent.setup();
+    mockAuth();
+    getReviewsByMotorcycleIdMock.mockResolvedValue([createReview({ id: 'r1' })]);
+    renderPage();
+
+    await screen.findByText('Review de prueba.');
+    const row = screen.getByTestId('admin-moto-review-row');
+    await user.click(within(row).getByRole('button', { name: /Expandir/ }));
+
+    await user.click(within(row).getByRole('button', { name: /Aprobar/i }));
+
+    expect(updateAdminReviewStatusMock).toHaveBeenCalledWith('r1', 'approved', {
+      accessToken: 'admin-token',
+      userId: 'admin-1',
+    });
+    await waitFor(() => {
+      expect(within(row).getByText('Publicada')).toBeTruthy();
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Publicada');
+  });
+
+  it('admin puede ocultar review — status cambia y se refleja en UI', async () => {
+    const user = userEvent.setup();
+    mockAuth();
+    getReviewsByMotorcycleIdMock.mockResolvedValue([createReview({ id: 'r1' })]);
+    renderPage();
+
+    await screen.findByText('Review de prueba.');
+    const row = screen.getByTestId('admin-moto-review-row');
+    await user.click(within(row).getByRole('button', { name: /Expandir/ }));
+
+    await user.click(within(row).getByRole('button', { name: /Ocultar/i }));
+
+    expect(updateAdminReviewStatusMock).toHaveBeenCalledWith('r1', 'hidden', {
+      accessToken: 'admin-token',
+      userId: 'admin-1',
+    });
+    await waitFor(() => {
+      expect(within(row).getByText('Oculta')).toBeTruthy();
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Oculta');
+  });
+
+  it('admin puede rechazar review — status cambia y se refleja en UI', async () => {
+    const user = userEvent.setup();
+    mockAuth();
+    getReviewsByMotorcycleIdMock.mockResolvedValue([createReview({ id: 'r1' })]);
+    renderPage();
+
+    await screen.findByText('Review de prueba.');
+    const row = screen.getByTestId('admin-moto-review-row');
+    await user.click(within(row).getByRole('button', { name: /Expandir/ }));
+
+    await user.click(within(row).getByRole('button', { name: /Rechazar/i }));
+
+    expect(updateAdminReviewStatusMock).toHaveBeenCalledWith('r1', 'rejected', {
+      accessToken: 'admin-token',
+      userId: 'admin-1',
+    });
+    await waitFor(() => {
+      expect(within(row).getByText('Rechazada')).toBeTruthy();
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Rechazada');
+  });
+
+  it('botones redundantes se deshabilitan según estado actual', async () => {
+    mockAuth();
+    const reviews = [
+      createReview({ id: 'r1', status: 'approved' }),
+      createReview({ id: 'r2', status: 'hidden' }),
+      createReview({ id: 'r3', status: 'rejected' }),
+    ];
+    getReviewsByMotorcycleIdMock.mockResolvedValue(reviews);
+    renderPage();
+
+    const rows = await screen.findAllByTestId('admin-moto-review-row');
+
+    await userEvent.click(within(rows[0]).getByRole('button', { name: /Expandir/ }));
+    expect(within(rows[0]).getByRole('button', { name: /Aprobar/i })).toBeDisabled();
+    expect(within(rows[0]).getByRole('button', { name: /Ocultar/i })).not.toBeDisabled();
+    expect(within(rows[0]).getByRole('button', { name: /Rechazar/i })).not.toBeDisabled();
+
+    await userEvent.click(within(rows[1]).getByRole('button', { name: /Expandir/ }));
+    expect(within(rows[1]).getByRole('button', { name: /Ocultar/i })).toBeDisabled();
+    expect(within(rows[1]).getByRole('button', { name: /Aprobar/i })).not.toBeDisabled();
+    expect(within(rows[1]).getByRole('button', { name: /Rechazar/i })).not.toBeDisabled();
+
+    await userEvent.click(within(rows[2]).getByRole('button', { name: /Expandir/ }));
+    expect(within(rows[2]).getByRole('button', { name: /Rechazar/i })).toBeDisabled();
+    expect(within(rows[2]).getByRole('button', { name: /Aprobar/i })).not.toBeDisabled();
+    expect(within(rows[2]).getByRole('button', { name: /Ocultar/i })).not.toBeDisabled();
+  });
+
+  it('fallo al actualizar review muestra mensaje de error', async () => {
+    const user = userEvent.setup();
+    mockAuth();
+    updateAdminReviewStatusMock.mockRejectedValueOnce(new Error('permission denied'));
+    getReviewsByMotorcycleIdMock.mockResolvedValue([createReview({ id: 'r1' })]);
+    renderPage();
+
+    await screen.findByText('Review de prueba.');
+    await user.click(screen.getByRole('button', { name: /Expandir/ }));
+    await user.click(screen.getByRole('button', { name: /Aprobar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('No se pudo actualizar la review.');
+    });
   });
 });

@@ -11,8 +11,16 @@ import {
   type AdminReportStatusFilter,
   type AdminReviewReport,
 } from '../../../services/adminModerationService';
-import type { CreateReviewAuthContext, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { getAllReviews } from '../../../services/adminReviewService';
+import type { CreateReviewAuthContext, MotorcycleReview, MotorcycleReviewRidingStyle, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
+import {
+  matchesMotorcycleSegmentFilter,
+  motorcycleLicenseFilterOptions,
+  motorcycleSegmentFilterOptions,
+  type MotorcycleSegmentFilterValue,
+} from '../../../shared/filters/motorcycleFilterOptions';
+import { getBikeA2Status, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
@@ -36,7 +44,7 @@ type AdminFilterOption<T extends string> = Readonly<{
   value: T;
 }>;
 
-type AdminFilterSectionId = 'reason' | 'sort' | 'status' | 'source' | 'verified';
+type AdminFilterSectionId = 'reason' | 'sort' | 'status' | 'source' | 'verified' | 'segment' | 'license' | 'ridingStyle';
 type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews';
 
 type AdminReviewGarageItem = Readonly<{
@@ -62,16 +70,24 @@ const defaultFilters: AdminFilters = {
 
 // Filters for admin reviews page
 type AdminReviewsFilters = Readonly<{
+  search: string;
   status: 'all' | 'pending' | 'approved' | 'rejected' | 'hidden';
   source: 'all' | 'user' | 'mock' | 'seed' | 'import';
+  segment: MotorcycleSegmentFilterValue;
   verified: 'all' | 'verified' | 'unverified';
+  license: 'all' | BikeA2Status;
+  ridingStyle: 'all' | MotorcycleReviewRidingStyle;
   sort: 'recent' | 'old';
 }>;
 
 const defaultReviewsFilters: AdminReviewsFilters = {
+  search: '',
   status: 'all',
   source: 'all',
+  segment: 'all',
   verified: 'all',
+  license: 'all',
+  ridingStyle: 'all',
   sort: 'recent',
 };
 
@@ -154,6 +170,21 @@ const reviewSortOptions = [
   { icon: 'history', label: 'Más antiguos', value: 'old' },
 ] as const;
 
+const adminLicenseOptions = [
+  { icon: 'apps', label: 'Todas', value: 'all' as const },
+  ...motorcycleLicenseFilterOptions.map((opt) => ({ icon: '' as const, label: opt.label, value: opt.value })),
+];
+
+const adminRidingStyleOptions = [
+  { icon: 'apps', label: 'Todas', value: 'all' },
+  { icon: '', label: 'Ciudad', value: 'ciudad' },
+  { icon: '', label: 'Viaje', value: 'viaje' },
+  { icon: '', label: 'Offroad', value: 'offroad' },
+  { icon: '', label: 'Deportivo', value: 'deportivo' },
+  { icon: '', label: 'Pasajero', value: 'pasajero' },
+  { icon: '', label: 'Diario', value: 'diario' },
+] as const;
+
 function hasActiveFilters(filters: AdminFilters) {
   return filters.reason !== defaultFilters.reason
     || filters.sort !== defaultFilters.sort
@@ -178,38 +209,10 @@ function getDisplayName(profileName: string | null | undefined, email: string | 
   return profileName?.trim() || email || 'Admin MotoAtlas';
 }
 
-function buildAdminReviewGarage(reports: readonly AdminReviewReport[]): readonly AdminReviewGarageItem[] {
-  type AdminGarageReview = {
-    createdAt: string;
-    motorcycle: NonNullable<AdminReviewReport['review']>['motorcycle'];
-    motorcycleId: string;
-    status: MotorcycleReviewStatus;
-  };
+function buildAdminReviewGarage(reviews: readonly MotorcycleReview[]): readonly AdminReviewGarageItem[] {
+  const reviewsByMotorcycle = new Map<string, MotorcycleReview[]>();
 
-  const reviewsById = new Map<string, AdminGarageReview>();
-
-  reports.forEach((report) => {
-    if (!report.review) {
-      return;
-    }
-
-    const reviewId = report.review.id || report.reviewId || report.id;
-    const createdAt = report.review.createdAt ?? report.createdAt;
-    const currentReview = reviewsById.get(reviewId);
-
-    if (!currentReview || getTimestamp(createdAt) >= getTimestamp(currentReview.createdAt)) {
-      reviewsById.set(reviewId, {
-        createdAt,
-        motorcycle: report.review.motorcycle,
-        motorcycleId: report.review.motorcycleId,
-        status: report.review.status,
-      });
-    }
-  });
-
-  const reviewsByMotorcycle = new Map<string, AdminGarageReview[]>();
-
-  reviewsById.forEach((review) => {
+  reviews.forEach((review) => {
     const motorcycleId = review.motorcycleId.trim();
 
     if (!motorcycleId) {
@@ -268,6 +271,26 @@ function buildAdminReviewGarage(reports: readonly AdminReviewReport[]): readonly
       || getTimestamp(right.latestReviewAt) - getTimestamp(left.latestReviewAt)
       || left.motorcycleName.localeCompare(right.motorcycleName, 'es')
     ));
+}
+
+function getReviewSearchText(review: MotorcycleReview) {
+  const { motorcycle } = review;
+  const catalogBike = findBikeById(review.motorcycleId);
+  return motorcycle
+    ? `${motorcycle.brand} ${motorcycle.model} ${motorcycle.year}`.toLowerCase()
+    : catalogBike
+      ? `${getBikeDisplayName(catalogBike)} ${catalogBike.year}`.toLowerCase()
+      : review.motorcycleId.toLowerCase();
+}
+
+function getReviewSegment(review: MotorcycleReview) {
+  return review.motorcycle?.segment ?? findBikeById(review.motorcycleId)?.segment ?? null;
+}
+
+function getReviewA2Status(review: MotorcycleReview) {
+  const catalogBike = findBikeById(review.motorcycleId);
+  if (catalogBike) return getBikeA2Status(catalogBike);
+  return review.motorcycle?.license ?? null;
 }
 
 function AdminState({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
@@ -399,7 +422,9 @@ function AdminFilterGroup<T extends string>({
   label,
   onChange,
   onToggle,
+  optionClassName,
   options,
+  optionsClassName,
   sectionId,
   value,
 }: Readonly<{
@@ -407,11 +432,14 @@ function AdminFilterGroup<T extends string>({
   label: string;
   onChange: (value: T) => void;
   onToggle: () => void;
+  optionClassName?: string;
   options: readonly AdminFilterOption<T>[];
+  optionsClassName?: string;
   sectionId: AdminFilterSectionId;
   value: T;
 }>) {
   const sectionContentId = `admin-filters-${sectionId}-content`;
+  const containerClasses = ['admin-page__filter-options', optionsClassName].filter(Boolean).join(' ');
 
   return (
     <section className={isOpen ? 'admin-page__filter-group admin-page__filter-group--open' : 'admin-page__filter-group'} aria-label={label}>
@@ -428,20 +456,27 @@ function AdminFilterGroup<T extends string>({
         </button>
       </h3>
       <div id={sectionContentId} className="admin-page__filter-group-body" aria-hidden={!isOpen} inert={!isOpen}>
-        <div className="admin-page__filter-options">
-          {options.map((option) => (
-            <button
-              className={value === option.value ? 'admin-page__filter-option admin-page__filter-option--active' : 'admin-page__filter-option'}
-              type="button"
-              aria-label={`${label}: ${option.label}`}
-              aria-pressed={value === option.value}
-              key={option.value}
-              onClick={() => onChange(option.value)}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">{option.icon}</span>
-              <span>{option.label}</span>
-            </button>
-          ))}
+        <div className={containerClasses}>
+          {options.map((option) => {
+            const buttonClasses = [
+              'admin-page__filter-option',
+              value === option.value ? 'admin-page__filter-option--active' : '',
+              optionClassName ?? '',
+            ].filter(Boolean).join(' ');
+            return (
+              <button
+                className={buttonClasses}
+                type="button"
+                aria-label={`${label}: ${option.label}`}
+                aria-pressed={value === option.value}
+                key={option.value}
+                onClick={() => onChange(option.value)}
+              >
+                {option.icon ? <span className="material-symbols-outlined" aria-hidden="true">{option.icon}</span> : null}
+                <span>{option.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -471,6 +506,9 @@ function AdminModerationSidebar({
     sort: false,
     source: false,
     verified: false,
+    segment: false,
+    license: false,
+    ridingStyle: false,
   });
 
   const toggleFilterSection = (sectionId: AdminFilterSectionId) => {
@@ -569,10 +607,16 @@ function AdminReviewsSidebar({
   onClose: () => void;
 }>) {
   const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
-  const clearButtonDisabled = (filters.status === defaultReviewsFilters.status
+  const clearButtonDisabled = (
+    filters.search === defaultReviewsFilters.search
+    && filters.status === defaultReviewsFilters.status
     && filters.source === defaultReviewsFilters.source
+    && filters.segment === defaultReviewsFilters.segment
     && filters.verified === defaultReviewsFilters.verified
-    && filters.sort === defaultReviewsFilters.sort);
+    && filters.license === defaultReviewsFilters.license
+    && filters.ridingStyle === defaultReviewsFilters.ridingStyle
+    && filters.sort === defaultReviewsFilters.sort
+  );
 
   const [filterSectionsOpenState, setFilterSectionsOpenState] = useState<Record<AdminFilterSectionId, boolean>>({
     status: true,
@@ -580,6 +624,9 @@ function AdminReviewsSidebar({
     source: false,
     verified: false,
     sort: false,
+    segment: false,
+    license: false,
+    ridingStyle: false,
   });
 
   const toggleFilterSection = (sectionId: AdminFilterSectionId) => {
@@ -616,6 +663,18 @@ function AdminReviewsSidebar({
         </div>
 
         <div className="admin-page__filters-body">
+          <label className="admin-page__search" htmlFor="admin-reviews-search">
+            Buscar por marca o modelo
+            <span className="material-symbols-outlined" aria-hidden="true">search</span>
+            <input
+              id="admin-reviews-search"
+              type="search"
+              value={filters.search}
+              onChange={(event) => onChange({ search: event.target.value })}
+              placeholder="Buscar por marca o modelo"
+            />
+          </label>
+
           <AdminFilterGroup
             sectionId="status"
             isOpen={filterSectionsOpenState.status}
@@ -637,6 +696,16 @@ function AdminReviewsSidebar({
           />
 
           <AdminFilterGroup
+            sectionId="segment"
+            isOpen={filterSectionsOpenState.segment}
+            label="Segmento"
+            options={motorcycleSegmentFilterOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.segment}
+            onToggle={() => toggleFilterSection('segment')}
+            onChange={(segment) => onChange({ segment: segment as AdminReviewsFilters['segment'] })}
+          />
+
+          <AdminFilterGroup
             sectionId="verified"
             isOpen={filterSectionsOpenState.verified}
             label="Verificadas"
@@ -644,6 +713,26 @@ function AdminReviewsSidebar({
             value={filters.verified}
             onToggle={() => toggleFilterSection('verified')}
             onChange={(verified) => onChange({ verified: verified as AdminReviewsFilters['verified'] })}
+          />
+
+          <AdminFilterGroup
+            sectionId="license"
+            isOpen={filterSectionsOpenState.license}
+            label="Carnet"
+            options={adminLicenseOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.license}
+            onToggle={() => toggleFilterSection('license')}
+            onChange={(license) => onChange({ license: license as AdminReviewsFilters['license'] })}
+          />
+
+          <AdminFilterGroup
+            sectionId="ridingStyle"
+            isOpen={filterSectionsOpenState.ridingStyle}
+            label="Uso principal"
+            options={adminRidingStyleOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.ridingStyle}
+            onToggle={() => toggleFilterSection('ridingStyle')}
+            onChange={(ridingStyle) => onChange({ ridingStyle: ridingStyle as AdminReviewsFilters['ridingStyle'] })}
           />
 
           <AdminFilterGroup
@@ -666,7 +755,7 @@ function AdminReviewsSidebar({
       <article className="account-page__notice admin-page__notice">
         <span className="material-symbols-outlined" aria-hidden="true">policy</span>
         <div>
-          <p>Filtra reviews por estado, origen y verificación.</p>
+          <p>Filtra reviews por estado, origen, segmento, carnet y uso principal.</p>
           <strong>Los filtros no cambian datos en la base.</strong>
         </div>
       </article>
@@ -874,7 +963,7 @@ function AdminReviewSummaryCard({ item }: Readonly<{ item: AdminReviewGarageItem
 
 export function AdminReviewsPage() {
   const { isAdmin, isAuthenticated, isLoading, session, user, profile } = useAuth();
-  const [reports, setReports] = useState<readonly AdminReviewReport[]>([]);
+  const [allReviews, setAllReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reviewFilters, setReviewFilters] = useState<AdminReviewsFilters>(defaultReviewsFilters);
@@ -883,29 +972,25 @@ export function AdminReviewsPage() {
     user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
   ), [session?.access_token, user?.id]);
 
-  const loadReports = useCallback(() => {
+  const loadAllReviews = useCallback(() => {
     if (!authContext || !isAdmin) {
       return;
     }
 
     setIsLoadingReviews(true);
     setError(null);
-    getReviewReports(authContext, {
-      reason: 'all',
-      sort: 'recent',
-      status: 'all',
-    })
-      .then((nextReports) => setReports(nextReports))
+    getAllReviews(authContext)
+      .then((nextReviews) => setAllReviews(nextReviews))
       .catch(() => {
-        setReports([]);
+        setAllReviews([]);
         setError('No se pudieron cargar las reviews para admin.');
       })
       .finally(() => setIsLoadingReviews(false));
   }, [authContext, isAdmin]);
 
   useEffect(() => {
-    loadReports();
-  }, [loadReports]);
+    loadAllReviews();
+  }, [loadAllReviews]);
 
   useEffect(() => {
     if (!isFilterPanelOpen) {
@@ -929,42 +1014,57 @@ export function AdminReviewsPage() {
     };
   }, [isFilterPanelOpen]);
 
-  const filteredReports = useMemo(() => {
-    const base = (reports ?? []).filter((r) => Boolean(r.review));
+  const filteredReviews = useMemo(() => {
+    const base = allReviews ?? [];
+    const normalizedSearch = reviewFilters.search.trim().toLowerCase();
 
     const filtered = base.filter((r) => {
-      const rv: any = r.review as any;
+      if (normalizedSearch) {
+        const searchText = getReviewSearchText(r);
+        if (!searchText.includes(normalizedSearch)) return false;
+      }
 
-      if (reviewFilters.status !== 'all' && rv.status !== reviewFilters.status) {
+      if (reviewFilters.status !== 'all' && r.status !== reviewFilters.status) {
         return false;
       }
 
       if (reviewFilters.source !== 'all') {
-        if (rv.source === undefined) return false;
-        if (rv.source !== reviewFilters.source) return false;
+        if (r.source === undefined) return false;
+        if (r.source !== reviewFilters.source) return false;
+      }
+
+      if (reviewFilters.segment !== 'all') {
+        const segment = getReviewSegment(r);
+        if (!matchesMotorcycleSegmentFilter(segment, reviewFilters.segment)) return false;
       }
 
       if (reviewFilters.verified !== 'all') {
-        if (rv.verified === undefined) return false;
-        const isVerified = Boolean(rv.verified);
+        const isVerified = Boolean(r.verified);
         if ((reviewFilters.verified === 'verified') !== isVerified) return false;
+      }
+
+      if (reviewFilters.license !== 'all') {
+        const a2Status = getReviewA2Status(r);
+        if (a2Status !== reviewFilters.license) return false;
+      }
+
+      if (reviewFilters.ridingStyle !== 'all' && r.ridingStyle !== reviewFilters.ridingStyle) {
+        return false;
       }
 
       return true;
     });
 
-    filtered.sort((a, b) => {
-      const aTs = getTimestamp(a.review?.createdAt ?? a.createdAt ?? '');
-      const bTs = getTimestamp(b.review?.createdAt ?? b.createdAt ?? '');
-      return reviewFilters.sort === 'recent' ? bTs - aTs : aTs - bTs;
-    });
+    if (reviewFilters.sort === 'old') {
+      return [...filtered].sort((a, b) => getTimestamp(a.createdAt) - getTimestamp(b.createdAt));
+    }
 
-    return filtered;
-  }, [reports, reviewFilters]);
+    return [...filtered].sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt));
+  }, [allReviews, reviewFilters]);
 
   const garageItems = useMemo(
-    () => buildAdminReviewGarage(filteredReports),
-    [filteredReports],
+    () => buildAdminReviewGarage(filteredReviews),
+    [filteredReviews],
   );
 
   return (
@@ -1019,7 +1119,7 @@ export function AdminReviewsPage() {
                 <article className="account-page__empty-state account-page__empty-state--error" role="alert">
                   <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">error</span>
                   <h3>{error}</h3>
-                  <button className="account-page__button" type="button" onClick={loadReports}>Reintentar</button>
+                  <button className="account-page__button" type="button" onClick={loadAllReviews}>Reintentar</button>
                 </article>
               ) : isLoading || (isAuthenticated && isLoadingReviews) ? (
                 <p className="admin-page__loading" role="status">Cargando reviews para admin...</p>

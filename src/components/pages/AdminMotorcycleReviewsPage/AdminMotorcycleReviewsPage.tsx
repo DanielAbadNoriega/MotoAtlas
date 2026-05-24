@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { getBikeDetailHash } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
+import { updateAdminReviewStatus } from '../../../services/adminReviewService';
 import {
   getReviewsByMotorcycleId,
   type MotorcycleReview,
@@ -307,7 +308,19 @@ function ReviewSourceBadge({ source }: Readonly<{ source?: string | null }>) {
   return <span className="admin-moto-reviews__source-badge">{source ?? 'user'}</span>;
 }
 
-function AdminReviewCard({ index, review }: Readonly<{ index: number; review: MotorcycleReview }>) {
+type PendingAction = { reviewId: string; status: MotorcycleReviewStatus } | null;
+
+function AdminReviewCard({
+  index,
+  onUpdateStatus,
+  pendingAction,
+  review,
+}: Readonly<{
+  index: number;
+  onUpdateStatus: (reviewId: string, status: MotorcycleReviewStatus) => void;
+  pendingAction: PendingAction;
+  review: MotorcycleReview;
+}>) {
   const pros = normalizeList(review.pros as readonly unknown[]);
   const cons = normalizeList(review.cons as readonly unknown[]);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -316,6 +329,11 @@ function AdminReviewCard({ index, review }: Readonly<{ index: number; review: Mo
     'admin-motorcycle-reviews-page__review-card',
     isExpanded ? 'admin-motorcycle-reviews-page__review-card--expanded' : '',
   ].filter(Boolean).join(' ');
+
+  const isAlreadyApproved = review.status === 'approved';
+  const isAlreadyHidden = review.status === 'hidden';
+  const isAlreadyRejected = review.status === 'rejected';
+  const isPending = pendingAction?.reviewId === review.id;
 
   return (
     <article
@@ -409,9 +427,30 @@ function AdminReviewCard({ index, review }: Readonly<{ index: number; review: Mo
             <div className="admin-page__action-group" aria-label="Acciones sobre la review">
               <h3>Gestionar review</h3>
               <div>
-                <button className="admin-page__action-button admin-page__action-button--approve" type="button" disabled>Aprobar</button>
-                <button className="admin-page__action-button admin-page__action-button--hide" type="button" disabled>Ocultar</button>
-                <button className="admin-page__action-button admin-page__action-button--reject" type="button" disabled>Rechazar</button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--approve"
+                  type="button"
+                  disabled={isAlreadyApproved || isPending}
+                  onClick={() => onUpdateStatus(review.id, 'approved')}
+                >
+                  Aprobar
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--hide"
+                  type="button"
+                  disabled={isAlreadyHidden || isPending}
+                  onClick={() => onUpdateStatus(review.id, 'hidden')}
+                >
+                  Ocultar
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--reject"
+                  type="button"
+                  disabled={isAlreadyRejected || isPending}
+                  onClick={() => onUpdateStatus(review.id, 'rejected')}
+                >
+                  Rechazar
+                </button>
               </div>
             </div>
           </footer>
@@ -426,6 +465,8 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [status, setStatus] = useState<AdminMotorcycleReviewsStatus>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -503,6 +544,28 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
     setFilters(defaultFilters);
     setCurrentPage(1);
   };
+
+  const handleUpdateStatus = useCallback((reviewId: string, newStatus: MotorcycleReviewStatus) => {
+    if (!authContext) {
+      return;
+    }
+
+    setPendingAction({ reviewId, status: newStatus });
+    setNotice(null);
+
+    updateAdminReviewStatus(reviewId, newStatus, authContext)
+      .then(() => {
+        setReviews((current) => current.map((r) => (
+          r.id === reviewId ? { ...r, status: newStatus } : r
+        )));
+        setNotice(statusLabels[newStatus]);
+        setPendingAction(null);
+      })
+      .catch(() => {
+        setNotice('No se pudo actualizar la review.');
+        setPendingAction(null);
+      });
+  }, [authContext]);
 
   const bikeName = bike ? `${bike.brand} ${bike.model} ${bike.year}` : motorcycleId ?? 'Moto';
 
@@ -590,6 +653,10 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
               </div>
             </div>
 
+            {notice ? (
+              <p className="admin-page__notice-message" role={notice === 'No se pudo actualizar la review.' ? 'alert' : 'status'}>{notice}</p>
+            ) : null}
+
             {status === 'loading' ? (
               <div className="admin-moto-reviews__state" role="status">Cargando reviews...</div>
             ) : status === 'error' ? (
@@ -615,7 +682,7 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
               <section aria-label={`Reviews de ${bikeName}`}>
                 <div className="admin-moto-reviews__list" role="list">
                   {paginated.map((review, index) => (
-                    <AdminReviewCard key={review.id || `${review.userName}-${review.createdAt}`} index={index} review={review} />
+                    <AdminReviewCard key={review.id || `${review.userName}-${review.createdAt}`} index={index} onUpdateStatus={handleUpdateStatus} pendingAction={pendingAction} review={review} />
                   ))}
                 </div>
 
