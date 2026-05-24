@@ -26,8 +26,6 @@
 
 .admin-moto-reviews__dashboard {
   @include container;
-
-  grid-template-columns: minmax(18rem, 0.34fr) minmax(0, 1fr);
 }
 
 .admin-moto-reviews__main {
