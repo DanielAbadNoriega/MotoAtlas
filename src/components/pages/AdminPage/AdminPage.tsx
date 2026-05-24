@@ -1007,15 +1007,12 @@ export function AdminReviewsPage() {
                     Reviews por modelo
                   </h2>
                 </div>
-                <button
-                  className="admin-page__mobile-filter-trigger"
-                  type="button"
-                  aria-label="Abrir filtros de reviews"
-                  onClick={() => setIsFilterPanelOpen(true)}
-                >
-                  <span className="material-symbols-outlined" aria-hidden="true">tune</span>
-                  Filtros
-                </button>
+                <div className="admin-page__mobile-filter-trigger">
+                  <button type="button" aria-label="Abrir filtros de reviews" onClick={() => setIsFilterPanelOpen(true)}>
+                    <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+                    Filtros
+                  </button>
+                </div>
               </div>
 
               {error ? (
@@ -1245,15 +1242,12 @@ export function AdminModerationPage() {
                     Reportes de reviews
                   </h2>
                 </div>
-                <button
-                  className="admin-page__mobile-filter-trigger"
-                  type="button"
-                  aria-label="Abrir filtros de moderación"
-                  onClick={() => setIsFilterPanelOpen(true)}
-                >
-                  <span className="material-symbols-outlined" aria-hidden="true">tune</span>
-                  Filtros
-                </button>
+                <div className="admin-page__mobile-filter-trigger">
+                  <button type="button" aria-label="Abrir filtros de moderación" onClick={() => setIsFilterPanelOpen(true)}>
+                    <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+                    Filtros
+                  </button>
+                </div>
               </div>
 
               {notice ? <p className="admin-page__notice-message" role="status">{notice}</p> : null}
