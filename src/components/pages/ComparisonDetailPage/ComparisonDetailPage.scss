@@ -737,10 +737,6 @@
 .comparison-detail__video-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 
-  article {
-    cursor: pointer;
-  }
-
   article > div {
     position: relative;
     overflow: hidden;
@@ -753,32 +749,11 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    transition: transform $transition-slow;
   }
 
   .motorcycle-image {
     aspect-ratio: 16 / 9;
     width: 100%;
-  }
-
-  article:hover img {
-    transform: scale(1.05);
-  }
-
-  .material-symbols-outlined {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    background: rgba(0, 0, 0, 0.38);
-    color: white;
-    font-size: 3rem;
-    opacity: 0;
-    transition: opacity $transition-base;
-  }
-
-  article:hover .material-symbols-outlined {
-    opacity: 1;
   }
 
   strong {

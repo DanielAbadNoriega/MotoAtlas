@@ -440,10 +440,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
             <article key={video.id}>
               <div>
                 <MotorcycleImage motorcycle={video.bike} alt={video.alt} loading="lazy" />
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  play_circle
-                </span>
-                <strong>{video.duration}</strong>
+                  <strong>{video.duration}</strong>
               </div>
               <h3>{video.title}</h3>
             </article>
@@ -453,7 +450,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
 
       <section className="comparison-detail__final-verdict" aria-labelledby="comparison-final-title">
         <div>
-          <span>Final verdict</span>
+          <span>Veredicto final</span>
           <h2 id="comparison-final-title">{comparison.finalVerdict.title}</h2>
           <p>{comparison.finalVerdict.description}</p>
         </div>

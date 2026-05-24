@@ -242,6 +242,15 @@ export function App() {
       return;
     }
 
+    if (isComparatorPage && comparatorBikes.length < 2) {
+      applySeoMetadata({
+        canonicalUrl: 'https://motoatlas.com/comparador',
+        description: 'Compara motos por prestaciones, peso, potencia, equipamiento y datos técnicos para elegir con criterio.',
+        title: 'Comparador de motos | MotoAtlas',
+      });
+      return;
+    }
+
     if (isSearchPage) {
       applySeoMetadata({
         canonicalUrl: 'https://motoatlas.com/buscador',
