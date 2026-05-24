@@ -119,3 +119,23 @@ Ejecuta:
 
 No hagas build, commit ni push.
 ```
+
+## Skills externas
+
+El proyecto puede usar skills externas de opencode para mejorar accesibilidad, SEO, React, TypeScript, Supabase, Vite y Vitest.
+
+Prioridad de instrucciones:
+
+1. Instrucciones del usuario.
+2. `AGENTS.md`.
+3. Documentación del repo (`docs/admin.md`, `docs/codex-guidelines.md`, `docs/ui-notes.md`).
+4. Skills externas.
+5. Preferencias generales del modelo/agente.
+
+Las skills externas deben usarse como apoyo técnico, pero no pueden:
+- tocar schema/RLS/Supabase sin permiso explícito;
+- hacer build, commit o push salvo indicación;
+- introducir dependencias nuevas sin permiso;
+- reescribir arquitectura;
+- cambiar patrones visuales existentes sin motivo;
+- saltarse `npm run typecheck` y `npm run test`.
