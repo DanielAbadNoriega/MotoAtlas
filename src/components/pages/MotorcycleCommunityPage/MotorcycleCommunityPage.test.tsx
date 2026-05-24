@@ -305,12 +305,11 @@ describe('MotorcycleCommunityPage', () => {
   it('sustituye el slider por un listado compacto de owner reports', async () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
-    const list = await screen.findByRole('list', { name: /Listado compacto de owner reports/i });
+    const list = await screen.findByRole('list', { name: /Listado compacto de reviews/i });
 
     expect(within(list).getByText('Fantástica para viajar con equipaje.')).toBeInTheDocument();
     expect(within(list).getByText('Muy equilibrada, aunque alta para ciudad.')).toBeInTheDocument();
     expect(screen.getAllByTestId('owner-report-row')).toHaveLength(2);
-    expect(screen.queryByRole('region', { name: /Verified owner reports/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Ver reviews anteriores/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Ver reviews siguientes/i })).not.toBeInTheDocument();
   });
@@ -686,7 +685,7 @@ describe('MotorcycleCommunityPage', () => {
     expect(sidebar).toContainElement(insightsSection as HTMLElement);
     expect(Array.from(sidebar.children).indexOf(filters as Element)).toBe(0);
     expect(Array.from(sidebar.children).indexOf(insightsSection as Element)).toBe(1);
-    expect(await screen.findByRole('list', { name: /Listado compacto de owner reports/i })).toBeInTheDocument();
+    expect(await screen.findByRole('list', { name: /Listado compacto de reviews/i })).toBeInTheDocument();
   });
 
   it('pagina 5 owner reports por página y no muestra paginación con una sola página', async () => {
@@ -698,7 +697,7 @@ describe('MotorcycleCommunityPage', () => {
     expect(await screen.findByText('Review aprobada 1')).toBeInTheDocument();
     expect(screen.getAllByTestId('owner-report-row')).toHaveLength(5);
     expect(screen.queryByText('Review aprobada 6')).not.toBeInTheDocument();
-    expect(screen.getByRole('navigation', { name: /Paginación de owner reports/i })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: /Paginación de reviews/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
     expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
@@ -709,7 +708,7 @@ describe('MotorcycleCommunityPage', () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
     expect(await screen.findByText('Única review aprobada.')).toBeInTheDocument();
-    expect(screen.queryByRole('navigation', { name: /Paginación de owner reports/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /Paginación de reviews/i })).not.toBeInTheDocument();
   });
 
   it('filtra por rating y resetea a página 1 al cambiar filtros', async () => {

@@ -957,7 +957,7 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
             <div>
               <span>Catálogo</span>
               <h2>{numberFormatter.format(filteredBikes.length)} resultados encontrados</h2>
-              <p>Mostrando motos desde Supabase o fallback local si la conexión falla.</p>
+              <p>Resultados del catálogo completo de MotoAtlas.</p>
             </div>
             <label>
               <span>Ordenar por</span>

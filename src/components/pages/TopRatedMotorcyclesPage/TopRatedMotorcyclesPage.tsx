@@ -94,7 +94,7 @@ function PodiumReviewsLink({ item }: { item: TopRatedMotorcycle }) {
   return (
     <div className="top-rated__card-actions">
       <a href={getCommunityHref(item.bike)} aria-label={`Ver reviews de ${bikeName}`}>
-        Ver reviews <span className="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+        Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
       </a>
     </div>
   );
@@ -111,7 +111,7 @@ function PodiumCard({ item, variant = 'featured' }: { item: TopRatedMotorcycle; 
         <strong>{item.rank}</strong>
         <i aria-hidden="true" />
         <div>
-          <span>Global rank</span>
+          <span>Ranking global</span>
           <RatingPill item={item} />
         </div>
       </div>
@@ -170,7 +170,7 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
       ? {
           href: getCommunityHref(mostReviewed.bike),
           icon: 'forum',
-          label: 'MOST DISCUSSED',
+          label: 'MÁS DISCUTIDO',
           text: `${numberFormatter.format(mostReviewed.reviewCount)} reviews aprobadas`,
           title: getBikeDisplayName(mostReviewed.bike),
         }
@@ -179,7 +179,7 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
       ? {
           href: getCommunityHref(topRated.bike),
           icon: 'military_tech',
-          label: 'TOP RATED SIGNAL',
+          label: 'MEJOR VALORADO',
           text: `${formatReviewRating(topRated.averageRating)}/5 rating medio`,
           title: getBikeDisplayName(topRated.bike),
         }
@@ -188,7 +188,7 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
       ? {
           href: getCommunityHref(a2Signal.bike),
           icon: 'verified',
-          label: 'A2 TRENDING',
+          label: 'TENDENCIA A2',
           text: `${numberFormatter.format(a2Signal.reviewCount)} reviews de propietarios`,
           title: getBikeDisplayName(a2Signal.bike),
         }
@@ -204,7 +204,7 @@ function CommunityRadar({ isLoading, ranking }: { isLoading: boolean; ranking: r
       <div className="top-rated__radar-panel">
         <div>
           <span className="material-symbols-outlined" aria-hidden="true">radar</span>
-          <h3>{signals.length > 0 ? 'WHAT’S MOVING NOW' : isLoading ? 'Calibrando señales' : 'Sin tendencias activas todavía'}</h3>
+          <h3>{signals.length > 0 ? 'TENDENCIAS ACTIVAS' : isLoading ? 'Calibrando señales' : 'Sin tendencias activas todavía'}</h3>
           <p>
             Reviews recientes, modelos solicitados y motos que empiezan a generar conversación.
           </p>
@@ -271,7 +271,7 @@ function RecentReviews({ isLoading, recentReviews }: { isLoading: boolean; recen
         {recentReviews.length > 0 ? recentReviews.slice(0, 3).map(({ bike, review }) => (
           <article key={review.id}>
             <div>
-              <span>User: {review.userName}</span>
+              <span>{review.userName}</span>
               <small>{getBikeDisplayName(bike)}</small>
             </div>
             <p>“{review.comment}”</p>

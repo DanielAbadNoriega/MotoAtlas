@@ -360,7 +360,7 @@ function OwnerReportsFiltersPanel({
       {isOpen ? <button className="motorcycle-community__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros" /> : null}
       <section
         className={panelClasses}
-        aria-label="Filtros de owner reports"
+        aria-label="Filtros de reviews"
         aria-labelledby="motorcycle-community-filters-title"
         aria-modal={isOpen ? 'true' : undefined}
         role={isOpen ? 'dialog' : undefined}
@@ -368,7 +368,7 @@ function OwnerReportsFiltersPanel({
         <div className="motorcycle-community__sheet-handle" aria-hidden="true" />
         <div className="motorcycle-community__filters-header">
           <h2 id="motorcycle-community-filters-title">Filtros</h2>
-          <button type="button" aria-label="Limpiar filtros de owner reports" onClick={onReset}>Limpiar filtros</button>
+          <button type="button" aria-label="Limpiar filtros de reviews" onClick={onReset}>Limpiar filtros</button>
           <button className="motorcycle-community__filters-close" type="button" onClick={onClose} aria-label="Cerrar filtros">
             <span className="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
@@ -409,7 +409,7 @@ function OwnerReportsFiltersPanel({
         </div>
 
         <footer className="motorcycle-community__filters-footer">
-          <button type="button" aria-label="Restablecer filtros de owner reports" onClick={onReset}>Limpiar filtros</button>
+          <button type="button" aria-label="Restablecer filtros de reviews" onClick={onReset}>Limpiar filtros</button>
           <button type="button" onClick={applyFilters}>Aplicar filtros</button>
         </footer>
       </section>
@@ -1170,7 +1170,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
               <span>{a2Badge.label}</span>
               <span>{bike.year}</span>
             </div>
-            <span className="motorcycle-community__eyebrow">Owner registry</span>
+            <span className="motorcycle-community__eyebrow">Registro de propietarios</span>
             <h1 id="motorcycle-community-title">Reviews {bikeName}</h1>
             <p>Opiniones reales, problemas comunes y experiencia de propietarios de {bikeName}.</p>
           </div>
@@ -1209,7 +1209,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
 
           <section className="motorcycle-community__insights motorcycle-community__insights--sidebar" aria-labelledby="community-insights-title">
             <div>
-              <span>Community DNA</span>
+              <span>ADN comunitario</span>
               <h2 id="community-insights-title">Problemas comunes e insights</h2>
             </div>
             {commonIssues.length > 0 || topPros.length > 0 || topCons.length > 0 ? (
@@ -1289,7 +1289,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
           <section className="motorcycle-community__reviews" aria-labelledby="community-reviews-title">
             <div className="motorcycle-community__section-header">
               <div>
-                <span>Verified owner reports</span>
+                <span>Reportes de propietarios</span>
                 <h2 id="community-reviews-title">Experiencias de propietarios</h2>
               </div>
               <button className="motorcycle-community__mobile-filter-trigger" type="button" onClick={() => setIsOwnerReportFiltersOpen(true)}>
@@ -1312,7 +1312,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
             {reviews.length > 0 ? (
               filteredOwnerReports.length > 0 ? (
                 <>
-                  <div className="motorcycle-community__owner-report-list" role="list" aria-label="Listado compacto de owner reports">
+                  <div className="motorcycle-community__owner-report-list" role="list" aria-label="Listado compacto de reviews">
                     {paginatedOwnerReports.map((review, index) => (
                       <OwnerReportRow
                         index={(ownerReportsPage - 1) * OWNER_REPORTS_PER_PAGE + index}
@@ -1338,7 +1338,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                   </div>
                   {ownerReportsTotalPages > 1 ? (
                     <AccountPagination
-                      ariaLabel="Paginación de owner reports"
+                      ariaLabel="Paginación de reviews"
                       className="motorcycle-community__pagination"
                       currentClassName="motorcycle-community__pagination-current"
                       currentPage={ownerReportsPage}
@@ -1350,7 +1350,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
               ) : (
                 <div className="motorcycle-community__empty motorcycle-community__empty--compact">
                   <span className="material-symbols-outlined" aria-hidden="true">filter_alt_off</span>
-                  <h3>No hay owner reports con esos filtros.</h3>
+                  <h3>No hay reviews con esos filtros.</h3>
                   <p>Probá cambiar el rating o el orden para volver a ver experiencias de propietarios.</p>
                   {hasActiveOwnerFilters ? (
                     <button className="button button--primary" type="button" onClick={clearOwnerReportFilters}>

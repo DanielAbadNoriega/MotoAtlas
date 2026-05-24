@@ -55,7 +55,7 @@ function EmptyComparator() {
       <section className="comparison-detail__empty">
         <span>Comparador</span>
         <h1>Selecciona al menos 2 motos</h1>
-        <p>El comparador necesita una cola real. Ve al buscador y elige entre 2 y 3 motos.</p>
+        <p>Selecciona hasta 3 motos para comparar ficha técnica, prestaciones y valoración de la comunidad.</p>
         <a className="button button--primary" href={getBrowseSearchHash()}>
           Ir al buscador
         </a>
@@ -166,9 +166,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
         <div className="comparison-detail__intro">
           <p>Technical registry</p>
           <h1 id="comparison-detail-title">{comparison.title}</h1>
-          <span>
-            {comparison.bikes.length} motos seleccionadas desde datos dinámicos. Misma estética, ahora con una cola real.
-          </span>
+          <span>Compara ficha técnica, prestaciones y valoración de la comunidad en una vista clara y directa.</span>
         </div>
 
         {ignoredBikeCount > 0 ? (
@@ -279,8 +277,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
         <div>
           <h2 id="comparison-vote-title">¿Cuál elegirías?</h2>
           <p>
-            Lectura dinámica basada en {numberFormatter.format(comparison.voteSummary.totalVotes)} señales mock de comunidad y
-            puntuaciones de uso real.
+            Basado en {numberFormatter.format(comparison.voteSummary.totalVotes)} valoraciones de la comunidad y datos de uso real.
           </p>
           <blockquote>
             “{comparison.voteSummary.topComment}”
@@ -434,16 +431,12 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
       </section>
 
       <section className="comparison-detail__videos" aria-labelledby="comparison-videos-title">
-        <h2 id="comparison-videos-title">Análisis en vídeo</h2>
+        <h2 id="comparison-videos-title">Análisis destacados</h2>
         <div className="comparison-detail__video-grid">
           {comparison.videos.map((video) => (
             <article key={video.id}>
               <div>
                 <MotorcycleImage motorcycle={video.bike} alt={video.alt} loading="lazy" />
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  play_circle
-                </span>
-                <strong>{video.duration}</strong>
               </div>
               <h3>{video.title}</h3>
             </article>
@@ -453,7 +446,7 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
 
       <section className="comparison-detail__final-verdict" aria-labelledby="comparison-final-title">
         <div>
-          <span>Final verdict</span>
+          <span>Veredicto final</span>
           <h2 id="comparison-final-title">{comparison.finalVerdict.title}</h2>
           <p>{comparison.finalVerdict.description}</p>
         </div>

@@ -133,7 +133,7 @@ describe('AccountMotorcycleReviewsPage', () => {
 
     expect(screen.getByRole('heading', { name: 'BMW F 900 GS 2024' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Mis reviews de esta moto' })).toBeInTheDocument();
-    expect(screen.queryByText('Verified owner reports')).not.toBeInTheDocument();
+    expect(screen.queryByText('Reportes de propietarios')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Resumen de tus reviews de esta moto')).toHaveTextContent('4.5');
     expect(screen.getByText('1 publicada · 1 pendiente')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Ver ficha' })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');

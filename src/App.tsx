@@ -242,12 +242,30 @@ export function App() {
       return;
     }
 
+    if (isComparatorPage && comparatorBikes.length < 2) {
+      applySeoMetadata({
+        canonicalUrl: 'https://motoatlas.com/comparador',
+        description: 'Compara motos por prestaciones, peso, potencia, equipamiento y datos técnicos para elegir con criterio.',
+        title: 'Comparador de motos | MotoAtlas',
+      });
+      return;
+    }
+
+    if (isSearchPage) {
+      applySeoMetadata({
+        canonicalUrl: 'https://motoatlas.com/buscador',
+        description: 'Filtra por marca, segmento, precio, potencia, peso y equipamiento. Encuentra tu moto ideal entre cientos de modelos.',
+        title: 'Buscador de motos | MotoAtlas',
+      });
+      return;
+    }
+
     applySeoMetadata({
       canonicalUrl: 'https://motoatlas.com/',
-      description: 'MotoAtlas: catálogo técnico de motos, fichas, comparador y reviews.',
+      description: 'Explora el catálogo técnico de motos, compara modelos y lee reviews reales de la comunidad motera. Decisiones informadas para moteros exigentes.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>

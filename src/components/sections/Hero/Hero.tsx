@@ -22,6 +22,7 @@ export function Hero() {
       </div>
 
       <div className="hero__content fade-in">
+        <span className="hero__eyebrow">ENCICLOPEDIA TÉCNICA MOTERA</span>
         <h1 id="hero-title">{heroContent.title}</h1>
         <HeroSearch content={heroContent.search} onSubmit={handleSubmit} />
       </div>
