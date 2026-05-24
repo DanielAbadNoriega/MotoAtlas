@@ -191,9 +191,9 @@ describe('TopRatedMotorcyclesPage', () => {
   it('renderiza labels internacionales en las cards de Trending', async () => {
     await renderPage();
 
-    expect(screen.getByText('MOST DISCUSSED')).toBeInTheDocument();
-    expect(screen.getByText('TOP RATED SIGNAL')).toBeInTheDocument();
-    expect(screen.getByText('A2 TRENDING')).toBeInTheDocument();
+    expect(screen.getByText('MÁS DISCUTIDO')).toBeInTheDocument();
+    expect(screen.getByText('MEJOR VALORADO')).toBeInTheDocument();
+    expect(screen.getByText('TENDENCIA A2')).toBeInTheDocument();
     expect(screen.queryByText('Más conversación')).not.toBeInTheDocument();
     expect(screen.queryByText('Mejor señal global')).not.toBeInTheDocument();
     expect(screen.queryByText('A2 en movimiento')).not.toBeInTheDocument();
