@@ -139,3 +139,36 @@ Las skills externas deben usarse como apoyo técnico, pero no pueden:
 - reescribir arquitectura;
 - cambiar patrones visuales existentes sin motivo;
 - saltarse `npm run typecheck` y `npm run test`.
+
+## Skills por tipo de tarea
+
+### Auditoría de páginas
+Usar preferentemente:
+- accessibility
+- seo
+- frontend-design
+- react-best-practices
+- typescript-advanced-types
+- vitest
+
+No usar salvo petición explícita:
+- gsap
+- animejs
+- lottie
+- three
+- typegpu
+- hyperframes
+- supabase-postgres-best-practices
+
+### Vídeo / demos
+Usar:
+- hyperframes
+- hyperframes-cli
+- hyperframes-media
+- hyperframes-registry
+- remotion-to-hyperframes
+- frontend-design
+- css-animations
+
+### Supabase / RLS
+Usar `supabase-postgres-best-practices` solo cuando el usuario pida explícitamente tocar schema, RLS, policies o queries.
