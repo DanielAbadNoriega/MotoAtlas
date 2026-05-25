@@ -1458,9 +1458,6 @@ function AdminRequestCard({
                 <span>@{request.userName || (request.userId ? 'Usuario' : 'Anónimo')}</span>
                 {request.createdAt ? ` · ${formatRequestDate(request.createdAt)}` : ''}
               </span>
-              <span className="admin-page__report-summary">
-                {request.segment ?? 'Sin segmento'}
-              </span>
             </span>
             <span className="material-symbols-outlined admin-page__report-chevron" aria-hidden="true">expand_more</span>
           </button>
