@@ -114,7 +114,7 @@ function AccountReviewMotorcycleSummaryCard({ item }: Readonly<{ item: AccountRe
 }
 
 export function AccountPage() {
-  const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
+  const { isAdmin, isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
   const [error, setError] = useState('');
   const [modelRequests, setModelRequests] = useState<readonly ModelRequest[]>([]);
   const [modelRequestsError, setModelRequestsError] = useState('');
@@ -274,6 +274,7 @@ export function AccountPage() {
           activeItem="overview"
           displayName={displayName}
           email={email}
+          isAdmin={isAdmin}
           onSignOut={handleSignOut}
           notice={{
             body: 'Cuando envíes una review con sesión iniciada, quedará asociada a tu cuenta automáticamente.',

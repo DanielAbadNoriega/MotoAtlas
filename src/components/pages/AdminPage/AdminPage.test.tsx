@@ -1294,6 +1294,15 @@ describe('AdminPage', () => {
     expect(solicitudesLink).toHaveAttribute('href', '#/admin/solicitudes');
   });
 
+  it('navegación admin contiene Mi cuenta al final', () => {
+    render(<AdminDashboardPage />);
+
+    const nav = screen.getByRole('navigation', { name: /Navegación de administración/i });
+    const miCuentaLink = within(nav).getByRole('link', { name: 'Mi cuenta' });
+    expect(miCuentaLink).toHaveAttribute('href', '#/cuenta');
+    expect(miCuentaLink).not.toHaveAttribute('aria-current');
+  });
+
   it('sidebar de solicitudes muestra enlace activo', () => {
     render(<AdminRequestsPage />);
 

@@ -391,6 +391,45 @@ describe('AccountPage', () => {
     expect(getReviewsByUserIdMock).not.toHaveBeenCalled();
   });
 
+  it('muestra Panel admin en el aside si el usuario es admin', () => {
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'admin-1', email: 'admin@motoatlas.com' },
+      profile: { id: 'admin-1', displayName: 'Admin Rider', avatarUrl: null, role: 'admin' },
+      isAdmin: true,
+    });
+
+    render(<AccountPage />);
+
+    const adminLink = screen.getByRole('link', { name: 'Panel admin' });
+    expect(adminLink).toBeInTheDocument();
+    expect(adminLink).toHaveAttribute('href', '#/admin');
+  });
+
+  it('no muestra Panel admin si el usuario no es admin', () => {
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+      isAdmin: false,
+    });
+
+    render(<AccountPage />);
+
+    expect(screen.queryByRole('link', { name: 'Panel admin' })).not.toBeInTheDocument();
+  });
+
+  it('no muestra Panel admin si el usuario no está autenticado', () => {
+    mockAuth({
+      isAuthenticated: false,
+      isAdmin: false,
+    });
+
+    render(<AccountPage />);
+
+    expect(screen.queryByRole('link', { name: 'Panel admin' })).not.toBeInTheDocument();
+  });
+
   it('cierra sesión y vuelve al inicio', async () => {
     mockAuth({
       isAuthenticated: true,

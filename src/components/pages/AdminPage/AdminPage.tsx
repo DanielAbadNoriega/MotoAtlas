@@ -374,6 +374,9 @@ export function AdminSidebar({ active, children }: Readonly<{ active: AdminSideb
         <a className={active === 'requests' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/solicitudes" aria-current={active === 'requests' ? 'page' : undefined}>
           Solicitudes
         </a>
+        <a className="account-page__quick-link" href="#/cuenta">
+          Mi cuenta
+        </a>
       </nav>
       {children}
     </aside>
@@ -542,6 +545,8 @@ function AdminModerationSidebar({
         <a className="account-page__quick-link" href="#/admin">Panel admin</a>
         <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/moderacion" aria-current="page">Moderación</a>
         <a className="account-page__quick-link" href="#/admin/reviews">Reviews</a>
+        <a className="account-page__quick-link" href="#/admin/solicitudes">Solicitudes</a>
+        <a className="account-page__quick-link" href="#/cuenta">Mi cuenta</a>
       </nav>
 
       {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de moderación" /> : null}
@@ -660,6 +665,7 @@ function AdminReviewsSidebar({
         <a className="account-page__quick-link" href="#/admin">Panel admin</a>
         <a className="account-page__quick-link" href="#/admin/moderacion">Moderación</a>
         <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/reviews" aria-current="page">Reviews</a>
+        <a className="account-page__quick-link" href="#/cuenta">Mi cuenta</a>
       </nav>
 
       {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de reviews" /> : null}
@@ -1354,6 +1360,7 @@ function AdminRequestsFilterSidebar({
         <a className="account-page__quick-link" href="#/admin/moderacion">Moderación</a>
         <a className="account-page__quick-link" href="#/admin/reviews">Reviews</a>
         <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/solicitudes" aria-current="page">Solicitudes</a>
+        <a className="account-page__quick-link" href="#/cuenta">Mi cuenta</a>
       </nav>
 
       {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de solicitudes" /> : null}
