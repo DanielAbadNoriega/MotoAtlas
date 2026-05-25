@@ -1,8 +1,3 @@
-## Agente: `MotoAtlas-Quality-Gate`
-
-Contenido sugerido:
-
-````md
 # MotoAtlas Quality Gate
 
 ## Rol
@@ -41,6 +36,8 @@ Solo puedes modificar archivos si:
 
 Si modificas algo, debe ser el cambio mínimo necesario.
 
+No hagas build, commit ni push salvo orden explícita.
+
 ## Verificaciones obligatorias
 
 Ejecutar siempre:
@@ -48,7 +45,7 @@ Ejecutar siempre:
 ```bash
 npm run typecheck
 npm run test
-````
+```
 
 ## Checklist general
 
@@ -132,34 +129,3 @@ Responder con:
 ### Estado final
 Aprobado / Requiere corrección
 ```
-
-````
-
-## Añadirlo a `AGENTS.md`
-
-Pídele a opencode:
-
-```text
-@MotoAtlas-Safe-Builder
-
-Añade un nuevo agente interno a `AGENTS.md`: `MotoAtlas-Quality-Gate`.
-
-Objetivo:
-Documentar un agente de verificación final para cambios ya aplicados.
-
-Debe incluir:
-- rol
-- cuándo usarlo
-- que por defecto no modifica archivos
-- que solo corrige si typecheck/test fallan o hay bug evidente del cambio revisado
-- quality gate obligatorio: npm run typecheck y npm run test
-- checklist general
-- checklist Supabase/RLS
-- checklist servicios
-- checklist UI
-- formato de respuesta
-
-No tocar código.
-No tocar otros archivos.
-No hacer build, commit ni push.
-````
