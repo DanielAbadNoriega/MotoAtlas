@@ -903,13 +903,15 @@ describe('AdminPage', () => {
     {
       id: 'reply-1',
       reviewId: 'review-10',
-      userId: 'user-rider',
+      userId: 'reply-user-id',
+      userDisplayName: 'ReplyWriter',
       comment: 'Gracias por la review, muy útil!',
       status: 'pending',
       createdAt: '2026-05-23T10:00:00.000Z',
       updatedAt: '2026-05-23T10:00:00.000Z',
       review: {
         comment: 'Excelente moto, la recomiendo.',
+        rating: 4,
         userName: 'RiderUno',
         motorcycle: {
           brand: 'BMW',
@@ -953,16 +955,16 @@ describe('AdminPage', () => {
 
     const cards = await screen.findAllByTestId('admin-reply-card');
     expect(cards).toHaveLength(1);
-    expect(screen.getByText('BMW F 900 GS 2024')).toBeInTheDocument();
-    expect(screen.getByText('RiderUno')).toBeInTheDocument();
+    expect(screen.getByText('BMW F 900 GS 2024 · Review de @RiderUno · ★ 4')).toBeInTheDocument();
+    expect(cards[0]).toHaveTextContent(/Respuesta de ReplyWriter/);
 
     const card = cards[0];
-    const toggleButton = within(card).getByRole('button', { name: /Expandir respuesta de RiderUno/i });
+    const toggleButton = within(card).getByRole('button', { name: /Expandir respuesta de ReplyWriter/i });
     await user.click(toggleButton);
 
-    expect(within(card).getByText(/Gracias por la review/i)).toBeVisible();
-    expect(within(card).getByText(/Review original:/i)).toBeInTheDocument();
-    expect(within(card).getByText(/Excelente moto/i)).toBeInTheDocument();
+    expect(within(card).getByText(/Respuesta:/i)).toBeInTheDocument();
+    expect(within(card).getByText(/Gracias por la review/i)).toBeInTheDocument();
+    expect(within(card).getByText(/Excelente moto/i)).toBeVisible();
     expect(within(card).getByRole('button', { name: 'Aprobar' })).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: 'Ocultar' })).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: 'Rechazar' })).toBeInTheDocument();

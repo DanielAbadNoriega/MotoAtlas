@@ -973,19 +973,19 @@ function AdminReplyCard({
             type="button"
             aria-controls={detailsId}
             aria-expanded={expanded}
-            aria-label={`${expanded ? 'Contraer' : 'Expandir'} respuesta de ${reply.review?.userName ?? 'usuario'}`}
+            aria-label={`${expanded ? 'Contraer' : 'Expandir'} respuesta de ${reply.userDisplayName}`}
             onClick={onToggle}
           >
             <span className="admin-page__report-heading">
               <span className="admin-page__reason-line">
-                <span className="admin-page__status-badge admin-page__status-badge--pending">Pendiente</span>
+                <span className="admin-page__status-pill" data-status="pending">Pendiente</span>
                 <span className="admin-page__reason-title">Respuesta a review</span>
               </span>
               <span className="admin-page__reporter">
-                Review de <strong>{reply.review?.userName ?? 'usuario'}</strong> · {formatDate(reply.createdAt)}
+                Respuesta de <strong>{reply.userDisplayName}</strong> · {formatDate(reply.createdAt)}
               </span>
               <span className="admin-page__report-summary">
-                {motorcycleName}
+                {motorcycleName} · Review de @{reply.review?.userName || 'usuario'} · ★ {reply.review?.rating ?? 'N/D'}
               </span>
             </span>
             <span className="material-symbols-outlined admin-page__report-chevron" aria-hidden="true">expand_more</span>
@@ -995,16 +995,14 @@ function AdminReplyCard({
 
       <div id={detailsId} className="admin-page__report-body-wrapper" aria-hidden={!expanded} inert={!expanded}>
         <div className="admin-page__report-body">
-          <section className="admin-page__reported-review" aria-label="Respuesta">
-            <p>“{reply.comment}”</p>
+          <section className="admin-page__reported-review" aria-label="Review original">
+            <p>“{reply.review?.comment ?? 'Review no disponible.'}”</p>
           </section>
 
-          {reply.review?.comment ? (
-            <section className="admin-page__report-extra" aria-label="Review original">
-              <strong>Review original:</strong>
-              <p>“{reply.review.comment}”</p>
-            </section>
-          ) : null}
+          <blockquote aria-label="Respuesta">
+            <strong>Respuesta:</strong>
+            <p>“{reply.comment}”</p>
+          </blockquote>
 
           <footer>
             <div className="admin-page__action-group" aria-label="Acciones sobre respuesta">

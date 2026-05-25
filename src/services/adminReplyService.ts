@@ -1,16 +1,20 @@
 import type { CreateReviewAuthContext } from './motorcycleReviewService';
 import type { ReviewReplyStatus } from './reviewReplyService';
 
+const replyNameFallback = 'Usuario';
+
 export type AdminReviewReply = Readonly<{
   id: string;
   reviewId: string;
   userId: string;
+  userDisplayName: string;
   comment: string;
   status: ReviewReplyStatus;
   createdAt: string;
   updatedAt: string;
   review: {
     comment: string;
+    rating: number | null;
     userName: string;
     motorcycle: {
       brand: string;
@@ -36,7 +40,13 @@ type ReviewRow = Readonly<{
   id: string;
   motorcycle_id: string;
   motorcycles?: MotorcycleRow | null;
+  rating: number | null;
   user_name: string;
+}>;
+
+type UserProfileRow = Readonly<{
+  display_name: string | null;
+  id: string;
 }>;
 
 type ReplyRow = Readonly<{
@@ -88,19 +98,56 @@ async function assertSupabaseOk(response: Response, resource: string) {
   }
 }
 
+async function getReplyUserDisplayNameMap(
+  userIds: readonly string[],
+  config: ReturnType<typeof getSupabaseConfig>,
+  accessToken: string,
+) {
+  if (userIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const normalizedIds = Array.from(new Set(
+    userIds
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0),
+  ));
+
+  if (normalizedIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const params = new URLSearchParams({
+    select: 'id,display_name',
+    id: `in.(${normalizedIds.join(',')})`,
+  });
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/user_profiles?${params.toString()}`, {
+    headers: buildHeaders(config, accessToken),
+  });
+  await assertSupabaseOk(response, 'user_profiles');
+
+  return ((await response.json()) as UserProfileRow[]).reduce((accumulator, profile) => {
+    accumulator.set(profile.id, profile.display_name?.trim() || replyNameFallback);
+    return accumulator;
+  }, new Map<string, string>());
+}
+
 function mapReplyRow(row: ReplyRow): AdminReviewReply {
   return {
     id: row.id,
     reviewId: row.review_id,
     userId: row.user_id,
+    userDisplayName: replyNameFallback,
     comment: row.comment,
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     review: row.motorcycle_reviews
-      ? {
-          comment: row.motorcycle_reviews.comment,
-          userName: row.motorcycle_reviews.user_name,
+        ? {
+            comment: row.motorcycle_reviews.comment,
+            rating: row.motorcycle_reviews.rating,
+            userName: row.motorcycle_reviews.user_name,
           motorcycle: row.motorcycle_reviews.motorcycles
             ? {
                 brand: row.motorcycle_reviews.motorcycles.brand,
@@ -132,7 +179,7 @@ export async function getAdminPendingReplies(
       'status',
       'created_at',
       'updated_at',
-      'motorcycle_reviews(id,user_name,comment,motorcycle_id,motorcycles(id,brand,model,year,image_url))',
+      'motorcycle_reviews(id,user_name,rating,comment,motorcycle_id,motorcycles(id,brand,model,year,image_url))',
     ].join(','),
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/review_replies?${params.toString()}`, {
@@ -141,7 +188,15 @@ export async function getAdminPendingReplies(
   await assertSupabaseOk(response, 'review_replies');
   const rows = (await response.json()) as ReplyRow[];
 
-  return rows.map(mapReplyRow);
+  const userIds = rows.map((row) => row.user_id.trim()).filter((id) => id.length > 0);
+  const userDisplayNameMap = userIds.length > 0
+    ? await getReplyUserDisplayNameMap(userIds, config, normalizedAuthContext.accessToken)
+    : new Map<string, string>();
+
+  return rows.map((row) => ({
+    ...mapReplyRow(row),
+    userDisplayName: userDisplayNameMap.get(row.user_id) ?? replyNameFallback,
+  }));
 }
 
 const validStatuses = new Set<ReviewReplyStatus>(['approved', 'hidden', 'rejected']);
