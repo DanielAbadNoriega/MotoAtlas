@@ -130,7 +130,7 @@ function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry
           <strong>{formatReviewRating(entry.score / 10)}</strong>
         </div>
         <a href={getCommunityHref(entry.bike)} className="rankings__podium-action">
-          Ver comunidad <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+          Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
         </a>
       </div>
     </article>
@@ -247,7 +247,7 @@ function TechnicalTable({ rankings, filters }: { rankings: readonly CategoryRank
               </span>
             </td>
             <td className="rankings__table-right">
-              <a href={getCommunityHref(entry.bike)} className="rankings__table-action">Ver comunidad</a>
+              <a href={getCommunityHref(entry.bike)} className="rankings__table-action">Ver reviews</a>
             </td>
           </tr>
         ))}

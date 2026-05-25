@@ -497,16 +497,25 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
         ) : podiumRanking.length === 0 ? (
           <TopRatedEmptyState hasActiveFilters={hasActiveFilters} onReset={resetFilters} />
         ) : (
-          <section className="top-rated__podium" aria-label="Top 3 motos mejor valoradas">
-            {podium[0] ? <PodiumCard item={podium[0]} /> : null}
-            {podium.length > 1 ? (
-              <div className="top-rated__podium-side">
-                {podium.slice(1).map((item) => (
-                  <PodiumCard key={item.bike.id} item={item} variant="compact" />
-                ))}
-              </div>
-            ) : null}
-          </section>
+          <>
+            <section className="top-rated__podium" aria-label="Top 3 motos mejor valoradas">
+              {podium[0] ? <PodiumCard item={podium[0]} /> : null}
+              {podium.length > 1 ? (
+                <div className="top-rated__podium-side">
+                  {podium.slice(1).map((item) => (
+                    <PodiumCard key={item.bike.id} item={item} variant="compact" />
+                  ))}
+                </div>
+              ) : null}
+            </section>
+
+            <div className="top-rated__podium-cta">
+              <a href="#/comunidad/rankings" className="top-rated__podium-cta-link">
+                Ver rankings completos
+                <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+              </a>
+            </div>
+          </>
         )}
 
         {!isLoading ? (

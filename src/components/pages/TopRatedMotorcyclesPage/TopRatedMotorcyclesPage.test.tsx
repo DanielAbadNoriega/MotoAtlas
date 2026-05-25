@@ -208,6 +208,12 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(screen.getByRole('link', { name: /Buscar moto para opinar/i })).toHaveAttribute('href', '#/buscador');
   });
 
+  it('renderiza el CTA Ver rankings completos debajo del podium', async () => {
+    await renderPage();
+
+    expect(screen.getByRole('link', { name: /Ver rankings completos/i })).toHaveAttribute('href', '#/comunidad/rankings');
+  });
+
   it('usa estrella real en las puntuaciones de Reviews recientes', async () => {
     await renderPage();
 
