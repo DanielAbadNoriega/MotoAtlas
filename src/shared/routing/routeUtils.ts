@@ -27,6 +27,10 @@ export function getCommunityReviewsCanonicalPath() {
   return '/comunidad/reviews';
 }
 
+export function getCommunityRankingsCanonicalPath() {
+  return '/comunidad/rankings';
+}
+
 export function getAccountMotorcycleReviewsCanonicalPath(motorcycleId: string) {
   return `/cuenta/reviews/${encodeURIComponent(motorcycleId)}`;
 }
@@ -217,6 +221,11 @@ export function isCommunityRoute(route: string) {
 export function isCommunityReviewsRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return path === getCommunityReviewsCanonicalPath();
+}
+
+export function isCommunityRankingsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === getCommunityRankingsCanonicalPath();
 }
 
 export function isTopRatedRoute(route: string) {

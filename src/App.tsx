@@ -11,6 +11,7 @@ import { AdminMotorcycleReviewsPage } from './components/pages/AdminMotorcycleRe
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
 import { ComparatorPage } from './components/pages/ComparatorPage';
+import { CommunityRankingsPage } from './components/pages/CommunityRankingsPage';
 import { CommunityReviewsPage } from './components/pages/CommunityReviewsPage';
 import { MotorcycleCommunityPage } from './components/pages/MotorcycleCommunityPage';
 import { SearchPage } from './components/pages/SearchPage';
@@ -50,6 +51,7 @@ import {
   isAdminReviewsRoute,
   isAdminMotorcycleReviewsRoute,
   isAdminRoute,
+  isCommunityRankingsRoute,
   isCommunityReviewsRoute,
   isCommunityRoute,
   isComparatorRoute,
@@ -58,7 +60,7 @@ import {
   isSearchRoute,
   isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAdminSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAdminSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityRankingsSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -123,7 +125,8 @@ export function App() {
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
   const isCommunityReviewsPage = isCommunityReviewsRoute(route);
-  const isCommunityLandingPage = isCommunityPage && !communityMotorcycleId && !isCommunityReviewsPage;
+  const isCommunityRankingsPage = isCommunityRankingsRoute(route);
+  const isCommunityLandingPage = isCommunityPage && !communityMotorcycleId && !isCommunityReviewsPage && !isCommunityRankingsPage;
   const routeComparatorSelection = getComparatorSelectionFromRoute(route, motorcycles);
   const persistedComparatorIds = isComparatorPage && routeComparatorSelection.rawIds.length === 0 && legacyComparisonIds.length === 0
     ? loadCompareQueue()
@@ -229,6 +232,11 @@ export function App() {
       return;
     }
 
+    if (isCommunityRankingsPage) {
+      applySeoMetadata(buildCommunityRankingsSeoMetadata());
+      return;
+    }
+
     if (isTopRatedPage) {
       applySeoMetadata(buildTopRatedSeoMetadata());
       return;
@@ -272,7 +280,7 @@ export function App() {
       description: 'Explora el catálogo técnico de motos, compara modelos y lee reviews reales de la comunidad motera. Decisiones informadas para moteros exigentes.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityRankingsPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -311,6 +319,8 @@ export function App() {
         <TopRatedMotorcyclesPage motorcycles={motorcycles} />
       ) : isCommunityReviewsPage ? (
         <CommunityReviewsPage />
+      ) : isCommunityRankingsPage ? (
+        <CommunityRankingsPage motorcycles={motorcycles} />
       ) : isCommunityPage ? (
         <MotorcycleCommunityPage bike={communityBike} motorcycleId={communityMotorcycleId} />
       ) : bikeDetailId ? (

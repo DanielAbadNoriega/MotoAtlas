@@ -10,6 +10,7 @@ import {
   getAdminRequestsCanonicalPath,
   getAdminReviewsCanonicalPath,
   getCommunityCanonicalPath,
+  getCommunityRankingsCanonicalPath,
   getCommunityReviewsCanonicalPath,
   getCompareCanonicalPath,
   getCompareSeoSlug,
@@ -221,6 +222,25 @@ export function buildCommunityReviewsSeoMetadata(): SeoMetadata {
   };
 }
 
+export function buildCommunityRankingsSeoMetadata(): SeoMetadata {
+  const title = `Rankings de comunidad | ${siteName}`;
+  const description = 'Las motos mejor valoradas por la comunidad MotoAtlas. Rankings por especialidad: deportivas, viajeras, A2, fiabilidad y más.';
+  const canonicalPath = getCommunityRankingsCanonicalPath();
+
+  return {
+    canonicalUrl: absoluteUrl(canonicalPath),
+    description,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      description,
+      name: title,
+      url: absoluteUrl(canonicalPath),
+    },
+    title,
+  };
+}
+
 export function buildTopRatedSeoMetadata(): SeoMetadata {
   return buildCommunityLandingSeoMetadata();
 }
@@ -377,6 +397,7 @@ export function getSitemapUrls(motorcycles: readonly Bike[]) {
     `${siteBaseUrl}/buscador`,
     `${siteBaseUrl}/comunidad`,
     `${siteBaseUrl}${getCommunityReviewsCanonicalPath()}`,
+    `${siteBaseUrl}${getCommunityRankingsCanonicalPath()}`,
     `${siteBaseUrl}/metodologia`,
     `${siteBaseUrl}/fuentes-datos`,
     `${siteBaseUrl}/solicitar-modelo`,
@@ -398,4 +419,4 @@ export function buildRobotsTxt() {
   return `User-agent: *\nAllow: /\nSitemap: ${siteBaseUrl}/sitemap.xml\n`;
 }
 
-export { getBikeCanonicalPath, getBikeSeoSlug, getAccountMotorcycleReviewsCanonicalPath, getCommunityCanonicalPath, getCommunityReviewsCanonicalPath, getCompareCanonicalPath, getCompareSeoSlug };
+export { getBikeCanonicalPath, getBikeSeoSlug, getAccountMotorcycleReviewsCanonicalPath, getCommunityCanonicalPath, getCommunityRankingsCanonicalPath, getCommunityReviewsCanonicalPath, getCompareCanonicalPath, getCompareSeoSlug };
