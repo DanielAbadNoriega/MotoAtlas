@@ -1468,11 +1468,54 @@ function AdminRequestCard({
 
       <div id={detailsId} className="admin-page__report-body-wrapper" aria-hidden={!expanded} inert={!expanded}>
         <div className="admin-page__report-body">
-          <section className="admin-page__reported-review" aria-label="Detalles de la solicitud">
-            <p><strong>Segmento:</strong> {request.segment ?? 'No especificado'}</p>
-            {request.contactEmail ? <p><strong>Email:</strong> {request.contactEmail}</p> : null}
-            {request.officialUrl ? <p><strong>URL oficial:</strong> {request.officialUrl}</p> : null}
-            {request.comment ? <blockquote aria-label="Comentario de la solicitud"><strong>Comentario:</strong><p>{request.comment}</p></blockquote> : null}
+          <section className="admin-page__reported-review admin-page__request-detail" aria-label="Detalles de la solicitud">
+            <div className="admin-page__request-detail-grid">
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Marca</span>
+                <span className="admin-page__request-detail-value">{request.brand}</span>
+              </div>
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Modelo</span>
+                <span className="admin-page__request-detail-value">{request.model}</span>
+              </div>
+            </div>
+            <div className="admin-page__request-detail-grid admin-page__request-detail-grid--three">
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Año</span>
+                <span className="admin-page__request-detail-value">{request.year ?? 'No especificado'}</span>
+              </div>
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Segmento</span>
+                <span className="admin-page__request-detail-value">{request.segment ?? 'No especificado'}</span>
+              </div>
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Origen</span>
+                <span className="admin-page__request-detail-value">{requestSourceLabels[request.source]}</span>
+              </div>
+            </div>
+            {request.contactEmail ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Email de contacto</span>
+                <span className="admin-page__request-detail-value">{request.contactEmail}</span>
+              </div>
+            ) : null}
+            {request.officialUrl ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Página oficial o fuente</span>
+                <span className="admin-page__request-detail-value">
+                  <a href={request.officialUrl} target="_blank" rel="noopener noreferrer">
+                    {request.officialUrl}
+                    <span className="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                  </a>
+                </span>
+              </div>
+            ) : null}
+            {request.comment ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Comentario</span>
+                <div className="admin-page__request-detail-value admin-page__request-detail-value--comment">{request.comment}</div>
+              </div>
+            ) : null}
           </section>
 
           <footer>

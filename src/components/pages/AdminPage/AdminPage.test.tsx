@@ -1300,6 +1300,78 @@ describe('AdminPage', () => {
     expect(activeLink).toHaveAttribute('aria-current', 'page');
   });
 
+  it('renderiza Marca, Modelo, Año y Segmento en los detalles expandidos', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    const brandValues = within(card).getAllByText('Honda');
+    expect(brandValues.length).toBeGreaterThanOrEqual(1);
+    const modelValues = within(card).getAllByText('Transalp 750');
+    expect(modelValues.length).toBeGreaterThanOrEqual(1);
+    const yearValues = within(card).getAllByText('2025');
+    expect(yearValues.length).toBeGreaterThanOrEqual(1);
+    const segmentLabels = within(card).getAllByText('trail');
+    expect(segmentLabels.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renderiza email de contacto si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText('user@example.com')).toBeInTheDocument();
+  });
+
+  it('renderiza URL oficial si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[1];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    const urlLink = within(card).getByRole('link', { name: /https:\/\/www\.ktm\.com/i });
+    expect(urlLink).toHaveAttribute('href', 'https://www.ktm.com');
+    expect(urlLink).toHaveAttribute('target', '_blank');
+    expect(urlLink).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('renderiza comentario si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText(/Sería genial tener esta moto/)).toBeInTheDocument();
+  });
+
+  it('no muestra texto literal null en los detalles', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).queryByText(/^null$/i)).not.toBeInTheDocument();
+  });
+
+  it('acciones siguen funcionando tras el cambio visual', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Marcar revisada' }));
+
+    expect(updateModelRequestStatusMock).toHaveBeenCalledWith('req-1', 'reviewed', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Solicitud marcada como revisada.'));
+  });
+
   it('error en acción de solicitud muestra alerta', async () => {
     updateModelRequestStatusMock.mockRejectedValueOnce(new Error('fail'));
     const user = userEvent.setup();
