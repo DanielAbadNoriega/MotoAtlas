@@ -847,6 +847,7 @@ describe('MotorcycleCommunityPage', () => {
       id: 'reply-1',
       reviewId: 'review-approved-1',
       userId: 'user-1',
+      userName: 'Usuario',
       comment: 'Gracias por tu review!',
       status: 'pending',
       createdAt: new Date().toISOString(),
@@ -893,7 +894,7 @@ describe('MotorcycleCommunityPage', () => {
       if (reviewId === 'review-approved-1') {
         return [
           {
-            id: 'reply-1', reviewId: 'review-approved-1', userId: 'user-2', comment: 'Coincido totalmente!', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z',
+            id: 'reply-1', reviewId: 'review-approved-1', userId: 'user-2', userName: 'Usuario', comment: 'Coincido totalmente!', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z',
           },
         ] as readonly ReviewReply[];
       }

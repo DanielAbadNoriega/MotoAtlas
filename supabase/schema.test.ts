@@ -542,7 +542,7 @@ describe('Supabase review_replies schema', () => {
     expect(schemaSql).toContain('revoke all on table public.review_replies from authenticated;');
     expect(grants).toEqual([
       'grant select on public.review_replies to anon, authenticated;',
-      'grant insert (review_id, user_id, comment) on public.review_replies to authenticated;',
+      'grant insert (review_id, user_id, user_name, comment) on public.review_replies to authenticated;',
       'grant update (status) on public.review_replies to authenticated;',
     ]);
     expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.review_replies\s+to\s+(anon|authenticated)/);

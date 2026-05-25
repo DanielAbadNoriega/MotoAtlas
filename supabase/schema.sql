@@ -507,6 +507,7 @@ create table if not exists public.review_replies (
   id uuid primary key default gen_random_uuid(),
   review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
+  user_name text not null default '',
   comment text not null,
   status text not null default 'pending',
   created_at timestamptz not null default now(),
@@ -575,7 +576,7 @@ revoke all on table public.review_replies from anon;
 revoke all on table public.review_replies from authenticated;
 
 grant select on public.review_replies to anon, authenticated;
-grant insert (review_id, user_id, comment) on public.review_replies to authenticated;
+grant insert (review_id, user_id, user_name, comment) on public.review_replies to authenticated;
 grant update (status) on public.review_replies to authenticated;
 
 notify pgrst, 'reload schema';
