@@ -1,1 +1,1 @@
-export { AdminDashboardPage, AdminModerationPage, AdminReviewsPage, AdminSidebar } from './AdminPage';
+export { AdminDashboardPage, AdminModerationPage, AdminRequestsPage, AdminReviewsPage, AdminSidebar } from './AdminPage';

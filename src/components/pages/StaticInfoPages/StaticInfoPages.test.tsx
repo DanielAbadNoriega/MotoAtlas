@@ -44,6 +44,7 @@ describe('StaticInfoPages', () => {
     createModelRequestMock.mockReset().mockResolvedValue({
       id: 'request-1',
       userId: null,
+      userName: null,
       brand: 'Honda',
       model: 'CBR600RR',
       year: 2026,

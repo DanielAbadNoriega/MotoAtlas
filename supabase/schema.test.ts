@@ -426,8 +426,16 @@ describe('Supabase model_requests schema', () => {
     expect(schemaSql).toContain('year integer not null check (year between 1900 and 2100)');
     expect(schemaSql).toContain('official_url text null');
     expect(schemaSql).toContain('add column if not exists official_url text null');
+    expect(schemaSql).toContain('add column if not exists user_name text');
     expect(schemaSql).toContain("status text not null default 'pending' check (status in ('pending', 'reviewed', 'approved', 'rejected'))");
     expect(schemaSql).toContain("source text not null default 'user' check (source in ('user', 'admin', 'import'))");
+  });
+
+  it('añade columna user_name nullable con constraint de no vacío si no null', () => {
+    expect(schemaSql).toContain('add column if not exists user_name text');
+    expect(schemaSql).toContain('drop constraint if exists model_requests_user_name_check');
+    expect(schemaSql).toContain('add constraint model_requests_user_name_check');
+    expect(schemaSql).toContain('check (user_name is null or length(trim(user_name)) > 0)');
   });
 
   it('crea índices y trigger updated_at para model_requests', () => {
@@ -466,13 +474,36 @@ describe('Supabase model_requests schema', () => {
     const grants = getModelRequestsGrantStatements();
 
     expect(normalizedSchemaSql).not.toMatch(/on public\.model_requests for select to anon\b[^;]*using \(true\)/);
-    expect(normalizedSchemaSql).not.toMatch(/grant\s+(update|delete)\s+on\s+(?:table\s+)?public\.model_requests\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.model_requests\s+to\s+(?:anon|authenticated)/);
     expect(schemaSql).toContain('revoke all on table public.model_requests from anon;');
     expect(schemaSql).toContain('revoke all on table public.model_requests from authenticated;');
     expect(grants).toEqual([
       'grant insert on public.model_requests to anon, authenticated;',
       'grant select on public.model_requests to authenticated;',
+      'grant update (status) on public.model_requests to authenticated;',
     ]);
+  });
+
+  it('añade policy admin select para model_requests usando public.is_admin()', () => {
+    expect(schemaSql).toContain('create policy "Admins can read all model requests"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('using (public.is_admin())');
+  });
+
+  it('añade policy admin update para model_requests protegida por is_admin y status', () => {
+    expect(schemaSql).toContain('create policy "Admins can update model request status"');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toMatch(/with check \([\s\S]*?public\.is_admin\(\)[\s\S]*?and status in \('pending', 'reviewed', 'approved', 'rejected'\)[\s\S]*?\);/);
+    const updateMatch = schemaSql.match(/grant\s+update\s+\(status\)\s+on\s+public\.model_requests\s+to\s+authenticated/i);
+    expect(updateMatch).toBeTruthy();
+    expect(schemaSql).not.toMatch(/grant\s+update\s+on\s+public\.model_requests\s+(?!\()/);
+  });
+
+  it('no permite delete ni update amplio para model_requests desde cliente', () => {
+    expect(normalizedSchemaSql).not.toMatch(/create\s+policy[^;]+for\s+delete\s+on\s+public\.model_requests/i);
+    const fullUpdateOnModel = normalizedSchemaSql.match(/grant\s+update\s+on\s+public\.model_requests\s+to\s+(?:anon|authenticated)/gi);
+    expect(fullUpdateOnModel).toBeNull();
   });
 });
 

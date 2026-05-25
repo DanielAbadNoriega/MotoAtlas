@@ -41,7 +41,8 @@ Acciones disponibles:
 
 Pendientes / notas futuras:
 - Navegación directa a reviews por moto: `#/admin/reviews/[moto-id]`.
-- Implementar panel de "admin solicitudes" (solicitudes de modelos) dentro del admin.
+- Schema/RLS/servicio admin de solicitudes de modelos listo (Fase 1).
+- UI admin de solicitudes pendiente (Fase 2).
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración (filtrado, acciones y permisos).
 

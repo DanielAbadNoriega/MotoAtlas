@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createModelRequest, getModelRequestsByUserId } from './modelRequestService';
+import { createModelRequest, getAllModelRequests, getModelRequestsByUserId, updateModelRequestStatus } from './modelRequestService';
 
 const validModelRequestInput = {
   brand: 'Honda',
@@ -13,6 +13,7 @@ const validModelRequestInput = {
 const modelRequestRow = {
   id: 'request-1',
   user_id: 'user-123',
+  user_name: 'Carlos Ruiz',
   brand: 'Honda',
   model: 'CBR600RR',
   year: 2026,
@@ -71,6 +72,7 @@ describe('modelRequestService', () => {
       source: 'user',
       status: 'pending',
       user_id: null,
+      user_name: null,
     });
   });
 
@@ -92,7 +94,7 @@ describe('modelRequestService', () => {
     });
   });
 
-  it('crea una solicitud autenticada con user_id correcto y token de sesión', async () => {
+  it('crea una solicitud autenticada con user_id, user_name y token de sesión', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal('fetch', fetchMock);
@@ -100,12 +102,14 @@ describe('modelRequestService', () => {
     const request = await createModelRequest(validModelRequestInput, {
       accessToken: 'session-token',
       userId: 'user-123',
+      userName: 'Carlos Ruiz',
     });
     const [, requestInit] = fetchMock.mock.calls[0];
 
     expect(request).toMatchObject({
       status: 'pending',
       userId: 'user-123',
+      userName: 'Carlos Ruiz',
     });
     expect(requestInit.headers).toMatchObject({
       Authorization: 'Bearer session-token',
@@ -116,6 +120,23 @@ describe('modelRequestService', () => {
       source: 'user',
       status: 'pending',
       user_id: 'user-123',
+      user_name: 'Carlos Ruiz',
+    });
+  });
+
+  it('usa userName null sin fallback si no se provee user_name en authContext', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createModelRequest(validModelRequestInput, {
+      accessToken: 'session-token',
+      userId: 'user-123',
+    });
+
+    expect(getLastPayload(fetchMock)).toMatchObject({
+      user_id: 'user-123',
+      user_name: null,
     });
   });
 
@@ -141,6 +162,7 @@ describe('modelRequestService', () => {
       source: 'user',
       status: 'pending',
       user_id: 'user-123',
+      user_name: null,
     });
   });
 
@@ -200,8 +222,10 @@ describe('modelRequestService', () => {
     expect(url.pathname).toBe('/rest/v1/model_requests');
     expect(url.searchParams.get('user_id')).toBe('eq.user-123');
     expect(url.searchParams.get('order')).toBe('created_at.desc');
-    expect(url.searchParams.get('select')).toContain('contact_email');
+    expect(url.searchParams.get('select')).toContain('user_id');
+    expect(url.searchParams.get('select')).toContain('user_name');
     expect(url.searchParams.get('select')).toContain('official_url');
+    expect(url.searchParams.get('select')).toContain('user_name');
     expect(requestInit.headers).toMatchObject({
       Authorization: 'Bearer session-token',
       apikey: 'anon-key',
@@ -210,6 +234,7 @@ describe('modelRequestService', () => {
       {
         id: 'request-1',
         userId: 'user-123',
+        userName: 'Carlos Ruiz',
         brand: 'Honda',
         model: 'CBR600RR',
         year: 2026,
@@ -248,5 +273,104 @@ describe('modelRequestService', () => {
     await expect(getModelRequestsByUserId({ accessToken: 'session-token', userId: 'user-123' })).rejects.toThrow(
       'Supabase model_requests request failed (403): permission denied',
     );
+  });
+
+  it('admin lista todas las solicitudes sin filtros', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([modelRequestRow]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const requests = await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.pathname).toBe('/rest/v1/model_requests');
+    expect(url.searchParams.get('order')).toBe('created_at.desc');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(requests).toHaveLength(1);
+    expect(requests[0].brand).toBe('Honda');
+  });
+
+  it('admin filtra solicitudes por status', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, { status: 'pending' });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('status')).toBe('eq.pending');
+  });
+
+  it('admin filtra solicitudes por búsqueda textual', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, { search: 'Honda' });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('or')).toBe('(brand.ilike.*Honda*,model.ilike.*Honda*)');
+  });
+
+  it('admin actualiza status correctamente con PATCH', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await updateModelRequestStatus('request-1', 'approved', { accessToken: 'admin-token', userId: 'admin-1' });
+    const [requestUrl, requestInit] = fetchMock.mock.calls[0];
+
+    expect(requestInit.method).toBe('PATCH');
+    expect(new URL(String(requestUrl)).searchParams.get('id')).toBe('eq.request-1');
+    expect(JSON.parse(String(requestInit.body))).toEqual({ status: 'approved' });
+    expect(requestInit.headers).toMatchObject({
+      Authorization: 'Bearer admin-token',
+      Prefer: 'return=minimal',
+    });
+  });
+
+  it('updateModelRequestStatus rechaza status inválido sin llamar fetch', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(updateModelRequestStatus('request-1', 'invalid' as never, { accessToken: 'admin-token', userId: 'admin-1' })).rejects.toThrow(
+      'Estado inválido',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('getAllModelRequests sin authContext lanza error', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getAllModelRequests({ accessToken: '', userId: '' })).rejects.toThrow(
+      'userId y accessToken son obligatorios para administración de solicitudes.',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('updateModelRequestStatus sin authContext lanza error', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(updateModelRequestStatus('request-1', 'approved', { accessToken: '', userId: '' })).rejects.toThrow(
+      'userId y accessToken son obligatorios para administración de solicitudes.',
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

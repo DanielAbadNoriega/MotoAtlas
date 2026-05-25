@@ -6,7 +6,7 @@ import { AccountPage } from './components/pages/AccountPage';
 import { AccountMotorcycleReviewsPage } from './components/pages/AccountMotorcycleReviewsPage';
 import { AccountReviewsPage } from './components/pages/AccountReviewsPage';
 import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
-import { AdminDashboardPage, AdminModerationPage, AdminReviewsPage } from './components/pages/AdminPage';
+import { AdminDashboardPage, AdminModerationPage, AdminRequestsPage, AdminReviewsPage } from './components/pages/AdminPage';
 import { AdminMotorcycleReviewsPage } from './components/pages/AdminMotorcycleReviewsPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
@@ -46,6 +46,7 @@ import {
   isAccountRequestsRoute,
   isAccountMotorcycleReviewsRoute,
   isAdminModerationRoute,
+  isAdminRequestsRoute,
   isAdminReviewsRoute,
   isAdminMotorcycleReviewsRoute,
   isAdminRoute,
@@ -115,6 +116,7 @@ export function App() {
   const isAccountRequestsPage = isAccountRequestsRoute(route);
   const isAdminPage = isAdminRoute(route);
   const isAdminModerationPage = isAdminModerationRoute(route);
+  const isAdminRequestsPage = isAdminRequestsRoute(route);
   const isAdminReviewsPage = isAdminReviewsRoute(route);
   const isAdminMotorcycleReviewsPage = isAdminMotorcycleReviewsRoute(route);
   const isTopRatedPage = isTopRatedRoute(route);
@@ -174,6 +176,11 @@ export function App() {
 
     if (isAdminModerationPage) {
       applySeoMetadata(buildAdminSeoMetadata('moderacion'));
+      return;
+    }
+
+    if (isAdminRequestsPage) {
+      applySeoMetadata(buildAdminSeoMetadata('solicitudes'));
       return;
     }
 
@@ -265,7 +272,7 @@ export function App() {
       description: 'Explora el catálogo técnico de motos, compara modelos y lee reviews reales de la comunidad motera. Decisiones informadas para moteros exigentes.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, isTopRatedPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -277,6 +284,8 @@ export function App() {
         <AuthPage mode="register" />
       ) : isAdminModerationPage ? (
         <AdminModerationPage />
+      ) : isAdminRequestsPage ? (
+        <AdminRequestsPage />
       ) : isAdminMotorcycleReviewsPage ? (
         <AdminMotorcycleReviewsPage bike={adminMotorcycleId ? findMotorcycleById(adminMotorcycleId) : undefined} motorcycleId={adminMotorcycleId} />
       ) : isAdminReviewsPage ? (

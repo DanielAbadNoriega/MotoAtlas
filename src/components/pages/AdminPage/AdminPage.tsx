@@ -17,6 +17,14 @@ import {
   updateReviewReplyStatus,
   type AdminReviewReply,
 } from '../../../services/adminReplyService';
+import {
+  getAllModelRequests,
+  updateModelRequestStatus as updateModelRequestStatusService,
+  type ModelRequest as ModelRequestType,
+  type ModelRequestAuthContext,
+  type ModelRequestFilters,
+  type ModelRequestStatus as ModelRequestStatusType,
+} from '../../../services/modelRequestService';
 import type { CreateReviewAuthContext, MotorcycleReview, MotorcycleReviewRidingStyle, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
@@ -51,7 +59,7 @@ type AdminFilterOption<T extends string> = Readonly<{
 }>;
 
 type AdminFilterSectionId = 'reason' | 'sort' | 'status' | 'source' | 'verified' | 'segment' | 'license' | 'ridingStyle';
-type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews';
+type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews' | 'requests';
 
 type AdminReviewGarageItem = Readonly<{
   detailHref: string;
@@ -363,6 +371,9 @@ export function AdminSidebar({ active, children }: Readonly<{ active: AdminSideb
         <a className={active === 'reviews' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/reviews" aria-current={active === 'reviews' ? 'page' : undefined}>
           Reviews
         </a>
+        <a className={active === 'requests' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/solicitudes" aria-current={active === 'requests' ? 'page' : undefined}>
+          Solicitudes
+        </a>
       </nav>
       {children}
     </aside>
@@ -413,7 +424,8 @@ export function AdminDashboardPage() {
               <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
                 <span className="material-symbols-outlined" aria-hidden="true">fact_check</span>
                 <h2>Solicitudes pendientes</h2>
-                <p>Moderación de solicitudes queda fuera de esta fase.</p>
+                <p>Gestiona las solicitudes de nuevos modelos enviadas por la comunidad.</p>
+                <a className="account-page__button account-page__button--glass" href="#/admin/solicitudes">Ir a solicitudes</a>
               </article>
             </section>
           </div>
@@ -1238,6 +1250,487 @@ export function AdminReviewsPage() {
                 <div className="admin-reviews-page__garage-grid">
                   {garageItems.map((item) => (
                     <AdminReviewSummaryCard item={item} key={item.motorcycleId} />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </section>
+      </main>
+    </AdminGate>
+  );
+}
+
+const requestsDateFormatter = new Intl.DateTimeFormat('es-ES', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+const requestStatusLabels: Record<ModelRequestStatusType, string> = {
+  pending: 'Pendiente',
+  reviewed: 'Revisada',
+  approved: 'Aprobada',
+  rejected: 'Rechazada',
+};
+
+const requestSourceLabels: Record<ModelRequestType['source'], string> = {
+  user: 'Usuario',
+  admin: 'Admin',
+  import: 'Import',
+};
+
+const requestStatusOptions = [
+  { icon: 'apps', label: 'Todas', value: 'all' },
+  { icon: 'pending', label: 'Pendientes', value: 'pending' },
+  { icon: 'fact_check', label: 'Revisadas', value: 'reviewed' },
+  { icon: 'task_alt', label: 'Aprobadas', value: 'approved' },
+  { icon: 'cancel', label: 'Rechazadas', value: 'rejected' },
+] as const;
+
+const requestSourceOptions = [
+  { icon: 'apps', label: 'Todas', value: 'all' },
+  { icon: 'person', label: 'Usuario', value: 'user' },
+  { icon: 'shield_person', label: 'Admin', value: 'admin' },
+  { icon: 'cloud_upload', label: 'Import', value: 'import' },
+] as const;
+
+type AdminRequestsFilters = {
+  status: ModelRequestStatusType | 'all';
+  source: ModelRequestType['source'] | 'all';
+  search: string;
+};
+
+const defaultRequestsFilters: AdminRequestsFilters = {
+  status: 'all',
+  source: 'all',
+  search: '',
+};
+
+function hasActiveRequestsFilters(filters: AdminRequestsFilters) {
+  return filters.status !== defaultRequestsFilters.status
+    || filters.source !== defaultRequestsFilters.source
+    || filters.search !== defaultRequestsFilters.search;
+}
+
+function formatRequestDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Fecha pendiente' : requestsDateFormatter.format(date);
+}
+
+function AdminRequestsFilterSidebar({
+  filters,
+  isOpen,
+  onApplyFilters,
+  onChange,
+  onClearFilters,
+  onClose,
+}: Readonly<{
+  filters: AdminRequestsFilters;
+  isOpen: boolean;
+  onApplyFilters: () => void;
+  onChange: (next: Partial<AdminRequestsFilters>) => void;
+  onClearFilters: () => void;
+  onClose: () => void;
+}>) {
+  const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
+  const clearButtonDisabled = !hasActiveRequestsFilters(filters);
+  const [filterSectionsOpenState, setFilterSectionsOpenState] = useState<Record<string, boolean>>({
+    status: true,
+    source: false,
+  });
+
+  const toggleFilterSection = (sectionId: string) => {
+    setFilterSectionsOpenState((currentState) => ({
+      ...currentState,
+      [sectionId]: !currentState[sectionId],
+    }));
+  };
+
+  return (
+    <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de solicitudes">
+      <nav className="account-page__quick-links" aria-label="Navegación de administración">
+        <a className="account-page__quick-link" href="#/admin">Panel admin</a>
+        <a className="account-page__quick-link" href="#/admin/moderacion">Moderación</a>
+        <a className="account-page__quick-link" href="#/admin/reviews">Reviews</a>
+        <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/solicitudes" aria-current="page">Solicitudes</a>
+      </nav>
+
+      {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de solicitudes" /> : null}
+
+      <section
+        className={panelClasses}
+        aria-label="Filtros admin"
+        aria-labelledby="admin-requests-filters-title"
+        aria-modal={isOpen ? 'true' : undefined}
+        role={isOpen ? 'dialog' : undefined}
+      >
+        <div className="admin-page__sheet-handle" aria-hidden="true" />
+        <div className="admin-page__filters-header">
+          <h2 id="admin-requests-filters-title">Filtros</h2>
+          <button type="button" onClick={onClearFilters} disabled={clearButtonDisabled}>Limpiar filtros</button>
+          <button className="admin-page__filters-close" type="button" onClick={onClose} aria-label="Cerrar filtros de solicitudes">
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <div className="admin-page__filters-body">
+          <label className="admin-page__search" htmlFor="admin-requests-search">
+            Buscar por marca o modelo
+            <span className="material-symbols-outlined" aria-hidden="true">search</span>
+            <input
+              id="admin-requests-search"
+              type="search"
+              value={filters.search}
+              onChange={(event) => onChange({ search: event.target.value })}
+              placeholder="Buscar por marca o modelo"
+            />
+          </label>
+
+          <AdminFilterGroup
+            sectionId="status"
+            isOpen={filterSectionsOpenState.status}
+            label="Estado"
+            options={requestStatusOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.status}
+            onToggle={() => toggleFilterSection('status')}
+            onChange={(status) => onChange({ status: status as ModelRequestStatusType | 'all' })}
+          />
+
+          <AdminFilterGroup
+            sectionId="source"
+            isOpen={filterSectionsOpenState.source}
+            label="Origen"
+            options={requestSourceOptions as unknown as readonly AdminFilterOption<string>[]}
+            value={filters.source}
+            onToggle={() => toggleFilterSection('source')}
+            onChange={(source) => onChange({ source: source as ModelRequestType['source'] | 'all' })}
+          />
+        </div>
+
+        <footer className="admin-page__filters-footer">
+          <button type="button" onClick={onClearFilters} disabled={clearButtonDisabled}>Limpiar filtros</button>
+          <button type="button" onClick={onApplyFilters}>Aplicar filtros</button>
+        </footer>
+      </section>
+    </aside>
+  );
+}
+
+function RequestStatusBadge({ status }: Readonly<{ status: ModelRequestStatusType }>) {
+  return <span className="admin-page__status-pill" data-status={status}>{requestStatusLabels[status]}</span>;
+}
+
+function AdminRequestCard({
+  expanded,
+  isPending,
+  onToggle,
+  onStatusAction,
+  request,
+}: Readonly<{
+  expanded: boolean;
+  isPending: boolean;
+  onToggle: () => void;
+  onStatusAction: (request: ModelRequestType, status: Exclude<ModelRequestStatusType, 'pending'>) => void;
+  request: ModelRequestType;
+}>) {
+  const cardClasses = ['admin-page__report-card', expanded ? 'admin-page__report-card--expanded' : ''].filter(Boolean).join(' ');
+  const detailsId = `admin-request-details-${request.id}`;
+
+  return (
+    <article className={cardClasses} data-testid="admin-request-card">
+      <header className="admin-page__report-header">
+        <h2>
+          <button
+            className="admin-page__report-toggle"
+            type="button"
+            aria-controls={detailsId}
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Contraer' : 'Expandir'} solicitud de ${request.brand} ${request.model}`}
+            onClick={onToggle}
+          >
+            <span className="admin-page__report-heading">
+              <span className="admin-page__reason-line">
+                <RequestStatusBadge status={request.status} />
+                <span className="admin-page__reason-title">{request.brand} {request.model} {request.year}</span>
+              </span>
+              <span className="admin-page__reporter">
+                <span>@{request.userName || (request.userId ? 'Usuario' : 'Anónimo')}</span>
+                {request.createdAt ? ` · ${formatRequestDate(request.createdAt)}` : ''}
+              </span>
+            </span>
+            <span className="material-symbols-outlined admin-page__report-chevron" aria-hidden="true">expand_more</span>
+          </button>
+        </h2>
+      </header>
+
+      <div id={detailsId} className="admin-page__report-body-wrapper" aria-hidden={!expanded} inert={!expanded}>
+        <div className="admin-page__report-body">
+          <section className="admin-page__reported-review admin-page__request-detail" aria-label="Detalles de la solicitud">
+            <div className="admin-page__request-detail-grid">
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Marca</span>
+                <span className="admin-page__request-detail-value">{request.brand}</span>
+              </div>
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Modelo</span>
+                <span className="admin-page__request-detail-value">{request.model}</span>
+              </div>
+            </div>
+            <div className="admin-page__request-detail-grid admin-page__request-detail-grid--three">
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Año</span>
+                <span className="admin-page__request-detail-value">{request.year ?? 'No especificado'}</span>
+              </div>
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Segmento</span>
+                <span className="admin-page__request-detail-value">{request.segment ?? 'No especificado'}</span>
+              </div>
+              <div className="admin-page__request-detail-field">
+                <span className="admin-page__request-detail-label">Origen</span>
+                <span className="admin-page__request-detail-value">{requestSourceLabels[request.source]}</span>
+              </div>
+            </div>
+            {request.userName || request.userId ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Usuario</span>
+                <span className="admin-page__request-detail-value">{request.userName || 'Usuario MotoAtlas'}</span>
+              </div>
+            ) : null}
+            {request.contactEmail ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Email de contacto</span>
+                <span className="admin-page__request-detail-value">{request.contactEmail}</span>
+              </div>
+            ) : null}
+            {request.officialUrl ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Página oficial o fuente</span>
+                <span className="admin-page__request-detail-value">
+                  <a href={request.officialUrl} target="_blank" rel="noopener noreferrer">
+                    {request.officialUrl}
+                    <span className="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                  </a>
+                </span>
+              </div>
+            ) : null}
+            {request.comment ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Comentario</span>
+                <div className="admin-page__request-detail-value admin-page__request-detail-value--comment">{request.comment}</div>
+              </div>
+            ) : null}
+          </section>
+
+          <footer>
+            <div className="admin-page__action-group" aria-label="Acciones sobre solicitud">
+              <h3>Gestionar solicitud</h3>
+              <div>
+                <button
+                  className="admin-page__action-button admin-page__action-button--reviewed"
+                  type="button"
+                  disabled={isPending || request.status === 'reviewed'}
+                  onClick={() => onStatusAction(request, 'reviewed')}
+                >
+                  Marcar revisada
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--approve"
+                  type="button"
+                  disabled={isPending || request.status === 'approved'}
+                  onClick={() => onStatusAction(request, 'approved')}
+                >
+                  Aprobar
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--reject"
+                  type="button"
+                  disabled={isPending || request.status === 'rejected'}
+                  onClick={() => onStatusAction(request, 'rejected')}
+                >
+                  Rechazar
+                </button>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export function AdminRequestsPage() {
+  const { isAdmin, isAuthenticated, isLoading, session, user, profile } = useAuth();
+  const [requests, setRequests] = useState<readonly ModelRequestType[]>([]);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [expandedRequests, setExpandedRequests] = useState<Record<string, boolean>>({});
+  const [requestFilters, setRequestFilters] = useState<AdminRequestsFilters>(defaultRequestsFilters);
+
+  const authContext = useMemo<ModelRequestAuthContext | null>(() => (
+    user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
+  ), [session?.access_token, user?.id]);
+
+  const loadRequests = useCallback(() => {
+    if (!authContext || !isAdmin) {
+      return;
+    }
+
+    setIsLoadingRequests(true);
+    setError(null);
+
+    const serviceFilters: ModelRequestFilters = {
+      ...(requestFilters.status !== 'all' ? { status: requestFilters.status } : {}),
+      ...(requestFilters.source !== 'all' ? { source: requestFilters.source } : {}),
+      ...(requestFilters.search ? { search: requestFilters.search } : {}),
+    };
+
+    getAllModelRequests(authContext, serviceFilters)
+      .then((nextRequests) => setRequests(nextRequests))
+      .catch(() => {
+        setRequests([]);
+        setError('No se pudieron cargar las solicitudes.');
+      })
+      .finally(() => setIsLoadingRequests(false));
+  }, [authContext, isAdmin, requestFilters]);
+
+  useEffect(() => {
+    loadRequests();
+  }, [loadRequests]);
+
+  useEffect(() => {
+    if (!isFilterPanelOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsFilterPanelOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFilterPanelOpen]);
+
+  const requestActionNotices: Record<Exclude<ModelRequestStatusType, 'pending'>, string> = {
+    reviewed: 'Solicitud marcada como revisada.',
+    approved: 'Solicitud aprobada.',
+    rejected: 'Solicitud rechazada.',
+  };
+
+  const handleRequestStatus = async (request: ModelRequestType, status: Exclude<ModelRequestStatusType, 'pending'>) => {
+    if (!authContext) {
+      return;
+    }
+
+    setPendingAction(`${request.id}:request:${status}`);
+    setNotice(null);
+    setError(null);
+
+    try {
+      await updateModelRequestStatusService(request.id, status, authContext);
+      setRequests((currentRequests) => currentRequests.map((currentRequest) => (
+        currentRequest.id === request.id ? { ...currentRequest, status } : currentRequest
+      )));
+      setNotice(requestActionNotices[status]);
+    } catch {
+      setError('No se pudo completar la acción sobre la solicitud.');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const toggleRequestCard = (requestId: string) => {
+    setExpandedRequests((currentState) => ({
+      ...currentState,
+      [requestId]: !currentState[requestId],
+    }));
+  };
+
+  return (
+    <AdminGate>
+      <CommunityHero
+        className="admin-page__community-hero admin-page__hero"
+        titleId="admin-requests-page-title"
+        imageSrc={adminHeroImage}
+        eyebrow="ADMIN STUDIO"
+        title="Solicitudes de modelos"
+        description="Gestiona las solicitudes de nuevos modelos enviadas por la comunidad."
+      >
+        <div className="admin-page__hero-meta">
+          <div className="admin-page__admin-chip" aria-label="Administrador activo">
+            <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
+            {getDisplayName(profile?.displayName, user?.email)}
+          </div>
+        </div>
+      </CommunityHero>
+
+      <main className="account-page admin-page" aria-labelledby="admin-requests-page-title">
+        <section className="account-page__dashboard admin-page__layout">
+          <AdminRequestsFilterSidebar
+            filters={requestFilters}
+            isOpen={isFilterPanelOpen}
+            onApplyFilters={() => setIsFilterPanelOpen(false)}
+            onChange={(next) => {
+              setRequestFilters((current) => ({ ...current, ...next }));
+            }}
+            onClearFilters={() => setRequestFilters(defaultRequestsFilters)}
+            onClose={() => setIsFilterPanelOpen(false)}
+          />
+          <div className="account-page__main">
+            <section className="account-page__section" aria-labelledby="admin-requests-list-title">
+              <div className="account-page__section-header">
+                <div>
+                  <span>Model requests</span>
+                  <h2 id="admin-requests-list-title">
+                    <span className="material-symbols-outlined" aria-hidden="true">fact_check</span>
+                    Solicitudes de modelos
+                  </h2>
+                </div>
+                <div className="admin-page__mobile-filter-trigger">
+                  <button type="button" aria-label="Abrir filtros de solicitudes" onClick={() => setIsFilterPanelOpen(true)}>
+                    <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+                    Filtros
+                  </button>
+                </div>
+              </div>
+
+              {notice ? <p className="admin-page__notice-message" role="status">{notice}</p> : null}
+              {error ? (
+                <article className="account-page__empty-state account-page__empty-state--error" role="alert">
+                  <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">error</span>
+                  <h3>{error}</h3>
+                  <button className="account-page__button" type="button" onClick={loadRequests}>Reintentar</button>
+                </article>
+              ) : isLoading || (isAuthenticated && isLoadingRequests) ? (
+                <p className="admin-page__loading" role="status">Cargando solicitudes...</p>
+              ) : requests.length === 0 ? (
+                <article className="account-page__empty-state">
+                  <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">fact_check</span>
+                  <h3>No hay solicitudes con estos filtros.</h3>
+                </article>
+              ) : (
+                <div className="admin-page__report-list">
+                  {requests.map((req) => (
+                    <AdminRequestCard
+                      expanded={Boolean(expandedRequests[req.id])}
+                      isPending={Boolean(pendingAction?.startsWith(`${req.id}:`))}
+                      key={req.id}
+                      onToggle={() => toggleRequestCard(req.id)}
+                      onStatusAction={handleRequestStatus}
+                      request={req}
+                    />
                   ))}
                 </div>
               )}

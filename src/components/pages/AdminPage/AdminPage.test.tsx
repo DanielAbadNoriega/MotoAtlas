@@ -15,7 +15,14 @@ import {
   type AdminReviewReply,
 } from '../../../services/adminReplyService';
 import type { MotorcycleReview } from '../../../services/motorcycleReviewService';
-import { AdminDashboardPage, AdminModerationPage, AdminReviewsPage } from './AdminPage';
+import { AdminDashboardPage, AdminModerationPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
+
+import {
+  getAllModelRequests,
+  updateModelRequestStatus,
+  type ModelRequest,
+  type ModelRequestStatus,
+} from '../../../services/modelRequestService';
 
 vi.mock('../../../features/auth', () => ({
   useAuth: vi.fn(),
@@ -36,6 +43,11 @@ vi.mock('../../../services/adminReplyService', () => ({
   updateReviewReplyStatus: vi.fn(),
 }));
 
+vi.mock('../../../services/modelRequestService', () => ({
+  getAllModelRequests: vi.fn(),
+  updateModelRequestStatus: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
 const getAllReviewsMock = vi.mocked(getAllReviews);
@@ -43,6 +55,8 @@ const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatu
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
 const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
 const updateReviewReplyStatusMock = vi.mocked(updateReviewReplyStatus);
+const getAllModelRequestsMock = vi.mocked(getAllModelRequests);
+const updateModelRequestStatusMock = vi.mocked(updateModelRequestStatus);
 
 const adminAuth = {
   user: { id: 'admin-1', email: 'admin@motoatlas.com' },
@@ -149,6 +163,8 @@ describe('AdminPage', () => {
     updateReviewReportStatusMock.mockReset().mockResolvedValue(undefined);
     getAdminPendingRepliesMock.mockReset().mockResolvedValue([]);
     updateReviewReplyStatusMock.mockReset().mockResolvedValue(undefined);
+    getAllModelRequestsMock.mockReset().mockResolvedValue(requestFixtures);
+    updateModelRequestStatusMock.mockReset().mockResolvedValue(undefined);
     mockAuth();
   });
 
@@ -925,6 +941,52 @@ describe('AdminPage', () => {
     },
   ];
 
+  const requestFixtures: readonly ModelRequest[] = [
+    {
+      id: 'req-1',
+      userId: 'user-1',
+      userName: 'Carlos Ruiz',
+      brand: 'Honda',
+      model: 'Transalp 750',
+      year: 2025,
+      segment: 'trail',
+      contactEmail: 'user@example.com',
+      officialUrl: null,
+      comment: 'Sería genial tener esta moto en el catálogo.',
+      status: 'pending',
+      source: 'user',
+      createdAt: '2026-05-24T10:00:00.000Z',
+      updatedAt: '2026-05-24T10:00:00.000Z',
+    },
+    {
+      id: 'req-2',
+      userId: 'admin-1',
+      userName: null,
+      brand: 'KTM',
+      model: '1390 Super Duke R',
+      year: 2025,
+      segment: 'hypernaked',
+      contactEmail: null,
+      officialUrl: 'https://www.ktm.com',
+      comment: null,
+      status: 'reviewed',
+      source: 'admin',
+      createdAt: '2026-05-23T10:00:00.000Z',
+      updatedAt: '2026-05-24T10:00:00.000Z',
+    },
+  ];
+
+  function buildRequest(index: number, overrides: Partial<ModelRequest> = {}): ModelRequest {
+    const base = requestFixtures[0];
+    return {
+      ...base,
+      id: `req-${index}`,
+      brand: `Brand_${index}`,
+      model: `Model_${index}`,
+      ...overrides,
+    } as ModelRequest;
+  }
+
   it('admin ve barra de tabs con Reportes y Respuestas pendientes', async () => {
     render(<AdminModerationPage />);
 
@@ -1046,5 +1108,304 @@ describe('AdminPage', () => {
     await user.click(within(card).getByRole('button', { name: 'Aprobar' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo completar la acción de moderación.');
+  });
+
+  it('bloquea solicitudes sin sesión', () => {
+    mockAuth({
+      user: null,
+      session: null,
+      profile: null,
+      isAuthenticated: false,
+      isAdmin: false,
+    });
+
+    render(<AdminRequestsPage />);
+
+    expect(screen.getByRole('heading', { name: /Inicia sesión para acceder al panel admin/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Iniciar sesión/i })).toHaveAttribute('href', '#/login');
+    expect(getAllModelRequestsMock).not.toHaveBeenCalled();
+  });
+
+  it('bloquea solicitudes para usuario no admin', () => {
+    mockAuth({
+      profile: { id: 'user-1', displayName: 'User', avatarUrl: null, role: 'user' },
+      isAdmin: false,
+    });
+
+    render(<AdminRequestsPage />);
+
+    expect(screen.getByRole('heading', { name: /No tienes permisos para acceder a esta zona/i })).toBeInTheDocument();
+    expect(getAllModelRequestsMock).not.toHaveBeenCalled();
+  });
+
+  it('renderiza lista de solicitudes con datos', async () => {
+    render(<AdminRequestsPage />);
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Solicitudes de modelos' })).toBeInTheDocument();
+    expect(await screen.findByText('Honda Transalp 750 2025')).toBeInTheDocument();
+    expect(screen.getByText('KTM 1390 Super Duke R 2025')).toBeInTheDocument();
+    expect(getAllModelRequestsMock).toHaveBeenCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      {},
+    );
+  });
+
+  it('expande y colapsa card de solicitud', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const cards = await screen.findAllByTestId('admin-request-card');
+    expect(cards).toHaveLength(2);
+
+    const toggleButton = within(cards[0]).getByRole('button', { name: /Expandir solicitud de Honda Transalp 750/i });
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(toggleButton);
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+    expect(within(cards[0]).getByText(/user@example.com/)).toBeVisible();
+    expect(within(cards[0]).getByText(/Sería genial tener esta moto/)).toBeVisible();
+    expect(within(cards[0]).getByRole('button', { name: 'Marcar revisada' })).toBeInTheDocument();
+    expect(within(cards[0]).getByRole('button', { name: 'Aprobar' })).toBeInTheDocument();
+    expect(within(cards[0]).getByRole('button', { name: 'Rechazar' })).toBeInTheDocument();
+
+    await user.click(toggleButton);
+    expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('marca solicitud como revisada', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Marcar revisada' }));
+
+    expect(updateModelRequestStatusMock).toHaveBeenCalledWith('req-1', 'reviewed', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Solicitud marcada como revisada.'));
+  });
+
+  it('aprueba solicitud', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Aprobar' }));
+
+    expect(updateModelRequestStatusMock).toHaveBeenCalledWith('req-1', 'approved', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Solicitud aprobada.'));
+  });
+
+  it('rechaza solicitud', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Rechazar' }));
+
+    expect(updateModelRequestStatusMock).toHaveBeenCalledWith('req-1', 'rejected', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Solicitud rechazada.'));
+  });
+
+  it('deshabilita acción del estado actual', async () => {
+    getAllModelRequestsMock.mockResolvedValueOnce([{
+      ...requestFixtures[0],
+      status: 'approved',
+    }]);
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await userEvent.setup().click(within(card).getByRole('button', { name: /Expandir/i }));
+    expect(within(card).getByRole('button', { name: 'Aprobar' })).toBeDisabled();
+    expect(within(card).getByRole('button', { name: 'Rechazar' })).not.toBeDisabled();
+    expect(within(card).getByRole('button', { name: 'Marcar revisada' })).not.toBeDisabled();
+  });
+
+  it('muestra empty state', async () => {
+    getAllModelRequestsMock.mockResolvedValueOnce([]);
+    render(<AdminRequestsPage />);
+
+    expect(await screen.findByRole('heading', { name: /No hay solicitudes con estos filtros/i })).toBeInTheDocument();
+  });
+
+  it('muestra loading y error state', async () => {
+    getAllModelRequestsMock.mockImplementationOnce(() => new Promise(() => undefined));
+    render(<AdminRequestsPage />);
+    expect(screen.getByRole('status')).toHaveTextContent('Cargando solicitudes...');
+    vi.unstubAllGlobals(); // cleanup from previous test
+    getAllModelRequestsMock.mockReset();
+
+    getAllModelRequestsMock.mockRejectedValueOnce(new Error('permission denied'));
+    render(<AdminRequestsPage />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudieron cargar las solicitudes.');
+    expect(screen.getByRole('button', { name: /Reintentar/i })).toBeInTheDocument();
+  });
+
+  it('filtra por estado en solicitudes', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    await user.click(within(filters).getByRole('button', { name: /Estado: Pendientes/i }));
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { status: 'pending' },
+    ));
+  });
+
+  it('filtra por origen en solicitudes', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const sourceToggle = within(filters).getByRole('button', { name: 'Origen' });
+    await user.click(sourceToggle);
+    await user.click(within(filters).getByRole('button', { name: /Origen: Admin/i }));
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { source: 'admin' },
+    ));
+  });
+
+  it('busca por texto en solicitudes', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const searchInput = screen.getByPlaceholderText('Buscar por marca o modelo');
+    await user.type(searchInput, 'Honda');
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { search: 'Honda' },
+    ));
+  });
+
+  it('navegación admin contiene Solicitudes en el sidebar', () => {
+    render(<AdminDashboardPage />);
+
+    const nav = screen.getByRole('navigation', { name: /Navegación de administración/i });
+    const solicitudesLink = within(nav).getByRole('link', { name: 'Solicitudes' });
+    expect(solicitudesLink).toHaveAttribute('href', '#/admin/solicitudes');
+  });
+
+  it('sidebar de solicitudes muestra enlace activo', () => {
+    render(<AdminRequestsPage />);
+
+    const nav = screen.getByRole('navigation', { name: /Navegación de administración/i });
+    const activeLink = within(nav).getByRole('link', { name: 'Solicitudes' });
+    expect(activeLink).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('renderiza Marca, Modelo, Año y Segmento en los detalles expandidos', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    const brandValues = within(card).getAllByText('Honda');
+    expect(brandValues.length).toBeGreaterThanOrEqual(1);
+    const modelValues = within(card).getAllByText('Transalp 750');
+    expect(modelValues.length).toBeGreaterThanOrEqual(1);
+    const yearValues = within(card).getAllByText('2025');
+    expect(yearValues.length).toBeGreaterThanOrEqual(1);
+    const segmentLabels = within(card).getAllByText('trail');
+    expect(segmentLabels.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renderiza email de contacto si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText('user@example.com')).toBeInTheDocument();
+  });
+
+  it('renderiza URL oficial si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[1];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    const urlLink = within(card).getByRole('link', { name: /https:\/\/www\.ktm\.com/i });
+    expect(urlLink).toHaveAttribute('href', 'https://www.ktm.com');
+    expect(urlLink).toHaveAttribute('target', '_blank');
+    expect(urlLink).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('renderiza comentario si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText(/Sería genial tener esta moto/)).toBeInTheDocument();
+  });
+
+  it('no muestra texto literal null en los detalles', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).queryByText(/^null$/i)).not.toBeInTheDocument();
+  });
+
+  it('muestra el nombre de usuario en los detalles si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText('Carlos Ruiz')).toBeInTheDocument();
+  });
+
+  it('muestra "Usuario MotoAtlas" si el usuario está autenticado pero sin displayName', async () => {
+    getAllModelRequestsMock.mockResolvedValueOnce([
+      { ...requestFixtures[1] },
+    ]);
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText('Usuario MotoAtlas')).toBeInTheDocument();
+  });
+
+  it('acciones siguen funcionando tras el cambio visual', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Marcar revisada' }));
+
+    expect(updateModelRequestStatusMock).toHaveBeenCalledWith('req-1', 'reviewed', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Solicitud marcada como revisada.'));
+  });
+
+  it('error en acción de solicitud muestra alerta', async () => {
+    updateModelRequestStatusMock.mockRejectedValueOnce(new Error('fail'));
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Marcar revisada' }));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('No se pudo completar la acción sobre la solicitud.'));
   });
 });

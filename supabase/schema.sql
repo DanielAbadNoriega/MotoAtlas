@@ -768,6 +768,16 @@ create table if not exists public.model_requests (
 alter table if exists public.model_requests
   add column if not exists official_url text null;
 
+alter table if exists public.model_requests
+  add column if not exists user_name text;
+
+alter table if exists public.model_requests
+  drop constraint if exists model_requests_user_name_check;
+
+alter table if exists public.model_requests
+  add constraint model_requests_user_name_check
+  check (user_name is null or length(trim(user_name)) > 0);
+
 create index if not exists model_requests_user_id_idx on public.model_requests (user_id);
 create index if not exists model_requests_status_idx on public.model_requests (status);
 create index if not exists model_requests_created_at_idx on public.model_requests (created_at);
@@ -821,5 +831,25 @@ revoke all on table public.model_requests from authenticated;
 
 grant insert on public.model_requests to anon, authenticated;
 grant select on public.model_requests to authenticated;
+
+drop policy if exists "Admins can read all model requests" on public.model_requests;
+create policy "Admins can read all model requests"
+on public.model_requests
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can update model request status" on public.model_requests;
+create policy "Admins can update model request status"
+on public.model_requests
+for update
+to authenticated
+using (public.is_admin())
+with check (
+  public.is_admin()
+  and status in ('pending', 'reviewed', 'approved', 'rejected')
+);
+
+grant update (status) on public.model_requests to authenticated;
 
 notify pgrst, 'reload schema';
