@@ -701,14 +701,21 @@
   }
 
   &__reply-badge {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 600;
-    padding: 0.1rem 0.4rem;
+    padding: 0.08rem 0.35rem;
     border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 
     &--pending {
       background: rgba($color-accent, 0.15);
       color: $color-accent;
+    }
+
+    &--respondido {
+      background: rgba($color-primary, 0.1);
+      color: $color-primary;
     }
   }
 
@@ -740,13 +747,6 @@
     .material-symbols-outlined {
       font-size: 1rem;
     }
-  }
-
-  &__reply-self-notice {
-    color: rgba($color-on-surface-variant, 0.7);
-    font-size: 0.75rem;
-    font-style: italic;
-    margin: 0.5rem 0 0;
   }
 
   &__reply-form {
@@ -1010,7 +1010,7 @@
   }
 
   &__owner-report-summary {
-    align-content: start;
+    align-content: space-between;
     display: grid;
     gap: 0.8rem;
 

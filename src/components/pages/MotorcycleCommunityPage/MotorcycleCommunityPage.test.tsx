@@ -681,7 +681,7 @@ describe('MotorcycleCommunityPage', () => {
     expect(within(row).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
-    expect(within(row).getByText('No puedes responder a tu propia review.')).toBeInTheDocument();
+    expect(within(row).getByText('Propia')).toBeInTheDocument();
   });
 
   it('muestra el botón Responder a otro usuario autenticado en reviews ajenas', async () => {
@@ -915,7 +915,7 @@ describe('MotorcycleCommunityPage', () => {
     expect(within(replyRow!).getByText('Pendiente')).toBeInTheDocument();
   });
 
-  it('muestra respuestas existentes', async () => {
+  it('muestra botón toggle Ver respuestas cuando existen respuestas', async () => {
     getRepliesByReviewIdMock.mockImplementation(async (reviewId) => {
       if (reviewId === 'review-approved-1') {
         return [
@@ -929,8 +929,101 @@ describe('MotorcycleCommunityPage', () => {
 
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
+    const toggle = await screen.findByRole('button', { name: /Ver 1 respuesta/i });
+    expect(toggle).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('toggle Ver respuestas despliega y oculta las respuestas', async () => {
+    getRepliesByReviewIdMock.mockImplementation(async (reviewId) => {
+      if (reviewId === 'review-approved-1') {
+        return [
+          {
+            id: 'reply-1', reviewId: 'review-approved-1', userId: 'user-2', userName: 'Usuario', comment: 'Coincido totalmente!', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z',
+          },
+        ] as readonly ReviewReply[];
+      }
+      return [];
+    });
+
+    const user = userEvent.setup();
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const toggle = await screen.findByRole('button', { name: /Ver 1 respuesta/i });
+    await user.click(toggle);
+
+    expect(screen.getByText('Coincido totalmente!')).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle).toHaveTextContent(/Ocultar 1 respuesta/i);
+
+    await user.click(toggle);
+
+    expect(screen.queryByText('Coincido totalmente!')).not.toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveTextContent(/Ver 1 respuesta/i);
+  });
+
+  it('toggle plural Ver X respuestas funciona con múltiples respuestas', async () => {
+    getRepliesByReviewIdMock.mockImplementation(async (reviewId) => {
+      if (reviewId === 'review-approved-1') {
+        return [
+          { id: 'reply-1', reviewId: 'review-approved-1', userId: 'user-2', userName: 'Usuario1', comment: 'Primera respuesta', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z' },
+          { id: 'reply-2', reviewId: 'review-approved-1', userId: 'user-3', userName: 'Usuario2', comment: 'Segunda respuesta', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z' },
+        ] as readonly ReviewReply[];
+      }
+      return [];
+    });
+
+    const user = userEvent.setup();
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const toggle = await screen.findByRole('button', { name: /Ver 2 respuestas/i });
+    expect(toggle).toBeInTheDocument();
+    await user.click(toggle);
+
+    expect(screen.getByText('Primera respuesta')).toBeInTheDocument();
+    expect(screen.getByText('Segunda respuesta')).toBeInTheDocument();
+    expect(toggle).toHaveTextContent(/Ocultar 2 respuestas/i);
+  });
+
+  it('badge Respondido aparece cuando el usuario autenticado respondió a una review', async () => {
+    mockAuth({
+      user: { id: 'user-1', email: 'test@test.com', aud: 'authenticated', role: 'authenticated' },
+      session: { access_token: 'token-1', refresh_token: 'refresh-1', expires_in: 3600, expires_at: 9999999999, token_type: 'bearer', user: { id: 'user-1', aud: 'authenticated', role: 'authenticated', email: 'test@test.com' } },
+      isAuthenticated: true,
+    });
+
+    getRepliesByReviewIdMock.mockImplementation(async (reviewId) => {
+      if (reviewId === 'review-approved-1') {
+        return [
+          { id: 'reply-1', reviewId: 'review-approved-1', userId: 'user-1', userName: 'TestUser', comment: 'Buena review!', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z' },
+        ] as readonly ReviewReply[];
+      }
+      return [];
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
     await waitFor(() => {
-      expect(screen.getByText('Coincido totalmente!')).toBeInTheDocument();
+      const badges = screen.queryAllByText('Respondido');
+      expect(badges.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it('anónimo no ve badge Respondido', async () => {
+    getRepliesByReviewIdMock.mockImplementation(async (reviewId) => {
+      if (reviewId === 'review-approved-1') {
+        return [
+          { id: 'reply-1', reviewId: 'review-approved-1', userId: 'user-1', userName: 'TestUser', comment: 'Buena review!', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z' },
+        ] as readonly ReviewReply[];
+      }
+      return [];
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Respondido')).not.toBeInTheDocument();
     });
   });
 

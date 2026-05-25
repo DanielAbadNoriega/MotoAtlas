@@ -664,6 +664,8 @@ function OwnerReportRow({
   onSubmitReply,
   replies,
   replyToast,
+  expandedReplyReviewIds,
+  onToggleReplyVisibility,
   reportForm,
   reactionSummary,
   review,
@@ -690,6 +692,8 @@ function OwnerReportRow({
   onSubmitReply: () => void;
   replies: readonly ReviewReply[];
   replyToast: ReplyToastState | null;
+  expandedReplyReviewIds: Record<string, boolean>;
+  onToggleReplyVisibility: (reviewId: string) => void;
   reportForm: ReviewReportFormState | null;
   reactionSummary: ReviewReactionSummary;
   review: MotorcycleReview;
@@ -698,6 +702,13 @@ function OwnerReportRow({
   const alias = formatCommunityAlias(review.userName);
   const pros = normalizeReviewList(review.pros as readonly unknown[]);
   const cons = normalizeReviewList(review.cons as readonly unknown[]);
+  const hasReplied = Boolean(user && replies.some((r) => r.userId === user.id));
+  const isReplyFormOpen = replyForm?.reviewId === review.id;
+  const visibleReplies = replies.filter(
+    (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
+  );
+  const visibleRepliesCount = visibleReplies.length;
+  const isExpanded = Boolean(expandedReplyReviewIds[review.id]);
 
   return (
     <article className="motorcycle-community__owner-report-row" data-testid="owner-report-row" data-row-tone={index % 2 === 0 ? 'even' : 'odd'} role="listitem">
@@ -709,6 +720,9 @@ function OwnerReportRow({
             <div>
               <div className="motorcycle-community__owner-report-name-row">
                 <h3>{alias}</h3>
+                {hasReplied ? (
+                  <span className="motorcycle-community__reply-badge motorcycle-community__reply-badge--respondido">Respondido</span>
+                ) : null}
                 {isReviewVerified(review) ? (
                   <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--verified" aria-label="Usuario verificado">
                     <span className="material-symbols-outlined" aria-hidden="true">verified</span>
@@ -780,6 +794,32 @@ function OwnerReportRow({
             isPending={isReportFormOpen && Boolean(reportForm?.isSubmitting)}
             onOpen={onOpenReport}
           />
+          {user && !isReplyFormOpen && !isOwnReview ? (
+            <button className="motorcycle-community__helpful-action" onClick={onOpenReply} type="button">
+              <span className="material-symbols-outlined" aria-hidden="true">reply</span>
+              Responder
+            </button>
+          ) : null}
+          {user && !isReplyFormOpen && isOwnReview ? (
+            <span className="motorcycle-community__helpful-action motorcycle-community__helpful-action--passive" aria-label="No puedes responder a tu propia review">
+              <span className="material-symbols-outlined" aria-hidden="true">block</span>
+              Propia
+            </span>
+          ) : null}
+          {visibleRepliesCount > 0 ? (
+            <button
+              className="motorcycle-community__helpful-action"
+              onClick={() => onToggleReplyVisibility(review.id)}
+              aria-expanded={isExpanded}
+              aria-controls={`reply-list-${review.id}`}
+              type="button"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+              {isExpanded
+                ? `Ocultar ${visibleRepliesCount} ${visibleRepliesCount === 1 ? 'respuesta' : 'respuestas'}`
+                : `Ver ${visibleRepliesCount} ${visibleRepliesCount === 1 ? 'respuesta' : 'respuestas'}`}
+            </button>
+          ) : null}
           {feedbackTooltipMessage ? (
             <p
               className={`motorcycle-community__helpful-feedback ${feedbackTooltipVisible ? 'motorcycle-community__helpful-feedback--visible' : ''}`}
@@ -803,16 +843,15 @@ function OwnerReportRow({
           />
         ) : null}
         <ReviewReplySection
-          isOwnReview={isOwnReview}
           onCancelReply={onCancelReply}
           onChangeReplyComment={onChangeReplyComment}
-          onOpenReply={onOpenReply}
           onSubmitReply={onSubmitReply}
           replies={replies}
           replyForm={replyForm}
           replyToast={replyToast}
           review={review}
           user={user}
+          expanded={isExpanded}
         />
       </div>
     </article>
@@ -857,41 +896,40 @@ function ReplyConvivenceNotice() {
 }
 
 function ReviewReplySection({
-  isOwnReview,
   onCancelReply,
   onChangeReplyComment,
-  onOpenReply,
   onSubmitReply,
   replies,
   replyForm,
   replyToast,
   review,
   user,
+  expanded,
 }: Readonly<{
-  isOwnReview: boolean;
   onCancelReply: () => void;
   onChangeReplyComment: (comment: string) => void;
-  onOpenReply: () => void;
   onSubmitReply: () => void;
   replies: readonly ReviewReply[];
   replyForm: ReplyFormState | null;
   replyToast: ReplyToastState | null;
   review: MotorcycleReview;
   user: User | null;
+  expanded: boolean;
 }>) {
   const isReplyFormOpen = replyForm?.reviewId === review.id;
   const visibleReplies = replies.filter(
     (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
   );
+  const repliesListId = `reply-list-${review.id}`;
 
-  if (visibleReplies.length === 0 && !isReplyFormOpen && !user && !replyToast) {
+  if (!expanded && !isReplyFormOpen && !replyToast) {
     return null;
   }
 
   return (
     <div className="motorcycle-community__replies">
-      {visibleReplies.length > 0 ? (
-        <ul className="motorcycle-community__replies-list" aria-label="Respuestas a esta review">
+      {expanded && visibleReplies.length > 0 ? (
+        <ul id={repliesListId} className="motorcycle-community__replies-list" aria-label="Respuestas a esta review">
           {visibleReplies.map((reply) => (
             <li key={reply.id} className="motorcycle-community__reply-item">
               <div className="motorcycle-community__reply-header">
@@ -950,21 +988,6 @@ function ReviewReplySection({
           {replyToast.message}
         </p>
       ) : null}
-
-      {user && !isReplyFormOpen ? (
-        isOwnReview ? (
-          <p className="motorcycle-community__reply-self-notice">No puedes responder a tu propia review.</p>
-        ) : (
-          <button
-            className="motorcycle-community__reply-trigger"
-            onClick={onOpenReply}
-            type="button"
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">reply</span>
-            Responder
-          </button>
-        )
-      ) : null}
     </div>
   );
 }
@@ -986,6 +1009,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const [helpfulTooltip, setHelpfulTooltip] = useState<HelpfulTooltipState | null>(null);
   const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
   const [replyForm, setReplyForm] = useState<ReplyFormState | null>(null);
+  const [expandedReplyReviewIds, setExpandedReplyReviewIds] = useState<Record<string, boolean>>({});
   const tooltipHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const replyToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1381,6 +1405,10 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     setReplyForm(null);
   };
 
+  const toggleReplyVisibility = (reviewId: string) => {
+    setExpandedReplyReviewIds((prev) => ({ ...prev, [reviewId]: !prev[reviewId] }));
+  };
+
   const updateReplyComment = (comment: string) => {
     setReplyForm((currentForm) => (currentForm ? { ...currentForm, comment } : currentForm));
   };
@@ -1403,6 +1431,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
         ...currentReplies,
         [review.id]: [...(currentReplies[review.id] ?? []), newReply],
       }));
+      setExpandedReplyReviewIds((prev) => ({ ...prev, [review.id]: true }));
       setReplyForm(null);
 
       const toastTicket = Date.now();
@@ -1618,6 +1647,8 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                         onSubmitReply={() => submitReply(review)}
                         replies={replies[review.id] ?? []}
                         replyToast={replyToast}
+                        expandedReplyReviewIds={expandedReplyReviewIds}
+                        onToggleReplyVisibility={toggleReplyVisibility}
                         reportForm={reportForm}
                         reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}
                         review={review}
