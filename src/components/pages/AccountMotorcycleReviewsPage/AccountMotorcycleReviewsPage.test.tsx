@@ -280,6 +280,7 @@ describe('AccountMotorcycleReviewsPage', () => {
         id: `reply-${reviewId}`,
         reviewId,
         userId: 'user-1',
+        userName: 'Usuario',
         comment: `Respuesta a ${reviewId}`,
         status: 'pending',
         createdAt: '2026-05-20T10:00:00.000Z',

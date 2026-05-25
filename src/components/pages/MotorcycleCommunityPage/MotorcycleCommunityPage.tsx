@@ -803,6 +803,7 @@ function OwnerReportRow({
           />
         ) : null}
         <ReviewReplySection
+          isOwnReview={isOwnReview}
           onCancelReply={onCancelReply}
           onChangeReplyComment={onChangeReplyComment}
           onOpenReply={onOpenReply}
@@ -819,6 +820,7 @@ function OwnerReportRow({
 }
 
 function ReviewReplySection({
+  isOwnReview,
   onCancelReply,
   onChangeReplyComment,
   onOpenReply,
@@ -829,6 +831,7 @@ function ReviewReplySection({
   review,
   user,
 }: Readonly<{
+  isOwnReview: boolean;
   onCancelReply: () => void;
   onChangeReplyComment: (comment: string) => void;
   onOpenReply: () => void;
@@ -857,7 +860,7 @@ function ReviewReplySection({
               <div className="motorcycle-community__reply-header">
                 <span className="material-symbols-outlined" aria-hidden="true">reply</span>
                 <span className="motorcycle-community__reply-author">
-                  {reply.userId === user?.id ? 'Tú' : 'Propietario'}
+                  {reply.userId === user?.id ? 'Tú' : reply.userName}
                 </span>
                 {reply.status === 'pending' ? (
                   <span className="motorcycle-community__reply-badge motorcycle-community__reply-badge--pending">
@@ -911,21 +914,25 @@ function ReviewReplySection({
       ) : null}
 
       {user && !isReplyFormOpen ? (
-        <button
-          className="motorcycle-community__reply-trigger"
-          onClick={onOpenReply}
-          type="button"
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">reply</span>
-          Responder
-        </button>
+        isOwnReview ? (
+          <p className="motorcycle-community__reply-self-notice">No puedes responder a tu propia review.</p>
+        ) : (
+          <button
+            className="motorcycle-community__reply-trigger"
+            onClick={onOpenReply}
+            type="button"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">reply</span>
+            Responder
+          </button>
+        )
       ) : null}
     </div>
   );
 }
 
 export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommunityPageProps) {
-  const { isAuthenticated, session, user } = useAuth();
+  const { isAuthenticated, session, user, profile } = useAuth();
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [hasReviewError, setHasReviewError] = useState(false);
@@ -1345,10 +1352,15 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
       return;
     }
 
+    if (review.userId && user.id === review.userId) {
+      showHelpfulTooltip(review.id, 'No puedes responder a tu propia review.');
+      return;
+    }
+
     setReplyForm((currentForm) => (currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: true } : currentForm));
 
     try {
-      const newReply = await createReviewReply({ comment: replyForm.comment, reviewId: review.id }, reactionAuthContext);
+      const newReply = await createReviewReply({ comment: replyForm.comment, reviewId: review.id, userName: profile?.displayName ?? undefined }, reactionAuthContext);
       setReplies((currentReplies) => ({
         ...currentReplies,
         [review.id]: [...(currentReplies[review.id] ?? []), newReply],

@@ -742,6 +742,13 @@
     }
   }
 
+  &__reply-self-notice {
+    color: rgba($color-on-surface-variant, 0.7);
+    font-size: 0.75rem;
+    font-style: italic;
+    margin: 0.5rem 0 0;
+  }
+
   &__reply-form {
     margin-top: 0.75rem;
   }
