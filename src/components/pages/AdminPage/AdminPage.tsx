@@ -127,13 +127,6 @@ const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
   rejected: 'Rechazada',
 };
 
-const replyStatusLabels: Record<MotorcycleReviewStatus, string> = {
-  approved: 'Publicada',
-  hidden: 'Oculta',
-  pending: 'Pendiente',
-  rejected: 'Rechazada',
-};
-
 const reportStatusOptions = [
   { icon: 'apps', label: 'Todos', value: 'all' },
   { icon: 'pending', label: 'Pendientes', value: 'pending' },
