@@ -1455,7 +1455,8 @@ function AdminRequestCard({
                 <span className="admin-page__reason-title">{request.brand} {request.model} {request.year}</span>
               </span>
               <span className="admin-page__reporter">
-                {requestSourceLabels[request.source]} · {formatRequestDate(request.createdAt)}
+                <span>@{request.userName || (request.userId ? 'Usuario' : 'Anónimo')}</span>
+                {request.createdAt ? ` · ${formatRequestDate(request.createdAt)}` : ''}
               </span>
               <span className="admin-page__report-summary">
                 {request.segment ?? 'Sin segmento'}
@@ -1493,6 +1494,12 @@ function AdminRequestCard({
                 <span className="admin-page__request-detail-value">{requestSourceLabels[request.source]}</span>
               </div>
             </div>
+            {request.userName || request.userId ? (
+              <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
+                <span className="admin-page__request-detail-label">Usuario</span>
+                <span className="admin-page__request-detail-value">{request.userName || 'Usuario MotoAtlas'}</span>
+              </div>
+            ) : null}
             {request.contactEmail ? (
               <div className="admin-page__request-detail-field admin-page__request-detail-field--full">
                 <span className="admin-page__request-detail-label">Email de contacto</span>

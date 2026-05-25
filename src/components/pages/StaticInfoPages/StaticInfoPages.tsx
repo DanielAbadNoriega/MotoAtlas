@@ -673,7 +673,7 @@ export function TermsPage() {
 }
 
 export function RequestModelPage() {
-  const { isAuthenticated, session, user } = useAuth();
+  const { isAuthenticated, session, user, profile } = useAuth();
   const [form, setForm] = useState<FormState>({
     brand: '',
     comment: '',
@@ -691,7 +691,11 @@ export function RequestModelPage() {
   const hasErrors = useMemo(() => Object.keys(errors).length > 0, [errors]);
   const isSubmitting = requestStatus === 'submitting';
   const authContext = isAuthenticated && user?.id && session?.access_token
-    ? { accessToken: session.access_token, userId: user.id }
+    ? {
+        accessToken: session.access_token,
+        userId: user.id,
+        userName: profile?.displayName || undefined,
+      }
     : undefined;
 
   const updateField = (field: keyof FormState, value: string) => {

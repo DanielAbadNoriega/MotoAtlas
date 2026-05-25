@@ -5,6 +5,7 @@ import { ModelRequestCard } from './ModelRequestCard';
 const request = {
   id: 'request-1',
   userId: 'user-1',
+  userName: null,
   brand: 'Ducati',
   model: 'Monster',
   year: 2026,

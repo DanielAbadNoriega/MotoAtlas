@@ -13,6 +13,7 @@ const validModelRequestInput = {
 const modelRequestRow = {
   id: 'request-1',
   user_id: 'user-123',
+  user_name: 'Carlos Ruiz',
   brand: 'Honda',
   model: 'CBR600RR',
   year: 2026,
@@ -71,6 +72,7 @@ describe('modelRequestService', () => {
       source: 'user',
       status: 'pending',
       user_id: null,
+      user_name: null,
     });
   });
 
@@ -92,7 +94,7 @@ describe('modelRequestService', () => {
     });
   });
 
-  it('crea una solicitud autenticada con user_id correcto y token de sesión', async () => {
+  it('crea una solicitud autenticada con user_id, user_name y token de sesión', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal('fetch', fetchMock);
@@ -100,12 +102,14 @@ describe('modelRequestService', () => {
     const request = await createModelRequest(validModelRequestInput, {
       accessToken: 'session-token',
       userId: 'user-123',
+      userName: 'Carlos Ruiz',
     });
     const [, requestInit] = fetchMock.mock.calls[0];
 
     expect(request).toMatchObject({
       status: 'pending',
       userId: 'user-123',
+      userName: 'Carlos Ruiz',
     });
     expect(requestInit.headers).toMatchObject({
       Authorization: 'Bearer session-token',
@@ -116,6 +120,23 @@ describe('modelRequestService', () => {
       source: 'user',
       status: 'pending',
       user_id: 'user-123',
+      user_name: 'Carlos Ruiz',
+    });
+  });
+
+  it('usa userName null sin fallback si no se provee user_name en authContext', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createModelRequest(validModelRequestInput, {
+      accessToken: 'session-token',
+      userId: 'user-123',
+    });
+
+    expect(getLastPayload(fetchMock)).toMatchObject({
+      user_id: 'user-123',
+      user_name: null,
     });
   });
 
@@ -141,6 +162,7 @@ describe('modelRequestService', () => {
       source: 'user',
       status: 'pending',
       user_id: 'user-123',
+      user_name: null,
     });
   });
 
@@ -200,8 +222,10 @@ describe('modelRequestService', () => {
     expect(url.pathname).toBe('/rest/v1/model_requests');
     expect(url.searchParams.get('user_id')).toBe('eq.user-123');
     expect(url.searchParams.get('order')).toBe('created_at.desc');
-    expect(url.searchParams.get('select')).toContain('contact_email');
+    expect(url.searchParams.get('select')).toContain('user_id');
+    expect(url.searchParams.get('select')).toContain('user_name');
     expect(url.searchParams.get('select')).toContain('official_url');
+    expect(url.searchParams.get('select')).toContain('user_name');
     expect(requestInit.headers).toMatchObject({
       Authorization: 'Bearer session-token',
       apikey: 'anon-key',
@@ -210,6 +234,7 @@ describe('modelRequestService', () => {
       {
         id: 'request-1',
         userId: 'user-123',
+        userName: 'Carlos Ruiz',
         brand: 'Honda',
         model: 'CBR600RR',
         year: 2026,

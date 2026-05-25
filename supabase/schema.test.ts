@@ -426,8 +426,16 @@ describe('Supabase model_requests schema', () => {
     expect(schemaSql).toContain('year integer not null check (year between 1900 and 2100)');
     expect(schemaSql).toContain('official_url text null');
     expect(schemaSql).toContain('add column if not exists official_url text null');
+    expect(schemaSql).toContain('add column if not exists user_name text');
     expect(schemaSql).toContain("status text not null default 'pending' check (status in ('pending', 'reviewed', 'approved', 'rejected'))");
     expect(schemaSql).toContain("source text not null default 'user' check (source in ('user', 'admin', 'import'))");
+  });
+
+  it('añade columna user_name nullable con constraint de no vacío si no null', () => {
+    expect(schemaSql).toContain('add column if not exists user_name text');
+    expect(schemaSql).toContain('drop constraint if exists model_requests_user_name_check');
+    expect(schemaSql).toContain('add constraint model_requests_user_name_check');
+    expect(schemaSql).toContain('check (user_name is null or length(trim(user_name)) > 0)');
   });
 
   it('crea índices y trigger updated_at para model_requests', () => {

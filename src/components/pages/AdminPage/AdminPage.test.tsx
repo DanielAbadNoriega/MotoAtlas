@@ -945,6 +945,7 @@ describe('AdminPage', () => {
     {
       id: 'req-1',
       userId: 'user-1',
+      userName: 'Carlos Ruiz',
       brand: 'Honda',
       model: 'Transalp 750',
       year: 2025,
@@ -960,6 +961,7 @@ describe('AdminPage', () => {
     {
       id: 'req-2',
       userId: 'admin-1',
+      userName: null,
       brand: 'KTM',
       model: '1390 Super Duke R',
       year: 2025,
@@ -1358,6 +1360,29 @@ describe('AdminPage', () => {
     await user.click(within(card).getByRole('button', { name: /Expandir/i }));
 
     expect(within(card).queryByText(/^null$/i)).not.toBeInTheDocument();
+  });
+
+  it('muestra el nombre de usuario en los detalles si existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText('Carlos Ruiz')).toBeInTheDocument();
+  });
+
+  it('muestra "Usuario MotoAtlas" si el usuario está autenticado pero sin displayName', async () => {
+    getAllModelRequestsMock.mockResolvedValueOnce([
+      { ...requestFixtures[1] },
+    ]);
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const card = (await screen.findAllByTestId('admin-request-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+
+    expect(within(card).getByText('Usuario MotoAtlas')).toBeInTheDocument();
   });
 
   it('acciones siguen funcionando tras el cambio visual', async () => {

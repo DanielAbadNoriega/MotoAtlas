@@ -60,6 +60,7 @@ function createOwnReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleR
 const ownModelRequest = {
   id: 'request-1',
   userId: 'user-1',
+  userName: null,
   brand: 'Ducati',
   model: 'Monster',
   year: 2026,

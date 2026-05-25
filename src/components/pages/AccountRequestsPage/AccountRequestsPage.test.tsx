@@ -24,6 +24,7 @@ function createModelRequest(overrides: Partial<ModelRequest> = {}): ModelRequest
   return {
     id,
     userId: overrides.userId ?? 'user-1',
+    userName: overrides.userName ?? null,
     brand: overrides.brand ?? 'Ducati',
     model: overrides.model ?? `Model ${index}`,
     year: overrides.year ?? 2020 + index,

@@ -14,6 +14,7 @@ export type ModelRequestInput = Readonly<{
 export type ModelRequestAuthContext = Readonly<{
   userId: string;
   accessToken: string;
+  userName?: string | null;
 }>;
 
 export type ModelRequestFilters = Readonly<{
@@ -25,6 +26,7 @@ export type ModelRequestFilters = Readonly<{
 export type ModelRequest = Readonly<{
   id: string;
   userId: string | null;
+  userName: string | null;
   brand: string;
   model: string;
   year: number;
@@ -40,6 +42,7 @@ export type ModelRequest = Readonly<{
 
 type ModelRequestPayload = Readonly<{
   user_id: string | null;
+  user_name: string | null;
   brand: string;
   model: string;
   year: number;
@@ -54,6 +57,7 @@ type ModelRequestPayload = Readonly<{
 type ModelRequestRow = Readonly<{
   id: string;
   user_id: string | null;
+  user_name: string | null;
   brand: string;
   model: string;
   year: number;
@@ -86,6 +90,7 @@ function normalizeOptionalText(value: string | null | undefined) {
 function normalizeAuthContext(authContext: ModelRequestAuthContext | undefined) {
   const userId = authContext?.userId.trim();
   const accessToken = authContext?.accessToken.trim();
+  const userName = authContext?.userName?.trim() || null;
 
   if (!userId && !accessToken) {
     return null;
@@ -95,7 +100,7 @@ function normalizeAuthContext(authContext: ModelRequestAuthContext | undefined) 
     throw new Error('userId y accessToken son obligatorios para solicitudes autenticadas.');
   }
 
-  return { accessToken, userId };
+  return { accessToken, userId, userName };
 }
 
 function assertValidModelRequest(input: ModelRequestInput) {
@@ -117,6 +122,7 @@ function buildModelRequestPayload(input: ModelRequestInput, authContext?: ModelR
 
   return {
     user_id: normalizedAuthContext?.userId ?? null,
+    user_name: normalizedAuthContext?.userName ?? null,
     brand: input.brand.trim(),
     model: input.model.trim(),
     year: input.year,
@@ -145,6 +151,7 @@ function mapModelRequestRow(row: ModelRequestRow): ModelRequest {
   return {
     id: row.id,
     userId: row.user_id,
+    userName: row.user_name ?? null,
     brand: row.brand,
     model: row.model,
     year: row.year,
@@ -165,6 +172,7 @@ function mapPendingPayloadToModelRequest(payload: ModelRequestPayload): ModelReq
   return {
     id: '',
     userId: payload.user_id,
+    userName: payload.user_name ?? null,
     brand: payload.brand,
     model: payload.model,
     year: payload.year,
@@ -212,7 +220,7 @@ export async function getModelRequestsByUserId(authContext?: ModelRequestAuthCon
   const config = getSupabaseConfig();
   const params = new URLSearchParams({
     order: 'created_at.desc',
-    select: 'id,user_id,brand,model,year,segment,contact_email,official_url,comment,status,source,created_at,updated_at',
+    select: 'id,user_id,user_name,brand,model,year,segment,contact_email,official_url,comment,status,source,created_at,updated_at',
     user_id: `eq.${normalizedAuthContext.userId}`,
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/model_requests?${params.toString()}`, {
@@ -254,7 +262,7 @@ export async function getAllModelRequests(
   const config = getSupabaseConfig();
   const params = new URLSearchParams({
     order: 'created_at.desc',
-    select: 'id,user_id,brand,model,year,segment,contact_email,official_url,comment,status,source,created_at,updated_at',
+    select: 'id,user_id,user_name,brand,model,year,segment,contact_email,official_url,comment,status,source,created_at,updated_at',
   });
 
   if (filters?.status) {
