@@ -65,7 +65,7 @@ Si una tarea requiere tocar alguna de estas zonas, el agente debe indicarlo ante
 
 - **Filtros**: reutilizar siempre el patrón existente (`account-reviews-page__filter-group` o `admin-page__filter-group`). No crear variantes nuevas. Header/body/footer, chips, Material Symbols, responsive sheet/drawer, `Limpiar filtros` + `Aplicar filtros`. Referencias: `#/cuenta/reviews`, `#/admin/moderacion`, `#/admin/reviews`.
 - **Paginación**: usar preferentemente `AccountPagination`. Si una página no usa el componente, replicar el patrón visual validado de paginación con Material Symbols, active/hover/focus/disabled, `aria-label` y `aria-current="page"`. No crear paginadores nuevos.
-- **Cards review**: usar `AccountReviewCard`/summary cards para cuenta/comunidad/garaje; en `#/admin/reviews/[motorcycleId]` usar patrón expandible tipo `AdminReportCard`.
+- **Cards review**: `.account-page__review-summary-card`, `.admin-page__review-summary-card`, compactas por moto
 - **Hero admin**: basado en `motorcycle-community__hero` con `MotorcycleImage`, eyebrow `ADMIN STUDIO`, y hero-rating con métricas si aplica. CTAs solo si la página las necesita (ficha, reviews públicas).
 
 ## Rutas
@@ -118,13 +118,13 @@ E2E futuro: Playwright, local/staging, usuarios admin/userA/userB, flujo review�
 
 ## Referencias rápidas
 
-- `DESIGN.md` — sistema visual real, patrones UI, componentes y auditorías de diseño
 - `docs/architecture.md` — arquitectura, routing, data model
 - `docs/testing-strategy.md` — mocking, edge cases
 - `docs/auth.md` — auth, RLS, admin role
 - `docs/admin.md` — admin en detalle
 - `docs/ui-notes.md` — páginas y componentes
 - `docs/codex-guidelines.md` — reglas mínimas Codex/Copilot
+- `DESIGN.md` — sistema visual real, patrones UI, componentes y auditorías de diseño
 
 ## Plantilla de prompt corto
 
