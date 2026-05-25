@@ -822,4 +822,24 @@ revoke all on table public.model_requests from authenticated;
 grant insert on public.model_requests to anon, authenticated;
 grant select on public.model_requests to authenticated;
 
+drop policy if exists "Admins can read all model requests" on public.model_requests;
+create policy "Admins can read all model requests"
+on public.model_requests
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can update model request status" on public.model_requests;
+create policy "Admins can update model request status"
+on public.model_requests
+for update
+to authenticated
+using (public.is_admin())
+with check (
+  public.is_admin()
+  and status in ('pending', 'reviewed', 'approved', 'rejected')
+);
+
+grant update (status) on public.model_requests to authenticated;
+
 notify pgrst, 'reload schema';

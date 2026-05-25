@@ -16,6 +16,12 @@ export type ModelRequestAuthContext = Readonly<{
   accessToken: string;
 }>;
 
+export type ModelRequestFilters = Readonly<{
+  status?: ModelRequestStatus;
+  source?: ModelRequestSource;
+  search?: string;
+}>;
+
 export type ModelRequest = Readonly<{
   id: string;
   userId: string | null;
@@ -219,4 +225,89 @@ export async function getModelRequestsByUserId(authContext?: ModelRequestAuthCon
   const rows = await parseSupabaseResponse<ModelRequestRow[]>(response);
 
   return rows.map(mapModelRequestRow);
+}
+
+const validAdminStatuses = new Set<ModelRequestStatus>(['pending', 'reviewed', 'approved', 'rejected']);
+
+function assertValidAdminStatus(status: ModelRequestStatus) {
+  if (!validAdminStatuses.has(status)) {
+    throw new Error(`Estado inválido: ${status}`);
+  }
+}
+
+function normalizeAuthContextStrict(authContext: ModelRequestAuthContext) {
+  const userId = authContext?.userId?.trim();
+  const accessToken = authContext?.accessToken?.trim();
+
+  if (!userId || !accessToken) {
+    throw new Error('userId y accessToken son obligatorios para administración de solicitudes.');
+  }
+
+  return { accessToken, userId };
+}
+
+export async function getAllModelRequests(
+  authContext: ModelRequestAuthContext,
+  filters?: ModelRequestFilters,
+): Promise<readonly ModelRequest[]> {
+  const normalizedAuthContext = normalizeAuthContextStrict(authContext);
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    order: 'created_at.desc',
+    select: 'id,user_id,brand,model,year,segment,contact_email,official_url,comment,status,source,created_at,updated_at',
+  });
+
+  if (filters?.status) {
+    params.set('status', `eq.${filters.status}`);
+  }
+
+  if (filters?.source) {
+    params.set('source', `eq.${filters.source}`);
+  }
+
+  if (filters?.search?.trim()) {
+    const term = filters.search.trim();
+    params.set('or', `(brand.ilike.*${term}*,model.ilike.*${term}*)`);
+  }
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/model_requests?${params.toString()}`, {
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${normalizedAuthContext.accessToken}`,
+    },
+  });
+  const rows = await parseSupabaseResponse<ModelRequestRow[]>(response);
+
+  return rows.map(mapModelRequestRow);
+}
+
+export async function updateModelRequestStatus(
+  id: string,
+  status: ModelRequestStatus,
+  authContext: ModelRequestAuthContext,
+): Promise<void> {
+  const normalizedAuthContext = normalizeAuthContextStrict(authContext);
+  const config = getSupabaseConfig();
+
+  assertValidAdminStatus(status);
+
+  const normalizedId = id.trim();
+
+  if (!normalizedId) {
+    throw new Error('id es obligatorio.');
+  }
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/model_requests?id=eq.${normalizedId}`, {
+    body: JSON.stringify({ status }),
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${normalizedAuthContext.accessToken}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    method: 'PATCH',
+  });
+  await assertSupabaseOk(response);
 }
