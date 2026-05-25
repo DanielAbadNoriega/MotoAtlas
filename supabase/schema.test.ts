@@ -29,6 +29,11 @@ function getReviewReportsGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getReviewRepliesGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.review_replies\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 describe('Supabase public motorcycle schema', () => {
   it('permite leer motos públicas también con sesión autenticada', () => {
     expect(schemaSql).toContain('create policy "Public motorcycles are readable"');
@@ -468,6 +473,96 @@ describe('Supabase model_requests schema', () => {
       'grant insert on public.model_requests to anon, authenticated;',
       'grant select on public.model_requests to authenticated;',
     ]);
+  });
+});
+
+describe('Supabase review_replies schema', () => {
+  it('crea tabla de respuestas con claves, checks e índices esperados', () => {
+    expect(schemaSql).toContain('create table if not exists public.review_replies');
+    expect(schemaSql).toContain('id uuid primary key default gen_random_uuid()');
+    expect(schemaSql).toContain('review_id uuid not null references public.motorcycle_reviews(id) on delete cascade');
+    expect(schemaSql).toContain('user_id uuid not null references auth.users(id) on delete cascade');
+    expect(schemaSql).toContain('comment text not null');
+    expect(schemaSql).toContain("status text not null default 'pending'");
+    expect(schemaSql).toContain('created_at timestamptz not null default now()');
+    expect(schemaSql).toContain('updated_at timestamptz not null default now()');
+
+    expect(schemaSql).toContain('drop constraint if exists review_replies_status_check');
+    expect(schemaSql).toContain('add constraint review_replies_status_check');
+    expect(schemaSql).toContain("check (status in ('pending', 'approved', 'hidden', 'rejected'))");
+
+    expect(schemaSql).toMatch(/create index if not exists review_replies_review_id_idx\s+on public\.review_replies \(review_id\);/);
+    expect(schemaSql).toMatch(/create index if not exists review_replies_user_id_idx\s+on public\.review_replies \(user_id\);/);
+    expect(schemaSql).toMatch(/create index if not exists review_replies_status_idx\s+on public\.review_replies \(status\);/);
+
+    expect(schemaSql).toContain('drop constraint if exists review_replies_comment_check');
+    expect(schemaSql).toContain('add constraint review_replies_comment_check');
+    expect(schemaSql).toContain('check (length(trim(comment)) > 0)');
+  });
+
+  it('incluye trigger updated_at para review_replies', () => {
+    expect(schemaSql).toContain('drop trigger if exists set_review_replies_updated_at on public.review_replies;');
+    expect(schemaSql).toContain('create trigger set_review_replies_updated_at');
+    expect(schemaSql).toContain('before update on public.review_replies');
+    expect(schemaSql).toContain('execute function public.set_updated_at();');
+  });
+
+  it('activa RLS, permite leer respuestas approved públicamente y propias con sesión', () => {
+    expect(schemaSql).toContain('alter table public.review_replies enable row level security;');
+    expect(schemaSql).toContain('drop policy if exists "Approved review replies are readable" on public.review_replies;');
+    expect(schemaSql).toContain('create policy "Approved review replies are readable"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to anon, authenticated');
+    expect(schemaSql).toContain("using (status = 'approved')");
+    expect(normalizedSchemaSql).not.toMatch(/on public\.review_replies for select to anon, authenticated\b[^;]*using \(true\)/);
+
+    expect(schemaSql).toContain('drop policy if exists "Users can read own review replies" on public.review_replies;');
+    expect(schemaSql).toContain('create policy "Users can read own review replies"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (user_id = auth.uid())');
+  });
+
+  it('solo permite insertar respuestas propias pending para usuarios autenticados', () => {
+    expect(schemaSql).toContain('drop policy if exists "Users can create own review reply" on public.review_replies;');
+    expect(schemaSql).toContain('drop policy if exists "Authenticated users can create review reply" on public.review_replies;');
+    expect(schemaSql).toContain('create policy "Users can create own review reply"');
+    expect(schemaSql).toContain('for insert');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('user_id = auth.uid()');
+    expect(schemaSql).toContain("status = 'pending'");
+    expect(schemaSql).toContain('review_id is not null');
+    expect(schemaSql).toContain('length(trim(comment)) > 0');
+  });
+
+  it('usa grants mínimos sin update/delete para usuarios normales', () => {
+    const grants = getReviewRepliesGrantStatements();
+
+    expect(schemaSql).toContain('revoke all on table public.review_replies from anon;');
+    expect(schemaSql).toContain('revoke all on table public.review_replies from authenticated;');
+    expect(grants).toEqual([
+      'grant select on public.review_replies to anon, authenticated;',
+      'grant insert (review_id, user_id, comment) on public.review_replies to authenticated;',
+      'grant update (status) on public.review_replies to authenticated;',
+    ]);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.review_replies\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.review_replies\s+to\s+anon/);
+    expect(normalizedSchemaSql).not.toContain('grant update (comment) on public.review_replies to authenticated;');
+  });
+
+  it('incluye policies admin para leer y actualizar status de respuestas', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can read all review replies" on public.review_replies;');
+    expect(schemaSql).toContain('create policy "Admins can read all review replies"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can update review reply status" on public.review_replies;');
+    expect(schemaSql).toContain('create policy "Admins can update review reply status"');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toContain("status in ('pending', 'approved', 'hidden', 'rejected')");
   });
 });
 

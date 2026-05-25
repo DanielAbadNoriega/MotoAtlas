@@ -10,6 +10,7 @@ import {
   toggleNotHelpfulReaction,
 } from '../../../services/reviewReactionService';
 import { createReviewReport, getMyReviewReports } from '../../../services/reviewReportService';
+import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import {
   createApprovedReviewFixture,
@@ -37,6 +38,11 @@ vi.mock('../../../services/reviewReportService', () => ({
   getMyReviewReports: vi.fn(),
 }));
 
+vi.mock('../../../services/reviewReplyService', () => ({
+  createReviewReply: vi.fn(),
+  getRepliesByReviewId: vi.fn(),
+}));
+
 vi.mock('../../../features/auth', () => ({
   useAuth: vi.fn(),
 }));
@@ -49,6 +55,8 @@ const toggleNotHelpfulReactionMock = vi.mocked(toggleNotHelpfulReaction);
 const clearMyReviewReactionMock = vi.mocked(clearMyReviewReaction);
 const createReviewReportMock = vi.mocked(createReviewReport);
 const getMyReviewReportsMock = vi.mocked(getMyReviewReports);
+const createReviewReplyMock = vi.mocked(createReviewReply);
+const getRepliesByReviewIdMock = vi.mocked(getRepliesByReviewId);
 const useAuthMock = vi.mocked(useAuth);
 
 function mockAuth(overrides = {}) {
@@ -129,6 +137,8 @@ describe('MotorcycleCommunityPage', () => {
     clearMyReviewReactionMock.mockReset();
     createReviewReportMock.mockReset();
     getMyReviewReportsMock.mockReset();
+    createReviewReplyMock.mockReset();
+    getRepliesByReviewIdMock.mockReset();
     useAuthMock.mockReset();
     mockAuth();
     getApprovedReviewsMock.mockResolvedValue(approvedReviews);
@@ -141,6 +151,7 @@ describe('MotorcycleCommunityPage', () => {
       })),
     );
     getMyReviewReportsMock.mockResolvedValue([]);
+    getRepliesByReviewIdMock.mockResolvedValue([]);
     clearMyReviewReactionMock.mockResolvedValue({
       helpfulCount: 1,
       hasReactedHelpful: false,
@@ -809,5 +820,98 @@ describe('MotorcycleCommunityPage', () => {
       '#/comparador?bikes=test-bmw-f-900-gs',
     );
     await waitFor(() => expect(getApprovedReviewsMock).toHaveBeenCalled());
+  });
+
+  it('muestra botón Responder para usuario autenticado', async () => {
+    mockAuth({
+      user: { id: 'user-1', email: 'test@test.com', aud: 'authenticated', role: 'authenticated' },
+      session: { access_token: 'token-1', refresh_token: 'refresh-1', expires_in: 3600, expires_at: 9999999999, token_type: 'bearer', user: { id: 'user-1', aud: 'authenticated', role: 'authenticated', email: 'test@test.com' } },
+      isAuthenticated: true,
+    });
+    const user = userEvent.setup();
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const respondButtons = await screen.findAllByRole('button', { name: 'Responder' });
+    expect(respondButtons).toHaveLength(2);
+    expect(respondButtons[0]).toBeInTheDocument();
+
+    await user.click(respondButtons[0]);
+    expect(screen.getByRole('textbox', { name: 'Tu respuesta' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Responder' }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
+  });
+
+  it('envía una respuesta correctamente', async () => {
+    const reply: ReviewReply = {
+      id: 'reply-1',
+      reviewId: 'review-approved-1',
+      userId: 'user-1',
+      comment: 'Gracias por tu review!',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    createReviewReplyMock.mockResolvedValue(reply);
+
+    mockAuth({
+      user: { id: 'user-1', email: 'test@test.com', aud: 'authenticated', role: 'authenticated' },
+      session: { access_token: 'token-1', refresh_token: 'refresh-1', expires_in: 3600, expires_at: 9999999999, token_type: 'bearer', user: { id: 'user-1', aud: 'authenticated', role: 'authenticated', email: 'test@test.com' } },
+      isAuthenticated: true,
+    });
+    const user = userEvent.setup();
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const respondButtons = await screen.findAllByRole('button', { name: 'Responder' });
+    await user.click(respondButtons[0]);
+
+    const textarea = screen.getByRole('textbox', { name: 'Tu respuesta' });
+    await user.type(textarea, 'Gracias por tu review!');
+
+    const submitButtons = screen.getAllByRole('button', { name: 'Responder' });
+    await user.click(submitButtons[0]);
+
+    await waitFor(() => {
+      expect(createReviewReplyMock).toHaveBeenCalledWith(
+        { comment: 'Gracias por tu review!', reviewId: 'review-approved-1' },
+        { accessToken: 'token-1', userId: 'user-1' },
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Respuesta enviada. Quedará visible tras revisión.')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('textbox', { name: 'Tu respuesta' })).not.toBeInTheDocument();
+    expect(screen.getByText('Gracias por tu review!')).toBeInTheDocument();
+    const replyRow = screen.getByText('Gracias por tu review!').closest('li');
+    expect(replyRow).toBeInTheDocument();
+    expect(within(replyRow!).getByText('Pendiente')).toBeInTheDocument();
+  });
+
+  it('muestra respuestas existentes', async () => {
+    getRepliesByReviewIdMock.mockImplementation(async (reviewId) => {
+      if (reviewId === 'review-approved-1') {
+        return [
+          {
+            id: 'reply-1', reviewId: 'review-approved-1', userId: 'user-2', comment: 'Coincido totalmente!', status: 'approved', createdAt: '2026-05-15T10:00:00.000Z', updatedAt: '2026-05-15T10:00:00.000Z',
+          },
+        ] as readonly ReviewReply[];
+      }
+      return [];
+    });
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Coincido totalmente!')).toBeInTheDocument();
+    });
+  });
+
+  it('no muestra el botón Responder para usuario no autenticado', async () => {
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Responder' })).not.toBeInTheDocument();
+    });
   });
 });

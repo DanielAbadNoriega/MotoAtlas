@@ -503,6 +503,81 @@ grant select on public.review_reports to authenticated;
 grant insert (review_id, user_id, reason, comment, status) on public.review_reports to authenticated;
 grant update (status) on public.review_reports to authenticated;
 
+create table if not exists public.review_replies (
+  id uuid primary key default gen_random_uuid(),
+  review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  comment text not null,
+  status text not null default 'pending',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table if exists public.review_replies
+  drop constraint if exists review_replies_status_check;
+
+alter table if exists public.review_replies
+  add constraint review_replies_status_check
+  check (status in ('pending', 'approved', 'hidden', 'rejected'));
+
+alter table if exists public.review_replies
+  drop constraint if exists review_replies_comment_check;
+
+alter table if exists public.review_replies
+  add constraint review_replies_comment_check
+  check (length(trim(comment)) > 0);
+
+create index if not exists review_replies_review_id_idx
+on public.review_replies (review_id);
+
+create index if not exists review_replies_user_id_idx
+on public.review_replies (user_id);
+
+create index if not exists review_replies_status_idx
+on public.review_replies (status);
+
+drop trigger if exists set_review_replies_updated_at on public.review_replies;
+create trigger set_review_replies_updated_at
+before update on public.review_replies
+for each row
+execute function public.set_updated_at();
+
+alter table public.review_replies enable row level security;
+
+drop policy if exists "Approved review replies are readable" on public.review_replies;
+create policy "Approved review replies are readable"
+on public.review_replies
+for select
+to anon, authenticated
+using (status = 'approved');
+
+drop policy if exists "Users can read own review replies" on public.review_replies;
+create policy "Users can read own review replies"
+on public.review_replies
+for select
+to authenticated
+using (user_id = auth.uid());
+
+drop policy if exists "Users can create own review reply" on public.review_replies;
+drop policy if exists "Authenticated users can create review reply" on public.review_replies;
+create policy "Users can create own review reply"
+on public.review_replies
+for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+  and status = 'pending'
+  and review_id is not null
+  and length(trim(comment)) > 0
+);
+
+revoke all on table public.review_replies from anon;
+revoke all on table public.review_replies from authenticated;
+
+grant select on public.review_replies to anon, authenticated;
+grant insert (review_id, user_id, comment) on public.review_replies to authenticated;
+grant update (status) on public.review_replies to authenticated;
+
 notify pgrst, 'reload schema';
 
 create table if not exists public.user_profiles (
@@ -633,6 +708,24 @@ using (public.is_admin())
 with check (
   public.is_admin()
   and status in ('pending', 'reviewed', 'dismissed', 'action_taken')
+);
+
+drop policy if exists "Admins can read all review replies" on public.review_replies;
+create policy "Admins can read all review replies"
+on public.review_replies
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can update review reply status" on public.review_replies;
+create policy "Admins can update review reply status"
+on public.review_replies
+for update
+to authenticated
+using (public.is_admin())
+with check (
+  public.is_admin()
+  and status in ('pending', 'approved', 'hidden', 'rejected')
 );
 
 create table if not exists public.model_requests (
