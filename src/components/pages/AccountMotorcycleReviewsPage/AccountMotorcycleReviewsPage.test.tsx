@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import { createReview, getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import { getReviewReactionSummary } from '../../../services/reviewReactionService';
-import { getRepliesByReviewIds, type ReviewReply } from '../../../services/reviewReplyService';
+import { getRepliesByReviewIds, getMyRepliesByMotorcycleId, type ReviewReply, type ReviewReplyWithReview } from '../../../services/reviewReplyService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { AccountMotorcycleReviewsPage } from './AccountMotorcycleReviewsPage';
 
@@ -22,6 +22,7 @@ vi.mock('../../../services/reviewReactionService', () => ({
 }));
 
 vi.mock('../../../services/reviewReplyService', () => ({
+  getMyRepliesByMotorcycleId: vi.fn(),
   getRepliesByReviewIds: vi.fn(),
 }));
 
@@ -30,6 +31,7 @@ const getReviewsByUserIdMock = vi.mocked(getReviewsByUserId);
 const createReviewMock = vi.mocked(createReview);
 const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
 const getRepliesByReviewIdsMock = vi.mocked(getRepliesByReviewIds);
+const getMyRepliesByMotorcycleIdMock = vi.mocked(getMyRepliesByMotorcycleId);
 const signOutMock = vi.fn();
 const bike = bikeFixtures[0];
 
@@ -112,6 +114,7 @@ describe('AccountMotorcycleReviewsPage', () => {
       })),
     );
     getRepliesByReviewIdsMock.mockReset().mockResolvedValue([]);
+    getMyRepliesByMotorcycleIdMock.mockReset().mockResolvedValue([]);
     mockAuth();
   });
 
@@ -300,10 +303,113 @@ describe('AccountMotorcycleReviewsPage', () => {
 
   it('no muestra bloque vacío de respuestas si no hay replies', async () => {
     await renderWithReviews([createPrivateReview({ id: 'review-no-replies', status: 'approved', comment: 'Review sin respuestas.' })]);
-
     await waitFor(() => {
       expect(screen.getByText('Review sin respuestas.')).toBeInTheDocument();
     });
     expect(screen.queryByText(/^Respuesta a/i)).not.toBeInTheDocument();
+  });
+
+  it('muestra bloque Mis respuestas en esta moto cuando el usuario respondió en reviews de otros', async () => {
+    getMyRepliesByMotorcycleIdMock.mockResolvedValue([
+      {
+        reply: {
+          id: 'reply-1',
+          reviewId: 'review-other-1',
+          userId: 'user-1',
+          userName: 'Rider Zero',
+          comment: 'Gracias por tu reseña!',
+          status: 'approved',
+          createdAt: '2026-05-21T10:00:00.000Z',
+          updatedAt: '2026-05-21T10:00:00.000Z',
+        },
+        review: {
+          id: 'review-other-1',
+          userId: 'user-2',
+          userName: 'Otro Rider',
+          rating: 5,
+          comment: 'Excelente moto, muy contento.',
+          createdAt: '2026-05-20T10:00:00.000Z',
+        },
+      },
+    ] as readonly ReviewReplyWithReview[]);
+
+    await renderWithReviews([createPrivateReview({ id: 'review-own', status: 'approved', comment: 'Mi review.' })]);
+
+    expect(screen.getByRole('heading', { name: 'Mis respuestas en esta moto' })).toBeInTheDocument();
+    expect(screen.getByText('Gracias por tu reseña!')).toBeInTheDocument();
+    expect(screen.getByText('5/5')).toBeInTheDocument();
+    expect(screen.getByText(/Otro Rider/)).toBeInTheDocument();
+  });
+
+  it('muestra badge Pendiente en respuesta en Mis respuestas', async () => {
+    getMyRepliesByMotorcycleIdMock.mockResolvedValue([
+      {
+        reply: {
+          id: 'reply-pending',
+          reviewId: 'review-other-1',
+          userId: 'user-1',
+          userName: 'Rider Zero',
+          comment: 'Esperando moderación.',
+          status: 'pending',
+          createdAt: '2026-05-22T10:00:00.000Z',
+          updatedAt: '2026-05-22T10:00:00.000Z',
+        },
+        review: {
+          id: 'review-other-1',
+          userId: 'user-2',
+          userName: 'Otro Rider',
+          rating: 4,
+          comment: 'Buena moto.',
+          createdAt: '2026-05-20T10:00:00.000Z',
+        },
+      },
+    ] as readonly ReviewReplyWithReview[]);
+
+    await renderWithReviews([createPrivateReview({ id: 'review-own', status: 'approved', comment: 'Mi review.' })]);
+
+    const replySection = screen.getByRole('list', { name: 'Respuestas a otras reviews de esta moto' });
+    expect(replySection).toBeInTheDocument();
+    expect(within(replySection).getByText('Pendiente')).toBeInTheDocument();
+  });
+
+  it('no muestra bloque Mis respuestas si no hay replies', async () => {
+    getMyRepliesByMotorcycleIdMock.mockResolvedValue([]);
+
+    await renderWithReviews([createPrivateReview({ id: 'review-own', status: 'approved', comment: 'Mi review.' })]);
+
+    expect(screen.queryByText('Mis respuestas en esta moto')).not.toBeInTheDocument();
+  });
+
+  it('no rompe listado de reviews propias cuando hay respuestas', async () => {
+    getMyRepliesByMotorcycleIdMock.mockResolvedValue([
+      {
+        reply: {
+          id: 'reply-1',
+          reviewId: 'review-other-1',
+          userId: 'user-1',
+          userName: 'Rider Zero',
+          comment: 'Mi respuesta.',
+          status: 'approved',
+          createdAt: '2026-05-21T10:00:00.000Z',
+          updatedAt: '2026-05-21T10:00:00.000Z',
+        },
+        review: {
+          id: 'review-other-1',
+          userId: 'user-2',
+          userName: 'Otro Rider',
+          rating: 4,
+          comment: 'Buena moto.',
+          createdAt: '2026-05-20T10:00:00.000Z',
+        },
+      },
+    ] as readonly ReviewReplyWithReview[]);
+
+    await renderWithReviews([
+      createPrivateReview({ id: 'review-own', status: 'approved', comment: 'Mi propia review publicada.' }),
+    ]);
+
+    expect(screen.getByText('Mi propia review publicada.')).toBeInTheDocument();
+    expect(screen.getByText('Mis respuestas en esta moto')).toBeInTheDocument();
+    expect(screen.getByText('Mi respuesta.')).toBeInTheDocument();
   });
 });

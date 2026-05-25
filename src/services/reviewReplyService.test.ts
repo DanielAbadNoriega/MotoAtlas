@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createReviewReply, getRepliesByReviewId, getRepliesByReviewIds } from './reviewReplyService';
+import { createReviewReply, getMyRepliesByMotorcycleId, getRepliesByReviewId, getRepliesByReviewIds } from './reviewReplyService';
 
 function stubSupabaseEnv() {
   vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
@@ -61,7 +61,7 @@ describe('reviewReplyService', () => {
     });
   });
 
-  it('usa fallback de userId cuando no se provee user_name', async () => {
+  it('usa fallback Usuario MotoAtlas cuando no se provee user_name', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn().mockResolvedValue(emptyOkResponse());
     vi.stubGlobal('fetch', fetchMock);
@@ -74,7 +74,7 @@ describe('reviewReplyService', () => {
     const body = JSON.parse(requestInit.body as string);
 
     expect(body.user_name).toBe('');
-    expect(reply.userName).toBe('user-1');
+    expect(reply.userName).toBe('Usuario MotoAtlas');
   });
 
   it('no envía status en el POST — el default de DB aplica pending', async () => {
@@ -225,7 +225,7 @@ describe('reviewReplyService', () => {
     });
   });
 
-  it('usa fallback de userId truncado cuando user_name es vacío', async () => {
+  it('usa fallback Usuario MotoAtlas cuando user_name es vacío en row', async () => {
     stubSupabaseEnv();
     const longUserId = 'abcdef12-3456-7890-abcd-ef1234567890';
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse([
@@ -244,7 +244,7 @@ describe('reviewReplyService', () => {
 
     const replies = await getRepliesByReviewId('review-1');
 
-    expect(replies[0].userName).toBe('abcdef12…');
+    expect(replies[0].userName).toBe('Usuario MotoAtlas');
   });
 
   it('rechaza reviewId vacío en getRepliesByReviewId', async () => {
@@ -369,5 +369,160 @@ describe('reviewReplyService', () => {
       const decodedUrl = decodeURIComponent(String(url));
 
       expect(decodedUrl).toContain('review_id=in.(review-1,review-2)');
+    });
+  });
+
+  describe('getMyRepliesByMotorcycleId', () => {
+    function makeReviewRow(id: string, overrides: Record<string, unknown> = {}) {
+      return {
+        id,
+        user_id: 'user-other',
+        user_name: 'Otro Usuario',
+        rating: 4,
+        comment: `Review ${id}`,
+        created_at: '2026-05-20T10:00:00.000Z',
+        ...overrides,
+      };
+    }
+
+    function makeReplyRow(overrides: Record<string, unknown> = {}) {
+      return {
+        id: 'reply-1',
+        review_id: 'review-1',
+        user_id: 'user-1',
+        user_name: 'Mi Nombre',
+        comment: 'Mi respuesta',
+        status: 'approved',
+        created_at: '2026-05-21T10:00:00.000Z',
+        updated_at: '2026-05-21T10:00:00.000Z',
+        ...overrides,
+      };
+    }
+
+    it('retorna array vacío si motorcycleId es vacío', async () => {
+      const result = await getMyRepliesByMotorcycleId('  ', { accessToken: 'token', userId: 'user-1' });
+      expect(result).toEqual([]);
+    });
+
+    it('retorna array vacío sin authContext válido', async () => {
+      const result = await getMyRepliesByMotorcycleId('motorcycle-1', { accessToken: '', userId: '' });
+      expect(result).toEqual([]);
+    });
+
+    it('consulta motorcycle_reviews y luego review_replies con user_id propio', async () => {
+      stubSupabaseEnv();
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse([
+          makeReviewRow('review-1'),
+          makeReviewRow('review-2', { comment: 'Segunda review' }),
+        ]))
+        .mockResolvedValueOnce(jsonResponse([
+          makeReplyRow({ review_id: 'review-1', comment: 'Respondí a review-1' }),
+          makeReplyRow({ id: 'reply-2', review_id: 'review-2', comment: 'Respondí a review-2' }),
+        ]));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const result = await getMyRepliesByMotorcycleId('motorcycle-1', { accessToken: 'session-token', userId: 'user-1' });
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      const [reviewsUrl] = fetchMock.mock.calls[0];
+      expect(decodeURIComponent(String(reviewsUrl))).toContain('/rest/v1/motorcycle_reviews?');
+      expect(decodeURIComponent(String(reviewsUrl))).toContain('motorcycle_id=eq.motorcycle-1');
+
+      const [replyUrl] = fetchMock.mock.calls[1];
+      expect(decodeURIComponent(String(replyUrl))).toContain('/rest/v1/review_replies?');
+      expect(decodeURIComponent(String(replyUrl))).toContain('review_id=in.(review-1,review-2)');
+      expect(decodeURIComponent(String(replyUrl))).toContain('user_id=eq.user-1');
+
+      expect(result).toHaveLength(2);
+      expect(result[0].reply.comment).toBe('Respondí a review-1');
+      expect(result[0].review.userName).toBe('Otro Usuario');
+      expect(result[0].review.rating).toBe(4);
+    });
+
+    it('retorna array vacío si no hay reviews para esa moto', async () => {
+      stubSupabaseEnv();
+      const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse([]));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const result = await getMyRepliesByMotorcycleId('motorcycle-empty', { accessToken: 'token', userId: 'user-1' });
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(result).toEqual([]);
+    });
+
+    it('retorna array vacío si no hay replies del usuario', async () => {
+      stubSupabaseEnv();
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse([makeReviewRow('review-1')]))
+        .mockResolvedValueOnce(jsonResponse([]));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const result = await getMyRepliesByMotorcycleId('motorcycle-1', { accessToken: 'token', userId: 'user-1' });
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(result).toEqual([]);
+    });
+
+    it('incluye datos de contexto de review aunque review_id no esté en el índice', async () => {
+      stubSupabaseEnv();
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse([makeReviewRow('review-1')]))
+        .mockResolvedValueOnce(jsonResponse([
+          makeReplyRow({ review_id: 'review-999', comment: 'Review huérfana' }),
+        ]));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const result = await getMyRepliesByMotorcycleId('motorcycle-1', { accessToken: 'token', userId: 'user-1' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].review.id).toBe('review-999');
+      expect(result[0].review.userName).toBe('');
+      expect(result[0].review.rating).toBe(0);
+      expect(result[0].review.comment).toBe('');
+    });
+
+    it('usa accessToken para ambas consultas', async () => {
+      stubSupabaseEnv();
+      const fetchMock = vi.fn()
+        .mockResolvedValue(jsonResponse([makeReviewRow('review-1')]));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await getMyRepliesByMotorcycleId('motorcycle-1', { accessToken: 'custom-token', userId: 'user-1' });
+
+      for (const [, requestInit] of fetchMock.mock.calls) {
+        expect(requestInit.headers.Authorization).toBe('Bearer custom-token');
+      }
+    });
+
+    it('maneja error de Supabase en primera consulta', async () => {
+      stubSupabaseEnv();
+      const fetchMock = vi.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve('db error'),
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
+      await expect(
+        getMyRepliesByMotorcycleId('motorcycle-1', { accessToken: 'token', userId: 'user-1' }),
+      ).rejects.toThrow('Supabase review_replies request failed (500): db error');
+    });
+
+    it('maneja error de Supabase en segunda consulta', async () => {
+      stubSupabaseEnv();
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse([makeReviewRow('review-1')]))
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 403,
+          text: () => Promise.resolve('forbidden'),
+        });
+      vi.stubGlobal('fetch', fetchMock);
+
+      await expect(
+        getMyRepliesByMotorcycleId('motorcycle-1', { accessToken: 'token', userId: 'user-1' }),
+      ).rejects.toThrow('Supabase review_replies request failed (403): forbidden');
     });
   });

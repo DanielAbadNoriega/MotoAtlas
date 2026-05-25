@@ -701,14 +701,21 @@
   }
 
   &__reply-badge {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 600;
-    padding: 0.1rem 0.4rem;
+    padding: 0.08rem 0.35rem;
     border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 
     &--pending {
       background: rgba($color-accent, 0.15);
       color: $color-accent;
+    }
+
+    &--respondido {
+      background: rgba($color-primary, 0.1);
+      color: $color-primary;
     }
   }
 
@@ -742,15 +749,101 @@
     }
   }
 
-  &__reply-self-notice {
-    color: rgba($color-on-surface-variant, 0.7);
-    font-size: 0.75rem;
-    font-style: italic;
-    margin: 0.5rem 0 0;
-  }
-
   &__reply-form {
     margin-top: 0.75rem;
+  }
+
+  &__convivence-notice {
+    align-items: center;
+    background: $color-surface-low;
+    border: 1px solid rgba($color-outline-variant, 0.2);
+    border-radius: 0.5rem;
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    position: relative;
+  }
+
+  &__convivence-trigger {
+    align-items: center;
+    background: none;
+    border: 1.5px solid rgba($color-accent, 0.4);
+    border-radius: 50%;
+    color: $color-accent;
+    cursor: pointer;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    height: 1.2rem;
+    justify-content: center;
+    padding: 0;
+    transition: border-color 0.2s, background 0.2s;
+    width: 1.2rem;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-accent, 0.08);
+      border-color: $color-accent;
+      outline: none;
+    }
+
+    .material-symbols-outlined {
+      font-size: 0.65rem;
+    }
+  }
+
+  &__convivence-text {
+    color: rgba($color-on-surface-variant, 0.8);
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  &__convivence-tooltip {
+    background: $color-surface-container-high;
+    border: 1px solid rgba($color-outline-variant, 0.4);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    display: none;
+    left: 0;
+    padding: 0.6rem 0.75rem;
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    z-index: 10;
+    min-width: 18rem;
+
+    strong {
+      color: $color-on-surface;
+      display: block;
+      font-size: 0.78rem;
+      margin-bottom: 0.3rem;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      color: rgba($color-on-surface-variant, 0.9);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      padding-left: 0.6rem;
+      position: relative;
+
+      &::before {
+        color: $color-accent;
+        content: '·';
+        left: 0;
+        position: absolute;
+      }
+    }
+  }
+
+  &__convivence-notice:hover &__convivence-tooltip,
+  &__convivence-notice:focus-within &__convivence-tooltip {
+    display: block;
   }
 
   &__reply-textarea {
@@ -917,7 +1010,7 @@
   }
 
   &__owner-report-summary {
-    align-content: start;
+    align-content: space-between;
     display: grid;
     gap: 0.8rem;
 

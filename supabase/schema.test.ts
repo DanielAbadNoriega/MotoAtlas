@@ -483,6 +483,7 @@ describe('Supabase review_replies schema', () => {
     expect(schemaSql).toContain('review_id uuid not null references public.motorcycle_reviews(id) on delete cascade');
     expect(schemaSql).toContain('user_id uuid not null references auth.users(id) on delete cascade');
     expect(schemaSql).toContain('comment text not null');
+    expect(schemaSql).toContain('user_name text not null');
     expect(schemaSql).toContain("status text not null default 'pending'");
     expect(schemaSql).toContain('created_at timestamptz not null default now()');
     expect(schemaSql).toContain('updated_at timestamptz not null default now()');
@@ -498,6 +499,12 @@ describe('Supabase review_replies schema', () => {
     expect(schemaSql).toContain('drop constraint if exists review_replies_comment_check');
     expect(schemaSql).toContain('add constraint review_replies_comment_check');
     expect(schemaSql).toContain('check (length(trim(comment)) > 0)');
+
+    expect(schemaSql).toContain('drop constraint if exists review_replies_user_name_check');
+    expect(schemaSql).toContain('add constraint review_replies_user_name_check');
+    expect(schemaSql).toContain('check (length(trim(user_name)) > 0)');
+
+    expect(schemaSql).toContain('alter column user_name drop default');
   });
 
   it('incluye trigger updated_at para review_replies', () => {
@@ -523,7 +530,7 @@ describe('Supabase review_replies schema', () => {
     expect(schemaSql).toContain('using (user_id = auth.uid())');
   });
 
-  it('solo permite insertar respuestas propias pending para usuarios autenticados', () => {
+  it('solo permite insertar respuestas propias pending con user_name, valida review no propia y existe', () => {
     expect(schemaSql).toContain('drop policy if exists "Users can create own review reply" on public.review_replies;');
     expect(schemaSql).toContain('drop policy if exists "Authenticated users can create review reply" on public.review_replies;');
     expect(schemaSql).toContain('create policy "Users can create own review reply"');
@@ -533,6 +540,12 @@ describe('Supabase review_replies schema', () => {
     expect(schemaSql).toContain("status = 'pending'");
     expect(schemaSql).toContain('review_id is not null');
     expect(schemaSql).toContain('length(trim(comment)) > 0');
+    expect(schemaSql).toContain('length(trim(user_name)) > 0');
+    expect(schemaSql).toContain('exists (');
+    expect(schemaSql).toContain('from public.motorcycle_reviews');
+    expect(schemaSql).toContain('motorcycle_reviews.id = review_replies.review_id');
+    expect(schemaSql).toContain('motorcycle_reviews.user_id is null');
+    expect(schemaSql).toContain('motorcycle_reviews.user_id <> auth.uid()');
   });
 
   it('usa grants mínimos sin update/delete para usuarios normales', () => {
