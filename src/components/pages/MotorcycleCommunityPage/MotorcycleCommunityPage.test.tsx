@@ -882,6 +882,10 @@ describe('MotorcycleCommunityPage', () => {
       expect(screen.getByText('Respuesta enviada. Quedará visible tras revisión.')).toBeInTheDocument();
     });
     expect(screen.queryByRole('textbox', { name: 'Tu respuesta' })).not.toBeInTheDocument();
+    expect(screen.getByText('Gracias por tu review!')).toBeInTheDocument();
+    const replyRow = screen.getByText('Gracias por tu review!').closest('li');
+    expect(replyRow).toBeInTheDocument();
+    expect(within(replyRow!).getByText('Pendiente')).toBeInTheDocument();
   });
 
   it('muestra respuestas existentes', async () => {

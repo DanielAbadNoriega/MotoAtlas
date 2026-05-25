@@ -12,7 +12,13 @@ import {
   type AdminReviewReport,
 } from '../../../services/adminModerationService';
 import { getAllReviews } from '../../../services/adminReviewService';
+import {
+  getAdminPendingReplies,
+  updateReviewReplyStatus,
+  type AdminReviewReply,
+} from '../../../services/adminReplyService';
 import type { CreateReviewAuthContext, MotorcycleReview, MotorcycleReviewRidingStyle, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
   matchesMotorcycleSegmentFilter,
@@ -115,6 +121,13 @@ const reportStatusLabels: Record<ReviewReportStatus, string> = {
 };
 
 const reviewStatusLabels: Record<MotorcycleReviewStatus, string> = {
+  approved: 'Publicada',
+  hidden: 'Oculta',
+  pending: 'Pendiente',
+  rejected: 'Rechazada',
+};
+
+const replyStatusLabels: Record<MotorcycleReviewStatus, string> = {
   approved: 'Publicada',
   hidden: 'Oculta',
   pending: 'Pendiente',
@@ -928,6 +941,108 @@ function AdminReportCard({
   );
 }
 
+function AdminReplyCard({
+  expanded,
+  isPending,
+  onApprove,
+  onHide,
+  onReject,
+  onToggle,
+  reply,
+}: Readonly<{
+  expanded: boolean;
+  isPending: boolean;
+  onApprove: () => void;
+  onHide: () => void;
+  onReject: () => void;
+  onToggle: () => void;
+  reply: AdminReviewReply;
+}>) {
+  const motorcycleName = reply.review?.motorcycle
+    ? `${reply.review.motorcycle.brand} ${reply.review.motorcycle.model} ${reply.review.motorcycle.year}`
+    : reply.review?.motorcycleId ?? 'Moto no disponible';
+  const cardClasses = ['admin-page__report-card', expanded ? 'admin-page__report-card--expanded' : ''].filter(Boolean).join(' ');
+  const detailsId = `admin-reply-details-${reply.id}`;
+
+  return (
+    <article className={cardClasses} data-testid="admin-reply-card">
+      <header className="admin-page__report-header">
+        <h2>
+          <button
+            className="admin-page__report-toggle"
+            type="button"
+            aria-controls={detailsId}
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Contraer' : 'Expandir'} respuesta de ${reply.review?.userName ?? 'usuario'}`}
+            onClick={onToggle}
+          >
+            <span className="admin-page__report-heading">
+              <span className="admin-page__reason-line">
+                <span className="admin-page__status-badge admin-page__status-badge--pending">Pendiente</span>
+                <span className="admin-page__reason-title">Respuesta a review</span>
+              </span>
+              <span className="admin-page__reporter">
+                Review de <strong>{reply.review?.userName ?? 'usuario'}</strong> · {formatDate(reply.createdAt)}
+              </span>
+              <span className="admin-page__report-summary">
+                {motorcycleName}
+              </span>
+            </span>
+            <span className="material-symbols-outlined admin-page__report-chevron" aria-hidden="true">expand_more</span>
+          </button>
+        </h2>
+      </header>
+
+      <div id={detailsId} className="admin-page__report-body-wrapper" aria-hidden={!expanded} inert={!expanded}>
+        <div className="admin-page__report-body">
+          <section className="admin-page__reported-review" aria-label="Respuesta">
+            <p>“{reply.comment}”</p>
+          </section>
+
+          {reply.review?.comment ? (
+            <section className="admin-page__report-extra" aria-label="Review original">
+              <strong>Review original:</strong>
+              <p>“{reply.review.comment}”</p>
+            </section>
+          ) : null}
+
+          <footer>
+            <div className="admin-page__action-group" aria-label="Acciones sobre respuesta">
+              <h3>Gestionar respuesta</h3>
+              <div>
+                <button
+                  className="admin-page__action-button admin-page__action-button--hide"
+                  type="button"
+                  disabled={isPending}
+                  onClick={onHide}
+                >
+                  Ocultar
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--approve"
+                  type="button"
+                  disabled={isPending}
+                  onClick={onApprove}
+                >
+                  Aprobar
+                </button>
+                <button
+                  className="admin-page__action-button admin-page__action-button--reject"
+                  type="button"
+                  disabled={isPending}
+                  onClick={onReject}
+                >
+                  Rechazar
+                </button>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function AdminReviewSummaryCard({ item }: Readonly<{ item: AdminReviewGarageItem }>) {
   return (
     <article
@@ -1154,6 +1269,12 @@ export function AdminModerationPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [expandedReports, setExpandedReports] = useState<Record<string, boolean>>({});
+  const [moderationTab, setModerationTab] = useState<'reports' | 'replies'>('reports');
+  const [replies, setReplies] = useState<readonly AdminReviewReply[]>([]);
+  const [isLoadingReplies, setIsLoadingReplies] = useState(false);
+  const [repliesError, setRepliesError] = useState<string | null>(null);
+  const [repliesNotice, setRepliesNotice] = useState<string | null>(null);
+  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
   const authContext = useMemo<CreateReviewAuthContext | null>(() => (
     user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
   ), [session?.access_token, user?.id]);
@@ -1204,9 +1325,31 @@ export function AdminModerationPage() {
       .finally(() => setIsLoadingReports(false));
   }, [authContext, filters, isAdmin]);
 
+  const loadReplies = useCallback(() => {
+    if (!authContext || !isAdmin) {
+      return;
+    }
+
+    setIsLoadingReplies(true);
+    setRepliesError(null);
+    getAdminPendingReplies(authContext)
+      .then((nextReplies) => setReplies(nextReplies))
+      .catch(() => {
+        setReplies([]);
+        setRepliesError('No se pudieron cargar las respuestas pendientes.');
+      })
+      .finally(() => setIsLoadingReplies(false));
+  }, [authContext, isAdmin]);
+
   useEffect(() => {
     loadReports();
   }, [loadReports]);
+
+  useEffect(() => {
+    if (moderationTab === 'replies') {
+      loadReplies();
+    }
+  }, [moderationTab, loadReplies]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -1258,6 +1401,12 @@ export function AdminModerationPage() {
     rejected: 'Review rechazada y reporte marcado como resuelto.',
   };
 
+  const replyActionNotices: Record<Exclude<ReviewReplyStatus, 'pending'>, string> = {
+    hidden: 'Respuesta oculta.',
+    approved: 'Respuesta aprobada.',
+    rejected: 'Respuesta rechazada.',
+  };
+
   const handleReportStatus = async (report: AdminReviewReport, status: Exclude<ReviewReportStatus, 'pending'>) => {
     if (!authContext) {
       return;
@@ -1304,6 +1453,33 @@ export function AdminModerationPage() {
     }
   };
 
+  const handleReplyStatus = async (reply: AdminReviewReply, status: Exclude<ReviewReplyStatus, 'pending'>) => {
+    if (!authContext) {
+      return;
+    }
+
+    setPendingAction(`${reply.id}:reply:${status}`);
+    setRepliesNotice(null);
+    setRepliesError(null);
+
+    try {
+      await updateReviewReplyStatus(reply.id, status, authContext);
+      setReplies((currentReplies) => currentReplies.filter((currentReply) => currentReply.id !== reply.id));
+      setRepliesNotice(replyActionNotices[status]);
+    } catch {
+      setRepliesError('No se pudo completar la acción de moderación.');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const toggleReplyCard = (replyId: string) => {
+    setExpandedReplies((currentState) => ({
+      ...currentState,
+      [replyId]: !currentState[replyId],
+    }));
+  };
+
   return (
     <AdminGate>
         <CommunityHero
@@ -1334,62 +1510,139 @@ export function AdminModerationPage() {
           />
           <div className="account-page__main">
             <section className="account-page__section admin-page__moderation" aria-labelledby="admin-moderation-reports-title">
-              <div className="account-page__section-header">
-                <div>
-                  <span>Review reports</span>
-                  <h2 id="admin-moderation-reports-title">
-                    <span className="material-symbols-outlined" aria-hidden="true">flag</span>
-                    Reportes de reviews
-                  </h2>
-                </div>
-                <div className="admin-page__mobile-filter-trigger">
-                  <button type="button" aria-label="Abrir filtros de moderación" onClick={() => setIsFilterPanelOpen(true)}>
-                    <span className="material-symbols-outlined" aria-hidden="true">tune</span>
-                    Filtros
-                  </button>
-                </div>
+              <div className="admin-page__tab-bar" role="tablist" aria-label="Secciones de moderación">
+                <button
+                  aria-selected={moderationTab === 'reports'}
+                  className={`admin-page__tab${moderationTab === 'reports' ? ' admin-page__tab--active' : ''}`}
+                  id="admin-tab-reports"
+                  onClick={() => setModerationTab('reports')}
+                  role="tab"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">flag</span>
+                  Reportes de reviews
+                </button>
+                <button
+                  aria-selected={moderationTab === 'replies'}
+                  className={`admin-page__tab${moderationTab === 'replies' ? ' admin-page__tab--active' : ''}`}
+                  id="admin-tab-replies"
+                  onClick={() => setModerationTab('replies')}
+                  role="tab"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+                  Respuestas pendientes
+                </button>
               </div>
 
-              {notice ? <p className="admin-page__notice-message" role="status">{notice}</p> : null}
-              {error ? (
-                <article className="account-page__empty-state account-page__empty-state--error" role="alert">
-                  <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">error</span>
-                  <h3>{error}</h3>
-                  <button className="account-page__button" type="button" onClick={loadReports}>Reintentar</button>
-                </article>
-              ) : isLoading || (isAuthenticated && isLoadingReports) ? (
-                <p className="admin-page__loading" role="status">Cargando reportes...</p>
-              ) : reports.length === 0 ? (
-                <article className="account-page__empty-state">
-                  <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">flag</span>
-                  <h3>No hay reportes con estos filtros.</h3>
-                </article>
+              {moderationTab === 'reports' ? (
+                <>
+                  <div className="account-page__section-header">
+                    <div>
+                      <span>Review reports</span>
+                      <h2 id="admin-moderation-reports-title">
+                        <span className="material-symbols-outlined" aria-hidden="true">flag</span>
+                        Reportes de reviews
+                      </h2>
+                    </div>
+                    <div className="admin-page__mobile-filter-trigger">
+                      <button type="button" aria-label="Abrir filtros de moderación" onClick={() => setIsFilterPanelOpen(true)}>
+                        <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+                        Filtros
+                      </button>
+                    </div>
+                  </div>
+
+                  {notice ? <p className="admin-page__notice-message" role="status">{notice}</p> : null}
+                  {error ? (
+                    <article className="account-page__empty-state account-page__empty-state--error" role="alert">
+                      <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">error</span>
+                      <h3>{error}</h3>
+                      <button className="account-page__button" type="button" onClick={loadReports}>Reintentar</button>
+                    </article>
+                  ) : isLoading || (isAuthenticated && isLoadingReports) ? (
+                    <p className="admin-page__loading" role="status">Cargando reportes...</p>
+                  ) : reports.length === 0 ? (
+                    <article className="account-page__empty-state">
+                      <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">flag</span>
+                      <h3>No hay reportes con estos filtros.</h3>
+                    </article>
+                  ) : (
+                    <>
+                      <p className="admin-page__results-summary" aria-live="polite">
+                        Mostrando {rangeStart}-{rangeEnd} de {totalReports} reportes
+                      </p>
+                      <div className="admin-page__report-list">
+                        {paginatedReports.map((report) => (
+                          <AdminReportCard
+                            isExpanded={Boolean(expandedReports[report.id])}
+                            isPending={Boolean(pendingAction?.startsWith(`${report.id}:`))}
+                            key={report.id}
+                            onToggle={() => toggleReportCard(report.id)}
+                            onReportStatus={handleReportStatus}
+                            onReviewStatus={handleReviewStatus}
+                            report={report}
+                          />
+                        ))}
+                      </div>
+                      <AccountPagination
+                        ariaLabel="Paginación de reportes admin"
+                        className="admin-page__pagination"
+                        currentClassName="admin-page__pagination-current"
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={goToPage}
+                      />
+                    </>
+                  )}
+                </>
               ) : (
                 <>
-                  <p className="admin-page__results-summary" aria-live="polite">
-                    Mostrando {rangeStart}-{rangeEnd} de {totalReports} reportes
-                  </p>
-                  <div className="admin-page__report-list">
-                    {paginatedReports.map((report) => (
-                      <AdminReportCard
-                        isExpanded={Boolean(expandedReports[report.id])}
-                        isPending={Boolean(pendingAction?.startsWith(`${report.id}:`))}
-                        key={report.id}
-                        onToggle={() => toggleReportCard(report.id)}
-                        onReportStatus={handleReportStatus}
-                        onReviewStatus={handleReviewStatus}
-                        report={report}
-                      />
-                    ))}
+                  <div className="account-page__section-header">
+                    <div>
+                      <span>Reply moderation</span>
+                      <h2 id="admin-moderation-replies-title">
+                        <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+                        Respuestas pendientes
+                      </h2>
+                    </div>
                   </div>
-                  <AccountPagination
-                    ariaLabel="Paginación de reportes admin"
-                    className="admin-page__pagination"
-                    currentClassName="admin-page__pagination-current"
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={goToPage}
-                  />
+
+                  {repliesNotice ? <p className="admin-page__notice-message" role="status">{repliesNotice}</p> : null}
+                  {repliesError ? (
+                    <article className="account-page__empty-state account-page__empty-state--error" role="alert">
+                      <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">error</span>
+                      <h3>{repliesError}</h3>
+                      <button className="account-page__button" type="button" onClick={loadReplies}>Reintentar</button>
+                    </article>
+                  ) : isLoading || (isAuthenticated && isLoadingReplies) ? (
+                    <p className="admin-page__loading" role="status">Cargando respuestas...</p>
+                  ) : replies.length === 0 ? (
+                    <article className="account-page__empty-state">
+                      <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">forum</span>
+                      <h3>No hay respuestas pendientes de moderación.</h3>
+                    </article>
+                  ) : (
+                    <>
+                      <p className="admin-page__results-summary" aria-live="polite">
+                        {replies.length} respuesta{replies.length !== 1 ? 's' : ''} pendiente{replies.length !== 1 ? 's' : ''}
+                      </p>
+                      <div className="admin-page__report-list">
+                        {replies.map((reply) => (
+                          <AdminReplyCard
+                            expanded={Boolean(expandedReplies[reply.id])}
+                            isPending={Boolean(pendingAction?.startsWith(`${reply.id}:`))}
+                            key={reply.id}
+                            onApprove={() => handleReplyStatus(reply, 'approved')}
+                            onHide={() => handleReplyStatus(reply, 'hidden')}
+                            onReject={() => handleReplyStatus(reply, 'rejected')}
+                            onToggle={() => toggleReplyCard(reply.id)}
+                            reply={reply}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </section>

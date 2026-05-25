@@ -9,6 +9,11 @@ import {
   type AdminReviewReport,
 } from '../../../services/adminModerationService';
 import { getAllReviews } from '../../../services/adminReviewService';
+import {
+  getAdminPendingReplies,
+  updateReviewReplyStatus,
+  type AdminReviewReply,
+} from '../../../services/adminReplyService';
 import type { MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { AdminDashboardPage, AdminModerationPage, AdminReviewsPage } from './AdminPage';
 
@@ -26,11 +31,18 @@ vi.mock('../../../services/adminReviewService', () => ({
   getAllReviews: vi.fn(),
 }));
 
+vi.mock('../../../services/adminReplyService', () => ({
+  getAdminPendingReplies: vi.fn(),
+  updateReviewReplyStatus: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
 const getAllReviewsMock = vi.mocked(getAllReviews);
 const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
+const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
+const updateReviewReplyStatusMock = vi.mocked(updateReviewReplyStatus);
 
 const adminAuth = {
   user: { id: 'admin-1', email: 'admin@motoatlas.com' },
@@ -135,6 +147,8 @@ describe('AdminPage', () => {
     getAllReviewsMock.mockReset().mockResolvedValue([]);
     resolveReportWithReviewStatusMock.mockReset().mockResolvedValue(undefined);
     updateReviewReportStatusMock.mockReset().mockResolvedValue(undefined);
+    getAdminPendingRepliesMock.mockReset().mockResolvedValue([]);
+    updateReviewReplyStatusMock.mockReset().mockResolvedValue(undefined);
     mockAuth();
   });
 
@@ -883,5 +897,152 @@ describe('AdminPage', () => {
     await user.type(searchInput, 'XYZnoexiste');
 
     await waitFor(() => expect(screen.getByRole('heading', { name: /No hay reviews con estos filtros/i })).toBeInTheDocument());
+  });
+
+  const pendingReplies: readonly AdminReviewReply[] = [
+    {
+      id: 'reply-1',
+      reviewId: 'review-10',
+      userId: 'user-rider',
+      comment: 'Gracias por la review, muy útil!',
+      status: 'pending',
+      createdAt: '2026-05-23T10:00:00.000Z',
+      updatedAt: '2026-05-23T10:00:00.000Z',
+      review: {
+        comment: 'Excelente moto, la recomiendo.',
+        userName: 'RiderUno',
+        motorcycle: {
+          brand: 'BMW',
+          id: 'test-bike',
+          imageUrl: '/bmw.jpg',
+          model: 'F 900 GS',
+          year: 2024,
+        },
+        motorcycleId: 'test-bike',
+      },
+    },
+  ];
+
+  it('admin ve barra de tabs con Reportes y Respuestas pendientes', async () => {
+    render(<AdminModerationPage />);
+
+    const tabList = screen.getByRole('tablist', { name: 'Secciones de moderación' });
+    expect(tabList).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Reportes de reviews' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Respuestas pendientes' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('admin ve empty state al cambiar a pestaña de respuestas sin datos', async () => {
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const repliesTab = screen.getByRole('tab', { name: 'Respuestas pendientes' });
+    await user.click(repliesTab);
+
+    expect(await screen.findByText('No hay respuestas pendientes de moderación.')).toBeInTheDocument();
+    expect(getAdminPendingRepliesMock).toHaveBeenCalledWith({ accessToken: 'admin-token', userId: 'admin-1' });
+  });
+
+  it('admin ve respuestas pendientes con datos de review y moto', async () => {
+    getAdminPendingRepliesMock.mockResolvedValue(pendingReplies);
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const repliesTab = screen.getByRole('tab', { name: 'Respuestas pendientes' });
+    await user.click(repliesTab);
+
+    const cards = await screen.findAllByTestId('admin-reply-card');
+    expect(cards).toHaveLength(1);
+    expect(screen.getByText('BMW F 900 GS 2024')).toBeInTheDocument();
+    expect(screen.getByText('RiderUno')).toBeInTheDocument();
+
+    const card = cards[0];
+    const toggleButton = within(card).getByRole('button', { name: /Expandir respuesta de RiderUno/i });
+    await user.click(toggleButton);
+
+    expect(within(card).getByText(/Gracias por la review/i)).toBeVisible();
+    expect(within(card).getByText(/Review original:/i)).toBeInTheDocument();
+    expect(within(card).getByText(/Excelente moto/i)).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Aprobar' })).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Ocultar' })).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: 'Rechazar' })).toBeInTheDocument();
+  });
+
+  it('admin puede aprobar una respuesta pendiente', async () => {
+    getAdminPendingRepliesMock.mockResolvedValue(pendingReplies);
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const repliesTab = screen.getByRole('tab', { name: 'Respuestas pendientes' });
+    await user.click(repliesTab);
+
+    const card = (await screen.findAllByTestId('admin-reply-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Aprobar' }));
+
+    expect(updateReviewReplyStatusMock).toHaveBeenCalledWith('reply-1', 'approved', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByText('Respuesta aprobada.')).toBeInTheDocument());
+    expect(screen.queryByTestId('admin-reply-card')).not.toBeInTheDocument();
+  });
+
+  it('admin puede ocultar una respuesta pendiente', async () => {
+    getAdminPendingRepliesMock.mockResolvedValue(pendingReplies);
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const repliesTab = screen.getByRole('tab', { name: 'Respuestas pendientes' });
+    await user.click(repliesTab);
+
+    const card = (await screen.findAllByTestId('admin-reply-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Ocultar' }));
+
+    expect(updateReviewReplyStatusMock).toHaveBeenCalledWith('reply-1', 'hidden', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByText('Respuesta oculta.')).toBeInTheDocument());
+  });
+
+  it('admin puede rechazar una respuesta pendiente', async () => {
+    getAdminPendingRepliesMock.mockResolvedValue(pendingReplies);
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const repliesTab = screen.getByRole('tab', { name: 'Respuestas pendientes' });
+    await user.click(repliesTab);
+
+    const card = (await screen.findAllByTestId('admin-reply-card'))[0];
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Rechazar' }));
+
+    expect(updateReviewReplyStatusMock).toHaveBeenCalledWith('reply-1', 'rejected', { accessToken: 'admin-token', userId: 'admin-1' });
+    await waitFor(() => expect(screen.getByText('Respuesta rechazada.')).toBeInTheDocument());
+  });
+
+  it('muestra error si falla carga de respuestas', async () => {
+    getAdminPendingRepliesMock.mockRejectedValue(new Error('Network error'));
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const repliesTab = screen.getByRole('tab', { name: 'Respuestas pendientes' });
+    await user.click(repliesTab);
+
+    expect(await screen.findByText('No se pudieron cargar las respuestas pendientes.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+  });
+
+  it('muestra error si falla acción de moderación de respuesta', async () => {
+    getAdminPendingRepliesMock.mockResolvedValue(pendingReplies);
+    updateReviewReplyStatusMock.mockRejectedValueOnce(new Error('Fail'));
+    const user = userEvent.setup();
+    render(<AdminModerationPage />);
+
+    const repliesTab = screen.getByRole('tab', { name: 'Respuestas pendientes' });
+    await user.click(repliesTab);
+
+    await screen.findByTestId('admin-reply-card');
+    const card = screen.getByTestId('admin-reply-card');
+    await user.click(within(card).getByRole('button', { name: /Expandir/i }));
+    await user.click(within(card).getByRole('button', { name: 'Aprobar' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo completar la acción de moderación.');
   });
 });

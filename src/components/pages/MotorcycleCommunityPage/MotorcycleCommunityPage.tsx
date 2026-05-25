@@ -64,6 +64,12 @@ type HelpfulTooltipState = Readonly<{
   ticket: number;
   visible: boolean;
 }>;
+type ReplyToastState = Readonly<{
+  message: string;
+  reviewId: string;
+  visible: boolean;
+  ticket: number;
+}>;
 type ReplyFormState = Readonly<{
   comment: string;
   isSubmitting: boolean;
@@ -657,6 +663,7 @@ function OwnerReportRow({
   onOpenReply,
   onSubmitReply,
   replies,
+  replyToast,
   reportForm,
   reactionSummary,
   review,
@@ -682,6 +689,7 @@ function OwnerReportRow({
   onOpenReply: () => void;
   onSubmitReply: () => void;
   replies: readonly ReviewReply[];
+  replyToast: ReplyToastState | null;
   reportForm: ReviewReportFormState | null;
   reactionSummary: ReviewReactionSummary;
   review: MotorcycleReview;
@@ -801,6 +809,7 @@ function OwnerReportRow({
           onSubmitReply={onSubmitReply}
           replies={replies}
           replyForm={replyForm}
+          replyToast={replyToast}
           review={review}
           user={user}
         />
@@ -816,6 +825,7 @@ function ReviewReplySection({
   onSubmitReply,
   replies,
   replyForm,
+  replyToast,
   review,
   user,
 }: Readonly<{
@@ -825,6 +835,7 @@ function ReviewReplySection({
   onSubmitReply: () => void;
   replies: readonly ReviewReply[];
   replyForm: ReplyFormState | null;
+  replyToast: ReplyToastState | null;
   review: MotorcycleReview;
   user: User | null;
 }>) {
@@ -833,7 +844,7 @@ function ReviewReplySection({
     (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
   );
 
-  if (visibleReplies.length === 0 && !isReplyFormOpen && !user) {
+  if (visibleReplies.length === 0 && !isReplyFormOpen && !user && !replyToast) {
     return null;
   }
 
@@ -893,6 +904,12 @@ function ReviewReplySection({
         </div>
       ) : null}
 
+      {replyToast && replyToast.reviewId === review.id ? (
+        <p className={`motorcycle-community__reply-toast ${replyToast.visible ? 'motorcycle-community__reply-toast--visible' : ''}`} role="status">
+          {replyToast.message}
+        </p>
+      ) : null}
+
       {user && !isReplyFormOpen ? (
         <button
           className="motorcycle-community__reply-trigger"
@@ -918,7 +935,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
   const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
   const [reactionNotice, setReactionNotice] = useState<ReactionNotice | null>(null);
-  const [replySuccessMessage, setReplySuccessMessage] = useState<string | null>(null);
+  const [replyToast, setReplyToast] = useState<ReplyToastState | null>(null);
   const [reportedReviewIds, setReportedReviewIds] = useState<ReviewReportMap>({});
   const [reportForm, setReportForm] = useState<ReviewReportFormState | null>(null);
   const [helpfulTooltip, setHelpfulTooltip] = useState<HelpfulTooltipState | null>(null);
@@ -926,6 +943,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const [replyForm, setReplyForm] = useState<ReplyFormState | null>(null);
   const tooltipHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const replyToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!bike) {
@@ -1009,6 +1027,9 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
 
   useEffect(() => () => {
     clearHelpfulTooltipTimers();
+    if (replyToastTimeoutRef.current) {
+      clearTimeout(replyToastTimeoutRef.current);
+    }
   }, []);
 
   const updateOwnerReportFilters = (nextFilters: Partial<OwnerReportsFilters>) => {
@@ -1308,7 +1329,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
       return;
     }
     setReplyForm({ comment: '', isSubmitting: false, reviewId: review.id });
-    setReplySuccessMessage(null);
+    setReplyToast(null);
   };
 
   const cancelReplyForm = () => {
@@ -1333,7 +1354,15 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
         [review.id]: [...(currentReplies[review.id] ?? []), newReply],
       }));
       setReplyForm(null);
-      setReplySuccessMessage('Respuesta enviada. Quedará visible tras revisión.');
+
+      const toastTicket = Date.now();
+      setReplyToast({ message: 'Respuesta enviada. Quedará visible tras revisión.', reviewId: review.id, visible: true, ticket: toastTicket });
+      replyToastTimeoutRef.current = setTimeout(() => {
+        setReplyToast((current) => (current?.ticket === toastTicket ? { ...current, visible: false } : current));
+        setTimeout(() => {
+          setReplyToast((current) => (current?.ticket === toastTicket ? null : current));
+        }, 300);
+      }, 3000);
     } catch (error) {
       setReplyForm((currentForm) => (
         currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: false } : currentForm
@@ -1510,11 +1539,6 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                 {reactionNotice.message}
               </p>
             ) : null}
-            {replySuccessMessage ? (
-              <p className="motorcycle-community__notice" role="status">
-                {replySuccessMessage}
-              </p>
-            ) : null}
 
             {reviews.length > 0 ? (
               filteredOwnerReports.length > 0 ? (
@@ -1543,6 +1567,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                         onOpenReply={() => openReplyForm(review)}
                         onSubmitReply={() => submitReply(review)}
                         replies={replies[review.id] ?? []}
+                        replyToast={replyToast}
                         reportForm={reportForm}
                         reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}
                         review={review}

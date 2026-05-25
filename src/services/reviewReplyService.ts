@@ -115,7 +115,6 @@ export async function createReviewReply(
       review_id: reviewId,
       user_id: normalizedAuthContext.userId,
       comment,
-      status: 'pending',
     }),
     headers: buildHeaders(config, normalizedAuthContext.accessToken, {
       'Content-Type': 'application/json',
@@ -152,6 +151,31 @@ export async function getRepliesByReviewId(
   const params = new URLSearchParams({
     order: 'created_at.asc',
     review_id: `eq.${normalizedReviewId}`,
+    select: 'id,review_id,user_id,comment,status,created_at,updated_at',
+  });
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/review_replies?${params.toString()}`, {
+    headers: buildHeaders(config, normalizedAuthContext?.accessToken),
+  });
+  const rows = await parseSupabaseResponse<ReviewReplyRow[]>(response);
+
+  return rows.map(mapReplyRow);
+}
+
+export async function getRepliesByReviewIds(
+  reviewIds: readonly string[],
+  authContext?: CreateReviewAuthContext | null,
+): Promise<readonly ReviewReply[]> {
+  const normalizedIds = reviewIds.map((id) => id.trim()).filter(Boolean);
+
+  if (normalizedIds.length === 0) {
+    return [];
+  }
+
+  const config = getSupabaseConfig();
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+  const params = new URLSearchParams({
+    order: 'created_at.asc',
+    review_id: `in.(${normalizedIds.join(',')})`,
     select: 'id,review_id,user_id,comment,status,created_at,updated_at',
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/review_replies?${params.toString()}`, {

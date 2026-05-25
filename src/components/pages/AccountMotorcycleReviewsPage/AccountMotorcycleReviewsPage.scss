@@ -175,3 +175,68 @@
     gap: 0.6rem;
   }
 }
+
+.account-motorcycle-reviews-page__replies {
+  border-top: 1px solid rgba($color-outline-variant, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.account-motorcycle-reviews-page__reply-item {
+  background: rgba($color-surface-lowest, 0.35);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.account-motorcycle-reviews-page__reply-header {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.account-motorcycle-reviews-page__reply-badge {
+  @include label-caps;
+
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.55rem;
+  line-height: 1;
+  padding: 0.28rem 0.5rem;
+
+  &--approved {
+    background: rgba(72, 209, 108, 0.12);
+    color: #62df82;
+  }
+
+  &--pending {
+    background: rgba(255, 198, 80, 0.12);
+    color: #ffd36a;
+  }
+
+  &--hidden {
+    background: rgba(255, 145, 77, 0.12);
+    color: #ffab73;
+  }
+
+  &--rejected {
+    background: rgba($color-error, 0.12);
+    color: $color-error;
+  }
+}
+
+.account-motorcycle-reviews-page__reply-date {
+  color: rgba($color-on-surface-variant, 0.7);
+  font-size: 0.7rem;
+}
+
+.account-motorcycle-reviews-page__reply-comment {
+  color: $color-on-surface-variant;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0;
+  white-space: pre-wrap;
+}

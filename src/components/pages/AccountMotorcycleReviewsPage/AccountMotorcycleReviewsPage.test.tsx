@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import { createReview, getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import { getReviewReactionSummary } from '../../../services/reviewReactionService';
+import { getRepliesByReviewIds, type ReviewReply } from '../../../services/reviewReplyService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { AccountMotorcycleReviewsPage } from './AccountMotorcycleReviewsPage';
 
@@ -20,10 +21,15 @@ vi.mock('../../../services/reviewReactionService', () => ({
   getReviewReactionSummary: vi.fn(),
 }));
 
+vi.mock('../../../services/reviewReplyService', () => ({
+  getRepliesByReviewIds: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewsByUserIdMock = vi.mocked(getReviewsByUserId);
 const createReviewMock = vi.mocked(createReview);
 const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
+const getRepliesByReviewIdsMock = vi.mocked(getRepliesByReviewIds);
 const signOutMock = vi.fn();
 const bike = bikeFixtures[0];
 
@@ -105,6 +111,7 @@ describe('AccountMotorcycleReviewsPage', () => {
         reviewId,
       })),
     );
+    getRepliesByReviewIdsMock.mockReset().mockResolvedValue([]);
     mockAuth();
   });
 
@@ -265,5 +272,37 @@ describe('AccountMotorcycleReviewsPage', () => {
     expect(screen.getByText('Prueba a cambiar el rating o el orden para revisar tus experiencias.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Limpiar filtros' }));
     expect(screen.getByText('Review de dos estrellas.')).toBeInTheDocument();
+  });
+
+  it('muestra respuestas del usuario bajo su review', async () => {
+    getRepliesByReviewIdsMock.mockImplementation(async (reviewIds) =>
+      reviewIds.map((reviewId) => ({
+        id: `reply-${reviewId}`,
+        reviewId,
+        userId: 'user-1',
+        comment: `Respuesta a ${reviewId}`,
+        status: 'pending',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        updatedAt: '2026-05-20T10:00:00.000Z',
+      })) as readonly ReviewReply[],
+    );
+
+    await renderWithReviews([createPrivateReview({ id: 'review-1', status: 'approved', comment: 'Review con respuesta.' })]);
+
+    await waitFor(() => {
+      expect(screen.getByText('Respuesta a review-1')).toBeInTheDocument();
+    });
+    const replyItem = screen.getByText('Respuesta a review-1').closest('.account-motorcycle-reviews-page__reply-item') as HTMLElement;
+    expect(within(replyItem).getByText('Pendiente')).toBeInTheDocument();
+    expect(within(replyItem).getByText(/20 may/)).toBeInTheDocument();
+  });
+
+  it('no muestra bloque vacío de respuestas si no hay replies', async () => {
+    await renderWithReviews([createPrivateReview({ id: 'review-no-replies', status: 'approved', comment: 'Review sin respuestas.' })]);
+
+    await waitFor(() => {
+      expect(screen.getByText('Review sin respuestas.')).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/^Respuesta a/i)).not.toBeInTheDocument();
   });
 });

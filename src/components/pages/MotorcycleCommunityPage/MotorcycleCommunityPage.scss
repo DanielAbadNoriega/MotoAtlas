@@ -1221,6 +1221,28 @@
     transform: translateY(0);
   }
 
+  &__reply-toast {
+    background: rgba($color-surface-container, 0.97);
+    border: 1px solid rgba($color-accent, 0.35);
+    border-radius: $radius-lg;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+    color: $color-on-surface;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    margin: 0.75rem 0 0;
+    max-width: min(22rem, 80vw);
+    opacity: 0;
+    padding: 0.6rem 0.85rem;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 260ms ease, transform 260ms ease;
+
+    &--visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   &__verified-badge {
     @include label-caps;
 
