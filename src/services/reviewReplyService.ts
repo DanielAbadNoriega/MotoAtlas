@@ -1,7 +1,9 @@
 import type { CreateReviewAuthContext } from './motorcycleReviewService';
 
-function replyNameFallback(userId: string): string {
-  return userId.length > 8 ? `${userId.slice(0, 8)}…` : userId;
+const FALLBACK_USER_NAME = 'Usuario MotoAtlas';
+
+function replyNameFallback(): string {
+  return FALLBACK_USER_NAME;
 }
 
 export type ReviewReplyStatus = 'pending' | 'approved' | 'hidden' | 'rejected';
@@ -65,7 +67,7 @@ function mapReplyRow(row: ReviewReplyRow): ReviewReply {
     id: row.id,
     reviewId: row.review_id,
     userId: row.user_id,
-    userName: row.user_name.trim() || replyNameFallback(row.user_id),
+    userName: row.user_name.trim() || replyNameFallback(),
     comment: row.comment,
     status: row.status,
     createdAt: row.created_at,
@@ -140,7 +142,7 @@ export async function createReviewReply(
     id: '',
     reviewId,
     userId: normalizedAuthContext.userId,
-    userName: userName || replyNameFallback(normalizedAuthContext.userId),
+    userName: userName || replyNameFallback(),
     comment,
     status: 'pending',
     createdAt: now,
@@ -171,6 +173,101 @@ export async function getRepliesByReviewId(
   const rows = await parseSupabaseResponse<ReviewReplyRow[]>(response);
 
   return rows.map(mapReplyRow);
+}
+
+export type ReviewReplyWithReview = Readonly<{
+  reply: ReviewReply;
+  review: Readonly<{
+    id: string;
+    userId: string | null;
+    userName: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+  }>;
+}>;
+
+type MotorcycleReviewForReplyRow = Readonly<{
+  id: string;
+  user_id: string | null;
+  user_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}>;
+
+export async function getMyRepliesByMotorcycleId(
+  motorcycleId: string,
+  authContext: CreateReviewAuthContext,
+): Promise<readonly ReviewReplyWithReview[]> {
+  const normalizedMotorcycleId = motorcycleId.trim();
+
+  if (!normalizedMotorcycleId) {
+    return [];
+  }
+
+  const normalizedAuth = normalizeAuthContext(authContext);
+
+  if (!normalizedAuth) {
+    return [];
+  }
+
+  const config = getSupabaseConfig();
+  const { accessToken, userId } = normalizedAuth;
+
+  const reviewParams = new URLSearchParams({
+    motorcycle_id: `eq.${normalizedMotorcycleId}`,
+    order: 'created_at.desc',
+    select: 'id,user_id,user_name,rating,comment,created_at',
+  });
+
+  const reviewResponse = await fetch(
+    `${config.supabaseUrl}/rest/v1/motorcycle_reviews?${reviewParams.toString()}`,
+    { headers: buildHeaders(config, accessToken) },
+  );
+
+  const reviewRows = await parseSupabaseResponse<MotorcycleReviewForReplyRow[]>(reviewResponse);
+
+  if (reviewRows.length === 0) {
+    return [];
+  }
+
+  const reviewIds = reviewRows.map((r) => r.id);
+  const reviewById: Record<string, MotorcycleReviewForReplyRow> = {};
+
+  for (const review of reviewRows) {
+    reviewById[review.id] = review;
+  }
+
+  const replyParams = new URLSearchParams({
+    order: 'created_at.asc',
+    review_id: `in.(${reviewIds.join(',')})`,
+    user_id: `eq.${userId}`,
+    select: 'id,review_id,user_id,user_name,comment,status,created_at,updated_at',
+  });
+
+  const replyResponse = await fetch(
+    `${config.supabaseUrl}/rest/v1/review_replies?${replyParams.toString()}`,
+    { headers: buildHeaders(config, accessToken) },
+  );
+
+  const replyRows = await parseSupabaseResponse<ReviewReplyRow[]>(replyResponse);
+
+  return replyRows.map((replyRow) => {
+    const review = reviewById[replyRow.review_id];
+
+    return {
+      reply: mapReplyRow(replyRow),
+      review: {
+        id: replyRow.review_id,
+        userId: review?.user_id ?? null,
+        userName: review?.user_name ?? '',
+        rating: review?.rating ?? 0,
+        comment: review?.comment ?? '',
+        createdAt: review?.created_at ?? '',
+      },
+    };
+  });
 }
 
 export async function getRepliesByReviewIds(

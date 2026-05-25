@@ -507,7 +507,7 @@ create table if not exists public.review_replies (
   id uuid primary key default gen_random_uuid(),
   review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
-  user_name text not null default '',
+  user_name text not null,
   comment text not null,
   status text not null default 'pending',
   created_at timestamptz not null default now(),
@@ -527,6 +527,16 @@ alter table if exists public.review_replies
 alter table if exists public.review_replies
   add constraint review_replies_comment_check
   check (length(trim(comment)) > 0);
+
+alter table if exists public.review_replies
+  drop constraint if exists review_replies_user_name_check;
+
+alter table if exists public.review_replies
+  add constraint review_replies_user_name_check
+  check (length(trim(user_name)) > 0);
+
+alter table if exists public.review_replies
+  alter column user_name drop default;
 
 create index if not exists review_replies_review_id_idx
 on public.review_replies (review_id);
@@ -570,6 +580,16 @@ with check (
   and status = 'pending'
   and review_id is not null
   and length(trim(comment)) > 0
+  and length(trim(user_name)) > 0
+  and exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = review_replies.review_id
+      and (
+        motorcycle_reviews.user_id is null
+        or motorcycle_reviews.user_id <> auth.uid()
+      )
+  )
 );
 
 revoke all on table public.review_replies from anon;

@@ -680,6 +680,32 @@ describe('MotorcycleCommunityPage', () => {
     expect(within(row).queryByRole('button', { name: /Útil 7/i })).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
     expect(within(row).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
+    expect(within(row).getByText('No puedes responder a tu propia review.')).toBeInTheDocument();
+  });
+
+  it('muestra el botón Responder a otro usuario autenticado en reviews ajenas', async () => {
+    mockAuth({
+      user: { id: 'user-other', email: 'otro@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
+    getApprovedReviewsMock.mockResolvedValue([
+      createApprovedReviewFixture({
+        id: 'other-review',
+        comment: 'Review de otro usuario.',
+        userId: 'user-owner',
+      }),
+    ]);
+    getReviewReactionSummaryMock.mockResolvedValue([
+      { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: 'other-review' },
+    ]);
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const row = (await screen.findAllByTestId('owner-report-row'))[0];
+
+    expect(await within(row).findByRole('button', { name: /Responder/i })).toBeInTheDocument();
   });
 
   it('mueve Problemas comunes e insights al sidebar debajo de filtros', async () => {

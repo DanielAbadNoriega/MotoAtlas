@@ -11,8 +11,10 @@ import {
   type ReviewReactionSummary,
 } from '../../../services/reviewReactionService';
 import {
+  getMyRepliesByMotorcycleId,
   getRepliesByReviewIds,
   type ReviewReply,
+  type ReviewReplyWithReview,
 } from '../../../services/reviewReplyService';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import type { Bike } from '../../../types/bike';
@@ -554,6 +556,7 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
   const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
+  const [myRepliesOnMotorcycle, setMyRepliesOnMotorcycle] = useState<readonly ReviewReplyWithReview[]>([]);
   const displayName = getProfileName(profile?.displayName, user?.email);
   const email = user?.email ?? 'Email no disponible';
 
@@ -682,6 +685,31 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
       isMounted = false;
     };
   }, [paginatedReviewIds.join('|'), reactionAuthContext?.accessToken, reactionAuthContext?.userId]);
+
+  useEffect(() => {
+    if (!motorcycleId || !reactionAuthContext) {
+      setMyRepliesOnMotorcycle([]);
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getMyRepliesByMotorcycleId(motorcycleId, reactionAuthContext)
+      .then((nextReplies) => {
+        if (isMounted) {
+          setMyRepliesOnMotorcycle(nextReplies);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setMyRepliesOnMotorcycle([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [motorcycleId, reactionAuthContext?.accessToken, reactionAuthContext?.userId]);
 
   const handleSignOut = async () => {
     setError('');
@@ -834,6 +862,51 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
               </>
             )}
           </section>
+
+          {myRepliesOnMotorcycle.length > 0 ? (
+            <section className="motorcycle-community__reviews" aria-labelledby="my-replies-on-motorcycle-title">
+              <div className="motorcycle-community__section-header account-motorcycle-reviews-page__section-header">
+                <h2 id="my-replies-on-motorcycle-title">Mis respuestas en esta moto</h2>
+              </div>
+              <div className="motorcycle-community__owner-report-list" role="list" aria-label="Respuestas a otras reviews de esta moto">
+                {myRepliesOnMotorcycle.map((item) => (
+                  <article
+                    key={item.reply.id}
+                    className="motorcycle-community__owner-report-row account-motorcycle-reviews-page__review-row"
+                    role="listitem"
+                  >
+                    <div className="motorcycle-community__owner-report-identity account-motorcycle-reviews-page__review-identity">
+                      <div className="account-motorcycle-reviews-page__review-context">
+                        <p className="account-motorcycle-reviews-page__context-author">
+                          Review de {(item.review.userName || 'Usuario').trim()}
+                        </p>
+                        <div className="motorcycle-community__owner-report-rating">
+                          <RatingStars rating={item.review.rating} />
+                          <strong>{item.review.rating}/5</strong>
+                        </div>
+                        <p className="account-motorcycle-reviews-page__context-comment">
+                          {item.review.comment || '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="motorcycle-community__owner-report-summary">
+                      <div className="account-motorcycle-reviews-page__reply-item">
+                        <div className="account-motorcycle-reviews-page__reply-header">
+                          <span className={`account-motorcycle-reviews-page__reply-badge account-motorcycle-reviews-page__reply-badge--${item.reply.status}`}>
+                            {item.reply.status === 'pending' ? 'Pendiente' : item.reply.status === 'approved' ? 'Publicada' : item.reply.status === 'hidden' ? 'Oculta' : 'Rechazada'}
+                          </span>
+                          <span className="account-motorcycle-reviews-page__reply-date">
+                            {formatAccountReviewDate(item.reply.createdAt)}
+                          </span>
+                        </div>
+                        <p className="account-motorcycle-reviews-page__reply-comment">{item.reply.comment}</p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       </section>
 
