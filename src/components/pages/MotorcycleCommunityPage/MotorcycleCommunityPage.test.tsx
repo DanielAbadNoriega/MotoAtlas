@@ -934,6 +934,48 @@ describe('MotorcycleCommunityPage', () => {
     });
   });
 
+  it('muestra el banner de convivencia al abrir el formulario de respuesta', async () => {
+    mockAuth({
+      user: { id: 'user-1', email: 'test@test.com', aud: 'authenticated', role: 'authenticated' },
+      session: { access_token: 'token-1', refresh_token: 'refresh-1', expires_in: 3600, expires_at: 9999999999, token_type: 'bearer', user: { id: 'user-1', aud: 'authenticated', role: 'authenticated', email: 'test@test.com' } },
+      isAuthenticated: true,
+    });
+    const user = userEvent.setup();
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const respondButtons = await screen.findAllByRole('button', { name: 'Responder' });
+    await user.click(respondButtons[0]);
+
+    expect(screen.getByText('Disfrutemos de la comunidad con respeto.')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Normas de convivencia' })).toBeInTheDocument();
+    expect(screen.getByRole('tooltip', { name: 'Normas rápidas' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Tu respuesta' })).toBeInTheDocument();
+  });
+
+  it('el tooltip de convivencia muestra las normas al estar en el DOM', async () => {
+    mockAuth({
+      user: { id: 'user-1', email: 'test@test.com', aud: 'authenticated', role: 'authenticated' },
+      session: { access_token: 'token-1', refresh_token: 'refresh-1', expires_in: 3600, expires_at: 9999999999, token_type: 'bearer', user: { id: 'user-1', aud: 'authenticated', role: 'authenticated', email: 'test@test.com' } },
+      isAuthenticated: true,
+    });
+    const user = userEvent.setup();
+
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const respondButtons = await screen.findAllByRole('button', { name: 'Responder' });
+    await user.click(respondButtons[0]);
+
+    const tooltip = screen.getByRole('tooltip', { name: 'Normas rápidas' });
+
+    expect(tooltip).toBeInTheDocument();
+    expect(tooltip).toHaveClass('motorcycle-community__convivence-tooltip');
+    expect(within(tooltip).getByText('Comparte tu experiencia con buen tono.')).toBeInTheDocument();
+    expect(within(tooltip).getByText('Evita insultos, spam o ataques personales.')).toBeInTheDocument();
+    expect(within(tooltip).getByText('Las respuestas inapropiadas podrán retirarse.')).toBeInTheDocument();
+    expect(within(tooltip).getByText('Normas rápidas')).toBeInTheDocument();
+  });
+
   it('no muestra el botón Responder para usuario no autenticado', async () => {
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
