@@ -47,6 +47,10 @@ export function getAdminReviewsCanonicalPath() {
   return '/admin/reviews';
 }
 
+export function getAdminRequestsCanonicalPath() {
+  return '/admin/solicitudes';
+}
+
 export function getAdminMotorcycleReviewsCanonicalPath(motorcycleId: string) {
   return `/admin/reviews/${encodeURIComponent(motorcycleId)}`;
 }
@@ -268,6 +272,11 @@ export function isAdminReviewsRoute(route: string) {
 export function isAdminMotorcycleReviewsRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return /^\/admin\/reviews\/[^/?#]+$/.test(path);
+}
+
+export function isAdminRequestsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === getAdminRequestsCanonicalPath();
 }
 
 export function getAdminMotorcycleIdFromRoute(route: string, motorcycles: readonly Bike[]) {

@@ -7,6 +7,7 @@ import {
   getAccountMotorcycleReviewsCanonicalPath,
   getAdminCanonicalPath,
   getAdminModerationCanonicalPath,
+  getAdminRequestsCanonicalPath,
   getAdminReviewsCanonicalPath,
   getCommunityCanonicalPath,
   getCommunityReviewsCanonicalPath,
@@ -286,7 +287,7 @@ export function buildAccountMotorcycleReviewsSeoMetadata(motorcycleId: string): 
   };
 }
 
-export function buildAdminSeoMetadata(route: 'admin' | 'moderacion' | 'reviews'): SeoMetadata {
+export function buildAdminSeoMetadata(route: 'admin' | 'moderacion' | 'reviews' | 'solicitudes'): SeoMetadata {
   const content = route === 'admin'
     ? {
         canonicalPath: getAdminCanonicalPath(),
@@ -299,11 +300,17 @@ export function buildAdminSeoMetadata(route: 'admin' | 'moderacion' | 'reviews')
           description: 'Revisa reportes de la comunidad y gestiona el estado de reviews en MotoAtlas.',
           title: `Moderación | ${siteName}`,
         }
-      : {
-          canonicalPath: getAdminReviewsCanonicalPath(),
-          description: 'Garaje admin para revisar reviews agrupadas por modelo en MotoAtlas.',
-          title: `Reviews por modelo | ${siteName}`,
-        };
+      : route === 'solicitudes'
+        ? {
+            canonicalPath: getAdminRequestsCanonicalPath(),
+            description: 'Gestiona las solicitudes de nuevos modelos enviadas por la comunidad de MotoAtlas.',
+            title: `Solicitudes de modelos | ${siteName}`,
+          }
+        : {
+            canonicalPath: getAdminReviewsCanonicalPath(),
+            description: 'Garaje admin para revisar reviews agrupadas por modelo en MotoAtlas.',
+            title: `Reviews por modelo | ${siteName}`,
+          };
 
   return {
     canonicalUrl: absoluteUrl(content.canonicalPath),
