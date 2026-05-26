@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
-import { createMotorcycleReviewAspects, createReview } from '../../../services/motorcycleReviewService';
+import { createReviewWithAspects } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { ReviewModal } from './ReviewModal';
 
@@ -11,13 +11,11 @@ vi.mock('../../../features/auth', () => ({
 }));
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
-  createReview: vi.fn(),
-  createMotorcycleReviewAspects: vi.fn(),
+  createReviewWithAspects: vi.fn(),
 }));
 
 const useAuthMock = vi.mocked(useAuth);
-const createReviewMock = vi.mocked(createReview);
-const createMotorcycleReviewAspectsMock = vi.mocked(createMotorcycleReviewAspects);
+const createReviewWithAspectsMock = vi.mocked(createReviewWithAspects);
 
 function mockAuth(overrides = {}) {
   useAuthMock.mockReturnValue({
@@ -42,10 +40,9 @@ function renderModal(onClose = vi.fn()) {
 
 describe('ReviewModal', () => {
   beforeEach(() => {
-    createReviewMock.mockReset();
-    createMotorcycleReviewAspectsMock.mockReset();
+    createReviewWithAspectsMock.mockReset();
     mockAuth();
-    createReviewMock.mockResolvedValue({
+    createReviewWithAspectsMock.mockResolvedValue({
       id: 'review-new',
       motorcycleId: bikeFixtures[0].id,
       userId: null,
@@ -62,7 +59,6 @@ describe('ReviewModal', () => {
       createdAt: '2026-05-15T10:00:00.000Z',
       updatedAt: '2026-05-15T10:00:00.000Z',
     });
-    createMotorcycleReviewAspectsMock.mockResolvedValue(undefined);
   });
 
   it('renderiza el modal como diálogo accesible', () => {
@@ -114,6 +110,33 @@ describe('ReviewModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('Escape con matiz abierto cierra solo el matiz, no el modal', async () => {
+    const user = userEvent.setup();
+    const { onClose } = renderModal();
+
+    await user.click(screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }));
+    await user.click(screen.getByRole('button', { name: /Añadir matiz sobre Motor/i }));
+
+    const card = screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }).closest('.review-modal__aspect-card');
+    expect(card).toHaveClass('review-modal__aspect-card--flipping');
+
+    const textarea = screen.getByRole('textbox', { name: /Matiz sobre Motor/i });
+    textarea.focus();
+    await user.keyboard('{Escape}');
+
+    expect(card).not.toHaveClass('review-modal__aspect-card--flipping');
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('Escape sin matiz abierto cierra el modal', async () => {
+    const user = userEvent.setup();
+    const { onClose } = renderModal();
+
+    await user.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('cierra al hacer click fuera si no está enviando', () => {
     const { container, onClose } = renderModal();
 
@@ -130,7 +153,7 @@ describe('ReviewModal', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('Revisa los campos obligatorios antes de enviar.');
     expect(screen.getByText('La valoración es obligatoria.')).toBeInTheDocument();
-    expect(createReviewMock).not.toHaveBeenCalled();
+    expect(createReviewWithAspectsMock).not.toHaveBeenCalled();
   });
 
   it('mantiene las acciones accesibles cuando hay error de validación', async () => {
@@ -154,7 +177,7 @@ describe('ReviewModal', () => {
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     expect(screen.getByText('El uso principal es obligatorio.')).toBeInTheDocument();
-    expect(createReviewMock).not.toHaveBeenCalled();
+    expect(createReviewWithAspectsMock).not.toHaveBeenCalled();
   });
 
   it('valida comment obligatorio', async () => {
@@ -166,7 +189,7 @@ describe('ReviewModal', () => {
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     expect(screen.getByText('Por favor, escribe un comentario.')).toBeInTheDocument();
-    expect(createReviewMock).not.toHaveBeenCalled();
+    expect(createReviewWithAspectsMock).not.toHaveBeenCalled();
   });
 
   it('valida que meses y kilómetros no Sean negativos', async () => {
@@ -182,7 +205,7 @@ describe('ReviewModal', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('Revisa los campos obligatorios antes de enviar.');
     expect(screen.getAllByText('Debe ser un número mayor o igual que 0.')).toHaveLength(2);
-    expect(createReviewMock).not.toHaveBeenCalled();
+    expect(createReviewWithAspectsMock).not.toHaveBeenCalled();
   });
 
   it('envía una review válida con motorcycle_id correcto y muestra éxito', async () => {
@@ -198,8 +221,10 @@ describe('ReviewModal', () => {
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'Muy buena para viajar.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
-    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
-    expect(createReviewMock.mock.calls[0][0]).toMatchObject({
+    await waitFor(() => {
+      expect(createReviewWithAspectsMock).toHaveBeenCalled();
+    }, { timeout: 3000 });
+    expect(createReviewWithAspectsMock.mock.calls[0][0]).toMatchObject({
       motorcycleId: bikeFixtures[0].id,
       userName: 'Usuario MotoAtlas',
       rating: 4,
@@ -210,9 +235,10 @@ describe('ReviewModal', () => {
       pros: ['Motor lleno'],
       cons: ['Precio alto'],
     });
-    expect(createReviewMock.mock.calls[0][1]).toBeUndefined();
-    expect(createReviewMock.mock.calls[0][0]).not.toHaveProperty('verified');
-    expect(await screen.findByRole('heading', { name: /Review enviada/i })).toBeInTheDocument();
+    expect(createReviewWithAspectsMock.mock.calls[0][1]).toEqual([]);
+    expect(createReviewWithAspectsMock.mock.calls[0][2]).toBeUndefined();
+    expect(createReviewWithAspectsMock.mock.calls[0][0]).not.toHaveProperty('verified');
+    expect(await screen.findByRole('heading', { name: /Review enviada/i }, { timeout: 3000 })).toBeInTheDocument();
     expect(screen.getByText(/Gracias. Tu opinión se revisará antes de publicarse/i)).toBeInTheDocument();
   });
 
@@ -234,11 +260,11 @@ describe('ReviewModal', () => {
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'Experiencia real con sesión iniciada.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
-    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
-    expect(createReviewMock.mock.calls[0][0]).toMatchObject({
+    await waitFor(() => expect(createReviewWithAspectsMock).toHaveBeenCalled());
+    expect(createReviewWithAspectsMock.mock.calls[0][0]).toMatchObject({
       userName: 'Rider Zero',
     });
-    expect(createReviewMock.mock.calls[0][1]).toEqual({
+    expect(createReviewWithAspectsMock.mock.calls[0][2]).toEqual({
       accessToken: 'session-token',
       userId: 'auth-user-1',
     });
@@ -246,7 +272,7 @@ describe('ReviewModal', () => {
 
   it('muestra error si falla el servicio', async () => {
     const user = userEvent.setup();
-    createReviewMock.mockRejectedValue(new Error('Servicio no disponible'));
+    createReviewWithAspectsMock.mockRejectedValue(new Error('Servicio no disponible'));
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
@@ -430,10 +456,9 @@ describe('ReviewModal', () => {
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'Buena experiencia general.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
-    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
-    await waitFor(() => expect(createMotorcycleReviewAspectsMock).toHaveBeenCalled());
+    await waitFor(() => expect(createReviewWithAspectsMock).toHaveBeenCalled());
 
-    expect(createMotorcycleReviewAspectsMock.mock.calls[0][1]).toMatchObject([
+    expect(createReviewWithAspectsMock.mock.calls[0][1]).toMatchObject([
       { category: 'engine', sentiment: 'positive', comment: null },
       { category: 'braking', sentiment: 'negative', comment: null },
     ]);
@@ -455,8 +480,8 @@ describe('ReviewModal', () => {
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'Solo un aspecto seleccionado.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
-    await waitFor(() => expect(createMotorcycleReviewAspectsMock).toHaveBeenCalled());
-    expect(createMotorcycleReviewAspectsMock.mock.calls[0][1]).toHaveLength(1);
-    expect(createMotorcycleReviewAspectsMock.mock.calls[0][1][0].category).toBe('engine');
+    await waitFor(() => expect(createReviewWithAspectsMock).toHaveBeenCalled());
+    expect(createReviewWithAspectsMock.mock.calls[0][1]).toHaveLength(1);
+    expect(createReviewWithAspectsMock.mock.calls[0][1][0].category).toBe('engine');
   });
 });

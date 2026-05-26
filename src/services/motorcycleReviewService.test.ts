@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createMotorcycleReviewAspects, createReview, getApprovedCommunityReviews, getApprovedReviewsByMotorcycleId, getReviewsByUserId } from './motorcycleReviewService';
+import { createMotorcycleReviewAspects, createReview, createReviewWithAspects, getApprovedCommunityReviews, getApprovedReviewsByMotorcycleId, getReviewsByUserId } from './motorcycleReviewService';
 
 const reviewRow = {
   id: 'review-1',
@@ -549,7 +549,249 @@ describe('createMotorcycleReviewAspects', () => {
         { accessToken: 'session-token', userId: 'user-123' },
       ),
     ).rejects.toThrow(
-      'Supabase motorcycle_reviews request failed (403): permission denied for table motorcycle_review_aspects',
+        'Supabase motorcycle_reviews request failed (403): permission denied for table motorcycle_review_aspects',
     );
+  });
+});
+
+describe('createReviewWithAspects RPC', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  function stubSupabaseEnv() {
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'anon-key');
+  }
+
+  function getLastPayload(fetchMock: ReturnType<typeof vi.fn>) {
+    const lastCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
+    return JSON.parse(String(lastCall?.[1]?.body));
+  }
+
+  const rpcReviewRow = {
+    id: 'review-new',
+    motorcycle_id: 'bmw-f-900-gs-2024',
+    user_id: 'user-123',
+    user_name: 'Rider Zero',
+    rating: 5,
+    riding_style: 'viaje',
+    ownership_months: 12,
+    kilometers: 8500,
+    comment: 'Muy buena para viajar.',
+    pros: ['Motor lleno'],
+    cons: ['Precio alto'],
+    verified: false,
+    status: 'pending',
+    source: 'user',
+    created_at: '2026-05-15T10:00:00.000Z',
+    updated_at: '2026-05-15T10:00:00.000Z',
+  };
+
+  it('llama al endpoint RPC con review y aspects en una sola llamada', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([rpcReviewRow]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createReviewWithAspects(
+      {
+        motorcycleId: 'bmw-f-900-gs-2024',
+        userName: 'Rider Zero',
+        rating: 5,
+        ridingStyle: 'viaje',
+        ownershipMonths: 12,
+        kilometers: 8500,
+        comment: 'Muy buena para viajar.',
+        pros: ['Motor lleno'],
+        cons: ['Precio alto'],
+      },
+      [
+        { category: 'engine', sentiment: 'positive' },
+        { category: 'braking', sentiment: 'negative', comment: 'Algo alto' },
+      ],
+      { accessToken: 'session-token', userId: 'user-123' },
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://example.supabase.co/rest/v1/rpc/create_motorcycle_review_with_aspects',
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    const payload = getLastPayload(fetchMock);
+    expect(payload.p_motorcycle_id).toBe('bmw-f-900-gs-2024');
+    expect(payload.p_user_name).toBe('Rider Zero');
+    expect(payload.p_rating).toBe(5);
+    expect(payload.p_riding_style).toBe('viaje');
+    expect(payload.p_aspects).toHaveLength(2);
+    expect(payload.p_aspects[0]).toEqual({ category: 'engine', sentiment: 'positive', comment: null });
+    expect(payload.p_aspects[1]).toEqual({ category: 'braking', sentiment: 'negative', comment: 'Algo alto' });
+  });
+
+  it('no envía aspectos neutrales porque no existen en el enum', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([rpcReviewRow]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createReviewWithAspects(
+      {
+        motorcycleId: 'bmw-f-900-gs-2024',
+        userName: 'Rider Zero',
+        rating: 5,
+        ridingStyle: 'viaje',
+        comment: 'Test.',
+      },
+      [
+        { category: 'engine', sentiment: 'positive' },
+        { category: 'weight', sentiment: 'negative' },
+      ],
+      { accessToken: 'session-token', userId: 'user-123' },
+    );
+
+    const payload = getLastPayload(fetchMock);
+    expect(payload.p_aspects).toHaveLength(2);
+  });
+
+  it('rechaza categoría inválida antes de llamar a RPC', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      createReviewWithAspects(
+        {
+          motorcycleId: 'bmw-f-900-gs-2024',
+          userName: 'Rider Zero',
+          rating: 5,
+          ridingStyle: 'viaje',
+          comment: 'Test.',
+        },
+        [{ category: 'invalid-category' as never, sentiment: 'positive' }],
+        { accessToken: 'session-token', userId: 'user-123' },
+      ),
+    ).rejects.toThrow('Categoría de aspecto inválida: invalid-category.');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rechaza sentiment inválido antes de llamar a RPC', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      createReviewWithAspects(
+        {
+          motorcycleId: 'bmw-f-900-gs-2024',
+          userName: 'Rider Zero',
+          rating: 5,
+          ridingStyle: 'viaje',
+          comment: 'Test.',
+        },
+        [{ category: 'engine', sentiment: 'neutral' as never }],
+        { accessToken: 'session-token', userId: 'user-123' },
+      ),
+    ).rejects.toThrow('Sentimiento de aspecto inválido: neutral.');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('propaga error RPC legible', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: () => Promise.resolve('new row violates row-level security policy'),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      createReviewWithAspects(
+        {
+          motorcycleId: 'bmw-f-900-gs-2024',
+          userName: 'Rider Zero',
+          rating: 5,
+          ridingStyle: 'viaje',
+          comment: 'Test.',
+        },
+        [{ category: 'engine', sentiment: 'positive' }],
+        { accessToken: 'session-token', userId: 'user-123' },
+      ),
+    ).rejects.toThrow('Supabase RPC failed (400): new row violates row-level security policy');
+  });
+
+  it('sin authContext el servidor rechaza con Authentication required', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: () => Promise.resolve('Authentication required.'),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      createReviewWithAspects(
+        {
+          motorcycleId: 'bmw-f-900-gs-2024',
+          userName: 'Usuario MotoAtlas',
+          rating: 4,
+          ridingStyle: 'diario',
+          comment: 'Buena moto.',
+        },
+        [{ category: 'engine', sentiment: 'positive' }],
+      ),
+    ).rejects.toThrow('Supabase RPC failed (400): Authentication required.');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/rpc/create_motorcycle_review_with_aspects'),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer anon-key' }),
+      }),
+    );
+  });
+
+  it('retorna la review creada con todos los campos', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve([rpcReviewRow]),
+      ok: true,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const review = await createReviewWithAspects(
+      {
+        motorcycleId: 'bmw-f-900-gs-2024',
+        userName: 'Rider Zero',
+        rating: 5,
+        ridingStyle: 'viaje',
+        ownershipMonths: 12,
+        kilometers: 8500,
+        comment: 'Muy buena para viajar.',
+        pros: ['Motor lleno'],
+        cons: ['Precio alto'],
+      },
+      [{ category: 'engine', sentiment: 'positive', comment: 'Muy suave' }],
+      { accessToken: 'session-token', userId: 'user-123' },
+    );
+
+    expect(review).toMatchObject({
+      id: 'review-new',
+      motorcycleId: 'bmw-f-900-gs-2024',
+      userId: 'user-123',
+      userName: 'Rider Zero',
+      rating: 5,
+      ridingStyle: 'viaje',
+      ownershipMonths: 12,
+      kilometers: 8500,
+      comment: 'Muy buena para viajar.',
+      pros: ['Motor lleno'],
+      cons: ['Precio alto'],
+      verified: false,
+      status: 'pending',
+    });
   });
 });

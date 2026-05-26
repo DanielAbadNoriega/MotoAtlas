@@ -440,3 +440,79 @@ export async function createMotorcycleReviewAspects(
 
   await assertSupabaseOk(response);
 }
+
+type RpcReviewRow = Readonly<{
+  id: string;
+  motorcycle_id: string;
+  user_id: string | null;
+  user_name: string;
+  rating: number;
+  riding_style: MotorcycleReviewRidingStyle;
+  ownership_months: number | null;
+  kilometers: number | null;
+  comment: string;
+  pros: readonly string[] | null;
+  cons: readonly string[] | null;
+  verified: boolean;
+  status: MotorcycleReviewStatus;
+  source: MotorcycleReviewSource;
+  created_at: string;
+  updated_at: string;
+}>;
+
+export async function createReviewWithAspects(
+  input: MotorcycleReviewInput,
+  aspects: readonly MotorcycleReviewAspectInput[],
+  authContext?: CreateReviewAuthContext | null,
+): Promise<MotorcycleReview> {
+  assertValidReview(input);
+
+  for (const aspect of aspects) {
+    if (!isValidAspectCategory(aspect.category)) {
+      throw new Error(`Categoría de aspecto inválida: ${aspect.category}.`);
+    }
+
+    if (!isValidAspectSentiment(aspect.sentiment)) {
+      throw new Error(`Sentimiento de aspecto inválido: ${aspect.sentiment}.`);
+    }
+  }
+
+  const config = getSupabaseConfig();
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+
+  const rpcPayload = {
+    p_motorcycle_id: input.motorcycleId,
+    p_user_name: input.userName.trim(),
+    p_rating: input.rating,
+    p_riding_style: input.ridingStyle,
+    p_ownership_months: input.ownershipMonths ?? null,
+    p_kilometers: input.kilometers ?? null,
+    p_comment: input.comment.trim(),
+    p_pros: normalizeTextArray(input.pros),
+    p_cons: normalizeTextArray(input.cons),
+    p_aspects: aspects.map((aspect) => ({
+      category: aspect.category,
+      sentiment: aspect.sentiment,
+      comment: aspect.comment != null && String(aspect.comment).trim() !== '' ? String(aspect.comment).trim() : null,
+    })),
+  };
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/rpc/create_motorcycle_review_with_aspects`, {
+    body: JSON.stringify(rpcPayload),
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${normalizedAuthContext?.accessToken ?? config.supabaseAnonKey}`,
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Supabase RPC failed (${response.status}): ${errorBody}`);
+  }
+
+  const rows = await parseSupabaseResponse<RpcReviewRow[]>(response);
+  return mapReviewRow(rows[0]);
+}

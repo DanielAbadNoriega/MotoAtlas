@@ -337,12 +337,19 @@ alter table if exists public.motorcycle_review_aspects
   add constraint motorcycle_review_aspects_comment_check
   check (comment is null or length(trim(comment)) > 0);
 
-alter table if exists public.motorcycle_review_aspects
-  add constraint motorcycle_review_aspects_review_id_category_key
-  unique (review_id, category);
-
-create unique index if not exists motorcycle_review_aspects_review_id_category_idx
-  on public.motorcycle_review_aspects (review_id, category);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'motorcycle_review_aspects_review_id_category_key'
+      and conrelid = 'public.motorcycle_review_aspects'::regclass
+  ) then
+    alter table public.motorcycle_review_aspects
+      add constraint motorcycle_review_aspects_review_id_category_key
+      unique (review_id, category);
+  end if;
+end $$;
 
 create index if not exists motorcycle_review_aspects_review_id_idx
   on public.motorcycle_review_aspects (review_id);
@@ -961,5 +968,141 @@ with check (
 );
 
 grant update (status) on public.model_requests to authenticated;
+
+create or replace function public.create_motorcycle_review_with_aspects(
+  p_motorcycle_id text,
+  p_user_name text,
+  p_rating integer,
+  p_riding_style text,
+  p_ownership_months integer,
+  p_kilometers integer,
+  p_comment text,
+  p_pros text[],
+  p_cons text[],
+  p_aspects jsonb
+) returns public.motorcycle_reviews
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_id uuid;
+  v_review_id uuid;
+  v_aspect jsonb;
+  v_review public.motorcycle_reviews;
+begin
+  if not exists (select 1 from public.motorcycles where id = p_motorcycle_id) then
+    raise exception 'Motocicleta no encontrada.';
+  end if;
+
+  if p_motorcycle_id is null or length(trim(p_motorcycle_id)) = 0 then
+    raise exception 'motorcycle_id es obligatorio.';
+  end if;
+
+  if p_user_name is null or length(trim(p_user_name)) = 0 then
+    raise exception 'user_name es obligatorio.';
+  end if;
+
+  if p_rating is null or p_rating < 1 or p_rating > 5 then
+    raise exception 'rating debe ser un entero entre 1 y 5.';
+  end if;
+
+  if p_riding_style is null or p_riding_style not in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario') then
+    raise exception 'riding_style es obligatorio y debe ser uno de: ciudad, viaje, offroad, deportivo, pasajero, diario.';
+  end if;
+
+  if p_comment is null or length(trim(p_comment)) = 0 then
+    raise exception 'comment es obligatorio.';
+  end if;
+
+  if p_ownership_months is not null and p_ownership_months < 0 then
+    raise exception 'ownership_months debe ser mayor o igual que 0.';
+  end if;
+
+  if p_kilometers is not null and p_kilometers < 0 then
+    raise exception 'kilometers debe ser mayor o igual que 0.';
+  end if;
+
+  v_user_id := auth.uid();
+
+  if v_user_id is null then
+    raise exception 'Authentication required.';
+  end if;
+
+  insert into public.motorcycle_reviews (
+    motorcycle_id,
+    user_id,
+    user_name,
+    rating,
+    riding_style,
+    ownership_months,
+    kilometers,
+    comment,
+    pros,
+    cons,
+    source,
+    verified,
+    status
+  ) values (
+    p_motorcycle_id,
+    v_user_id,
+    trim(p_user_name),
+    p_rating,
+    p_riding_style,
+    case when p_ownership_months is null then null else p_ownership_months end,
+    case when p_kilometers is null then null else p_kilometers end,
+    trim(p_comment),
+    coalesce(p_pros, '{}'),
+    coalesce(p_cons, '{}'),
+    'user',
+    false,
+    'pending'
+  )
+  returning id into v_review_id;
+
+  if jsonb_array_length(p_aspects) > 0 then
+    for v_aspect in select * from jsonb_array_elements(p_aspects)
+    loop
+      if v_aspect->>'sentiment' not in ('positive', 'negative') then
+        raise exception 'Sentimiento inválido: %.', v_aspect->>'sentiment';
+      end if;
+
+      if v_aspect->>'category' not in ('engine', 'ergonomics', 'consumption', 'braking', 'suspension', 'electronics', 'aerodynamics', 'passenger', 'maintenance', 'price', 'weight', 'design') then
+        raise exception 'Categoría inválida: %.', v_aspect->>'category';
+      end if;
+
+      if (v_aspect->>'comment') is not null and length(trim(v_aspect->>'comment')) = 0 then
+        raise exception 'El comentario del aspecto no puede ser solo espacios.';
+      end if;
+
+      insert into public.motorcycle_review_aspects (
+        review_id,
+        category,
+        sentiment,
+        comment
+      ) values (
+        v_review_id,
+        v_aspect->>'category',
+        v_aspect->>'sentiment',
+        case
+          when (v_aspect->>'comment') is null then null
+          else trim(v_aspect->>'comment')
+        end
+      );
+    end loop;
+  end if;
+
+  select *
+  into v_review
+  from public.motorcycle_reviews
+  where id = v_review_id;
+
+  return v_review;
+end;
+$$;
+
+grant execute on function public.create_motorcycle_review_with_aspects(
+  text, text, integer, text, integer, integer, text, text[], text[], jsonb
+) to authenticated;
 
 notify pgrst, 'reload schema';

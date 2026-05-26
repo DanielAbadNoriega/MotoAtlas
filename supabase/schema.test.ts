@@ -638,9 +638,8 @@ describe('Supabase motorcycle_review_aspects schema', () => {
     expect(schemaSql).toContain('add constraint motorcycle_review_aspects_comment_check');
     expect(schemaSql).toContain('check (comment is null or length(trim(comment)) > 0)');
 
-    expect(schemaSql).toContain('motorcycle_review_aspects_review_id_category_idx');
+    expect(schemaSql).toMatch(/if not exists\s*\(\s*select 1\s+from pg_constraint\s+where conname = 'motorcycle_review_aspects_review_id_category_key'/);
     expect(schemaSql).toContain('unique (review_id, category)');
-    expect(schemaSql).toMatch(/create unique index if not exists motorcycle_review_aspects_review_id_category_idx\s+on public\.motorcycle_review_aspects \(review_id, category\);/);
   });
 
   it('crea índices para review_id, category y sentiment', () => {
@@ -714,6 +713,90 @@ describe('Supabase motorcycle_review_aspects schema', () => {
     expect(schemaSql).toContain('for select');
     expect(schemaSql).toContain('to authenticated');
     expect(schemaSql).toContain('using (public.is_admin())');
+  });
+});
+
+describe('Supabase create_motorcycle_review_with_aspects RPC function', () => {
+  it('crea la función RPC con signature correcta', () => {
+    expect(schemaSql).toContain('create or replace function public.create_motorcycle_review_with_aspects(');
+    expect(schemaSql).toContain('p_motorcycle_id text');
+    expect(schemaSql).toContain('p_user_name text');
+    expect(schemaSql).toContain('p_rating integer');
+    expect(schemaSql).toContain('p_riding_style text');
+    expect(schemaSql).toContain('p_ownership_months integer');
+    expect(schemaSql).toContain('p_kilometers integer');
+    expect(schemaSql).toContain('p_comment text');
+    expect(schemaSql).toContain('p_pros text[]');
+    expect(schemaSql).toContain('p_cons text[]');
+    expect(schemaSql).toContain('p_aspects jsonb');
+  });
+
+  it('retorna motorcycle_reviews y usa security definer con search_path public', () => {
+    expect(schemaSql).toContain('returns public.motorcycle_reviews');
+    expect(schemaSql).toContain('language plpgsql');
+    expect(schemaSql).toContain('security definer');
+    expect(schemaSql).toContain('set search_path = public');
+  });
+
+  it('usa auth.uid() para user_id, rechaza user_id arbitrario y requiere autenticación', () => {
+    expect(schemaSql).toContain('v_user_id := auth.uid()');
+    expect(schemaSql).not.toMatch(/insert into public\.motorcycle_reviews[\s\S]*user_id\s*=\s*p_user_id/);
+    expect(schemaSql).toContain("raise exception 'Authentication required.'");
+  });
+
+  it('valida motorcycle_id obligatorio y que existe', () => {
+    expect(schemaSql).toContain("raise exception 'motorcycle_id es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'Motocicleta no encontrada.'");
+  });
+
+  it('valida user_name no vacío', () => {
+    expect(schemaSql).toContain("raise exception 'user_name es obligatorio.'");
+  });
+
+  it('valida rating entre 1 y 5', () => {
+    expect(schemaSql).toContain('raise exception \'rating debe ser un entero entre 1 y 5.\'');
+  });
+
+  it('valida riding_style con valores permitidos', () => {
+    expect(schemaSql).toContain("raise exception 'riding_style es obligatorio y debe ser uno de: ciudad, viaje, offroad, deportivo, pasajero, diario.'");
+  });
+
+  it('valida comment no vacío', () => {
+    expect(schemaSql).toContain("raise exception 'comment es obligatorio.'");
+  });
+
+  it('valida aspects: sentiment solo positive o negative', () => {
+    expect(schemaSql).toContain("raise exception 'Sentimiento inválido: %.', v_aspect->>'sentiment'");
+    expect(schemaSql).toMatch(/v_aspect->>'sentiment'\s+not\s+in\s*\('positive',\s*'negative'\)/);
+  });
+
+  it('valida aspects: category dentro de las 12 categorías permitidas', () => {
+    expect(schemaSql).toContain("raise exception 'Categoría inválida: %.', v_aspect->>'category'");
+    expect(schemaSql).toMatch(/v_aspect->>'category'\s+not\s+in\s*\('engine',\s*'ergonomics',\s*'consumption',\s*'braking',\s*'suspension',\s*'electronics',\s*'aerodynamics',\s*'passenger',\s*'maintenance',\s*'price',\s*'weight',\s*'design'\)/);
+  });
+
+  it('valida comment de aspect no puede ser solo espacios', () => {
+    expect(schemaSql).toContain("raise exception 'El comentario del aspecto no puede ser solo espacios.'");
+  });
+
+  it('inserta aspectos con el review_id recién creado y devuelve una única review', () => {
+    expect(schemaSql).toMatch(/insert into public\.motorcycle_review_aspects\s*\(\s*review_id,\s*category,\s*sentiment,\s*comment\s*\)\s*values\s*\(\s*v_review_id/);
+    expect(schemaSql).toContain('returning id into v_review_id');
+    expect(schemaSql).toMatch(/select\s+\*\s+into\s+v_review\s+from\s+public\.motorcycle_reviews\s+where\s+id\s*=\s*v_review_id/);
+    expect(schemaSql).toContain('return v_review');
+    expect(schemaSql).not.toMatch(/return query select/);
+  });
+
+  it('concede execute solo a authenticated', () => {
+    expect(schemaSql).toContain('grant execute on function public.create_motorcycle_review_with_aspects(');
+    expect(schemaSql).toMatch(/grant execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) to authenticated;/);
+    expect(schemaSql).not.toMatch(/grant execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) to anon;/);
+  });
+
+  it('inserta review con status pending y source user', () => {
+    expect(schemaSql).toMatch(/status\s*=\s*'pending'/);
+    expect(schemaSql).toMatch(/source\s*=\s*'user'/);
+    expect(schemaSql).toMatch(/verified\s*=\s*false/);
   });
 });
 

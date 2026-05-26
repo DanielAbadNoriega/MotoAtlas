@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../features/auth';
-import { createMotorcycleReviewAspects, createReview, type MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
+import { createReviewWithAspects, type MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
 import type { Bike } from '../../../types/bike';
 import './ReviewModal.scss';
 
@@ -143,7 +143,12 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        requestClose();
+        if (activeAspectComment) {
+          event.stopPropagation();
+          closeAspectComment();
+        } else {
+          requestClose();
+        }
       }
     };
 
@@ -202,8 +207,19 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
     setStatus('submitting');
 
+    const aspectsToSend = technicalAspects
+      .filter((aspect) => {
+        const value = aspectValues[aspect.id];
+        return value === 'positive' || value === 'negative';
+      })
+      .map((aspect) => ({
+        category: aspect.category,
+        sentiment: aspectValues[aspect.id] as 'positive' | 'negative',
+        comment: aspectComments[aspect.id] || null,
+      }));
+
     try {
-      const review = await createReview(
+      await createReviewWithAspects(
         {
           motorcycleId: motorcycle.id,
           userName: profileAlias,
@@ -215,30 +231,11 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
           pros: String(formData.get('pros') ?? '').split(/[\n,]/).map(s => s.trim()).filter(Boolean),
           cons: String(formData.get('cons') ?? '').split(/[\n,]/).map(s => s.trim()).filter(Boolean),
         },
+        aspectsToSend,
         reviewAuthContext,
       );
 
-      const aspectsToSend = technicalAspects
-        .filter((aspect) => {
-          const value = aspectValues[aspect.id];
-          return value === 'positive' || value === 'negative';
-        })
-        .map((aspect) => ({
-          category: aspect.category,
-          sentiment: aspectValues[aspect.id] as 'positive' | 'negative',
-          comment: aspectComments[aspect.id] || null,
-        }));
-
-      if (aspectsToSend.length > 0 && reviewAuthContext) {
-        try {
-          await createMotorcycleReviewAspects(review.id, aspectsToSend, reviewAuthContext);
-        } catch {
-          setStatus('service-error');
-          setServiceError('La review se guardó pero no se pudieron enviar los aspectos técnicos. Inténtalo de nuevo.');
-          return;
-        }
-      }
-
+      resetModal();
       setStatus('success');
       setErrors({});
       formRef.current?.reset();
@@ -414,6 +411,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                           defaultValue={comment ?? ''}
                           onKeyDown={(e) => {
                             if (e.key === 'Escape') {
+                              e.stopPropagation();
                               closeAspectComment();
                             }
                           }}
@@ -422,14 +420,18 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                           <button
                             className="review-modal__aspect-card-back-cancel"
                             type="button"
-                            onClick={closeAspectComment}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              closeAspectComment();
+                            }}
                           >
-                            Cancelar
+                            <span className="material-symbols-outlined" aria-hidden="true">close</span>
                           </button>
                           <button
                             className="review-modal__aspect-card-back-save"
                             type="button"
                             onClick={(e) => {
+                              e.stopPropagation();
                               const textarea = (e.currentTarget.closest('.review-modal__aspect-card-back') as HTMLElement)?.querySelector('textarea');
                               saveAspectComment(aspect.id, textarea?.value ?? '');
                             }}
