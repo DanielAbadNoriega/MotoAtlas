@@ -301,7 +301,7 @@ describe('MotorcycleCommunityPage', () => {
 
     await user.click(screen.getAllByRole('button', { name: /Escribir review/i })[0]);
 
-    expect(screen.getByRole('dialog', { name: /Comparte tu experiencia real/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Valoración técnica/i })).toBeInTheDocument();
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 
