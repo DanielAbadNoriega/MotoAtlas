@@ -3,6 +3,8 @@ import type { BikeLicense, BikeSegment } from '../types/bike';
 export type MotorcycleReviewStatus = 'pending' | 'approved' | 'rejected' | 'hidden';
 export type MotorcycleReviewRidingStyle = 'ciudad' | 'viaje' | 'offroad' | 'deportivo' | 'pasajero' | 'diario';
 export type MotorcycleReviewSource = 'user' | 'mock' | 'seed' | 'import';
+export type MotorcycleReviewAspectCategory = 'engine' | 'ergonomics' | 'consumption' | 'braking' | 'suspension' | 'electronics' | 'aerodynamics' | 'passenger' | 'maintenance' | 'price' | 'weight' | 'design';
+export type MotorcycleReviewAspectSentiment = 'positive' | 'negative';
 
 export type MotorcycleReviewInput = Readonly<{
   motorcycleId: string;
@@ -360,4 +362,81 @@ export async function getReviewsByMotorcycleId(motorcycleId: string, authContext
   const rows = await parseSupabaseResponse<MotorcycleReviewRow[]>(response);
 
   return rows.map(mapReviewRow);
+}
+
+export type MotorcycleReviewAspectInput = Readonly<{
+  category: MotorcycleReviewAspectCategory;
+  sentiment: MotorcycleReviewAspectSentiment;
+  comment?: string | null;
+}>;
+
+const VALID_ASPECT_CATEGORIES: readonly string[] = [
+  'engine', 'ergonomics', 'consumption', 'braking', 'suspension',
+  'electronics', 'aerodynamics', 'passenger', 'maintenance',
+  'price', 'weight', 'design',
+];
+
+const VALID_ASPECT_SENTIMENTS: readonly string[] = ['positive', 'negative'];
+
+function isValidAspectCategory(value: unknown): value is MotorcycleReviewAspectCategory {
+  return VALID_ASPECT_CATEGORIES.includes(String(value));
+}
+
+function isValidAspectSentiment(value: unknown): value is MotorcycleReviewAspectSentiment {
+  return VALID_ASPECT_SENTIMENTS.includes(String(value));
+}
+
+function buildAspectsPayload(reviewId: string, aspects: readonly MotorcycleReviewAspectInput[]) {
+  return aspects.map((aspect) => ({
+    review_id: reviewId,
+    category: aspect.category,
+    sentiment: aspect.sentiment,
+    comment: aspect.comment != null && String(aspect.comment).trim() !== '' ? String(aspect.comment).trim() : null,
+  }));
+}
+
+export async function createMotorcycleReviewAspects(
+  reviewId: string,
+  aspects: readonly MotorcycleReviewAspectInput[],
+  authContext?: CreateReviewAuthContext | null,
+): Promise<void> {
+  if (!reviewId.trim()) {
+    throw new Error('reviewId es obligatorio.');
+  }
+
+  if (!Array.isArray(aspects) || aspects.length === 0) {
+    return;
+  }
+
+  const normalizedAuthContext = normalizeAuthContext(authContext);
+  if (!normalizedAuthContext) {
+    throw new Error('authContext es obligatorio para insertar aspectos de review.');
+  }
+
+  for (const aspect of aspects) {
+    if (!isValidAspectCategory(aspect.category)) {
+      throw new Error(`Categoría de aspecto inválida: ${aspect.category}.`);
+    }
+
+    if (!isValidAspectSentiment(aspect.sentiment)) {
+      throw new Error(`Sentimiento de aspecto inválido: ${aspect.sentiment}.`);
+    }
+  }
+
+  const config = getSupabaseConfig();
+  const payload = buildAspectsPayload(reviewId, aspects);
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_review_aspects`, {
+    body: JSON.stringify(payload),
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${normalizedAuthContext.accessToken}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    method: 'POST',
+  });
+
+  await assertSupabaseOk(response);
 }

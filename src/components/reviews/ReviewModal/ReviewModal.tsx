@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../features/auth';
-import { createReview, type MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
+import { createMotorcycleReviewAspects, createReview, type MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
 import type { Bike } from '../../../types/bike';
 import './ReviewModal.scss';
 
@@ -12,7 +12,22 @@ type ReviewModalProps = {
   onClose: () => void;
 };
 
-type ReviewValidationErrors = Partial<Record<'comment' | 'kilometers' | 'ownershipMonths' | 'rating' | 'ridingStyle' | 'userName', string>>;
+type ReviewValidationErrors = Partial<Record<'comment' | 'kilometers' | 'ownershipMonths' | 'rating' | 'ridingStyle', string>>;
+
+const ASPECT_ID_TO_CATEGORY: Record<string, string> = {
+  motor: 'engine',
+  ergo: 'ergonomics',
+  consumo: 'consumption',
+  frenada: 'braking',
+  suspension: 'suspension',
+  electronica: 'electronics',
+  aero: 'aerodynamics',
+  pasajero: 'passenger',
+  mantenimiento: 'maintenance',
+  precio: 'price',
+  peso: 'weight',
+  diseno: 'design',
+};
 
 const ridingStyleOptions = [
   { label: 'Ciudad', value: 'ciudad' },
@@ -24,18 +39,18 @@ const ridingStyleOptions = [
 ] as const satisfies readonly { label: string; value: MotorcycleReviewRidingStyle }[];
 
 const technicalAspects = [
-  { id: 'motor', name: 'Motor', icon: 'settings_input_component' },
-  { id: 'ergo', name: 'Ergonomía', icon: 'airline_seat_recline_extra' },
-  { id: 'consumo', name: 'Consumo', icon: 'ev_station' },
-  { id: 'frenada', name: 'Frenada', icon: 'adjust' },
-  { id: 'suspension', name: 'Suspensión', icon: 'vibration' },
-  { id: 'electronica', name: 'Electrónica', icon: 'memory' },
-  { id: 'aero', name: 'Aerodinámica', icon: 'air' },
-  { id: 'pasajero', name: 'Pasajero', icon: 'group' },
-  { id: 'mantenimiento', name: 'Mantenimiento', icon: 'build' },
-  { id: 'precio', name: 'Precio', icon: 'payments' },
-  { id: 'peso', name: 'Peso', icon: 'monitor_weight' },
-  { id: 'diseno', name: 'Diseño', icon: 'architecture' },
+  { id: 'motor', name: 'Motor', icon: 'settings_input_component', category: 'engine' },
+  { id: 'ergo', name: 'Ergonomía', icon: 'airline_seat_recline_extra', category: 'ergonomics' },
+  { id: 'consumo', name: 'Consumo', icon: 'ev_station', category: 'consumption' },
+  { id: 'frenada', name: 'Frenada', icon: 'adjust', category: 'braking' },
+  { id: 'suspension', name: 'Suspensión', icon: 'vibration', category: 'suspension' },
+  { id: 'electronica', name: 'Electrónica', icon: 'memory', category: 'electronics' },
+  { id: 'aero', name: 'Aerodinámica', icon: 'air', category: 'aerodynamics' },
+  { id: 'pasajero', name: 'Pasajero', icon: 'group', category: 'passenger' },
+  { id: 'mantenimiento', name: 'Mantenimiento', icon: 'build', category: 'maintenance' },
+  { id: 'precio', name: 'Precio', icon: 'payments', category: 'price' },
+  { id: 'peso', name: 'Peso', icon: 'monitor_weight', category: 'weight' },
+  { id: 'diseno', name: 'Diseño', icon: 'architecture', category: 'design' },
 ] as const;
 
 type AspectValue = 'positive' | 'negative' | null;
@@ -59,12 +74,14 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
   const [errors, setErrors] = useState<ReviewValidationErrors>({});
   const [serviceError, setServiceError] = useState('');
   const [aspectValues, setAspectValues] = useState<Record<string, AspectValue>>({});
+  const [aspectComments, setAspectComments] = useState<Record<string, string>>({});
+  const [activeAspectComment, setActiveAspectComment] = useState<string | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleId = `review-modal-title-${motorcycle.id}`;
 
   const isSubmitting = status === 'submitting';
-  const profileAlias = profile?.displayName?.trim() ?? '';
+  const profileAlias = profile?.displayName?.trim() || 'Usuario MotoAtlas';
   const reviewAuthContext = isAuthenticated && user?.id && session?.access_token
     ? { accessToken: session.access_token, userId: user.id }
     : undefined;
@@ -76,6 +93,8 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
     setErrors({});
     setServiceError('');
     setAspectValues({});
+    setAspectComments({});
+    setActiveAspectComment(null);
     formRef.current?.reset();
   };
 
@@ -89,6 +108,19 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
       }
       return { ...prev, [aspectId]: value };
     });
+  };
+
+  const openAspectComment = (aspectId: string) => {
+    setActiveAspectComment(aspectId);
+  };
+
+  const closeAspectComment = () => {
+    setActiveAspectComment(null);
+  };
+
+  const saveAspectComment = (aspectId: string, comment: string) => {
+    setAspectComments((prev) => ({ ...prev, [aspectId]: comment }));
+    setActiveAspectComment(null);
   };
 
   const requestClose = () => {
@@ -129,13 +161,8 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
   const validate = (formData: FormData): ReviewValidationErrors => {
     const nextErrors: ReviewValidationErrors = {};
-    const userName = String(formData.get('user_name') ?? '').trim();
     const ownershipMonths = parseOptionalPositiveNumber(formData.get('ownership_months'));
     const kilometers = parseOptionalPositiveNumber(formData.get('kilometers'));
-
-    if (!userName) {
-      nextErrors.userName = 'El alias es obligatorio.';
-    }
 
     if (rating < 1 || rating > 5) {
       nextErrors.rating = 'La valoración es obligatoria.';
@@ -176,10 +203,10 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
     setStatus('submitting');
 
     try {
-      await createReview(
+      const review = await createReview(
         {
           motorcycleId: motorcycle.id,
-          userName: String(formData.get('user_name') ?? '').trim(),
+          userName: profileAlias,
           rating,
           ridingStyle,
           ownershipMonths: parseOptionalPositiveNumber(formData.get('ownership_months')),
@@ -190,6 +217,28 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
         },
         reviewAuthContext,
       );
+
+      const aspectsToSend = technicalAspects
+        .filter((aspect) => {
+          const value = aspectValues[aspect.id];
+          return value === 'positive' || value === 'negative';
+        })
+        .map((aspect) => ({
+          category: aspect.category,
+          sentiment: aspectValues[aspect.id] as 'positive' | 'negative',
+          comment: aspectComments[aspect.id] || null,
+        }));
+
+      if (aspectsToSend.length > 0 && reviewAuthContext) {
+        try {
+          await createMotorcycleReviewAspects(review.id, aspectsToSend, reviewAuthContext);
+        } catch {
+          setStatus('service-error');
+          setServiceError('La review se guardó pero no se pudieron enviar los aspectos técnicos. Inténtalo de nuevo.');
+          return;
+        }
+      }
+
       setStatus('success');
       setErrors({});
       formRef.current?.reset();
@@ -241,9 +290,6 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                   <p>Desglosa tu experiencia con la moto de forma clara y útil para otros moteros.</p>
                 </div>
               </div>
-              <div className="review-modal__header-decoration" aria-hidden="true">
-                <span className="material-symbols-outlined">verified_user</span>
-              </div>
             </header>
 
             <form ref={formRef} className="review-modal__form" onSubmit={submitReview} noValidate>
@@ -261,19 +307,15 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
               ) : null}
 
               <div className="review-modal__alias-block">
-                <label className="review-modal__data-label" htmlFor="review-modal-user-name">Alias</label>
-                <input
-                  id="review-modal-user-name"
-                  name="user_name"
-                  autoComplete="nickname"
-                  defaultValue={profileAlias}
-                  placeholder="Ej. MoteroViajero"
-                  type="text"
-                />
-                {errors.userName ? <p className="review-modal__field-error">{errors.userName}</p> : null}
-                {reviewAuthContext ? (
-                  <p className="review-modal__account-note">Tu review quedará asociada a tu cuenta.</p>
-                ) : null}
+                <div className="review-modal__alias-row">
+                  <span className="review-modal__alias-text">@{profileAlias}</span>
+                  {reviewAuthContext ? (
+                    <span className="review-modal__account-badge">
+                      <span className="material-symbols-outlined" aria-hidden="true">shield</span>
+                      <span>Tu review quedará asociada a tu cuenta.</span>
+                    </span>
+                  ) : null}
+                </div>
               </div>
 
               <div className="review-modal__rating-block">
@@ -301,6 +343,8 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
               <div className="review-modal__aspect-grid">
                 {technicalAspects.map((aspect) => {
                   const value = aspectValues[aspect.id];
+                  const comment = aspectComments[aspect.id];
+                  const isFlipping = activeAspectComment === aspect.id;
                   return (
                     <div
                       key={aspect.id}
@@ -308,44 +352,89 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                         'review-modal__aspect-card',
                         value === 'positive' ? 'review-modal__aspect-card--positive' : '',
                         value === 'negative' ? 'review-modal__aspect-card--negative' : '',
+                        isFlipping ? 'review-modal__aspect-card--flipping' : '',
                       ].filter(Boolean).join(' ')}
                     >
-                      <div className="review-modal__aspect-card-decoration" aria-hidden="true">
-                        <span className="material-symbols-outlined">{aspect.icon}</span>
-                      </div>
-                      <div className="review-modal__aspect-card-content">
-                        <div className="review-modal__aspect-card-header">
-                          <span className="review-modal__aspect-card-dot" aria-hidden="true" />
-                          <span className="review-modal__aspect-card-name">{aspect.name}</span>
+                      <div className="review-modal__aspect-card-front">
+                        <div className="review-modal__aspect-card-decoration" aria-hidden="true">
+                          <span className="material-symbols-outlined">{aspect.icon}</span>
+                        </div>
+                        <div className="review-modal__aspect-card-content">
+                          <div className="review-modal__aspect-card-header">
+                            <span className="review-modal__aspect-card-dot" aria-hidden="true" />
+                            <span className="review-modal__aspect-card-name">{aspect.name}</span>
+                            {comment ? (
+                              <span className="review-modal__aspect-card-has-comment" aria-hidden="true">
+                                <span className="material-symbols-outlined">comment</span>
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="review-modal__aspect-card-actions">
+                          <div className="review-modal__aspect-card-buttons">
+                            <button
+                              aria-label={`Marcar ${aspect.name} como punto fuerte`}
+                              aria-pressed={value === 'positive'}
+                              className={['review-modal__aspect-btn', value === 'positive' ? 'review-modal__aspect-btn--positive' : ''].filter(Boolean).join(' ')}
+                              type="button"
+                              onClick={() => toggleAspect(aspect.id, 'positive')}
+                            >
+                              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+                            </button>
+                            <button
+                              aria-label={`Marcar ${aspect.name} como aspecto mejorable`}
+                              aria-pressed={value === 'negative'}
+                              className={['review-modal__aspect-btn', value === 'negative' ? 'review-modal__aspect-btn--negative' : ''].filter(Boolean).join(' ')}
+                              type="button"
+                              onClick={() => toggleAspect(aspect.id, 'negative')}
+                            >
+                              <span className="material-symbols-outlined" aria-hidden="true">remove</span>
+                            </button>
+                            <button
+                              aria-label={`Añadir matiz sobre ${aspect.name}`}
+                              className={['review-modal__aspect-comment-btn', value ? 'review-modal__aspect-comment-btn--enabled' : ''].filter(Boolean).join(' ')}
+                              disabled={!value}
+                              type="button"
+                              onClick={() => value && openAspectComment(aspect.id)}
+                            >
+                              <span className="material-symbols-outlined" aria-hidden="true">comment</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <div className="review-modal__aspect-card-actions">
-                        <div className="review-modal__aspect-card-buttons">
+                      <div className="review-modal__aspect-card-back">
+                        <div className="review-modal__aspect-card-back-header">
+                          <span className="review-modal__aspect-card-back-title">Matiz sobre {aspect.name}</span>
+                        </div>
+                        <textarea
+                          aria-label={`Matiz sobre ${aspect.name}`}
+                          className="review-modal__aspect-card-textarea"
+                          maxLength={280}
+                          placeholder="Añade un matiz breve sobre este punto..."
+                          defaultValue={comment ?? ''}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              closeAspectComment();
+                            }
+                          }}
+                        />
+                        <div className="review-modal__aspect-card-back-actions">
                           <button
-                            aria-label={`Marcar ${aspect.name} como punto fuerte`}
-                            aria-pressed={value === 'positive'}
-                            className={['review-modal__aspect-btn', value === 'positive' ? 'review-modal__aspect-btn--positive' : ''].filter(Boolean).join(' ')}
+                            className="review-modal__aspect-card-back-cancel"
                             type="button"
-                            onClick={() => toggleAspect(aspect.id, 'positive')}
+                            onClick={closeAspectComment}
                           >
-                            <span className="material-symbols-outlined" aria-hidden="true">add</span>
+                            Cancelar
                           </button>
                           <button
-                            aria-label={`Marcar ${aspect.name} como aspecto mejorable`}
-                            aria-pressed={value === 'negative'}
-                            className={['review-modal__aspect-btn', value === 'negative' ? 'review-modal__aspect-btn--negative' : ''].filter(Boolean).join(' ')}
+                            className="review-modal__aspect-card-back-save"
                             type="button"
-                            onClick={() => toggleAspect(aspect.id, 'negative')}
+                            onClick={(e) => {
+                              const textarea = (e.currentTarget.closest('.review-modal__aspect-card-back') as HTMLElement)?.querySelector('textarea');
+                              saveAspectComment(aspect.id, textarea?.value ?? '');
+                            }}
                           >
-                            <span className="material-symbols-outlined" aria-hidden="true">remove</span>
-                          </button>
-                          <button
-                            aria-label={`Añadir matiz sobre ${aspect.name}`}
-                            className={['review-modal__aspect-comment-btn', value ? 'review-modal__aspect-comment-btn--enabled' : ''].filter(Boolean).join(' ')}
-                            disabled={!value}
-                            type="button"
-                          >
-                            <span className="material-symbols-outlined" aria-hidden="true">comment</span>
+                            Guardar
                           </button>
                         </div>
                       </div>

@@ -306,6 +306,109 @@ grant select on public.motorcycle_reviews to anon, authenticated;
 grant insert on public.motorcycle_reviews to anon, authenticated;
 grant update (status) on public.motorcycle_reviews to authenticated;
 
+create table if not exists public.motorcycle_review_aspects (
+  id uuid primary key default gen_random_uuid(),
+  review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
+  category text not null,
+  sentiment text not null,
+  comment text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table if exists public.motorcycle_review_aspects
+  drop constraint if exists motorcycle_review_aspects_category_check;
+
+alter table if exists public.motorcycle_review_aspects
+  add constraint motorcycle_review_aspects_category_check
+  check (category in ('engine', 'ergonomics', 'consumption', 'braking', 'suspension', 'electronics', 'aerodynamics', 'passenger', 'maintenance', 'price', 'weight', 'design'));
+
+alter table if exists public.motorcycle_review_aspects
+  drop constraint if exists motorcycle_review_aspects_sentiment_check;
+
+alter table if exists public.motorcycle_review_aspects
+  add constraint motorcycle_review_aspects_sentiment_check
+  check (sentiment in ('positive', 'negative'));
+
+alter table if exists public.motorcycle_review_aspects
+  drop constraint if exists motorcycle_review_aspects_comment_check;
+
+alter table if exists public.motorcycle_review_aspects
+  add constraint motorcycle_review_aspects_comment_check
+  check (comment is null or length(trim(comment)) > 0);
+
+alter table if exists public.motorcycle_review_aspects
+  add constraint motorcycle_review_aspects_review_id_category_key
+  unique (review_id, category);
+
+create unique index if not exists motorcycle_review_aspects_review_id_category_idx
+  on public.motorcycle_review_aspects (review_id, category);
+
+create index if not exists motorcycle_review_aspects_review_id_idx
+  on public.motorcycle_review_aspects (review_id);
+
+create index if not exists motorcycle_review_aspects_category_idx
+  on public.motorcycle_review_aspects (category);
+
+create index if not exists motorcycle_review_aspects_sentiment_idx
+  on public.motorcycle_review_aspects (sentiment);
+
+drop trigger if exists set_motorcycle_review_aspects_updated_at on public.motorcycle_review_aspects;
+create trigger set_motorcycle_review_aspects_updated_at
+before update on public.motorcycle_review_aspects
+for each row
+execute function public.set_updated_at();
+
+alter table public.motorcycle_review_aspects enable row level security;
+
+drop policy if exists "Approved motorcycle review aspects are readable" on public.motorcycle_review_aspects;
+create policy "Approved motorcycle review aspects are readable"
+on public.motorcycle_review_aspects
+for select
+to anon, authenticated
+using (
+  exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = motorcycle_review_aspects.review_id
+      and motorcycle_reviews.status = 'approved'
+  )
+);
+
+drop policy if exists "Users can read own review aspects" on public.motorcycle_review_aspects;
+create policy "Users can read own review aspects"
+on public.motorcycle_review_aspects
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = motorcycle_review_aspects.review_id
+      and motorcycle_reviews.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Users can insert own review aspects" on public.motorcycle_review_aspects;
+create policy "Users can insert own review aspects"
+on public.motorcycle_review_aspects
+for insert
+to authenticated
+with check (
+  exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = motorcycle_review_aspects.review_id
+      and motorcycle_reviews.user_id = auth.uid()
+  )
+);
+
+revoke all on table public.motorcycle_review_aspects from anon;
+revoke all on table public.motorcycle_review_aspects from authenticated;
+
+grant select on public.motorcycle_review_aspects to anon, authenticated;
+grant insert (review_id, category, sentiment, comment) on public.motorcycle_review_aspects to authenticated;
+
 create table if not exists public.review_reactions (
   id uuid primary key default gen_random_uuid(),
   review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
@@ -748,6 +851,13 @@ with check (
   public.is_admin()
   and status in ('pending', 'approved', 'hidden', 'rejected')
 );
+
+drop policy if exists "Admins can read all motorcycle review aspects" on public.motorcycle_review_aspects;
+create policy "Admins can read all motorcycle review aspects"
+on public.motorcycle_review_aspects
+for select
+to authenticated
+using (public.is_admin());
 
 create table if not exists public.model_requests (
   id uuid primary key default gen_random_uuid(),

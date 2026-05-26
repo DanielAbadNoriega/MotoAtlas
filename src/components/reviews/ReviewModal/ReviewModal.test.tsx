@@ -1,8 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
-import { createReview } from '../../../services/motorcycleReviewService';
+import { createMotorcycleReviewAspects, createReview } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { ReviewModal } from './ReviewModal';
 
@@ -12,10 +12,12 @@ vi.mock('../../../features/auth', () => ({
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   createReview: vi.fn(),
+  createMotorcycleReviewAspects: vi.fn(),
 }));
 
 const useAuthMock = vi.mocked(useAuth);
 const createReviewMock = vi.mocked(createReview);
+const createMotorcycleReviewAspectsMock = vi.mocked(createMotorcycleReviewAspects);
 
 function mockAuth(overrides = {}) {
   useAuthMock.mockReturnValue({
@@ -41,12 +43,13 @@ function renderModal(onClose = vi.fn()) {
 describe('ReviewModal', () => {
   beforeEach(() => {
     createReviewMock.mockReset();
+    createMotorcycleReviewAspectsMock.mockReset();
     mockAuth();
     createReviewMock.mockResolvedValue({
       id: 'review-new',
       motorcycleId: bikeFixtures[0].id,
       userId: null,
-      userName: 'Dani',
+      userName: 'Usuario MotoAtlas',
       rating: 4,
       ridingStyle: 'viaje',
       ownershipMonths: 12,
@@ -59,6 +62,7 @@ describe('ReviewModal', () => {
       createdAt: '2026-05-15T10:00:00.000Z',
       updatedAt: '2026-05-15T10:00:00.000Z',
     });
+    createMotorcycleReviewAspectsMock.mockResolvedValue(undefined);
   });
 
   it('renderiza el modal como diálogo accesible', () => {
@@ -129,20 +133,6 @@ describe('ReviewModal', () => {
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 
-  it('valida alias obligatorio', async () => {
-    const user = userEvent.setup();
-    renderModal();
-
-    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
-    await user.click(screen.getByRole('button', { name: 'Viaje' }));
-    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Muy buena para viaje.');
-    await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
-
-    expect(screen.getByRole('alert')).toHaveTextContent('Revisa los campos obligatorios antes de enviar.');
-    expect(screen.getByText('El alias es obligatorio.')).toBeInTheDocument();
-    expect(createReviewMock).not.toHaveBeenCalled();
-  });
-
   it('mantiene las acciones accesibles cuando hay error de validación', async () => {
     const user = userEvent.setup();
     renderModal();
@@ -150,7 +140,8 @@ describe('ReviewModal', () => {
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     expect(screen.getByRole('alert')).toBeVisible();
-    expect(screen.getByRole('button', { name: /Cancelar/i })).toBeVisible();
+    const footer = document.querySelector('.review-modal__footer') as HTMLElement;
+    expect(within(footer).getByRole('button', { name: /Cancelar/i })).toBeVisible();
     expect(screen.getByRole('button', { name: /Registrar y continuar/i })).toBeVisible();
   });
 
@@ -159,7 +150,6 @@ describe('ReviewModal', () => {
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
-    await user.type(screen.getByLabelText(/Alias/i), 'MoteroTest');
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'La moto va muy fina en carretera.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
@@ -173,7 +163,6 @@ describe('ReviewModal', () => {
 
     await user.click(screen.getByRole('button', { name: /5 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Viaje' }));
-    await user.type(screen.getByLabelText(/Alias/i), 'MoteroTest');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     expect(screen.getByText('Por favor, escribe un comentario.')).toBeInTheDocument();
@@ -184,7 +173,6 @@ describe('ReviewModal', () => {
     const user = userEvent.setup();
     renderModal();
 
-    await user.type(screen.getByLabelText(/Alias/i), 'MoteroDiario');
     await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Diario' }));
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'Uso diario correcto.');
@@ -201,7 +189,6 @@ describe('ReviewModal', () => {
     const user = userEvent.setup();
     renderModal();
 
-    await user.type(screen.getByLabelText(/Alias/i), 'MoteroViajero');
     await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.type(screen.getByLabelText(/Tiempo con la moto/i), '12');
     await user.type(screen.getByLabelText(/Kilómetros/i), '8500');
@@ -214,7 +201,7 @@ describe('ReviewModal', () => {
     await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
     expect(createReviewMock.mock.calls[0][0]).toMatchObject({
       motorcycleId: bikeFixtures[0].id,
-      userName: 'MoteroViajero',
+      userName: 'Usuario MotoAtlas',
       rating: 4,
       ridingStyle: 'viaje',
       ownershipMonths: 12,
@@ -239,19 +226,17 @@ describe('ReviewModal', () => {
     });
     renderModal();
 
+    expect(screen.getByText('@Rider Zero')).toBeInTheDocument();
     expect(screen.getByText(/Tu review quedará asociada a tu cuenta/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Alias/i)).toHaveValue('Rider Zero');
 
     await user.click(screen.getByRole('button', { name: /5 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Viaje' }));
-    await user.clear(screen.getByLabelText(/Alias/i));
-    await user.type(screen.getByLabelText(/Alias/i), 'Alias Visible');
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'Experiencia real con sesión iniciada.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
     expect(createReviewMock.mock.calls[0][0]).toMatchObject({
-      userName: 'Alias Visible',
+      userName: 'Rider Zero',
     });
     expect(createReviewMock.mock.calls[0][1]).toEqual({
       accessToken: 'session-token',
@@ -264,7 +249,6 @@ describe('ReviewModal', () => {
     createReviewMock.mockRejectedValue(new Error('Servicio no disponible'));
     renderModal();
 
-    await user.type(screen.getByLabelText(/Alias/i), 'MoteroDiario');
     await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Diario' }));
     await user.type(screen.getByLabelText(/Tu experiencia/i), 'Uso diario correcto.');
@@ -300,7 +284,7 @@ describe('ReviewModal', () => {
     const pesoCard = screen.getByRole('button', { name: /Marcar Peso como punto fuerte/i }).closest('.review-modal__aspect-card');
     expect(pesoCard).not.toBeNull();
 
-    const buttons = pesoCard!.querySelectorAll('button');
+    const buttons = pesoCard!.querySelectorAll('.review-modal__aspect-card-front button');
     expect(buttons).toHaveLength(3);
 
     const labels = Array.from(buttons).map(b => b.getAttribute('aria-label'));
@@ -357,5 +341,122 @@ describe('ReviewModal', () => {
     const commentBtn = screen.getByRole('button', { name: /Añadir matiz sobre Motor/i });
     expect(commentBtn).not.toBeDisabled();
     expect(commentBtn).toHaveClass('review-modal__aspect-comment-btn--enabled');
+  });
+
+  it('muestra alias como texto no como input', () => {
+    renderModal();
+
+    expect(screen.getByText('@Usuario MotoAtlas')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /Alias/i })).not.toBeInTheDocument();
+  });
+
+  it('muestra badge de cuenta asociada con shield para usuario autenticado', () => {
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'auth-user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      profile: { id: 'auth-user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+    renderModal();
+
+    expect(screen.getByText(/Tu review quedará asociada a tu cuenta/i)).toBeInTheDocument();
+    expect(screen.getByText('@Rider Zero')).toBeInTheDocument();
+  });
+
+  it('al pulsar comentario enabled se revela textarea en la card', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }));
+    const commentBtn = screen.getByRole('button', { name: /Añadir matiz sobre Motor/i });
+    await user.click(commentBtn);
+
+    const card = screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }).closest('.review-modal__aspect-card');
+    expect(card).toHaveClass('review-modal__aspect-card--flipping');
+    expect(screen.getByRole('textbox', { name: /Matiz sobre Motor/i })).toBeInTheDocument();
+    expect(card!.querySelector('.review-modal__aspect-card-back-save')).toBeInTheDocument();
+    expect(card!.querySelector('.review-modal__aspect-card-back-cancel')).toBeInTheDocument();
+  });
+
+  it('guardar matiz conserva el texto del comentario', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }));
+    await user.click(screen.getByRole('button', { name: /Añadir matiz sobre Motor/i }));
+
+    const card = screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }).closest('.review-modal__aspect-card');
+    const textarea = screen.getByRole('textbox', { name: /Matiz sobre Motor/i });
+
+    const saveBtn = card!.querySelector('.review-modal__aspect-card-back-save') as HTMLButtonElement;
+
+    fireEvent.change(textarea, { target: { value: 'Motor muy suave y potente' } });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(card).not.toHaveClass('review-modal__aspect-card--flipping'));
+  });
+
+  it('cancelar no guarda cambios nuevos en el matiz', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }));
+    await user.click(screen.getByRole('button', { name: /Añadir matiz sobre Motor/i }));
+
+    const textarea = screen.getByRole('textbox', { name: /Matiz sobre Motor/i });
+    await user.type(textarea, 'Este texto no debería guardarse');
+
+    const card = screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }).closest('.review-modal__aspect-card');
+    const cancelBtn = card!.querySelector('.review-modal__aspect-card-back-cancel');
+    await user.click(cancelBtn!);
+
+    expect(card).not.toHaveClass('review-modal__aspect-card--flipping');
+  });
+
+  it('submit envía review y aspectos seleccionados', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'auth-user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      profile: { id: 'auth-user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /5 estrellas de 5/i }));
+    await user.click(screen.getByRole('button', { name: 'Viaje' }));
+    await user.click(screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }));
+    await user.click(screen.getByRole('button', { name: /Marcar Frenada como aspecto mejorable/i }));
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Buena experiencia general.');
+    await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
+
+    await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
+    await waitFor(() => expect(createMotorcycleReviewAspectsMock).toHaveBeenCalled());
+
+    expect(createMotorcycleReviewAspectsMock.mock.calls[0][1]).toMatchObject([
+      { category: 'engine', sentiment: 'positive', comment: null },
+      { category: 'braking', sentiment: 'negative', comment: null },
+    ]);
+  });
+
+  it('submit no envía aspectos neutrales', async () => {
+    const user = userEvent.setup();
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'auth-user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      profile: { id: 'auth-user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /5 estrellas de 5/i }));
+    await user.click(screen.getByRole('button', { name: 'Viaje' }));
+    await user.click(screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i }));
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Solo un aspecto seleccionado.');
+    await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
+
+    await waitFor(() => expect(createMotorcycleReviewAspectsMock).toHaveBeenCalled());
+    expect(createMotorcycleReviewAspectsMock.mock.calls[0][1]).toHaveLength(1);
+    expect(createMotorcycleReviewAspectsMock.mock.calls[0][1][0].category).toBe('engine');
   });
 });
