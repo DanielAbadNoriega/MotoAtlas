@@ -79,16 +79,16 @@ describe('ReviewModal', () => {
 
     expect(screen.getByText('Valoración general')).toBeInTheDocument();
     expect(screen.getByText('Puntúa tu experiencia global con esta moto.')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /Valorar \d de 5/i })).toHaveLength(5);
+    expect(screen.getAllByRole('button', { name: /\d estrellas? de 5/i })).toHaveLength(5);
   });
 
   it('permite seleccionar rating al hacer click en estrellas', async () => {
     const user = userEvent.setup();
     renderModal();
 
-    await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
 
-    const stars = screen.getAllByRole('button', { name: /Valorar \d de 5/i });
+    const stars = screen.getAllByRole('button', { name: /\d estrellas? de 5/i });
     expect(stars[3]).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -133,9 +133,9 @@ describe('ReviewModal', () => {
     const user = userEvent.setup();
     renderModal();
 
-    await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Viaje' }));
-    await user.type(screen.getByLabelText(/Notas del operador/i), 'Muy buena para viaje.');
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Muy buena para viaje.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     expect(screen.getByRole('alert')).toHaveTextContent('Revisa los campos obligatorios antes de enviar.');
@@ -158,9 +158,9 @@ describe('ReviewModal', () => {
     const user = userEvent.setup();
     renderModal();
 
-    await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.type(screen.getByLabelText(/Alias/i), 'MoteroTest');
-    await user.type(screen.getByLabelText(/Notas del operador/i), 'La moto va muy fina en carretera.');
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'La moto va muy fina en carretera.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     expect(screen.getByText('El uso principal es obligatorio.')).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe('ReviewModal', () => {
     const user = userEvent.setup();
     renderModal();
 
-    await user.click(screen.getByRole('button', { name: /Valorar 5 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /5 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Viaje' }));
     await user.type(screen.getByLabelText(/Alias/i), 'MoteroTest');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
@@ -185,9 +185,9 @@ describe('ReviewModal', () => {
     renderModal();
 
     await user.type(screen.getByLabelText(/Alias/i), 'MoteroDiario');
-    await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Diario' }));
-    await user.type(screen.getByLabelText(/Notas del operador/i), 'Uso diario correcto.');
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Uso diario correcto.');
     fireEvent.change(screen.getByLabelText(/Tiempo con la moto/i), { target: { value: '-1' } });
     fireEvent.change(screen.getByLabelText(/Kilómetros/i), { target: { value: '-10' } });
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
@@ -202,13 +202,13 @@ describe('ReviewModal', () => {
     renderModal();
 
     await user.type(screen.getByLabelText(/Alias/i), 'MoteroViajero');
-    await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.type(screen.getByLabelText(/Tiempo con la moto/i), '12');
     await user.type(screen.getByLabelText(/Kilómetros/i), '8500');
     await user.click(screen.getByRole('button', { name: 'Viaje' }));
-    await user.type(screen.getByLabelText(/Lo mejor/i), 'Motor lleno');
-    await user.type(screen.getByLabelText(/Lo peor/i), 'Precio alto');
-    await user.type(screen.getByLabelText(/Notas del operador/i), 'Muy buena para viajar.');
+    await user.type(screen.getByLabelText(/Pros/i), 'Motor lleno');
+    await user.type(screen.getByLabelText(/Contras/i), 'Precio alto');
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Muy buena para viajar.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
@@ -242,11 +242,11 @@ describe('ReviewModal', () => {
     expect(screen.getByText(/Tu review quedará asociada a tu cuenta/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Alias/i)).toHaveValue('Rider Zero');
 
-    await user.click(screen.getByRole('button', { name: /Valorar 5 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /5 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Viaje' }));
     await user.clear(screen.getByLabelText(/Alias/i));
     await user.type(screen.getByLabelText(/Alias/i), 'Alias Visible');
-    await user.type(screen.getByLabelText(/Notas del operador/i), 'Experiencia real con sesión iniciada.');
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Experiencia real con sesión iniciada.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     await waitFor(() => expect(createReviewMock).toHaveBeenCalled());
@@ -265,9 +265,9 @@ describe('ReviewModal', () => {
     renderModal();
 
     await user.type(screen.getByLabelText(/Alias/i), 'MoteroDiario');
-    await user.click(screen.getByRole('button', { name: /Valorar 4 de 5/i }));
+    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
     await user.click(screen.getByRole('button', { name: 'Diario' }));
-    await user.type(screen.getByLabelText(/Notas del operador/i), 'Uso diario correcto.');
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Uso diario correcto.');
     await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Servicio no disponible');
@@ -280,10 +280,82 @@ describe('ReviewModal', () => {
     expect(textContents).not.toContain('null');
   });
 
-  it('renderiza la nota de comunidad', () => {
+  it('renderiza la sección Tu experiencia', () => {
     renderModal();
 
-    expect(screen.getByText(/Tu experiencia ayuda a otros moteros/i)).toBeInTheDocument();
-    expect(screen.getByText(/Community Protocol/i)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /Tu experiencia/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Cuéntanos cómo se comporta la moto/i)).toBeInTheDocument();
+  });
+
+  it('renderiza los labels Pros y Contras', () => {
+    renderModal();
+
+    expect(screen.getByLabelText(/Pros/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Contras/i)).toBeInTheDocument();
+  });
+
+  it('cada aspect card tiene exactamente 1 botón +, 1 botón − y 1 botón comentario', () => {
+    renderModal();
+
+    const pesoCard = screen.getByRole('button', { name: /Marcar Peso como punto fuerte/i }).closest('.review-modal__aspect-card');
+    expect(pesoCard).not.toBeNull();
+
+    const buttons = pesoCard!.querySelectorAll('button');
+    expect(buttons).toHaveLength(3);
+
+    const labels = Array.from(buttons).map(b => b.getAttribute('aria-label'));
+    expect(labels).toContain('Marcar Peso como punto fuerte');
+    expect(labels).toContain('Marcar Peso como aspecto mejorable');
+    expect(labels).toContain('Añadir matiz sobre Peso');
+  });
+
+  it('no hay botón negativo duplicado en ninguna aspect card', () => {
+    renderModal();
+
+    const allNegativeButtons = screen.getAllByRole('button', { name: /Marcar .+ como aspecto mejorable/i });
+    expect(allNegativeButtons).toHaveLength(12);
+  });
+
+  it('el botón + activa el estado positivo de un aspecto', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    const motorPositiveBtn = screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i });
+    await user.click(motorPositiveBtn);
+
+    expect(motorPositiveBtn).toHaveAttribute('aria-pressed', 'true');
+    const card = motorPositiveBtn.closest('.review-modal__aspect-card');
+    expect(card).toHaveClass('review-modal__aspect-card--positive');
+  });
+
+  it('el botón − activa el estado negativo de un aspecto', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    const motorNegativeBtn = screen.getByRole('button', { name: /Marcar Motor como aspecto mejorable/i });
+    await user.click(motorNegativeBtn);
+
+    expect(motorNegativeBtn).toHaveAttribute('aria-pressed', 'true');
+    const card = motorNegativeBtn.closest('.review-modal__aspect-card');
+    expect(card).toHaveClass('review-modal__aspect-card--negative');
+  });
+
+  it('el botón comentario está disabled cuando el aspecto está neutral', () => {
+    renderModal();
+
+    const commentBtn = screen.getByRole('button', { name: /Añadir matiz sobre Motor/i });
+    expect(commentBtn).toBeDisabled();
+  });
+
+  it('el botón comentario queda enabled tras seleccionar + o −', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    const positiveBtn = screen.getByRole('button', { name: /Marcar Motor como punto fuerte/i });
+    await user.click(positiveBtn);
+
+    const commentBtn = screen.getByRole('button', { name: /Añadir matiz sobre Motor/i });
+    expect(commentBtn).not.toBeDisabled();
+    expect(commentBtn).toHaveClass('review-modal__aspect-comment-btn--enabled');
   });
 });

@@ -260,6 +260,22 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                 </div>
               ) : null}
 
+              <div className="review-modal__alias-block">
+                <label className="review-modal__data-label" htmlFor="review-modal-user-name">Alias</label>
+                <input
+                  id="review-modal-user-name"
+                  name="user_name"
+                  autoComplete="nickname"
+                  defaultValue={profileAlias}
+                  placeholder="Ej. MoteroViajero"
+                  type="text"
+                />
+                {errors.userName ? <p className="review-modal__field-error">{errors.userName}</p> : null}
+                {reviewAuthContext ? (
+                  <p className="review-modal__account-note">Tu review quedará asociada a tu cuenta.</p>
+                ) : null}
+              </div>
+
               <div className="review-modal__rating-block">
                 <div className="review-modal__rating-header">
                   <h3 className="review-modal__rating-title">Valoración general</h3>
@@ -268,7 +284,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                 <div className={errors.rating ? 'review-modal__stars review-modal__stars--error' : 'review-modal__stars'}>
                   {[1, 2, 3, 4, 5].map((value) => (
                     <button
-                      aria-label={`Valorar ${value} de 5`}
+                      aria-label={`${value} ${value === 1 ? 'estrella' : 'estrellas'} de 5`}
                       aria-pressed={rating >= value}
                       className={rating >= value ? 'review-modal__star review-modal__star--active' : 'review-modal__star'}
                       key={value}
@@ -306,140 +322,117 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                       <div className="review-modal__aspect-card-actions">
                         <div className="review-modal__aspect-card-buttons">
                           <button
+                            aria-label={`Marcar ${aspect.name} como punto fuerte`}
                             aria-pressed={value === 'positive'}
                             className={['review-modal__aspect-btn', value === 'positive' ? 'review-modal__aspect-btn--positive' : ''].filter(Boolean).join(' ')}
-                            title="Valor positivo"
                             type="button"
                             onClick={() => toggleAspect(aspect.id, 'positive')}
                           >
                             <span className="material-symbols-outlined" aria-hidden="true">add</span>
                           </button>
                           <button
+                            aria-label={`Marcar ${aspect.name} como aspecto mejorable`}
                             aria-pressed={value === 'negative'}
                             className={['review-modal__aspect-btn', value === 'negative' ? 'review-modal__aspect-btn--negative' : ''].filter(Boolean).join(' ')}
-                            title="Valor negativo"
                             type="button"
                             onClick={() => toggleAspect(aspect.id, 'negative')}
                           >
                             <span className="material-symbols-outlined" aria-hidden="true">remove</span>
                           </button>
+                          <button
+                            aria-label={`Añadir matiz sobre ${aspect.name}`}
+                            className={['review-modal__aspect-comment-btn', value ? 'review-modal__aspect-comment-btn--enabled' : ''].filter(Boolean).join(' ')}
+                            disabled={!value}
+                            type="button"
+                          >
+                            <span className="material-symbols-outlined" aria-hidden="true">comment</span>
+                          </button>
                         </div>
-                        <button
-                          className="review-modal__aspect-comment-btn"
-                          disabled
-                          title="Añadir comentario"
-                          type="button"
-                        >
-                          <span className="material-symbols-outlined" aria-hidden="true">comment</span>
-                        </button>
-                      </div>
-                      <div className="review-modal__aspect-card-spec" aria-hidden="true">
-                        SPEC_{aspect.id.toUpperCase().substring(0, 3)}
                       </div>
                     </div>
                   );
                 })}
+                <div className="review-modal__aspect-card review-modal__usage-card">
+                  <div className="review-modal__aspect-card-decoration" aria-hidden="true">
+                    <span className="material-symbols-outlined">route</span>
+                  </div>
+                  <div className="review-modal__aspect-card-content">
+                    <div className="review-modal__aspect-card-header">
+                      <span className="review-modal__aspect-card-dot" aria-hidden="true" />
+                      <span className="review-modal__aspect-card-name">Uso principal</span>
+                    </div>
+                  </div>
+                  <div className="review-modal__aspect-card-actions">
+                    <div className="review-modal__aspect-card-buttons" style={{ flexWrap: 'wrap' }}>
+                      {ridingStyleOptions.map((option) => (
+                        <button
+                          aria-pressed={ridingStyle === option.value}
+                          className={ridingStyle === option.value ? 'review-modal__usage-btn review-modal__usage-btn--active' : 'review-modal__usage-btn'}
+                          key={option.value}
+                          type="button"
+                          onClick={() => setRidingStyle(option.value)}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="review-modal__compact-summary">
-                <div className="review-modal__summary-notes">
-                  <div className="review-modal__summary-notes-header">
-                    <span className="material-symbols-outlined review-modal__summary-notes-icon" aria-hidden="true">terminal</span>
-                    <label className="review-modal__summary-notes-title" id="review-modal-comment-label">Notas del operador</label>
-                  </div>
-                  <textarea
-                    id="review-modal-comment"
-                    name="comment"
-                    aria-labelledby="review-modal-comment-label"
-                    placeholder="Ingresa datos cualitativos adicionales: fiabilidad, sensaciones, accesorios técnicos..."
-                    rows={4}
-                  />
-                  {errors.comment ? <p className="review-modal__field-error">{errors.comment}</p> : null}
-                </div>
-                <div className="review-modal__summary-note-card">
-                  <div className="review-modal__summary-note-card-decoration" aria-hidden="true">
-                    <span className="material-symbols-outlined">verified_user</span>
-                  </div>
-                  <p className="review-modal__summary-note-card-text">Tu experiencia ayuda a otros moteros. Sé claro, honesto y respetuoso.</p>
-                  <div className="review-modal__summary-note-card-meta">
-                    <span className="review-modal__summary-note-card-dot" aria-hidden="true" />
-                    <small>Community Protocol v4.2</small>
-                  </div>
-                </div>
-              </div>
+              {errors.ridingStyle ? <p className="review-modal__field-error">{errors.ridingStyle}</p> : null}
 
-              <div className="review-modal__data-grid">
-                <div className="review-modal__data-section">
-                  <label className="review-modal__data-label" htmlFor="review-modal-user-name">Alias</label>
-                  <input
-                    id="review-modal-user-name"
-                    name="user_name"
-                    autoComplete="nickname"
-                    defaultValue={profileAlias}
-                    placeholder="Ej. MoteroViajero"
-                    type="text"
-                  />
-                  {errors.userName ? <p className="review-modal__field-error">{errors.userName}</p> : null}
-                  {reviewAuthContext ? (
-                    <p className="review-modal__account-note">Tu review quedará asociada a tu cuenta.</p>
-                  ) : null}
-                </div>
-
-                <div className="review-modal__data-section">
-                  <label className="review-modal__data-label">Uso principal</label>
-                  <div className="review-modal__usage-grid">
-                    {ridingStyleOptions.map((option) => (
-                      <button
-                        aria-pressed={ridingStyle === option.value}
-                        className={ridingStyle === option.value ? 'review-modal__usage-btn review-modal__usage-btn--active' : 'review-modal__usage-btn'}
-                        key={option.value}
-                        type="button"
-                        onClick={() => setRidingStyle(option.value)}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+                <div className="review-modal__data-grid">
+                  <div className="review-modal__data-section review-modal__data-section--metrics">
+                    <div className="review-modal__metric">
+                      <label className="review-modal__data-label" htmlFor="review-modal-ownership-months">Tiempo con la moto</label>
+                      <input
+                        id="review-modal-ownership-months"
+                        name="ownership_months"
+                        min="0"
+                        placeholder="Ej. 15 meses"
+                        type="number"
+                      />
+                      {errors.ownershipMonths ? <p className="review-modal__field-error">{errors.ownershipMonths}</p> : null}
+                    </div>
+                    <div className="review-modal__metric">
+                      <label className="review-modal__data-label" htmlFor="review-modal-kilometers">Kilómetros</label>
+                      <input
+                        id="review-modal-kilometers"
+                        name="kilometers"
+                        min="0"
+                        placeholder="Ej. 12500"
+                        type="number"
+                      />
+                      {errors.kilometers ? <p className="review-modal__field-error">{errors.kilometers}</p> : null}
+                    </div>
                   </div>
-                  {errors.ridingStyle ? <p className="review-modal__field-error">{errors.ridingStyle}</p> : null}
-                </div>
 
-                <div className="review-modal__data-section review-modal__data-section--metrics">
-                  <div className="review-modal__metric">
-                    <label className="review-modal__data-label" htmlFor="review-modal-ownership-months">Tiempo con la moto</label>
-                    <input
-                      id="review-modal-ownership-months"
-                      name="ownership_months"
-                      min="0"
-                      placeholder="Ej. 15 meses"
-                      type="number"
-                    />
-                    {errors.ownershipMonths ? <p className="review-modal__field-error">{errors.ownershipMonths}</p> : null}
-                  </div>
-                  <div className="review-modal__metric">
-                    <label className="review-modal__data-label" htmlFor="review-modal-kilometers">Kilómetros</label>
-                    <input
-                      id="review-modal-kilometers"
-                      name="kilometers"
-                      min="0"
-                      placeholder="Ej. 12500"
-                      type="number"
-                    />
-                    {errors.kilometers ? <p className="review-modal__field-error">{errors.kilometers}</p> : null}
-                  </div>
-                </div>
-
-                <div className="review-modal__data-section">
                   <div className="review-modal__proscons">
                     <div className="review-modal__proscons-field">
-                      <label className="review-modal__data-label" htmlFor="review-modal-pros">Lo mejor</label>
+                      <label className="review-modal__data-label" htmlFor="review-modal-pros">Pros</label>
                       <textarea id="review-modal-pros" name="pros" placeholder="Puntos positivos, ergonomía, motor..." rows={2} />
                     </div>
                     <div className="review-modal__proscons-field">
-                      <label className="review-modal__data-label" htmlFor="review-modal-cons">Lo peor</label>
+                      <label className="review-modal__data-label" htmlFor="review-modal-cons">Contras</label>
                       <textarea id="review-modal-cons" name="cons" placeholder="Defectos, mantenimiento, consumo..." rows={2} />
                     </div>
                   </div>
                 </div>
+
+              <div className="review-modal__summary-notes">
+                <div className="review-modal__summary-notes-header">
+                  <span className="material-symbols-outlined review-modal__summary-notes-icon" aria-hidden="true">terminal</span>
+                  <label className="review-modal__summary-notes-title" id="review-modal-comment-label">Tu experiencia</label>
+                </div>
+                <textarea
+                  id="review-modal-comment"
+                  name="comment"
+                  aria-labelledby="review-modal-comment-label"
+                  placeholder="Cuéntanos cómo se comporta la moto en uso real: sensaciones, fiabilidad, mantenimiento, viajes, ciudad o cualquier detalle útil para otros moteros..."
+                  rows={4}
+                />
+                {errors.comment ? <p className="review-modal__field-error">{errors.comment}</p> : null}
               </div>
 
               <footer className="review-modal__footer">
