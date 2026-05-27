@@ -1093,8 +1093,8 @@
     }
 
     &[data-active='true'] {
-      background: rgba($color-accent, 0.14);
-      border-color: rgba($color-accent, 0.58);
+      background: rgba($color-positive-soft, 0.3);
+      border-color: $color-positive-dark;
       color: white;
 
       .material-symbols-outlined {
@@ -1148,7 +1148,7 @@
       background: rgba($color-accent, 0.1);
       border-color: rgba($color-accent, 0.5);
     }
-    
+
     .material-symbols-outlined {
       color: rgba($color-accent, 0.9);
     }
