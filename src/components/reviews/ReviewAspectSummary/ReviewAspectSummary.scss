@@ -2,9 +2,10 @@
 @use '../../../styles/mixins' as *;
 
 .review-aspect-summary {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
+  margin: 0.75rem 0;
+  padding: 0.75rem 0;
   border-top: 1px solid rgba($color-outline-variant, 0.2);
+  border-bottom: 1px solid rgba($color-outline-variant, 0.2);
 }
 
 .review-aspect-summary__title {

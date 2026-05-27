@@ -932,7 +932,7 @@
   }
 }
 
-.review-modal__submit-icon {
+.review-modal__submit-icon.material-symbols-outlined {
   font-size: 1.1rem;
   transition: transform $transition-fast;
 
@@ -996,18 +996,18 @@
 .review-modal__success-icon {
   align-items: center;
   background: $color-surface-container-high;
-  border: 2px solid $color-accent-container;
+  border: 2px solid $color-positive;
   border-radius: 50%;
   box-shadow:
-    inset 0 0 18px rgba($color-accent-container, 0.18),
-    0 0 40px rgba($color-accent-container, 0.16);
+    inset 0 0 18px rgba($color-positive, 0.18),
+    0 0 40px rgba($color-positive-soft, 0.16);
   display: flex;
   height: 5.5rem;
   justify-content: center;
   width: 5.5rem;
 
   .material-symbols-outlined {
-    color: $color-accent-container;
+    color: $color-positive;
     font-size: 3rem;
   }
 }
@@ -1021,15 +1021,15 @@
   width: 100%;
 
   span {
-    background: $color-outline-variant;
+    background: $color-accent;
     flex: 1;
     height: 1px;
   }
 
   small {
     @include label-caps;
-
-    font-size: 0.6rem;
+    color: $color-error;
+    font-weight: 700;
   }
 }
 

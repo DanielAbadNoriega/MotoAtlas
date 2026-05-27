@@ -726,9 +726,6 @@ function OwnerReportRow({
             <div>
               <div className="motorcycle-community__owner-report-name-row">
                 <h3>{alias}</h3>
-                {hasReplied ? (
-                  <span className="motorcycle-community__reply-badge motorcycle-community__reply-badge--respondido">Respondido</span>
-                ) : null}
                 {isReviewVerified(review) ? (
                   <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--verified" aria-label="Usuario verificado">
                     <span className="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
@@ -738,6 +735,9 @@ function OwnerReportRow({
                     <span className="material-symbols-outlined" aria-hidden="true">person</span>
                   </span>
                 )}
+                {hasReplied ? (
+                  <span className="motorcycle-community__reply-badge motorcycle-community__reply-badge--respondido">Respondido</span>
+                ) : null}
               </div>
               {isReviewVerified(review) ? (
                 <span className="motorcycle-community__verified-badge">
@@ -779,6 +779,9 @@ function OwnerReportRow({
           <OwnerReportListBlock title="Pros" items={pros} />
           <OwnerReportListBlock title="Contras" items={cons} />
         </div>
+        {aspects && aspects.length > 0 ? (
+          <ReviewAspectSummary aspects={aspects} />
+        ) : null}
         <div className="motorcycle-community__owner-report-actions" aria-label="Acciones de la review">
           <HelpfulReviewAction
             isBlocked={hasReported}
@@ -859,9 +862,9 @@ function OwnerReportRow({
           user={user}
           expanded={isExpanded}
         />
-        {aspects && aspects.length > 0 ? (
+        {/* {aspects && aspects.length > 0 ? (
           <ReviewAspectSummary aspects={aspects} />
-        ) : null}
+        ) : null} */}
       </div>
     </article>
   );

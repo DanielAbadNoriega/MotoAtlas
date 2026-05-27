@@ -566,6 +566,12 @@ export async function createReviewWithAspects(
     throw new Error(`Supabase RPC failed (${response.status}): ${errorBody}`);
   }
 
-  const rows = await parseSupabaseResponse<RpcReviewRow[]>(response);
-  return mapReviewRow(rows[0]);
+  const parsed = await parseSupabaseResponse<RpcReviewRow[] | RpcReviewRow>(response);
+  const row = Array.isArray(parsed) ? parsed[0] : parsed;
+
+  if (!row) {
+    throw new Error('Supabase RPC returned no data');
+  }
+
+  return mapReviewRow(row);
 }
