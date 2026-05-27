@@ -5,6 +5,7 @@ import { useAuth } from '../../../features/auth';
 import { updateAdminReviewStatus } from '../../../services/adminReviewService';
 import {
   getReviewsByMotorcycleId,
+  getReviewAspectsByReviewIds,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
@@ -20,11 +21,13 @@ vi.mock('../../../services/adminReviewService', () => ({
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getReviewsByMotorcycleId: vi.fn(),
+  getReviewAspectsByReviewIds: vi.fn(),
 }));
 
 const useAuthMock = vi.mocked(useAuth);
 const updateAdminReviewStatusMock = vi.mocked(updateAdminReviewStatus);
 const getReviewsByMotorcycleIdMock = vi.mocked(getReviewsByMotorcycleId);
+const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 
 const adminAuth = {
   user: { id: 'admin-1', email: 'admin@motoatlas.com' },
@@ -91,6 +94,7 @@ describe('AdminMotorcycleReviewsPage', () => {
     useAuthMock.mockReset();
     updateAdminReviewStatusMock.mockReset().mockResolvedValue(undefined);
     getReviewsByMotorcycleIdMock.mockReset();
+    getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
     cleanup();
   });
 

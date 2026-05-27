@@ -1176,3 +1176,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin-page {
+  &__report-aspects {
+    margin-top: 0.5rem;
+  }
+}

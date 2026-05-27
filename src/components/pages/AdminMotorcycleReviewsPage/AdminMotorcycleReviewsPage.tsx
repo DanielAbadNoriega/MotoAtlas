@@ -4,7 +4,9 @@ import { useAuth } from '../../../features/auth';
 import { updateAdminReviewStatus } from '../../../services/adminReviewService';
 import {
   getReviewsByMotorcycleId,
+  getReviewAspectsByReviewIds,
   type MotorcycleReview,
+  type MotorcycleReviewAspect,
   type MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
 import { formatReviewRating, getReviewAggregate, isReviewVerified } from '../../../shared/reviews/reviewUtils';
@@ -16,6 +18,7 @@ import {
   formatAccountReviewOwnershipMonths,
 } from '../../reviews/AccountReviewCard/accountReviewPresentation';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AdminSidebar } from '../AdminPage';
 import '../AccountPage/AccountPage.scss';
@@ -35,6 +38,7 @@ type Filters = Readonly<{
 }>;
 
 type AdminMotorcycleReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
+type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
 
 const REVIEWS_PER_PAGE = 6;
 const defaultFilters: Filters = { status: 'all', sort: 'recent' };
@@ -311,11 +315,13 @@ function ReviewSourceBadge({ source }: Readonly<{ source?: string | null }>) {
 type PendingAction = { reviewId: string; status: MotorcycleReviewStatus } | null;
 
 function AdminReviewCard({
+  aspects,
   index,
   onUpdateStatus,
   pendingAction,
   review,
 }: Readonly<{
+  aspects?: readonly MotorcycleReviewAspect[];
   index: number;
   onUpdateStatus: (reviewId: string, status: MotorcycleReviewStatus) => void;
   pendingAction: PendingAction;
@@ -423,6 +429,12 @@ function AdminReviewCard({
             </section>
           ) : null}
 
+          {aspects && aspects.length > 0 ? (
+            <div className="admin-page__review-aspects">
+              <ReviewAspectSummary aspects={aspects} />
+            </div>
+          ) : null}
+
           <footer>
             <div className="admin-page__action-group" aria-label="Acciones sobre la review">
               <h3>Gestionar review</h3>
@@ -470,6 +482,7 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [reviewAspects, setReviewAspects] = useState<ReviewAspectsMap>({});
 
   const authContext = useMemo(
     () => (user?.id && session?.access_token)
@@ -534,6 +547,40 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  const paginatedReviewIds = useMemo(() => paginated.map((r) => r.id), [paginated]);
+
+  useEffect(() => {
+    if (paginatedReviewIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getReviewAspectsByReviewIds(paginatedReviewIds, authContext)
+      .then((aspects) => {
+        if (!isMounted) {
+          return;
+        }
+        const grouped: ReviewAspectsMap = {};
+        for (const aspect of aspects) {
+          if (!grouped[aspect.reviewId]) {
+            grouped[aspect.reviewId] = [];
+          }
+          grouped[aspect.reviewId] = [...grouped[aspect.reviewId]!, aspect];
+        }
+        setReviewAspects((current) => ({ ...current, ...grouped }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReviewAspects({});
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [paginatedReviewIds.join('|'), authContext?.accessToken, authContext?.userId]);
 
   const updateFilters = (next: Partial<Filters>) => {
     setFilters((c) => ({ ...c, ...next }));
@@ -682,7 +729,7 @@ export function AdminMotorcycleReviewsPage({ bike, motorcycleId }: Props) {
               <section aria-label={`Reviews de ${bikeName}`}>
                 <div className="admin-moto-reviews__list" role="list">
                   {paginated.map((review, index) => (
-                    <AdminReviewCard key={review.id || `${review.userName}-${review.createdAt}`} index={index} onUpdateStatus={handleUpdateStatus} pendingAction={pendingAction} review={review} />
+                    <AdminReviewCard key={review.id || `${review.userName}-${review.createdAt}`} aspects={reviewAspects[review.id]} index={index} onUpdateStatus={handleUpdateStatus} pendingAction={pendingAction} review={review} />
                   ))}
                 </div>
 
