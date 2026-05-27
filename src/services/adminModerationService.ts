@@ -128,14 +128,6 @@ function getTimestamp(value: string) {
 
 function sortReports(reports: readonly AdminReviewReport[], sort: AdminReportSort) {
   return [...reports].sort((left, right) => {
-    if (left.status === 'pending' && right.status !== 'pending') {
-      return -1;
-    }
-
-    if (left.status !== 'pending' && right.status === 'pending') {
-      return 1;
-    }
-
     return sort === 'oldest'
       ? getTimestamp(left.createdAt) - getTimestamp(right.createdAt)
       : getTimestamp(right.createdAt) - getTimestamp(left.createdAt);
