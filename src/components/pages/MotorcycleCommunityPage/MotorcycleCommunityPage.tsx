@@ -448,7 +448,7 @@ function OwnerReportListBlock({ items, title }: Readonly<{ items: readonly strin
   }
 
   return (
-    <p>
+    <p className={`owner-report-${title.toLowerCase()}`}>
       <strong>{title}:</strong> {items.join(', ')}
     </p>
   );
@@ -731,7 +731,7 @@ function OwnerReportRow({
                 ) : null}
                 {isReviewVerified(review) ? (
                   <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--verified" aria-label="Usuario verificado">
-                    <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                    <span className="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
                   </span>
                 ) : (
                   <span className="motorcycle-community__owner-verified-icon motorcycle-community__owner-verified-icon--unverified" aria-label="Usuario no verificado">
@@ -741,7 +741,7 @@ function OwnerReportRow({
               </div>
               {isReviewVerified(review) ? (
                 <span className="motorcycle-community__verified-badge">
-                  <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                  <span className="material-symbols-outlined" aria-hidden="true">award_star</span>
                   Review verificada
                 </span>
               ) : null}

@@ -425,7 +425,7 @@ function ReviewListBlock({ items, title }: Readonly<{ items: readonly string[]; 
   }
 
   return (
-    <p>
+    <p className={`owner-report-${title.toLowerCase()}`}>
       <strong>{title}:</strong> {items.join(', ')}
     </p>
   );
