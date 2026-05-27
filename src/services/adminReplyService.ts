@@ -175,7 +175,7 @@ export async function getAdminPendingReplies(
   const normalizedAuthContext = normalizeAuthContext(authContext);
   const config = getSupabaseConfig();
   const params = new URLSearchParams({
-    order: 'created_at.asc',
+    order: 'created_at.desc',
     status: 'eq.pending',
     select: [
       'id',
