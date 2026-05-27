@@ -17,16 +17,16 @@ type NavigationItem = Readonly<{
 }>;
 
 const staticDesktopItems = [
-  { id: 'search', icon: 'explore', label: 'Buscador', href: '#/buscador' },
-  { id: 'compare', icon: 'compare_arrows', label: 'Comparador', href: '#/comparador' },
-  { id: 'news', icon: 'article', label: 'Noticias', href: '#/noticias' },
   { id: 'community', icon: 'hub', label: 'Comunidad', href: '#/comunidad' },
+  { id: 'news', icon: 'article', label: 'Noticias', href: '#/noticias' },
+  { id: 'compare', icon: 'compare_arrows', label: 'Comparador', href: '#/comparador' },
+  { id: 'search', icon: 'explore', label: 'Buscador', href: '#/buscador' },
 ] satisfies readonly NavigationItem[];
 
 const staticMobileItems = [
+  { id: 'community', icon: 'hub', label: 'Comunidad', href: '#/comunidad' },
   { id: 'home', icon: 'home', label: 'Home', href: '#/' },
   { id: 'compare', icon: 'compare_arrows', label: 'Comparar', href: '#/comparador' },
-  { id: 'community', icon: 'hub', label: 'Comunidad', href: '#/comunidad' },
 ] satisfies readonly NavigationItem[];
 
 function useCurrentRoute() {
