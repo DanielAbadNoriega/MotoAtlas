@@ -14,7 +14,10 @@ import {
   updateReviewReplyStatus,
   type AdminReviewReply,
 } from '../../../services/adminReplyService';
-import type { MotorcycleReview } from '../../../services/motorcycleReviewService';
+import {
+  getReviewAspectsByReviewIds,
+  type MotorcycleReview,
+} from '../../../services/motorcycleReviewService';
 import { AdminDashboardPage, AdminModerationPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
 
 import {
@@ -48,9 +51,14 @@ vi.mock('../../../services/modelRequestService', () => ({
   updateModelRequestStatus: vi.fn(),
 }));
 
+vi.mock('../../../services/motorcycleReviewService', () => ({
+  getReviewAspectsByReviewIds: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
 const getAllReviewsMock = vi.mocked(getAllReviews);
+const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
 const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
@@ -165,6 +173,7 @@ describe('AdminPage', () => {
     updateReviewReplyStatusMock.mockReset().mockResolvedValue(undefined);
     getAllModelRequestsMock.mockReset().mockResolvedValue(requestFixtures);
     updateModelRequestStatusMock.mockReset().mockResolvedValue(undefined);
+    getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
     mockAuth();
   });
 

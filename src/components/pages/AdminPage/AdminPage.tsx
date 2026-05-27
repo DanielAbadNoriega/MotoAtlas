@@ -25,7 +25,14 @@ import {
   type ModelRequestFilters,
   type ModelRequestStatus as ModelRequestStatusType,
 } from '../../../services/modelRequestService';
-import type { CreateReviewAuthContext, MotorcycleReview, MotorcycleReviewRidingStyle, MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import {
+  getReviewAspectsByReviewIds,
+  type CreateReviewAuthContext,
+  MotorcycleReview,
+  MotorcycleReviewAspect,
+  MotorcycleReviewRidingStyle,
+  MotorcycleReviewStatus,
+} from '../../../services/motorcycleReviewService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -38,8 +45,11 @@ import { getBikeA2Status, type BikeA2Status } from '../../../shared/motorcycles/
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
+import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
+
+type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
 
 type AdminGateProps = Readonly<{
   children: ReactNode;
@@ -802,6 +812,7 @@ function normalizeTextList(values: readonly string[] | null | undefined) {
 }
 
 function AdminReportCard({
+  aspects,
   isExpanded,
   isPending,
   onToggle,
@@ -809,6 +820,7 @@ function AdminReportCard({
   onReviewStatus,
   report,
 }: Readonly<{
+  aspects?: readonly MotorcycleReviewAspect[];
   isExpanded: boolean;
   isPending: boolean;
   onToggle: () => void;
@@ -874,6 +886,12 @@ function AdminReportCard({
               <strong>Contras:</strong>
               <p>{cons.join(', ')}</p>
             </section>
+          ) : null}
+
+          {aspects && aspects.length > 0 ? (
+            <div className="admin-page__report-aspects">
+              <ReviewAspectSummary aspects={aspects} />
+            </div>
           ) : null}
 
           {report.comment ? (
@@ -1765,6 +1783,7 @@ export function AdminModerationPage() {
   const [isLoadingReplies, setIsLoadingReplies] = useState(false);
   const [repliesError, setRepliesError] = useState<string | null>(null);
   const [repliesNotice, setRepliesNotice] = useState<string | null>(null);
+  const [reviewAspects, setReviewAspects] = useState<ReviewAspectsMap>({});
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
   const authContext = useMemo<CreateReviewAuthContext | null>(() => (
     user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
@@ -1835,6 +1854,42 @@ export function AdminModerationPage() {
   useEffect(() => {
     loadReports();
   }, [loadReports]);
+
+  const reportReviewIds = useMemo(() => {
+    return [...new Set(reports.map((r) => r.review?.id).filter(Boolean))] as string[];
+  }, [reports]);
+
+  useEffect(() => {
+    if (reportReviewIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getReviewAspectsByReviewIds(reportReviewIds, authContext)
+      .then((aspects) => {
+        if (!isMounted) {
+          return;
+        }
+        const grouped: ReviewAspectsMap = {};
+        for (const aspect of aspects) {
+          if (!grouped[aspect.reviewId]) {
+            grouped[aspect.reviewId] = [];
+          }
+          grouped[aspect.reviewId] = [...grouped[aspect.reviewId]!, aspect];
+        }
+        setReviewAspects((current) => ({ ...current, ...grouped }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReviewAspects({});
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reportReviewIds.join('|'), authContext?.accessToken, authContext?.userId]);
 
   useEffect(() => {
     if (moderationTab === 'replies') {
@@ -2066,6 +2121,7 @@ export function AdminModerationPage() {
                       <div className="admin-page__report-list">
                         {paginatedReports.map((report) => (
                           <AdminReportCard
+                            aspects={report.review ? reviewAspects[report.review.id] : undefined}
                             isExpanded={Boolean(expandedReports[report.id])}
                             isPending={Boolean(pendingAction?.startsWith(`${report.id}:`))}
                             key={report.id}
