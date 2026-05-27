@@ -971,6 +971,7 @@ function AdminReportCard({
 }
 
 function AdminReplyCard({
+  aspects,
   expanded,
   isPending,
   onApprove,
@@ -979,6 +980,7 @@ function AdminReplyCard({
   onToggle,
   reply,
 }: Readonly<{
+  aspects?: readonly MotorcycleReviewAspect[];
   expanded: boolean;
   isPending: boolean;
   onApprove: () => void;
@@ -1025,12 +1027,18 @@ function AdminReplyCard({
       <div id={detailsId} className="admin-page__report-body-wrapper" aria-hidden={!expanded} inert={!expanded}>
         <div className="admin-page__report-body">
           <section className="admin-page__reported-review" aria-label="Review original">
-            <p>“{reply.review?.comment ?? 'Review no disponible.'}”</p>
+            <p>"{reply.review?.comment ?? 'Review no disponible.'}"</p>
           </section>
+
+          {aspects && aspects.length > 0 ? (
+            <div className="admin-page__report-aspects">
+              <ReviewAspectSummary aspects={aspects} />
+            </div>
+          ) : null}
 
           <blockquote aria-label="Respuesta">
             <strong>Respuesta:</strong>
-            <p>“{reply.comment}”</p>
+            <p>"{reply.comment}"</p>
           </blockquote>
 
           <footer>
@@ -1897,6 +1905,42 @@ export function AdminModerationPage() {
     }
   }, [moderationTab, loadReplies]);
 
+  const replyReviewIds = useMemo(() => {
+    return [...new Set(replies.map((r) => r.reviewId).filter(Boolean))] as string[];
+  }, [replies]);
+
+  useEffect(() => {
+    if (replyReviewIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getReviewAspectsByReviewIds(replyReviewIds, authContext)
+      .then((aspects) => {
+        if (!isMounted) {
+          return;
+        }
+        const grouped: ReviewAspectsMap = {};
+        for (const aspect of aspects) {
+          if (!grouped[aspect.reviewId]) {
+            grouped[aspect.reviewId] = [];
+          }
+          grouped[aspect.reviewId] = [...grouped[aspect.reviewId]!, aspect];
+        }
+        setReviewAspects((current) => ({ ...current, ...grouped }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReviewAspects({});
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [replyReviewIds.join('|'), authContext?.accessToken, authContext?.userId]);
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(1);
@@ -2177,6 +2221,7 @@ export function AdminModerationPage() {
                       <div className="admin-page__report-list">
                         {replies.map((reply) => (
                           <AdminReplyCard
+                            aspects={reviewAspects[reply.reviewId]}
                             expanded={Boolean(expandedReplies[reply.id])}
                             isPending={Boolean(pendingAction?.startsWith(`${reply.id}:`))}
                             key={reply.id}
