@@ -101,7 +101,11 @@ src/
     images/
       getMotorcycleImage.ts
     reviews/
+      reviewSourcePolicy.ts
       reviewUtils.ts
+      topRatedMotorcycles.ts
+      communityRankings.ts
+      communityUtils.ts
     routing/
       routeUtils.ts
     seo/
@@ -536,9 +540,9 @@ Reglas:
 - El comparador genera title/description desde las motos seleccionadas.
 - Las rutas legacy siguen funcionando, pero las rutas limpias son la forma preparada para SEO.
 
-## 10. Reviews
+## 10. Reviews y aspectos técnicos
 
-Servicio:
+### Servicio
 
 ```txt
 src/services/motorcycleReviewService.ts
@@ -546,22 +550,84 @@ src/services/motorcycleReviewService.ts
 
 Funciones:
 
-- `createReview`
-- `getApprovedReviewsByMotorcycleId`
+- `createReview` — crea review vía RPC atómica `create_motorcycle_review_with_aspects`
+- `createReviewWithAspects` — crea review + aspects en una operación
+- `getApprovedReviewsByMotorcycleId` — reviews aprobadas para una moto (filtra por `source` según entorno)
+- `getApprovedCommunityReviews` — todas las reviews aprobadas públicas (filtra por `source` según entorno)
+- `getReviewsByUserId` — reviews del usuario autenticado (sin filtro `source`, usa `user_id` directo)
+- `getReviewAspectsByReviewIds` — aspectos técnicos por reviewIds
 
-Tabla:
+Tablas:
 
 ```txt
 public.motorcycle_reviews
+public.motorcycle_review_aspects
+public.review_replies
+public.review_reactions
 ```
 
-Reglas:
+### Aspectos técnicos (motorcycle_review_aspects)
 
-- No hay login todavía.
-- Inserción pública solo con `status = pending`.
-- Lectura pública solo de `status = approved`.
-- `riding_style` es obligatorio en el formulario y se guarda como `ciudad`, `viaje`, `offroad`, `deportivo`, `pasajero` o `diario`.
-- El promedio y contador se calculan con `src/shared/reviews/reviewUtils.ts`.
+Cada review puede tener aspectos técnicos opcionales:
+
+```ts
+type MotorcycleReviewAspectCategory =
+  | 'engine' | 'ergonomics' | 'consumption' | 'braking' | 'suspension'
+  | 'electronics' | 'aerodynamics' | 'passenger' | 'maintenance'
+  | 'price' | 'weight' | 'design';
+
+type MotorcycleReviewAspectSentiment = 'positive' | 'negative';
+```
+
+Estructura:
+
+- `review_id` — FK a `motorcycle_reviews.id`
+- `category` — uno de los 12 valores arriba
+- `sentiment` — `positive` | `negative`
+- `comment` — opcional, matiz del usuario
+
+Los aspectos se muestran vía `ReviewAspectSummary` (`src/components/reviews/ReviewAspectSummary/`):
+
+- Pills positivas (categoría + tooltip si hay comment)
+- Pills negativas (categoría + tooltip si hay comment)
+- Reutilizado en: `OwnerReportRow`, `PrivateReviewRow`, `AdminReviewCard`, `AdminReportCard`, `AdminReplyCard`
+
+### RPC atómica
+
+`create_motorcycle_review_with_aspects` inserta review + aspectos en una sola operación transaccional:
+
+- Requiere usuario autenticado (`auth.uid()`)
+- No acepta `user_id` desde el cliente
+- Solo `authenticated` puede ejecutarla
+- `user_id` se infiere de `auth.uid()`
+
+### Source policy
+
+Helper: `src/shared/reviews/reviewSourcePolicy.ts`
+
+Regla:
+
+| Entorno | `demoEnabled` | Sources permitidos |
+|---------|--------------|---------------------|
+| Producción | cualquier | `['user']` |
+| Dev/pre | `true` / undefined | `['user', 'seed', 'mock']` |
+| Dev/pre | `false` | `['user']` |
+
+Aplicado en:
+
+- `getApprovedReviewsByMotorcycleId`
+- `getApprovedCommunityReviews`
+
+No aplica en: `getReviewsByUserId` (cuenta), admin, moderación.
+
+### Reglas generales
+
+- Inserción pública solo con `status = pending`
+- Lectura pública solo de `status = approved` + sources permitidos por entorno
+- `riding_style` obligatorio: `ciudad`, `viaje`, `offroad`, `deportivo`, `pasajero`, `diario`
+- El promedio y contador se calculan con `src/shared/reviews/reviewUtils.ts`
+- `verified` solo puede ser `true` si lo marca un admin; inserciones públicas son `false`
+- `source` campo: `user` (real), `seed` (SQL demo), `mock` (script/JSON), `import` (importador masivo)
 
 ## 11. Testing actual
 

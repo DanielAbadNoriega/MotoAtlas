@@ -1,50 +1,78 @@
 # Panel Admin — MotoAtlas
 
-Rutas existentes:
-- `#/admin` — Panel de administración.
-- `#/admin/moderacion` — Moderación de reportes de reviews.
-- `#/admin/reviews` — Garaje admin: reviews agrupadas por modelo.
+## Rutas existentes
+
+| Ruta | Descripción |
+|------|-------------|
+| `#/admin` | Landing admin con accesos rápidos |
+| `#/admin/moderacion` | Moderación de reportes y respuestas |
+| `#/admin/reviews` | Garaje: reviews agrupadas por modelo |
+| `#/admin/reviews/[motorcycleId]` | Reviews de una moto concreta |
 
 Protección:
 - Acceso restringido a usuarios con `user_profiles.role === 'admin'` (comprobado por `useAuth` y RLS en backend).
 
-Qué hace cada ruta:
-- `#/admin`:
-  - Landing del admin con accesos rápidos a moderación y reviews.
-  - Muestra resúmenes y enlaces a secciones (no ejecuta moderación por sí misma).
+## `#/admin/moderacion`
 
-- `#/admin/moderacion`:
-  - Lista paginada de `review reports` (reportes enviados por usuarios sobre reviews).
-  - Filtros (estado, motivo, orden) y panel de filtros responsive.
-  - Detalle expandible por reporte con acciones para: marcar revisado, descartar, marcar como resuelto.
-  - Si el reporte incluye la review, permite acciones sobre la review (ocultar, aprobar, rechazar).
+Dos tabs:
 
-- `#/admin/reviews`:
-  - Agrupa reviews por `motorcycleId` y muestra tarjetas resumen por moto (pendientes y última review).
-  - Filtros por estado de review, origen, verificación y orden. Filtrado en memoria en frontend.
-  - CTA a ficha de moto y link para revisar las reviews de esa moto.
+**Tab reportes (`review_reports`):**
+- Lista paginada de reportes con filtros: estado, motivo, orden.
+- `AdminReportCard` muestra: estado reporte, motivo, reportante, fecha, review original con `comment`, `pros`, `cons` y `ReviewAspectSummary`.
+- Acciones sobre reporte: marcar revisado, descartar, resolver.
+- Acciones sobre review desde el reporte: aprobar, ocultar, rechazar.
+- Al modificar la review, el reporte pasa a `action_taken`.
 
-Estados relevantes:
-- Reviews: `pending`, `approved`, `rejected`, `hidden`.
-- Reportes: `pending`, `reviewed`, `dismissed`, `action_taken` (se muestra en UI como "Resuelto").
+**Tab respuestas (`review_replies`):**
+- Lista de respuestas pendientes de moderación.
+- `AdminReplyCard` muestra: autor de respuesta, fecha, review original con `comment`, `pros`, `cons` y `ReviewAspectSummary`.
+- Acciones: aprobar, ocultar, rechazar.
 
-Acciones disponibles:
-- Sobre reportes:
-  - `reviewed` — marcar como revisado.
-  - `dismissed` — descartar reporte.
-  - `action_taken` — marcar como resuelto (UI: "Resuelto").
+**Orden y filtros:**
+- `created_at.desc` (Más recientes) o `created_at.asc` (Más antiguos).
+- Cuando `Estado = Todos`, no hay agrupación artificial por estado pending; se mezclan todos por fecha.
+- Filtros por estado concreto (`pending`, `approved`, `rejected`, `hidden`) y por motivo.
 
-- Sobre reviews (cuando el reporte incluye review):
-  - `hidden` — ocultar la review.
-  - `approved` — aprobar/publicar la review.
-  - `rejected` — rechazar la review.
+## `#/admin/reviews`
 
-Pendientes / notas futuras:
-- Navegación directa a reviews por moto: `#/admin/reviews/[moto-id]`.
-- Schema/RLS/servicio admin de solicitudes de modelos listo (Fase 1).
-- UI admin de solicitudes pendiente (Fase 2).
+Agrupa reviews por `motorcycleId`:
+- Tarjetas resumen por moto: pending count, última review, rating medio.
+- Filtros: estado, origen, verificación, orden.
+- Filtrado en memoria en frontend.
+- CTA a ficha de moto y link para revisar reviews en comunidad.
+
+## Estados
+
+| Entidad | Estados |
+|---------|---------|
+| Reviews | `pending`, `approved`, `rejected`, `hidden` |
+| Reportes | `pending`, `reviewed`, `dismissed`, `action_taken` (UI: "Resuelto") |
+| Respuestas | `pending`, `approved`, `hidden`, `rejected` |
+
+## Acciones disponibles
+
+Sobre reportes:
+- `reviewed` — marcar como revisado.
+- `dismissed` — descartar reporte.
+- `action_taken` — marcar como resuelto.
+
+Sobre reviews (desde reporte):
+- `hidden` — ocultar la review.
+- `approved` — aprobar/publicar la review.
+- `rejected` — rechazar la review.
+
+Sobre respuestas:
+- `approved` — aprobar respuesta.
+- `hidden` — ocultar respuesta.
+- `rejected` — rechazar respuesta.
+
+## Componentes reutilizados
+
+- `AdminReportCard` — usa `ReviewAspectSummary` para mostrar aspectos técnicos de la review original.
+- `AdminReplyCard` — usa `ReviewAspectSummary` para mostrar aspectos técnicos de la review asociada a la respuesta.
+- `ReviewAspectSummary` — ubicado en `src/components/reviews/ReviewAspectSummary/`.
+
+## Pendiente / notas futuras
+
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
-- Añadir pruebas E2E para flujos críticos de administración (filtrado, acciones y permisos).
-
-Resumen:
-Panel admin protege acciones críticas con rol `admin`, centraliza moderación de reportes y revisión de reviews agrupadas por moto. Las acciones son irreversibles desde la UI (según infra actual), y los filtros son client-side en `#/admin/reviews`.
+- Añadir pruebas E2E para flujos críticos de administración.
