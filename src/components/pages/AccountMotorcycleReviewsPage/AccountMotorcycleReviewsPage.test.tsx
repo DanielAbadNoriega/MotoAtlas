@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
-import { createReview, getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { createReview, getReviewsByUserId, getReviewAspectsByReviewIds, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import { getReviewReactionSummary } from '../../../services/reviewReactionService';
 import { getRepliesByReviewIds, getMyRepliesByMotorcycleId, type ReviewReply, type ReviewReplyWithReview } from '../../../services/reviewReplyService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
@@ -15,6 +15,7 @@ vi.mock('../../../features/auth', () => ({
 vi.mock('../../../services/motorcycleReviewService', () => ({
   createReview: vi.fn(),
   getReviewsByUserId: vi.fn(),
+  getReviewAspectsByReviewIds: vi.fn(),
 }));
 
 vi.mock('../../../services/reviewReactionService', () => ({
@@ -32,6 +33,7 @@ const createReviewMock = vi.mocked(createReview);
 const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
 const getRepliesByReviewIdsMock = vi.mocked(getRepliesByReviewIds);
 const getMyRepliesByMotorcycleIdMock = vi.mocked(getMyRepliesByMotorcycleId);
+const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 const signOutMock = vi.fn();
 const bike = bikeFixtures[0];
 
@@ -115,6 +117,7 @@ describe('AccountMotorcycleReviewsPage', () => {
     );
     getRepliesByReviewIdsMock.mockReset().mockResolvedValue([]);
     getMyRepliesByMotorcycleIdMock.mockReset().mockResolvedValue([]);
+    getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
     mockAuth();
   });
 

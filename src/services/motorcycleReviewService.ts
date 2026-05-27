@@ -457,7 +457,7 @@ type MotorcycleReviewAspectRow = Readonly<{
 
 export async function getReviewAspectsByReviewIds(
   reviewIds: readonly string[],
-  _authContext?: CreateReviewAuthContext | null,
+  authContext?: CreateReviewAuthContext | null,
 ): Promise<readonly MotorcycleReviewAspect[]> {
   const normalizedReviewIds = Array.from(new Set(reviewIds.map((id) => id.trim()).filter(Boolean)));
 
@@ -466,6 +466,7 @@ export async function getReviewAspectsByReviewIds(
   }
 
   const config = getSupabaseConfig();
+  const normalizedAuthContext = normalizeAuthContext(authContext);
   const params = new URLSearchParams({
     review_id: `in.(${normalizedReviewIds.join(',')})`,
     select: 'review_id,category,sentiment,comment',
@@ -475,7 +476,7 @@ export async function getReviewAspectsByReviewIds(
     headers: {
       Accept: 'application/json',
       apikey: config.supabaseAnonKey,
-      Authorization: `Bearer ${config.supabaseAnonKey}`,
+      Authorization: `Bearer ${normalizedAuthContext?.accessToken ?? config.supabaseAnonKey}`,
     },
   });
 

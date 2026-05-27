@@ -3,7 +3,9 @@ import { getBikeDetailHash } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
 import {
   getReviewsByUserId,
+  getReviewAspectsByReviewIds,
   type MotorcycleReview,
+  type MotorcycleReviewAspect,
   type MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
 import {
@@ -26,6 +28,7 @@ import {
   formatAccountReviewOwnershipMonths,
 } from '../../reviews/AccountReviewCard/accountReviewPresentation';
 import { ReviewModal } from '../../reviews/ReviewModal';
+import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import '../AccountPage/AccountPage.scss';
@@ -46,6 +49,7 @@ type ReviewFilters = Readonly<{
   sort: SortOption;
 }>;
 type ReactionSummaryMap = Record<string, ReviewReactionSummary>;
+type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
 
 const REVIEWS_PER_PAGE = 5;
 const defaultFilters: ReviewFilters = {
@@ -458,11 +462,13 @@ function HelpfulReceivedMetric({ summary }: Readonly<{ summary: ReviewReactionSu
 }
 
 function PrivateReviewRow({
+  aspects,
   index,
   reactionSummary,
   replies,
   review,
 }: Readonly<{
+  aspects?: readonly MotorcycleReviewAspect[];
   index: number;
   reactionSummary: ReviewReactionSummary;
   replies: readonly ReviewReply[];
@@ -513,6 +519,9 @@ function PrivateReviewRow({
           <ReviewListBlock title="Pros" items={pros} />
           <ReviewListBlock title="Contras" items={cons} />
         </div>
+        {aspects && aspects.length > 0 ? (
+          <ReviewAspectSummary aspects={aspects} />
+        ) : null}
         <div className="motorcycle-community__owner-report-actions" aria-label="Métricas de tu review">
           <HelpfulReceivedMetric summary={reactionSummary} />
         </div>
@@ -556,6 +565,7 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
   const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
+  const [reviewAspects, setReviewAspects] = useState<ReviewAspectsMap>({});
   const [myRepliesOnMotorcycle, setMyRepliesOnMotorcycle] = useState<readonly ReviewReplyWithReview[]>([]);
   const displayName = getProfileName(profile?.displayName, user?.email);
   const email = user?.email ?? 'Email no disponible';
@@ -680,6 +690,38 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
         });
       })
       .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [paginatedReviewIds.join('|'), reactionAuthContext?.accessToken, reactionAuthContext?.userId]);
+
+  useEffect(() => {
+    if (paginatedReviewIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getReviewAspectsByReviewIds(paginatedReviewIds, reactionAuthContext)
+      .then((aspects) => {
+        if (!isMounted) {
+          return;
+        }
+        const grouped: ReviewAspectsMap = {};
+        for (const aspect of aspects) {
+          if (!grouped[aspect.reviewId]) {
+            grouped[aspect.reviewId] = [];
+          }
+          grouped[aspect.reviewId] = [...grouped[aspect.reviewId]!, aspect];
+        }
+        setReviewAspects((current) => ({ ...current, ...grouped }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReviewAspects({});
+        }
+      });
 
     return () => {
       isMounted = false;
@@ -841,6 +883,7 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
                 <div className="motorcycle-community__owner-report-list" role="list" aria-label="Listado compacto de mis reviews de esta moto">
                   {paginatedReviews.map((review, index) => (
                     <PrivateReviewRow
+                      aspects={reviewAspects[review.id]}
                       index={(currentPage - 1) * REVIEWS_PER_PAGE + index}
                       key={review.id}
                       reactionSummary={reactionSummaries[review.id] ?? getDefaultReactionSummary(review.id)}
