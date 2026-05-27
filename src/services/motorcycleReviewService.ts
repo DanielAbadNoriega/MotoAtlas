@@ -1,4 +1,5 @@
 import type { BikeLicense, BikeSegment } from '../types/bike';
+import { getAllowedReviewSources } from '../shared/reviews/reviewSourcePolicy';
 
 export type MotorcycleReviewStatus = 'pending' | 'approved' | 'rejected' | 'hidden';
 export type MotorcycleReviewRidingStyle = 'ciudad' | 'viaje' | 'offroad' | 'deportivo' | 'pasajero' | 'diario';
@@ -277,10 +278,13 @@ export async function getApprovedReviewsByMotorcycleId(motorcycleId: string): Pr
   }
 
   const config = getSupabaseConfig();
+  const allowedSources = getAllowedReviewSources();
+  const sourceParam = allowedSources.length === 1 ? `eq.${allowedSources[0]}` : `in.(${allowedSources.join(',')})`;
   const params = new URLSearchParams({
     motorcycle_id: `eq.${motorcycleId}`,
     order: 'created_at.desc',
     select: '*',
+    source: sourceParam,
     status: 'eq.approved',
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews?${params.toString()}`, {
@@ -297,9 +301,12 @@ export async function getApprovedReviewsByMotorcycleId(motorcycleId: string): Pr
 
 export async function getApprovedCommunityReviews(): Promise<readonly MotorcycleReview[]> {
   const config = getSupabaseConfig();
+  const allowedSources = getAllowedReviewSources();
+  const sourceParam = allowedSources.length === 1 ? `eq.${allowedSources[0]}` : `in.(${allowedSources.join(',')})`;
   const params = new URLSearchParams({
     order: 'created_at.desc',
     select: 'id,motorcycle_id,user_id,user_name,rating,riding_style,ownership_months,kilometers,comment,pros,cons,status,verified,source,created_at,updated_at,motorcycles(id,brand,model,year,segment,license,image_url)',
+    source: sourceParam,
     status: 'eq.approved',
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_reviews?${params.toString()}`, {
