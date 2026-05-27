@@ -1,15 +1,62 @@
-# Mock reviews (datos de ejemplo)
+# Mock reviews y datos demo
 
-Este documento explica cómo generar, importar y eliminar reviews mock usadas para pruebas locales y de UI en MotoAtlas.
+Este documento explica cómo generar, importar y eliminar reviews mock/seed usadas para pruebas locales y de UI en MotoAtlas.
 
-## ¿Qué son los mocks?
+## Fuentes de datos demo
 
-Las `mock reviews` son reviews de ejemplo generadas localmente y marcadas con `source = 'mock'` en la tabla `motorcycle_reviews` en Supabase. Sirven para probar la UI, sliders, badges, filtros y densidad visual sin depender de usuarios reales.
+MotoAtlas distingue tres tipos de datos no reales:
+
+| Source | Origen | Uso |
+|--------|--------|-----|
+| `source = 'user'` | Datos reales de usuarios | Producción |
+| `source = 'seed'` | Datos demo controlados insertados por SQL | Dev/pre con demo activo |
+| `source = 'mock'` | Datos generados por scripts/JSON | Dev/pre con demo activo |
+
+El campo `source` está en `motorcycle_reviews.source` y se filtra por entorno vía `reviewSourcePolicy`.
+
+## source policy
+
+`src/shared/reviews/reviewSourcePolicy.ts` define qué sources se ven en cada entorno:
+
+```ts
+getAllowedReviewSources({ isProduction: true })           // ['user']
+getAllowedReviewSources({ isProduction: false })         // ['user', 'seed', 'mock']
+getAllowedReviewSources({ isProduction: false, demoEnabled: false }) // ['user']
+```
+
+**Regla:** Producción nunca muestra `seed` ni `mock`, aunque `demoEnabled` sea `true`.
+
+## Seed SQL
+
+El proyecto incluye:
+
+```txt
+supabase/seeds/review_aspects_seed.sql
+```
+
+- Reviews aprobadas con aspectos técnicos para datos visuales demo.
+- UUIDs fijos con `ON CONFLICT` para ser idempotente.
+- Verifica que el `motorcycle_id` exista antes de insertar.
+- No ejecutar en producción.
+
+## Scripts de mock (legacy)
+
+Antes de tener `reviewSourcePolicy`, los mocks se generaban con scripts. Sigue disponible:
+
+```bash
+npm run mock:reviews:generate -- --count=120 --reset
+npm run mock:reviews:import
+npm run mock:reviews:clear
+npm run mock:reviews:clear:apply
+```
+
+Estos scripts generan/importan datos con `source = 'mock'`.
 
 ## Riesgos y advertencias
 
-- No subir las claves `SUPABASE_SERVICE_ROLE_KEY` a repositorios públicos.
-- Las reviews mock se distinguen por `source = 'mock'`. Eliminar solo esas filas no afectará reviews reales.
+- No subir `SUPABASE_SERVICE_ROLE_KEY` a repositorios públicos.
+- Las reviews con `source = 'mock'` se eliminan por ese filtro; no afectan `user` ni `seed`.
+- La policy de inserción pública exige `source = 'user'` para evitar inyección directa de mocks desde el cliente.
 
 ## Variables de entorno necesarias
 

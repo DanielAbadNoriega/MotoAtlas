@@ -42,12 +42,28 @@ RLS:
 
 ## Reviews
 
-- `user_name` sigue siendo el alias visible en la web.
+- `user_name` es el alias visible en la web.
 - `user_id` solo vincula la review con la cuenta autenticada y queda `null` en reviews anónimas.
 - Toda review creada desde el formulario público entra como `status = pending`, `verified = false` y `source = user`.
 - Mi cuenta muestra reviews propias del usuario, incluyendo `pending`, `rejected` y `hidden`.
-- Las reviews `approved` siguen siendo públicas; las no aprobadas solo son visibles para su propietario.
-- Esta asociación prepara futuras funciones: edición de reviews propias, avisos al autor y reputación.
+- Las reviews `approved` son públicas; las no aprobadas solo son visibles para su propietario.
+- La creación usa la RPC atómica `create_motorcycle_review_with_aspects` que inserta review + aspectos en una transacción.
+- El alias mostrado en la review es el `display_name` del perfil; no es editable desde el formulario.
+
+## Aspectos técnicos
+
+El formulario de review permite valorar aspectos técnicos con +/−:
+
+```ts
+type MotorcycleReviewAspectCategory =
+  | 'engine' | 'ergonomics' | 'consumption' | 'braking' | 'suspension'
+  | 'electronics' | 'aerodynamics' | 'passenger' | 'maintenance'
+  | 'price' | 'weight' | 'design';
+
+type MotorcycleReviewAspectSentiment = 'positive' | 'negative';
+```
+
+Cada aspecto puede incluir un comentario opcional. Se muestran en la review via `ReviewAspectSummary`.
 
 ## Admin
 
@@ -58,7 +74,5 @@ RLS:
 
 ## No implementado todavía
 
-- Panel admin completo de reviews agrupadas.
-- Panel admin de solicitudes/modelos.
 - Avisos al autor cuando una review reportada cambia de estado.
 - Perfiles públicos, seguidores, notificaciones o gamificación.

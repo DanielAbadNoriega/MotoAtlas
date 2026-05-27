@@ -79,24 +79,26 @@ Las report cards son plegables por defecto: el header deja visible estado, motiv
 
 Los botones de acciones de moderación tienen hover por intención visual (azul para `Marcar revisado`, rojo para `Descartar`/`Rechazar`, verde para `Resuelto`/`Aprobar`, gris para `Ocultar`) sin heredar hover rojo genérico.
 
-Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). Avisos al autor, administración completa de reviews/solicitudes y reportes de respuestas quedan para fases futuras.
+Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). El tab de respuestas pendientes de moderación está implementado. Avisos al autor y administración completa de solicitudes quedan para fases futuras.
 
 ## Admin — Reviews por modelo
 
-La ruta `#/admin/reviews` reutiliza el patrón visual de `#/cuenta/reviews` para un “garaje admin” inicial: cards agrupadas por `motorcycleId` con imagen, metadatos y CTAs.
-
-En esta fase no hay filtros ni detalle por moto. Cada card muestra:
+La ruta `#/admin/reviews` muestra cards agrupadas por `motorcycleId` con imagen, metadatos y CTAs. Cada card muestra:
 - `X reviews nuevas` (conteo de reviews con `status = pending` en esa moto).
 - `Última review: ...` calculada por la review más reciente del grupo.
-- CTAs `Revisar reviews` (temporalmente `#/admin/reviews`) y `Ver ficha` (`#/motos/[moto-id]`).
+- CTAs `Revisar reviews` y `Ver ficha`.
 
-La agrupación prioriza motos con reviews pendientes y deduplica reviews repetidas en reportes múltiples.
+Hay filtros por estado, origen, verificación y orden. El CTA `Revisar reviews` lleva a `#/admin/reviews/[motorcycleId]` donde se pueden gestionar las reviews de esa moto concreto.
+
+`AdminReviewCard` muestra `ReviewAspectSummary` con los aspectos técnicos de cada review. Las acciones disponibles son aprobar, ocultar y rechazar.
+
+La agrupación prioriza motos con reviews pendientes.
 
 ## Mi cuenta — Reviews
 
 La ruta `#/cuenta/reviews` funciona como “Mi garaje de reviews”: agrupa las reviews del usuario autenticado por moto, pagina modelos agrupados y aplica filtros sobre marca/modelo, segmento, carnet, rating medio, uso principal y orden. Los filtros replican el patrón visual de `#/comunidad/reviews` con header/body/footer y botones/chips sin selects; en desktop viven dentro del sidebar de cuenta antes del notice y en tablet/mobile usan panel responsive. El CTA `Ver mis reviews` de cada moto apunta al detalle privado `#/cuenta/reviews/[motorcycleId]`.
 
-La ruta `#/cuenta/reviews/[motorcycleId]` muestra solo las reviews propias de una moto concreta. Reutiliza el lenguaje visual del hero/listado compacto de comunidad, pero mantiene sidebar de cuenta con filtros de rating/orden, distribución rating propia, perfil, links y notice. Cada review muestra estado traducido (`Publicada`, `Pendiente`, `Oculta`, `Rechazada`), pros/contras saneados, contador pasivo de útiles recibidos y CTA hacia reviews públicas.
+La ruta `#/cuenta/reviews/[motorcycleId]` muestra solo las reviews propias de una moto concreta. Cada review muestra estado traducido (`Publicada`, `Pendiente`, `Oculta`, `Rechazada`), pros/contras saneados, `ReviewAspectSummary` con aspectos técnicos si existen, contador pasivo de útiles recibidos y CTA hacia reviews públicas.
 
 En `#/cuenta`, el bloque “Mis reviews” agrupa las reviews propias por moto, muestra hasta 3 modelos ordenados por última review y usa una card visual tipo garage con CTAs `Ver mis reviews` y `Ver ficha`.
 
