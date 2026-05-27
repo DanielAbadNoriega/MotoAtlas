@@ -936,6 +936,8 @@ describe('AdminPage', () => {
       updatedAt: '2026-05-23T10:00:00.000Z',
       review: {
         comment: 'Excelente moto, la recomiendo.',
+        pros: ['manillar alto', 'cómodo'],
+        cons: ['consumo algo alto'],
         rating: 4,
         userName: 'RiderUno',
         motorcycle: {

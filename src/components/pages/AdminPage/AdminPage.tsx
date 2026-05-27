@@ -1030,6 +1030,20 @@ function AdminReplyCard({
             <p>"{reply.review?.comment ?? 'Review no disponible.'}"</p>
           </section>
 
+          {(reply.review?.pros?.length ?? 0) > 0 ? (
+            <section className="admin-page__report-extra" aria-label="Pros de la review">
+              <strong>Pros:</strong>
+              <p>{reply.review!.pros!.join(', ')}</p>
+            </section>
+          ) : null}
+
+          {(reply.review?.cons?.length ?? 0) > 0 ? (
+            <section className="admin-page__report-extra" aria-label="Contras de la review">
+              <strong>Contras:</strong>
+              <p>{reply.review!.cons!.join(', ')}</p>
+            </section>
+          ) : null}
+
           {aspects && aspects.length > 0 ? (
             <div className="admin-page__report-aspects">
               <ReviewAspectSummary aspects={aspects} />

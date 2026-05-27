@@ -14,6 +14,8 @@ export type AdminReviewReply = Readonly<{
   updatedAt: string;
   review: {
     comment: string;
+    pros: readonly string[] | null;
+    cons: readonly string[] | null;
     rating: number | null;
     userName: string;
     motorcycle: {
@@ -40,6 +42,8 @@ type ReviewRow = Readonly<{
   id: string;
   motorcycle_id: string;
   motorcycles?: MotorcycleRow | null;
+  pros: readonly string[] | null;
+  cons: readonly string[] | null;
   rating: number | null;
   user_name: string;
 }>;
@@ -146,6 +150,8 @@ function mapReplyRow(row: ReplyRow): AdminReviewReply {
     review: row.motorcycle_reviews
         ? {
             comment: row.motorcycle_reviews.comment,
+            pros: row.motorcycle_reviews.pros,
+            cons: row.motorcycle_reviews.cons,
             rating: row.motorcycle_reviews.rating,
             userName: row.motorcycle_reviews.user_name,
           motorcycle: row.motorcycle_reviews.motorcycles
@@ -179,7 +185,7 @@ export async function getAdminPendingReplies(
       'status',
       'created_at',
       'updated_at',
-      'motorcycle_reviews(id,user_name,rating,comment,motorcycle_id,motorcycles(id,brand,model,year,image_url))',
+      'motorcycle_reviews(id,user_name,rating,comment,pros,cons,motorcycle_id,motorcycles(id,brand,model,year,image_url))',
     ].join(','),
   });
   const response = await fetch(`${config.supabaseUrl}/rest/v1/review_replies?${params.toString()}`, {
