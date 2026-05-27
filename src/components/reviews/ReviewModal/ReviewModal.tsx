@@ -40,8 +40,8 @@ const ridingStyleOptions = [
 
 const technicalAspects = [
   { id: 'motor', name: 'Motor', icon: 'settings_input_component', category: 'engine' },
-  { id: 'ergo', name: 'Ergonomía', icon: 'airline_seat_recline_extra', category: 'ergonomics' },
-  { id: 'consumo', name: 'Consumo', icon: 'ev_station', category: 'consumption' },
+  { id: 'ergo', name: 'Ergonomía', icon: 'bike_lane', category: 'ergonomics' },
+  { id: 'consumo', name: 'Consumo', icon: 'oil_barrel', category: 'consumption' },
   { id: 'frenada', name: 'Frenada', icon: 'adjust', category: 'braking' },
   { id: 'suspension', name: 'Suspensión', icon: 'vibration', category: 'suspension' },
   { id: 'electronica', name: 'Electrónica', icon: 'memory', category: 'electronics' },
@@ -49,8 +49,8 @@ const technicalAspects = [
   { id: 'pasajero', name: 'Pasajero', icon: 'group', category: 'passenger' },
   { id: 'mantenimiento', name: 'Mantenimiento', icon: 'build', category: 'maintenance' },
   { id: 'precio', name: 'Precio', icon: 'payments', category: 'price' },
-  { id: 'peso', name: 'Peso', icon: 'monitor_weight', category: 'weight' },
-  { id: 'diseno', name: 'Diseño', icon: 'architecture', category: 'design' },
+  { id: 'peso', name: 'Peso', icon: 'weight', category: 'weight' },
+  { id: 'diseno', name: 'Diseño', icon: 'palette', category: 'design' },
 ] as const;
 
 type AspectValue = 'positive' | 'negative' | null;

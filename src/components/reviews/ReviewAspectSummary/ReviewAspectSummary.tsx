@@ -28,17 +28,17 @@ const categoryLabels: Record<MotorcycleReviewAspectCategory, string> = {
 };
 
 const categoryIcons: Record<MotorcycleReviewAspectCategory, string> = {
-  engine: 'settings',
-  ergonomics: 'accessibility_new',
-  consumption: 'local_gas_station',
-  braking: 'emergency',
-  suspension: 'air',
+  engine: 'settings_input_component',
+  ergonomics: 'bike_lane',
+  consumption: 'oil_barrel',
+  braking: 'adjust',
+  suspension: 'vibration',
   electronics: 'memory',
   aerodynamics: 'air',
   passenger: 'group',
   maintenance: 'build',
-  price: 'euro_symbol',
-  weight: 'fitness_center',
+  price: 'payments',
+  weight: 'weight',
   design: 'palette',
 };
 

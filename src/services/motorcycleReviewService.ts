@@ -441,6 +441,59 @@ export async function createMotorcycleReviewAspects(
   await assertSupabaseOk(response);
 }
 
+export type MotorcycleReviewAspect = Readonly<{
+  reviewId: string;
+  category: MotorcycleReviewAspectCategory;
+  sentiment: MotorcycleReviewAspectSentiment;
+  comment: string | null;
+}>;
+
+type MotorcycleReviewAspectRow = Readonly<{
+  review_id: string;
+  category: MotorcycleReviewAspectCategory;
+  sentiment: MotorcycleReviewAspectSentiment;
+  comment: string | null;
+}>;
+
+export async function getReviewAspectsByReviewIds(
+  reviewIds: readonly string[],
+  _authContext?: CreateReviewAuthContext | null,
+): Promise<readonly MotorcycleReviewAspect[]> {
+  const normalizedReviewIds = Array.from(new Set(reviewIds.map((id) => id.trim()).filter(Boolean)));
+
+  if (normalizedReviewIds.length === 0) {
+    return [];
+  }
+
+  const config = getSupabaseConfig();
+  const params = new URLSearchParams({
+    review_id: `in.(${normalizedReviewIds.join(',')})`,
+    select: 'review_id,category,sentiment,comment',
+  });
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/motorcycle_review_aspects?${params.toString()}`, {
+    headers: {
+      Accept: 'application/json',
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${config.supabaseAnonKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Supabase motorcycle_review_aspects request failed (${response.status}): ${errorBody}`);
+  }
+
+  const rows = await parseSupabaseResponse<MotorcycleReviewAspectRow[]>(response);
+
+  return rows.map((row) => ({
+    reviewId: row.review_id,
+    category: row.category,
+    sentiment: row.sentiment,
+    comment: row.comment,
+  }));
+}
+
 type RpcReviewRow = Readonly<{
   id: string;
   motorcycle_id: string;

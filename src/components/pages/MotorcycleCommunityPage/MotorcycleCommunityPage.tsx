@@ -4,7 +4,9 @@ import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
 import {
   getApprovedReviewsByMotorcycleId,
+  getReviewAspectsByReviewIds,
   type MotorcycleReview,
+  type MotorcycleReviewAspect,
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
 import {
@@ -26,6 +28,7 @@ import { formatReviewAggregate, formatReviewRating, getReviewAggregate, getRevie
 import { getTopCommunityItemsSafe, getMostCommonRidingStyleSafe } from '../../../shared/reviews/communityUtils';
 import type { Bike } from '../../../types/bike';
 import { ReviewModal } from '../../reviews/ReviewModal';
+import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './MotorcycleCommunityPage.scss';
@@ -75,6 +78,7 @@ type ReplyFormState = Readonly<{
   isSubmitting: boolean;
   reviewId: string;
 }>;
+type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
 
 const OWNER_REPORTS_PER_PAGE = 5;
 const HELPFUL_TOOLTIP_VISIBLE_MS = 2000;
@@ -643,6 +647,7 @@ function ReviewReportForm({
 }
 
 function OwnerReportRow({
+  aspects,
   feedbackTooltipMessage,
   feedbackTooltipVisible,
   hasReported,
@@ -671,6 +676,7 @@ function OwnerReportRow({
   review,
   user,
 }: Readonly<{
+  aspects?: readonly MotorcycleReviewAspect[];
   feedbackTooltipMessage?: string;
   feedbackTooltipVisible?: boolean;
   hasReported: boolean;
@@ -853,6 +859,9 @@ function OwnerReportRow({
           user={user}
           expanded={isExpanded}
         />
+        {aspects && aspects.length > 0 ? (
+          <ReviewAspectSummary aspects={aspects} />
+        ) : null}
       </div>
     </article>
   );
@@ -1010,6 +1019,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
   const [replyForm, setReplyForm] = useState<ReplyFormState | null>(null);
   const [expandedReplyReviewIds, setExpandedReplyReviewIds] = useState<Record<string, boolean>>({});
+  const [reviewAspects, setReviewAspects] = useState<ReviewAspectsMap>({});
   const tooltipHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipClearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const replyToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1194,6 +1204,38 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
       isMounted = false;
     };
   }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, visibleOwnerReportIds.join('|')]);
+
+  useEffect(() => {
+    if (visibleOwnerReportIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getReviewAspectsByReviewIds(visibleOwnerReportIds, reactionAuthContext)
+      .then((aspects) => {
+        if (!isMounted) {
+          return;
+        }
+        const grouped: ReviewAspectsMap = {};
+        for (const aspect of aspects) {
+          if (!grouped[aspect.reviewId]) {
+            grouped[aspect.reviewId] = [];
+          }
+          grouped[aspect.reviewId] = [...grouped[aspect.reviewId]!, aspect];
+        }
+        setReviewAspects((current) => ({ ...current, ...grouped }));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReviewAspects({});
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [visibleOwnerReportIds.join('|')]);
 
   useEffect(() => {
     if (!reactionAuthContext) {
@@ -1625,6 +1667,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                   <div className="motorcycle-community__owner-report-list" role="list" aria-label="Listado compacto de reviews">
                     {paginatedOwnerReports.map((review, index) => (
                       <OwnerReportRow
+                        aspects={reviewAspects[review.id]}
                         feedbackTooltipMessage={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.message : undefined}
                         feedbackTooltipVisible={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.visible : false}
                         hasReported={Boolean(reportedReviewIds[review.id])}
