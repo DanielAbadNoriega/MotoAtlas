@@ -1,0 +1,141 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.review-aspect-summary {
+  margin: 0.75rem 0;
+  padding: 0.75rem 0;
+  border-top: 1px solid rgba($color-outline-variant, 0.2);
+  border-bottom: 1px solid rgba($color-outline-variant, 0.2);
+}
+
+.review-aspect-summary__title {
+  @include label-caps;
+
+  color: $color-outline;
+  font-size: 0.62rem;
+  margin: 0 0 0.6rem;
+}
+
+.review-aspect-summary__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.review-aspect-summary__chip {
+  position: relative;
+}
+
+.review-aspect-summary__chip-btn {
+  align-items: center;
+  background: rgba($color-surface-container, 0.5);
+  border: 1px solid rgba($color-outline-variant, 0.35);
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.3rem 0.65rem;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+
+  &:focus-visible {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+
+  &--positive {
+    background: $color-positive-soft;
+    border-color: rgba($color-positive, 0.3);
+
+    &:hover {
+      background: rgba($color-positive-container, 0.6);
+      border-color: rgba($color-positive, 0.5);
+    }
+  }
+
+  &--negative {
+    background: rgba($color-error, 0.1);
+    border-color: rgba($color-error, 0.25);
+
+    &:hover {
+      background: rgba($color-error, 0.18);
+      border-color: rgba($color-error, 0.4);
+    }
+  }
+}
+
+.review-aspect-summary__chip-item {
+  align-items: center;
+  background: rgba($color-surface-container, 0.35);
+  border: 1px solid rgba($color-outline-variant, 0.25);
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.3rem 0.65rem;
+
+  &--positive {
+    background: rgba($color-positive, 0.08);
+    border-color: rgba($color-positive, 0.2);
+  }
+
+  &--negative {
+    background: rgba($color-error, 0.07);
+    border-color: rgba($color-error, 0.15);
+  }
+}
+
+.review-aspect-summary__chip-icon {
+  opacity: 0.55;
+  color: $color-outline;
+
+  &.material-symbols-outlined {
+    font-size: 0.85rem;
+  }
+}
+
+.review-aspect-summary__chip-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba($color-on-surface, 0.85);
+  letter-spacing: 0.01em;
+}
+
+.review-aspect-summary__chip-sentiment {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+
+  &--positive {
+    color: $color-positive;
+  }
+
+  &--negative {
+    color: rgba($color-error, 0.9);
+  }
+}
+
+.review-aspect-summary__chip-comment {
+  margin-left: 0.1rem;
+  opacity: 0.6;
+  color: $color-primary;
+
+  &.material-symbols-outlined {
+    font-size: 0.75rem;
+  }
+}
+
+.review-aspect-summary__tooltip {
+  @include glass-hud;
+
+  background: $color-surface-container-high;
+  border-radius: $radius-lg;
+  bottom: calc(100% + 0.4rem);
+  font-size: 0.75rem;
+  left: 50%;
+  max-width: 16rem;
+  padding: 0.5rem 0.75rem;
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: normal;
+  width: max-content;
+  z-index: 10;
+}

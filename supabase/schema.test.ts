@@ -34,6 +34,11 @@ function getReviewRepliesGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getReviewAspectsGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.motorcycle_review_aspects\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 describe('Supabase public motorcycle schema', () => {
   it('permite leer motos públicas también con sesión autenticada', () => {
     expect(schemaSql).toContain('create policy "Public motorcycles are readable"');
@@ -607,6 +612,191 @@ describe('Supabase review_replies schema', () => {
     expect(schemaSql).toContain('to authenticated');
     expect(schemaSql).toContain('using (public.is_admin())');
     expect(schemaSql).toContain("status in ('pending', 'approved', 'hidden', 'rejected')");
+  });
+});
+
+describe('Supabase motorcycle_review_aspects schema', () => {
+  it('crea tabla de aspectos con campos, constraints e índices esperados', () => {
+    expect(schemaSql).toContain('create table if not exists public.motorcycle_review_aspects');
+    expect(schemaSql).toContain('id uuid primary key default gen_random_uuid()');
+    expect(schemaSql).toContain('review_id uuid not null references public.motorcycle_reviews(id) on delete cascade');
+    expect(schemaSql).toContain('category text not null');
+    expect(schemaSql).toContain('sentiment text not null');
+    expect(schemaSql).toContain('comment text');
+    expect(schemaSql).toContain('created_at timestamptz not null default now()');
+    expect(schemaSql).toContain('updated_at timestamptz not null default now()');
+
+    expect(schemaSql).toContain('drop constraint if exists motorcycle_review_aspects_category_check');
+    expect(schemaSql).toContain('add constraint motorcycle_review_aspects_category_check');
+    expect(schemaSql).toContain("check (category in ('engine', 'ergonomics', 'consumption', 'braking', 'suspension', 'electronics', 'aerodynamics', 'passenger', 'maintenance', 'price', 'weight', 'design'))");
+
+    expect(schemaSql).toContain('drop constraint if exists motorcycle_review_aspects_sentiment_check');
+    expect(schemaSql).toContain('add constraint motorcycle_review_aspects_sentiment_check');
+    expect(schemaSql).toContain("check (sentiment in ('positive', 'negative'))");
+
+    expect(schemaSql).toContain('drop constraint if exists motorcycle_review_aspects_comment_check');
+    expect(schemaSql).toContain('add constraint motorcycle_review_aspects_comment_check');
+    expect(schemaSql).toContain('check (comment is null or length(trim(comment)) > 0)');
+
+    expect(schemaSql).toMatch(/if not exists\s*\(\s*select 1\s+from pg_constraint\s+where conname = 'motorcycle_review_aspects_review_id_category_key'/);
+    expect(schemaSql).toContain('unique (review_id, category)');
+  });
+
+  it('crea índices para review_id, category y sentiment', () => {
+    expect(schemaSql).toMatch(/create index if not exists motorcycle_review_aspects_review_id_idx\s+on public\.motorcycle_review_aspects \(review_id\);/);
+    expect(schemaSql).toMatch(/create index if not exists motorcycle_review_aspects_category_idx\s+on public\.motorcycle_review_aspects \(category\);/);
+    expect(schemaSql).toMatch(/create index if not exists motorcycle_review_aspects_sentiment_idx\s+on public\.motorcycle_review_aspects \(sentiment\);/);
+  });
+
+  it('incluye trigger updated_at para aspectos', () => {
+    expect(schemaSql).toContain('drop trigger if exists set_motorcycle_review_aspects_updated_at on public.motorcycle_review_aspects;');
+    expect(schemaSql).toContain('create trigger set_motorcycle_review_aspects_updated_at');
+    expect(schemaSql).toContain('before update on public.motorcycle_review_aspects');
+    expect(schemaSql).toContain('execute function public.set_updated_at();');
+  });
+
+  it('activa RLS para aspectos de reviews', () => {
+    expect(schemaSql).toContain('alter table public.motorcycle_review_aspects enable row level security;');
+  });
+
+  it('permite SELECT público solo para aspectos de reviews approved', () => {
+    expect(schemaSql).toContain('drop policy if exists "Approved motorcycle review aspects are readable" on public.motorcycle_review_aspects;');
+    expect(schemaSql).toContain('create policy "Approved motorcycle review aspects are readable"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to anon, authenticated');
+    expect(schemaSql).toContain('using (');
+    expect(schemaSql).toContain('exists (');
+    expect(schemaSql).toContain('motorcycle_reviews.id = motorcycle_review_aspects.review_id');
+    expect(schemaSql).toContain("motorcycle_reviews.status = 'approved'");
+    expect(normalizedSchemaSql).not.toMatch(/on public\.motorcycle_review_aspects for select to anon, authenticated\b[^;]*using \(true\)/);
+  });
+
+  it('permite SELECT propio al autor de la review autenticado', () => {
+    expect(schemaSql).toContain('drop policy if exists "Users can read own review aspects" on public.motorcycle_review_aspects;');
+    expect(schemaSql).toContain('create policy "Users can read own review aspects"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (');
+    expect(schemaSql).toContain('exists (');
+    expect(schemaSql).toContain('motorcycle_reviews.id = motorcycle_review_aspects.review_id');
+    expect(schemaSql).toContain('motorcycle_reviews.user_id = auth.uid()');
+  });
+
+  it('permite INSERT de aspectos solo al autor de la review autenticado', () => {
+    expect(schemaSql).toContain('drop policy if exists "Users can insert own review aspects" on public.motorcycle_review_aspects;');
+    expect(schemaSql).toContain('create policy "Users can insert own review aspects"');
+    expect(schemaSql).toContain('for insert');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('with check (');
+    expect(schemaSql).toContain('exists (');
+    expect(schemaSql).toContain('motorcycle_reviews.id = motorcycle_review_aspects.review_id');
+    expect(schemaSql).toContain('motorcycle_reviews.user_id = auth.uid()');
+  });
+
+  it('usa grants mínimos sin delete/update amplios para aspectos', () => {
+    const grants = getReviewAspectsGrantStatements();
+
+    expect(schemaSql).toContain('revoke all on table public.motorcycle_review_aspects from anon;');
+    expect(schemaSql).toContain('revoke all on table public.motorcycle_review_aspects from authenticated;');
+    expect(grants).toEqual([
+      'grant select on public.motorcycle_review_aspects to anon, authenticated;',
+      'grant insert (review_id, category, sentiment, comment) on public.motorcycle_review_aspects to authenticated;',
+    ]);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.motorcycle_review_aspects\s+to\s+(?:anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.motorcycle_review_aspects\s+to\s+(?:anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+insert\s+on\s+(?:table\s+)?public\.motorcycle_review_aspects\s+to\s+anon/);
+  });
+
+  it('incluye policy admin SELECT para aspectos usando is_admin()', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can read all motorcycle review aspects" on public.motorcycle_review_aspects;');
+    expect(schemaSql).toContain('create policy "Admins can read all motorcycle review aspects"');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+  });
+});
+
+describe('Supabase create_motorcycle_review_with_aspects RPC function', () => {
+  it('crea la función RPC con signature correcta', () => {
+    expect(schemaSql).toContain('create or replace function public.create_motorcycle_review_with_aspects(');
+    expect(schemaSql).toContain('p_motorcycle_id text');
+    expect(schemaSql).toContain('p_user_name text');
+    expect(schemaSql).toContain('p_rating integer');
+    expect(schemaSql).toContain('p_riding_style text');
+    expect(schemaSql).toContain('p_ownership_months integer');
+    expect(schemaSql).toContain('p_kilometers integer');
+    expect(schemaSql).toContain('p_comment text');
+    expect(schemaSql).toContain('p_pros text[]');
+    expect(schemaSql).toContain('p_cons text[]');
+    expect(schemaSql).toContain('p_aspects jsonb');
+  });
+
+  it('retorna motorcycle_reviews y usa security definer con search_path public', () => {
+    expect(schemaSql).toContain('returns public.motorcycle_reviews');
+    expect(schemaSql).toContain('language plpgsql');
+    expect(schemaSql).toContain('security definer');
+    expect(schemaSql).toContain('set search_path = public');
+  });
+
+  it('usa auth.uid() para user_id, rechaza user_id arbitrario y requiere autenticación', () => {
+    expect(schemaSql).toContain('v_user_id := auth.uid()');
+    expect(schemaSql).not.toMatch(/insert into public\.motorcycle_reviews[\s\S]*user_id\s*=\s*p_user_id/);
+    expect(schemaSql).toContain("raise exception 'Authentication required.'");
+  });
+
+  it('valida motorcycle_id obligatorio y que existe', () => {
+    expect(schemaSql).toContain("raise exception 'motorcycle_id es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'Motocicleta no encontrada.'");
+  });
+
+  it('valida user_name no vacío', () => {
+    expect(schemaSql).toContain("raise exception 'user_name es obligatorio.'");
+  });
+
+  it('valida rating entre 1 y 5', () => {
+    expect(schemaSql).toContain('raise exception \'rating debe ser un entero entre 1 y 5.\'');
+  });
+
+  it('valida riding_style con valores permitidos', () => {
+    expect(schemaSql).toContain("raise exception 'riding_style es obligatorio y debe ser uno de: ciudad, viaje, offroad, deportivo, pasajero, diario.'");
+  });
+
+  it('valida comment no vacío', () => {
+    expect(schemaSql).toContain("raise exception 'comment es obligatorio.'");
+  });
+
+  it('valida aspects: sentiment solo positive o negative', () => {
+    expect(schemaSql).toContain("raise exception 'Sentimiento inválido: %.', v_aspect->>'sentiment'");
+    expect(schemaSql).toMatch(/v_aspect->>'sentiment'\s+not\s+in\s*\('positive',\s*'negative'\)/);
+  });
+
+  it('valida aspects: category dentro de las 12 categorías permitidas', () => {
+    expect(schemaSql).toContain("raise exception 'Categoría inválida: %.', v_aspect->>'category'");
+    expect(schemaSql).toMatch(/v_aspect->>'category'\s+not\s+in\s*\('engine',\s*'ergonomics',\s*'consumption',\s*'braking',\s*'suspension',\s*'electronics',\s*'aerodynamics',\s*'passenger',\s*'maintenance',\s*'price',\s*'weight',\s*'design'\)/);
+  });
+
+  it('valida comment de aspect no puede ser solo espacios', () => {
+    expect(schemaSql).toContain("raise exception 'El comentario del aspecto no puede ser solo espacios.'");
+  });
+
+  it('inserta aspectos con el review_id recién creado y devuelve una única review', () => {
+    expect(schemaSql).toMatch(/insert into public\.motorcycle_review_aspects\s*\(\s*review_id,\s*category,\s*sentiment,\s*comment\s*\)\s*values\s*\(\s*v_review_id/);
+    expect(schemaSql).toContain('returning id into v_review_id');
+    expect(schemaSql).toMatch(/select\s+\*\s+into\s+v_review\s+from\s+public\.motorcycle_reviews\s+where\s+id\s*=\s*v_review_id/);
+    expect(schemaSql).toContain('return v_review');
+    expect(schemaSql).not.toMatch(/return query select/);
+  });
+
+  it('concede execute solo a authenticated', () => {
+    expect(schemaSql).toContain('grant execute on function public.create_motorcycle_review_with_aspects(');
+    expect(schemaSql).toMatch(/grant execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) to authenticated;/);
+    expect(schemaSql).not.toMatch(/grant execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) to anon;/);
+  });
+
+  it('inserta review con status pending y source user', () => {
+    expect(schemaSql).toMatch(/status\s*=\s*'pending'/);
+    expect(schemaSql).toMatch(/source\s*=\s*'user'/);
+    expect(schemaSql).toMatch(/verified\s*=\s*false/);
   });
 });
 

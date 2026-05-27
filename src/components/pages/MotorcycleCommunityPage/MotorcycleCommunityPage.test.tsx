@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
-import { createReview, getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { createReview, getApprovedReviewsByMotorcycleId, getReviewAspectsByReviewIds, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import {
   clearMyReviewReaction,
   getReviewReactionSummary,
@@ -24,6 +24,7 @@ import { MotorcycleCommunityPage } from './MotorcycleCommunityPage';
 vi.mock('../../../services/motorcycleReviewService', () => ({
   createReview: vi.fn(),
   getApprovedReviewsByMotorcycleId: vi.fn(),
+  getReviewAspectsByReviewIds: vi.fn(),
 }));
 
 vi.mock('../../../services/reviewReactionService', () => ({
@@ -58,6 +59,7 @@ const getMyReviewReportsMock = vi.mocked(getMyReviewReports);
 const createReviewReplyMock = vi.mocked(createReviewReply);
 const getRepliesByReviewIdMock = vi.mocked(getRepliesByReviewId);
 const useAuthMock = vi.mocked(useAuth);
+const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 
 function mockAuth(overrides = {}) {
   useAuthMock.mockReturnValue({
@@ -140,6 +142,7 @@ describe('MotorcycleCommunityPage', () => {
     createReviewReplyMock.mockReset();
     getRepliesByReviewIdMock.mockReset();
     useAuthMock.mockReset();
+    getReviewAspectsByReviewIdsMock.mockReset();
     mockAuth();
     getApprovedReviewsMock.mockResolvedValue(approvedReviews);
     getReviewReactionSummaryMock.mockImplementation(async (reviewIds) =>
@@ -181,6 +184,7 @@ describe('MotorcycleCommunityPage', () => {
       createdAt: '2026-05-15T10:00:00.000Z',
       updatedAt: '2026-05-15T10:00:00.000Z',
     });
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
   });
 
   it('renderiza la comunidad de una moto existente', async () => {
@@ -301,7 +305,7 @@ describe('MotorcycleCommunityPage', () => {
 
     await user.click(screen.getAllByRole('button', { name: /Escribir review/i })[0]);
 
-    expect(screen.getByRole('dialog', { name: /Comparte tu experiencia real/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Valoración técnica/i })).toBeInTheDocument();
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 

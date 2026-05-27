@@ -164,7 +164,7 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('button', { name: /Escribir review/i }));
 
-    expect(screen.getByRole('dialog', { name: /Comparte tu experiencia real/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Valoración técnica/i })).toBeInTheDocument();
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 

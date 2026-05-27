@@ -306,6 +306,116 @@ grant select on public.motorcycle_reviews to anon, authenticated;
 grant insert on public.motorcycle_reviews to anon, authenticated;
 grant update (status) on public.motorcycle_reviews to authenticated;
 
+create table if not exists public.motorcycle_review_aspects (
+  id uuid primary key default gen_random_uuid(),
+  review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
+  category text not null,
+  sentiment text not null,
+  comment text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table if exists public.motorcycle_review_aspects
+  drop constraint if exists motorcycle_review_aspects_category_check;
+
+alter table if exists public.motorcycle_review_aspects
+  add constraint motorcycle_review_aspects_category_check
+  check (category in ('engine', 'ergonomics', 'consumption', 'braking', 'suspension', 'electronics', 'aerodynamics', 'passenger', 'maintenance', 'price', 'weight', 'design'));
+
+alter table if exists public.motorcycle_review_aspects
+  drop constraint if exists motorcycle_review_aspects_sentiment_check;
+
+alter table if exists public.motorcycle_review_aspects
+  add constraint motorcycle_review_aspects_sentiment_check
+  check (sentiment in ('positive', 'negative'));
+
+alter table if exists public.motorcycle_review_aspects
+  drop constraint if exists motorcycle_review_aspects_comment_check;
+
+alter table if exists public.motorcycle_review_aspects
+  add constraint motorcycle_review_aspects_comment_check
+  check (comment is null or length(trim(comment)) > 0);
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'motorcycle_review_aspects_review_id_category_key'
+      and conrelid = 'public.motorcycle_review_aspects'::regclass
+  ) then
+    alter table public.motorcycle_review_aspects
+      add constraint motorcycle_review_aspects_review_id_category_key
+      unique (review_id, category);
+  end if;
+end $$;
+
+create index if not exists motorcycle_review_aspects_review_id_idx
+  on public.motorcycle_review_aspects (review_id);
+
+create index if not exists motorcycle_review_aspects_category_idx
+  on public.motorcycle_review_aspects (category);
+
+create index if not exists motorcycle_review_aspects_sentiment_idx
+  on public.motorcycle_review_aspects (sentiment);
+
+drop trigger if exists set_motorcycle_review_aspects_updated_at on public.motorcycle_review_aspects;
+create trigger set_motorcycle_review_aspects_updated_at
+before update on public.motorcycle_review_aspects
+for each row
+execute function public.set_updated_at();
+
+alter table public.motorcycle_review_aspects enable row level security;
+
+drop policy if exists "Approved motorcycle review aspects are readable" on public.motorcycle_review_aspects;
+create policy "Approved motorcycle review aspects are readable"
+on public.motorcycle_review_aspects
+for select
+to anon, authenticated
+using (
+  exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = motorcycle_review_aspects.review_id
+      and motorcycle_reviews.status = 'approved'
+  )
+);
+
+drop policy if exists "Users can read own review aspects" on public.motorcycle_review_aspects;
+create policy "Users can read own review aspects"
+on public.motorcycle_review_aspects
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = motorcycle_review_aspects.review_id
+      and motorcycle_reviews.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Users can insert own review aspects" on public.motorcycle_review_aspects;
+create policy "Users can insert own review aspects"
+on public.motorcycle_review_aspects
+for insert
+to authenticated
+with check (
+  exists (
+    select 1
+    from public.motorcycle_reviews
+    where motorcycle_reviews.id = motorcycle_review_aspects.review_id
+      and motorcycle_reviews.user_id = auth.uid()
+  )
+);
+
+revoke all on table public.motorcycle_review_aspects from anon;
+revoke all on table public.motorcycle_review_aspects from authenticated;
+
+grant select on public.motorcycle_review_aspects to anon, authenticated;
+grant insert (review_id, category, sentiment, comment) on public.motorcycle_review_aspects to authenticated;
+
 create table if not exists public.review_reactions (
   id uuid primary key default gen_random_uuid(),
   review_id uuid not null references public.motorcycle_reviews(id) on delete cascade,
@@ -749,6 +859,13 @@ with check (
   and status in ('pending', 'approved', 'hidden', 'rejected')
 );
 
+drop policy if exists "Admins can read all motorcycle review aspects" on public.motorcycle_review_aspects;
+create policy "Admins can read all motorcycle review aspects"
+on public.motorcycle_review_aspects
+for select
+to authenticated
+using (public.is_admin());
+
 create table if not exists public.model_requests (
   id uuid primary key default gen_random_uuid(),
   user_id uuid null references auth.users(id) on delete set null,
@@ -851,5 +968,141 @@ with check (
 );
 
 grant update (status) on public.model_requests to authenticated;
+
+create or replace function public.create_motorcycle_review_with_aspects(
+  p_motorcycle_id text,
+  p_user_name text,
+  p_rating integer,
+  p_riding_style text,
+  p_ownership_months integer,
+  p_kilometers integer,
+  p_comment text,
+  p_pros text[],
+  p_cons text[],
+  p_aspects jsonb
+) returns public.motorcycle_reviews
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user_id uuid;
+  v_review_id uuid;
+  v_aspect jsonb;
+  v_review public.motorcycle_reviews;
+begin
+  if not exists (select 1 from public.motorcycles where id = p_motorcycle_id) then
+    raise exception 'Motocicleta no encontrada.';
+  end if;
+
+  if p_motorcycle_id is null or length(trim(p_motorcycle_id)) = 0 then
+    raise exception 'motorcycle_id es obligatorio.';
+  end if;
+
+  if p_user_name is null or length(trim(p_user_name)) = 0 then
+    raise exception 'user_name es obligatorio.';
+  end if;
+
+  if p_rating is null or p_rating < 1 or p_rating > 5 then
+    raise exception 'rating debe ser un entero entre 1 y 5.';
+  end if;
+
+  if p_riding_style is null or p_riding_style not in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario') then
+    raise exception 'riding_style es obligatorio y debe ser uno de: ciudad, viaje, offroad, deportivo, pasajero, diario.';
+  end if;
+
+  if p_comment is null or length(trim(p_comment)) = 0 then
+    raise exception 'comment es obligatorio.';
+  end if;
+
+  if p_ownership_months is not null and p_ownership_months < 0 then
+    raise exception 'ownership_months debe ser mayor o igual que 0.';
+  end if;
+
+  if p_kilometers is not null and p_kilometers < 0 then
+    raise exception 'kilometers debe ser mayor o igual que 0.';
+  end if;
+
+  v_user_id := auth.uid();
+
+  if v_user_id is null then
+    raise exception 'Authentication required.';
+  end if;
+
+  insert into public.motorcycle_reviews (
+    motorcycle_id,
+    user_id,
+    user_name,
+    rating,
+    riding_style,
+    ownership_months,
+    kilometers,
+    comment,
+    pros,
+    cons,
+    source,
+    verified,
+    status
+  ) values (
+    p_motorcycle_id,
+    v_user_id,
+    trim(p_user_name),
+    p_rating,
+    p_riding_style,
+    case when p_ownership_months is null then null else p_ownership_months end,
+    case when p_kilometers is null then null else p_kilometers end,
+    trim(p_comment),
+    coalesce(p_pros, '{}'),
+    coalesce(p_cons, '{}'),
+    'user',
+    false,
+    'pending'
+  )
+  returning id into v_review_id;
+
+  if jsonb_array_length(p_aspects) > 0 then
+    for v_aspect in select * from jsonb_array_elements(p_aspects)
+    loop
+      if v_aspect->>'sentiment' not in ('positive', 'negative') then
+        raise exception 'Sentimiento inválido: %.', v_aspect->>'sentiment';
+      end if;
+
+      if v_aspect->>'category' not in ('engine', 'ergonomics', 'consumption', 'braking', 'suspension', 'electronics', 'aerodynamics', 'passenger', 'maintenance', 'price', 'weight', 'design') then
+        raise exception 'Categoría inválida: %.', v_aspect->>'category';
+      end if;
+
+      if (v_aspect->>'comment') is not null and length(trim(v_aspect->>'comment')) = 0 then
+        raise exception 'El comentario del aspecto no puede ser solo espacios.';
+      end if;
+
+      insert into public.motorcycle_review_aspects (
+        review_id,
+        category,
+        sentiment,
+        comment
+      ) values (
+        v_review_id,
+        v_aspect->>'category',
+        v_aspect->>'sentiment',
+        case
+          when (v_aspect->>'comment') is null then null
+          else trim(v_aspect->>'comment')
+        end
+      );
+    end loop;
+  end if;
+
+  select *
+  into v_review
+  from public.motorcycle_reviews
+  where id = v_review_id;
+
+  return v_review;
+end;
+$$;
+
+grant execute on function public.create_motorcycle_review_with_aspects(
+  text, text, integer, text, integer, integer, text, text[], text[], jsonb
+) to authenticated;
 
 notify pgrst, 'reload schema';
