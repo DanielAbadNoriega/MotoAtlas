@@ -9,3 +9,5 @@ coverage
 
 data/import/raw-images/*
 !data/import/raw-images/.gitkeep
+
+ideas.md
