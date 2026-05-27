@@ -149,8 +149,8 @@
   }
 
   .admin-motorcycle-reviews-page__review-card-body {
-    padding-bottom: 0.2rem;
-    padding-top: 0.15rem;
+    padding-bottom: 0.8rem;
+    padding-top: 0.5rem;
   }
 }
 
@@ -263,6 +263,10 @@
     margin: 0;
   }
 
+  .review-aspect-summary {
+    border-bottom: none;
+  }
+
   > footer {
     border-top: 1px solid rgba($color-outline-variant, 0.38);
     display: grid;
@@ -324,4 +328,8 @@
     margin-bottom: 2rem;
     margin-top: -1.2rem;
   }
+}
+
+.admin-page__review-aspects {
+  margin-top: 0.5rem;
 }
