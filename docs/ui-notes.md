@@ -52,15 +52,18 @@ La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de 
 La ruta `#/comunidad/rankings` muestra rankings por categoría con datos reales de reviews aprobadas.
 
 Elementos principales:
-- Podio top 3 con imagen, stats y shield de confianza con tooltip visual.
+- Podio top 3 con imagen, stats y shield de confianza con tooltip visual. **NO se ve afectado por filtros.**
 - Grid de 8 categorías (global, daily, travel, sport, a2, power-weight, reliability, passenger).
-- Tabla técnica con filtros por segmento, carnet y uso.
+- Listado técnico con filtros por segmento, carnet y uso. **No usa `<table>`; usa cards/grid responsive.**
+
+**Pendiente:** rediseño mobile avanzado del listado técnico (cards responsive más refinadas).
 
 Datos:
 - `reviewCount`: conteo real de reviews `approved` por moto.
 - `averageRating`: rating medio de reviews aprobadas.
 - `confidence`: Alta (≥10 reviews), Media (≥3), Baja (<3).
 - `score`: presentado como índice 0–10 (no estrellas); usa icono `analytics`.
+- Score interno clampado 0–100; score visible clampado 0–10.
 
 Confidence shield:
 - Visual: shield con colores (high=verde, medium=ámbar, low=gris).
@@ -73,6 +76,8 @@ Aspectos técnicos:
 - Score de aspecto: `(positive - negative) / total`.
 - Pesos por categoría definidos en `RANKING_ASPECT_WEIGHTS`.
 - Ajuste escalonado por confianza: 35% (<3), 70% (3-9), 100% (≥10).
+
+**Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros.
 
 Metodología visible en página menciona datos técnicos, reviews aprobadas y aspectos agregados.
 

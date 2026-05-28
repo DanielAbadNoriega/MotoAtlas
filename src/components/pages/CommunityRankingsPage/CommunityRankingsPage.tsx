@@ -224,60 +224,44 @@ function TechnicalTable({ rankings, filters }: { rankings: readonly CategoryRank
 
   if (flatEntries.length === 0) {
     return (
-      <div className="rankings__table-empty">
+      <div className="rankings__technical-empty">
         <p>No hay resultados para los filtros seleccionados.</p>
       </div>
     );
   }
 
   return (
-    <table className="rankings__table" aria-label="Listado técnico de rankings">
-      <thead>
-        <tr>
-          <th scope="col">Rank</th>
-          <th scope="col">Modelo</th>
-          <th scope="col">Segmento</th>
-          <th scope="col" className="rankings__table-center">Rating</th>
-          <th scope="col">Reviews</th>
-          <th scope="col">Señal Clave</th>
-          <th scope="col" className="rankings__table-right">Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        {flatEntries.map((entry, index) => (
-          <tr key={`${entry.bike.id}-${index}`}>
-            <td className="rankings__table-rank">{String(index + 1).padStart(2, '0')}</td>
-            <td>
-              <div className="rankings__table-bike">
-                <div className="rankings__table-image">
-                  <MotorcycleImage motorcycle={entry.bike} alt="" />
-                </div>
-                <div>
-                  <strong>{entry.bike.brand} {entry.bike.model}</strong>
-                  <span>{entry.bike.year} · {entry.bike.powerHp} HP</span>
-                </div>
-              </div>
-            </td>
-            <td className="rankings__table-segment">{segmentLabels[entry.bike.segment]}</td>
-            <td className="rankings__table-center">
-              <span className="rankings__table-rating">
-                {formatRankingScore(entry.score)}
-              </span>
-            </td>
-            <td className="rankings__table-reviews">{entry.reviews}</td>
-            <td>
-              <span className="rankings__table-signal">
-                <span className="material-symbols-outlined" aria-hidden="true">trending_up</span>
-                {entry.keySignal}
-              </span>
-            </td>
-            <td className="rankings__table-right">
-              <a href={getCommunityHref(entry.bike)} className="rankings__table-action">Ver reviews</a>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <section className="rankings__technical-list" aria-label="Listado técnico de rankings">
+      {flatEntries.map((entry, index) => (
+        <article key={`${entry.bike.id}-${index}`} className="rankings__technical-card">
+          <div className="rankings__technical-rank">{String(index + 1).padStart(2, '0')}</div>
+          <div className="rankings__technical-image">
+            <MotorcycleImage motorcycle={entry.bike} alt="" />
+          </div>
+          <div className="rankings__technical-info">
+            <strong>{entry.bike.brand} {entry.bike.model}</strong>
+            <span>{entry.bike.year} · {segmentLabels[entry.bike.segment]} · {entry.bike.powerHp} CV</span>
+          </div>
+          <div className="rankings__technical-stats">
+            <div className="rankings__technical-score">
+              <span className="material-symbols-outlined" aria-hidden="true">analytics</span>
+              <strong>{formatRankingScore(entry.score)}</strong>
+            </div>
+            <div className="rankings__technical-reviews">
+              <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+              <span>{entry.reviews}</span>
+            </div>
+            <div className="rankings__technical-signal">
+              <span className="material-symbols-outlined" aria-hidden="true">trending_up</span>
+              <span>{entry.keySignal}</span>
+            </div>
+          </div>
+          <a href={getCommunityHref(entry.bike)} className="rankings__technical-action">
+            Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+          </a>
+        </article>
+      ))}
+    </section>
   );
 }
 

@@ -15,16 +15,23 @@
 - Ajuste de score mediante aspectos técnicos (`motorcycle_review_aspects`) por categoría.
 - Pesos por categoría: global, daily, travel, sport, a2, power-weight, reliability, passenger.
 - Factor de confianza: <3 reviews 35%, 3-9 reviews 70%, ≥10 reviews 100%.
-- Score de rankings presentado como índice 0–10 (no estrellas). Usa icono `analytics`.
+- Score interno clampado 0–100; score visible clampado 0–10 (índice, no estrellas). Usa icono `analytics`.
 - Confidence visible como shield con tooltip: Alta confianza, Media confianza, Baja confianza.
 - Shield con colores: high=verde, medium=ámbar, low=gris.
 - Podio principal prioriza confidence high: si hay 3 high, usa solo high; si faltan, rellena con medium y luego low.
+- Podio NO usa filtros de la página (filtros solo afectan al listado técnico).
+- Listado técnico ya no usa `<table>`; usa cards/grid responsive con columnas alineadas en desktop.
+- Filtros afectan solo al listado técnico: segment, license, use, search.
 
 ### Admin
 - ...
 
 ### Datos demo
 - ...
+
+## Pendiente
+
+- Rediseño mobile avanzado de rankings/listado técnico (cards responsive más refinadas).
 
 ## En curso
 
