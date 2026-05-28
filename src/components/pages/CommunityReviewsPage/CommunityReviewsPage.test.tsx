@@ -155,10 +155,106 @@ describe('CommunityReviewsPage', () => {
     expect(within(kawasakiCard).getByLabelText('Rating medio 4.5 de 5')).toBeInTheDocument();
     expect(within(kawasakiCard).getByText('2 reviews')).toBeInTheDocument();
     expect(within(kawasakiCard).getByText('Deportivo')).toBeInTheDocument();
-    expect(within(kawasakiCard).getByText('120.000 km')).toBeInTheDocument();
-    expect(within(kawasakiCard).getByText('19 may 2026')).toBeInTheDocument();
-    expect(within(kawasakiCard).getByRole('link', { name: 'Ver reviews' })).toHaveAttribute('href', '#/comunidad/kawasaki-z900-2024');
-    expect(within(kawasakiCard).getByRole('link', { name: 'Ver ficha' })).toHaveAttribute('href', '#/motos/kawasaki-z900-2024');
+    expect(within(kawasakiCard).queryByText('120.000 km')).not.toBeInTheDocument();
+    expect(within(kawasakiCard).getByText('19/05/26')).toBeInTheDocument();
+    expect(within(kawasakiCard).getByRole('link', { name: /Reviews/i })).toHaveAttribute('href', '#/comunidad/kawasaki-z900-2024');
+    expect(within(kawasakiCard).getByRole('link', { name: /Ficha técnica/i })).toHaveAttribute('href', '#/motos/kawasaki-z900-2024');
+  });
+
+  it('la card del garaje muestra shield con tooltip según confidence', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'shield-high-1',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-2',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-3',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-4',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-5',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-6',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-7',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-8',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-9',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'shield-high-10',
+        motorcycleId: 'high-conf-bike',
+        rating: 5,
+        ridingStyle: 'viaje',
+        motorcycle: { id: 'high-conf-bike', brand: 'Ducati', model: 'High Conf', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+    ]);
+
+    const card = getGarageCards()[0];
+    const shield = within(card).getByRole('img', { name: 'Alta confianza' });
+    expect(shield).toBeInTheDocument();
+    expect(within(card).getByRole('tooltip')).toHaveTextContent('Alta confianza');
+  });
+
+  it('no muestra shield tooltip en cards sin usage label', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'no-usage-bike',
+        motorcycleId: 'no-usage-bike',
+        rating: 3,
+        ridingStyle: 'ciudad',
+        motorcycle: { id: 'no-usage-bike', brand: 'Honda', model: 'No Usage', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+    ]);
+
+    const card = getGarageCards()[0];
+    expect(within(card).queryByText('Uso más repetido')).not.toBeInTheDocument();
+    expect(within(card).getByText('Ciudad')).toBeInTheDocument();
   });
 
   it('renderiza máximo 2 destacadas por kilómetros, rating, comentario y fecha', async () => {
@@ -446,7 +542,7 @@ describe('CommunityReviewsPage', () => {
     expect(within(getGarageCards()[0]).getByText('BMW Kilometers GS 2024')).toBeInTheDocument();
   });
 
-  it('la card del garaje muestra rating, métricas y CTAs sin datos de review individual', async () => {
+  it('la card del garaje muestra rating, shield, métricas y CTAs sin datos de review individual', async () => {
     await renderPage([
       createCommunityReview({
         id: 'garage-card-1',
@@ -454,6 +550,7 @@ describe('CommunityReviewsPage', () => {
         rating: 5,
         pros: ['Suspensión'],
         cons: ['Calor'],
+        ridingStyle: 'deportivo',
         motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' },
       }),
     ]);
@@ -463,13 +560,14 @@ describe('CommunityReviewsPage', () => {
     expect(within(card).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
     expect(within(card).getByLabelText('Rating medio 5 de 5')).toBeInTheDocument();
     expect(within(card).getByText('1 review')).toBeInTheDocument();
-    expect(within(card).getByText('Uso más repetido')).toBeInTheDocument();
+    expect(within(card).getByText('Deportivo')).toBeInTheDocument();
+    expect(within(card).queryByText('Uso más repetido')).not.toBeInTheDocument();
     expect(within(card).queryByText('@Fromen_01')).not.toBeInTheDocument();
     expect(within(card).queryByText('Publicada')).not.toBeInTheDocument();
     expect(within(card).queryByText('+ Suspensión')).not.toBeInTheDocument();
     expect(within(card).queryByText('- Calor')).not.toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: /Ver reviews/i })).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: /Ver ficha/i })).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: /Reviews/i })).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: /Ficha técnica/i })).toBeInTheDocument();
   });
 
   it('pagina 9 motos agrupadas por página y navega primera/anterior/siguiente/última con máximo 5 números', async () => {
