@@ -17,6 +17,7 @@ import {
   type TopRatedMotorcycle,
   type TopRatedSort,
 } from '../../../shared/reviews/topRatedMotorcycles';
+import { getRankingConfidence } from '../../../shared/reviews/communityRankings';
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
@@ -82,8 +83,16 @@ function formatRankingScore(rating: number): string {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
+const CONFIDENCE_TOOLTIPS: Record<string, string> = {
+  high: 'Alta confianza',
+  medium: 'Media confianza',
+  low: 'Baja confianza',
+};
+
 function PodiumCard({ item, rank, variant = 'winner' }: { item: TopRatedMotorcycle; rank: number; variant?: 'winner' | 'compact' }) {
   const bikeName = getBikeDisplayName(item.bike);
+  const confidence = getRankingConfidence(item.reviewCount);
+  const confidenceTooltip = CONFIDENCE_TOOLTIPS[confidence] ?? '';
 
   return (
     <article className={`top-rated__podium-card top-rated__podium-card--${variant}`} aria-label={`Puesto ${rank}: ${bikeName}`}>
@@ -98,10 +107,20 @@ function PodiumCard({ item, rank, variant = 'winner' }: { item: TopRatedMotorcyc
           <h3>{item.bike.model}</h3>
           <span>{item.bike.year} · {segmentLabels[item.bike.segment]} · {numberFormatter.format(item.bike.displacementCc)} cc</span>
         </div>
-        {variant === 'winner' ? <RankingStats item={item} /> : null}
+        <RankingStats item={item} />
         <div className="top-rated__podium-rating">
           <span className="top-rated__rating-icon material-symbols-outlined" aria-hidden="true">analytics</span>
           <strong>{formatRankingScore(item.averageRating)}</strong>
+          <span
+            className={`top-rated__confidence-shield top-rated__confidence-shield--${confidence}`}
+            aria-label={confidenceTooltip}
+            tabIndex={0}
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">shield</span>
+            <span className="top-rated__confidence-tooltip" role="tooltip">
+              {confidenceTooltip}
+            </span>
+          </span>
         </div>
         <a href={getCommunityHref(item.bike)} className="top-rated__podium-action">
           Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>

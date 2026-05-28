@@ -175,6 +175,30 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(within(firstRank).queryByRole('button', { name: /Comparar/i })).not.toBeInTheDocument();
   });
 
+  it('muestra shield de confianza en todas las cards del podium con tooltip', async () => {
+    await renderPage();
+
+    const podium = screen.getByLabelText('Top 3 motos mejor valoradas');
+
+    const firstRank = await within(podium).findByRole('article', { name: /Puesto 1: Aprilia Tuareg 660/i });
+    const secondRank = await within(podium).findByRole('article', { name: /Puesto 2: BMW F 900 GS/i });
+    const thirdRank = await within(podium).findByRole('article', { name: /Puesto 3: Yamaha MT-09/i });
+
+    const firstShield = within(firstRank).getByLabelText(/Baja confianza/i);
+    expect(firstShield).toBeInTheDocument();
+    expect(within(firstRank).getByRole('tooltip', { name: 'Baja confianza' })).toBeInTheDocument();
+
+    const secondShield = within(secondRank).getByLabelText(/Baja confianza/i);
+    expect(secondShield).toBeInTheDocument();
+
+    const thirdShield = within(thirdRank).getByLabelText(/Media confianza/i);
+    expect(thirdShield).toBeInTheDocument();
+
+    expect(within(firstRank).queryByText('star')).not.toBeInTheDocument();
+    expect(within(secondRank).queryByText('star')).not.toBeInTheDocument();
+    expect(within(thirdRank).queryByText('star')).not.toBeInTheDocument();
+  });
+
   it('renderiza la nueva jerarquía de comunidad sin Top Rated ni geolocalización', async () => {
     await renderPage();
 

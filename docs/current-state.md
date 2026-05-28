@@ -22,6 +22,7 @@
 - Podio NO usa filtros de la página (filtros solo afectan al listado técnico).
 - Listado técnico ya no usa `<table>`; usa cards/grid responsive con columnas alineadas en desktop.
 - Filtros afectan solo al listado técnico: segment, license, use, search.
+- El Podium rankings de `#/comunidad` replica el lenguaje visual del podio de `#/comunidad/rankings`: mismo patrón de cards, shield y tooltip.
 
 ### Admin
 - ...

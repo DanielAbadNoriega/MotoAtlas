@@ -26,6 +26,8 @@ Criterio actual del ranking:
 - por defecto exige al menos 1 review aprobada.
 - si no hay reviews suficientes o los filtros dejan el ranking vacío, muestra empty state técnico.
 
+Podio visual: replica el lenguaje del podio de `#/comunidad/rankings` — 3 cards con imagen full-background, overlay, badge numérico `01`/`02`/`03`, score con icono `analytics`, shield de confianza con tooltip (Alta/Media/Baja confianza) y CTA "Ver reviews". La card 01 ocupa la columna central destacada.
+
 Filtros disponibles:
 
 - segmento.
@@ -45,7 +47,7 @@ El compare tray del buscador muestra mini-slots de motos seleccionadas y skeleto
 
 ## Comunidad landing
 
-La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. `Top Rated` ya no aparece como bloque separado en esta landing.
+La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing.
 
 ## Comunidad — Rankings
 
