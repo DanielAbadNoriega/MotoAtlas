@@ -5,7 +5,6 @@ import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorc
 import {
   buildAllRankings,
   buildAspectSignalsByMotorcycleId,
-  buildGlobalRanking,
   buildReviewSignalsByMotorcycleId,
   getPodiumEntries,
   RANKING_CATEGORIES,
@@ -62,28 +61,6 @@ const useOptions = [
   { label: 'Deportivo', value: 'sport' as const },
 ];
 
-function filterMotorcycles(motorcycles: readonly Bike[], filters: RankingFilters): readonly Bike[] {
-  return motorcycles.filter((bike) => {
-    if (filters.segment !== 'all' && bike.segment !== filters.segment) return false;
-
-    if (filters.license === 'A2' && bike.license !== 'A2' && !bike.isA2Compatible) return false;
-    if (filters.license === 'A' && bike.license !== 'A') return false;
-
-    if (filters.use !== 'all') {
-      const useScore = bike.useScores[filters.use];
-      if (useScore < 7) return false;
-    }
-
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      const fullName = `${bike.brand} ${bike.model}`.toLowerCase();
-      if (!fullName.includes(searchLower)) return false;
-    }
-
-    return true;
-  });
-}
-
 function getFilteredRankings(rankings: readonly CategoryRanking[], filters: RankingFilters): readonly CategoryRanking[] {
   return rankings.map((ranking) => ({
     ...ranking,
@@ -91,6 +68,10 @@ function getFilteredRankings(rankings: readonly CategoryRanking[], filters: Rank
       if (filters.segment !== 'all' && entry.bike.segment !== filters.segment) return false;
       if (filters.license === 'A2' && entry.bike.license !== 'A2' && !entry.bike.isA2Compatible) return false;
       if (filters.license === 'A' && entry.bike.license !== 'A') return false;
+      if (filters.use !== 'all') {
+        const useScore = entry.bike.useScores[filters.use];
+        if (useScore < 7) return false;
+      }
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
         const fullName = `${entry.bike.brand} ${entry.bike.model}`.toLowerCase();
@@ -356,6 +337,7 @@ export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProp
     () => buildAllRankings(motorcycles, reviewSignals, aspectSignals),
     [motorcycles, reviewSignals, aspectSignals],
   );
+
   const podiumEntries = useMemo(
     () => getPodiumEntries(motorcycles, reviewSignals, aspectSignals),
     [motorcycles, reviewSignals, aspectSignals],

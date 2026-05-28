@@ -1,4 +1,5 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getApprovedCommunityReviews, getReviewAspectsByReviewIds, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
@@ -357,5 +358,152 @@ describe('CommunityRankingsPage', () => {
     });
 
     expect(document.querySelector('.rankings__table-confidence')).not.toBeInTheDocument();
+  });
+
+  it('filtro segmento naked filtra resultados de tabla técnica', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    const segmentSelect = screen.getByLabelText('Segmento');
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLSelectElement.prototype,
+      'value',
+    )?.set;
+    nativeInputValueSetter?.call(segmentSelect, 'naked');
+    segmentSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      const table = screen.getByLabelText('Listado técnico de rankings');
+      expect(table.textContent).toContain('MT-09');
+      expect(table.textContent).not.toContain('F 900 GS');
+    });
+  });
+
+  it('filtro carnet A2 filtra resultados de tabla técnica', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    const licenseSelect = screen.getByLabelText('Carnet');
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLSelectElement.prototype,
+      'value',
+    )?.set;
+    nativeInputValueSetter?.call(licenseSelect, 'A2');
+    licenseSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      const table = screen.getByLabelText('Listado técnico de rankings');
+      expect(table.textContent).toContain('Tuareg 660');
+    });
+  });
+
+  it('filtro uso ciudad afecta resultados', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    const useSelect = screen.getByLabelText('Uso');
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLSelectElement.prototype,
+      'value',
+    )?.set;
+    nativeInputValueSetter?.call(useSelect, 'city');
+    useSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      const table = screen.getByLabelText('Listado técnico de rankings');
+      expect(table.textContent).toBeTruthy();
+    });
+  });
+
+  it('filtro búsqueda filtra resultados de tabla técnica', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByLabelText('Buscar modelo');
+    searchInput.focus();
+    await userEvent.type(searchInput, 'BMW');
+
+    await waitFor(() => {
+      const table = screen.getByLabelText('Listado técnico de rankings');
+      expect(table.textContent).toContain('F 900 GS');
+      expect(table.textContent).not.toContain('MT-09');
+    });
+  });
+
+  it('podium no refleja filtros de segmento', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+      createReview({ motorcycleId: 'test-aprilia-tuareg-660', rating: 5 }),
+    ]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Puesto 1: Aprilia Tuareg 660')).toBeInTheDocument();
+    });
+
+    const segmentSelect = screen.getByLabelText('Segmento');
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLSelectElement.prototype,
+      'value',
+    )?.set;
+    nativeInputValueSetter?.call(segmentSelect, 'naked');
+    segmentSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Puesto 1: Aprilia Tuareg 660')).toBeInTheDocument();
+    });
+  });
+
+  it('no aparece texto null en resultados filtrados', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/null/i)).not.toBeInTheDocument();
   });
 });
