@@ -4,17 +4,19 @@ import { getBikeDisplayName } from '../../../data/bikes';
 import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import {
   buildAllRankings,
+  buildAspectSignalsByMotorcycleId,
   buildGlobalRanking,
   buildReviewSignalsByMotorcycleId,
   getPodiumEntries,
   RANKING_CATEGORIES,
   type CategoryRanking,
+  type RankingAspectSignalsByMotorcycleId,
   type RankingCategory,
   type RankingEntry,
   type RankingReviewSignal,
 } from '../../../shared/reviews/communityRankings';
-import { getApprovedCommunityReviews } from '../../../services/motorcycleReviewService';
-import type { MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { getApprovedCommunityReviews, getReviewAspectsByReviewIds } from '../../../services/motorcycleReviewService';
+import type { MotorcycleReview, MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { formatReviewRating } from '../../../shared/reviews/reviewUtils';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
@@ -103,15 +105,26 @@ function getCommunityHref(bike: Pick<Bike, 'id'>) {
   return `#/comunidad/${bike.id}`;
 }
 
-const CONFIDENCE_LABELS: Record<string, string> = {
-  high: 'Alta',
-  medium: 'Media',
-  low: 'Baja',
+const CONFIDENCE_TOOLTIPS: Record<string, string> = {
+  high: 'Alta confianza',
+  medium: 'Media confianza',
+  low: 'Baja confianza',
+};
+
+const RANKING_TOOLTIPS: Record<string, string> = {
+  global: 'Valoración ponderada por reviews, aspectos y confianza',
+  daily: 'Uso diario + reviews + confianza',
+  travel: 'Viajes + confort + confianza',
+  sport: 'Prestaciones + reviews + confianza',
+  a2: 'Equilibrio A2 + reviews + confianza',
+  'power-weight': 'Relación peso/potencia + confianza',
+  reliability: 'Incidencias + reviews + confianza',
+  passenger: 'Confort pasajero + reviews + confianza',
 };
 
 function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry; rank: number; variant?: 'featured' | 'compact' }) {
   const bikeName = getBikeDisplayName(entry.bike);
-  const confidenceLabel = CONFIDENCE_LABELS[entry.confidence] ?? '';
+  const confidenceTooltip = CONFIDENCE_TOOLTIPS[entry.confidence] ?? '';
 
   return (
     <article className={`rankings__podium-card rankings__podium-card--${variant}`} aria-label={`Puesto ${rank}: ${bikeName}`}>
@@ -137,11 +150,18 @@ function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry
           </div>
         </div>
         <div className="rankings__podium-rating">
-          <span className="rankings__rating-star" aria-hidden="true">★</span>
+          <span className="rankings__rating-icon material-symbols-outlined" aria-hidden="true">analytics</span>
           <strong>{formatReviewRating(entry.score / 10)}</strong>
-          {entry.reviewCount > 0 && confidenceLabel && (
-            <span className="rankings__confidence-badge" aria-label={`Confianza ${confidenceLabel}`}>
-              {confidenceLabel}
+          {entry.reviewCount > 0 && (
+            <span
+              className={`rankings__confidence-shield rankings__confidence-shield--${entry.confidence}`}
+              aria-label={confidenceTooltip}
+              tabIndex={0}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">shield</span>
+              <span className="rankings__confidence-tooltip" role="tooltip">
+                {confidenceTooltip}
+              </span>
             </span>
           )}
         </div>
@@ -154,11 +174,12 @@ function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry
 }
 
 function CategoryCard({ ranking }: { ranking: CategoryRanking }) {
+  const tooltip = RANKING_TOOLTIPS[ranking.category.id] ?? '';
+
   return (
-    <article className="rankings__category-card">
+    <article className="rankings__category-card" title={tooltip}>
       <div className="rankings__category-header">
         <span className="material-symbols-outlined" aria-hidden="true">{ranking.category.icon}</span>
-        <span className="rankings__category-tag">{ranking.category.tag}</span>
       </div>
       <h3 className="rankings__category-title">{ranking.category.label}</h3>
       <p className="rankings__category-desc">{ranking.category.description}</p>
@@ -182,10 +203,9 @@ function MethodologyBlock() {
         <span className="material-symbols-outlined" aria-hidden="true">gavel</span>
         <h3 id="methodology-title">Nuestra Metodología</h3>
         <p>
-          Los rankings de MotoAtlas no están influenciados por acuerdos publicitarios ni patrocinios de marcas.
-          Utilizamos un algoritmo que procesa datos de <strong>verificación de propiedad</strong>, puntuaciones de{' '}
-          <strong>usuario final</strong>, y métricas de <strong>fiabilidad técnica</strong> a largo plazo.
-          Tu opinión construye la fuente de verdad más fiable del sector.
+          El índice MotoAtlas se expresa en una escala 0–10. Combina datos técnicos de la moto, reviews aprobadas,
+          aspectos técnicos agregados por propietarios y una señal de confianza basada en volumen. Las estrellas
+          pertenecen a las reviews individuales; el índice es una puntuación calculada para comparar motos dentro de cada categoría.
         </p>
       </div>
     </section>
@@ -278,18 +298,38 @@ function TechnicalTable({ rankings, filters }: { rankings: readonly CategoryRank
 export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProps) {
   const [filters, setFilters] = useState<RankingFilters>(defaultFilters);
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
+  const [aspects, setAspects] = useState<readonly MotorcycleReviewAspect[]>([]);
 
   useEffect(() => {
     let isMounted = true;
     getApprovedCommunityReviews()
       .then((nextReviews) => {
         if (isMounted) {
-          setReviews(nextReviews.filter((review) => review.status === 'approved'));
+          const approvedReviews = nextReviews.filter((review) => review.status === 'approved');
+          setReviews(approvedReviews);
+
+          const reviewIds = approvedReviews.map((r) => r.id);
+          if (reviewIds.length > 0) {
+            return getReviewAspectsByReviewIds(reviewIds)
+              .then((nextAspects) => {
+                if (isMounted) {
+                  setAspects(nextAspects);
+                }
+              })
+              .catch(() => {
+                if (isMounted) {
+                  setAspects([]);
+                }
+              });
+          } else {
+            setAspects([]);
+          }
         }
       })
       .catch(() => {
         if (isMounted) {
           setReviews([]);
+          setAspects([]);
         }
       });
     return () => {
@@ -302,13 +342,18 @@ export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProp
     [reviews],
   );
 
+  const aspectSignals = useMemo<RankingAspectSignalsByMotorcycleId>(
+    () => buildAspectSignalsByMotorcycleId(reviews, aspects),
+    [reviews, aspects],
+  );
+
   const allRankings = useMemo(
-    () => buildAllRankings(motorcycles, reviewSignals),
-    [motorcycles, reviewSignals],
+    () => buildAllRankings(motorcycles, reviewSignals, aspectSignals),
+    [motorcycles, reviewSignals, aspectSignals],
   );
   const podiumEntries = useMemo(
-    () => getPodiumEntries(motorcycles, reviewSignals),
-    [motorcycles, reviewSignals],
+    () => getPodiumEntries(motorcycles, reviewSignals, aspectSignals),
+    [motorcycles, reviewSignals, aspectSignals],
   );
 
   const filteredRankings = useMemo(() => getFilteredRankings(allRankings, filters), [allRankings, filters]);

@@ -177,7 +177,7 @@
   display: flex;
   gap: 0.35rem;
 
-  .rankings__rating-star {
+  .rankings__rating-icon {
     color: $color-accent;
     font-size: 1.1rem;
     line-height: 1;
@@ -193,6 +193,59 @@
 
 .rankings__podium-card--featured .rankings__podium-rating strong {
   font-size: 1.8rem;
+}
+
+.rankings__confidence-shield {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.95rem;
+  line-height: 1;
+  position: relative;
+
+  .material-symbols-outlined {
+    font-size: inherit;
+    line-height: 1;
+  }
+}
+
+.rankings__confidence-shield--high {
+  color: $color-positive;
+}
+
+.rankings__confidence-shield--medium {
+  color: $color-warning;
+}
+
+.rankings__confidence-shield--low {
+  color: $color-on-surface-variant;
+  opacity: 0.6;
+}
+
+.rankings__confidence-tooltip {
+  background: $color-surface;
+  border: 1px solid rgba($color-on-surface, 0.12);
+  border-radius: $radius-sm;
+  color: $color-on-surface;
+  font-size: 0.75rem;
+  font-weight: 500;
+  left: 50%;
+  opacity: 0;
+  padding: 0.35rem 0.55rem;
+  pointer-events: none;
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  transform: translateX(-50%);
+  transition: opacity 0.15s ease;
+  visibility: hidden;
+  white-space: nowrap;
+  z-index: 10;
+
+  .rankings__confidence-shield:hover &,
+  .rankings__confidence-shield:focus-visible &,
+  .rankings__confidence-shield:focus-within & {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .rankings__podium-action {
@@ -303,16 +356,6 @@
     color: $color-accent-container;
     font-size: 2rem;
   }
-}
-
-.rankings__category-tag {
-  @include label-caps;
-
-  background: $color-surface-container-high;
-  border-radius: $radius-sm;
-  color: $color-on-surface-variant;
-  font-size: 0.65rem;
-  padding: 0.35rem 0.55rem;
 }
 
 .rankings__category-title {

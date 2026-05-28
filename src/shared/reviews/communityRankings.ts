@@ -1,5 +1,5 @@
 import type { Bike } from '../../types/bike';
-import type { MotorcycleReview } from '../../services/motorcycleReviewService';
+import type { MotorcycleReview, MotorcycleReviewAspect, MotorcycleReviewAspectCategory } from '../../services/motorcycleReviewService';
 
 export type RankingConfidence = 'high' | 'medium' | 'low';
 
@@ -39,10 +39,190 @@ export function buildReviewSignalsByMotorcycleId(
   return result;
 }
 
+export const HIGH_CONFIDENCE_MIN_REVIEWS = 10;
+export const MEDIUM_CONFIDENCE_MIN_REVIEWS = 3;
+
 export function getRankingConfidence(reviewCount: number): RankingConfidence {
-  if (reviewCount >= 10) return 'high';
-  if (reviewCount >= 3) return 'medium';
+  if (reviewCount >= HIGH_CONFIDENCE_MIN_REVIEWS) return 'high';
+  if (reviewCount >= MEDIUM_CONFIDENCE_MIN_REVIEWS) return 'medium';
   return 'low';
+}
+
+export interface RankingAspectSignal {
+  readonly positive: number;
+  readonly negative: number;
+  readonly total: number;
+  readonly score: number;
+}
+
+export type RankingAspectSignalsByMotorcycleId = Record<
+  string,
+  Partial<Record<MotorcycleReviewAspectCategory, RankingAspectSignal>>
+>;
+
+export function buildAspectSignalsByMotorcycleId(
+  reviews: readonly MotorcycleReview[],
+  aspects: readonly MotorcycleReviewAspect[],
+): RankingAspectSignalsByMotorcycleId {
+  const approvedReviewIds = new Set<string>();
+  for (const review of reviews) {
+    if (review.status === 'approved') {
+      approvedReviewIds.add(review.id);
+    }
+  }
+
+  const reviewIdToMotorcycleId: Record<string, string> = {};
+  for (const review of reviews) {
+    if (review.status === 'approved') {
+      reviewIdToMotorcycleId[review.id] = review.motorcycleId;
+    }
+  }
+
+  const accumulator: Record<string, Record<string, { positive: number; negative: number }>> = {};
+
+  for (const aspect of aspects) {
+    if (!approvedReviewIds.has(aspect.reviewId)) continue;
+
+    const motorcycleId = reviewIdToMotorcycleId[aspect.reviewId];
+    if (!motorcycleId) continue;
+
+    if (!accumulator[motorcycleId]) {
+      accumulator[motorcycleId] = {};
+    }
+    if (!accumulator[motorcycleId][aspect.category]) {
+      accumulator[motorcycleId][aspect.category] = { positive: 0, negative: 0 };
+    }
+
+    if (aspect.sentiment === 'positive') {
+      accumulator[motorcycleId][aspect.category].positive++;
+    } else {
+      accumulator[motorcycleId][aspect.category].negative++;
+    }
+  }
+
+  const result: RankingAspectSignalsByMotorcycleId = {};
+  for (const [motorcycleId, categories] of Object.entries(accumulator)) {
+    result[motorcycleId] = {};
+    for (const [category, { positive, negative }] of Object.entries(categories)) {
+      const total = positive + negative;
+      const score = total > 0 ? (positive - negative) / total : 0;
+      result[motorcycleId][category as MotorcycleReviewAspectCategory] = {
+        positive,
+        negative,
+        total,
+        score,
+      };
+    }
+  }
+
+  return result;
+}
+
+const RANKING_ASPECT_WEIGHTS: Record<RankingCategory, Partial<Record<MotorcycleReviewAspectCategory, number>>> = {
+  global: {
+    engine: 1,
+    ergonomics: 1,
+    consumption: 0.8,
+    braking: 0.8,
+    suspension: 0.8,
+    electronics: 0.7,
+    aerodynamics: 0.7,
+    passenger: 0.6,
+    maintenance: 0.8,
+    price: 0.6,
+    weight: 0.6,
+    design: 0.5,
+  },
+  daily: {
+    ergonomics: 1,
+    consumption: 1,
+    maintenance: 0.8,
+    price: 0.7,
+    weight: 0.5,
+  },
+  travel: {
+    aerodynamics: 1,
+    passenger: 1,
+    ergonomics: 0.8,
+    consumption: 0.7,
+    suspension: 0.6,
+  },
+  sport: {
+    engine: 1,
+    braking: 1,
+    suspension: 0.9,
+    weight: 0.8,
+    electronics: 0.6,
+  },
+  a2: {
+    ergonomics: 1,
+    consumption: 0.9,
+    maintenance: 0.8,
+    weight: 0.8,
+    price: 0.7,
+  },
+  'power-weight': {
+    weight: 1,
+    engine: 0.8,
+  },
+  reliability: {
+    maintenance: 1,
+    electronics: 0.8,
+    engine: 0.7,
+    consumption: 0.5,
+  },
+  passenger: {
+    passenger: 1,
+    ergonomics: 0.8,
+    aerodynamics: 0.6,
+    suspension: 0.5,
+  },
+};
+
+export function applyAspectAdjustment(
+  baseScore: number,
+  category: RankingCategory,
+  bikeId: string,
+  reviewSignals?: Record<string, RankingReviewSignal>,
+  aspectSignals?: RankingAspectSignalsByMotorcycleId,
+): number {
+  const bikeAspects = aspectSignals?.[bikeId];
+  if (!bikeAspects) {
+    return baseScore;
+  }
+
+  const weights = RANKING_ASPECT_WEIGHTS[category];
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [categoryKey, aspectSignal] of Object.entries(bikeAspects)) {
+    const weight = weights[categoryKey as MotorcycleReviewAspectCategory];
+    if (weight === undefined) continue;
+
+    weightedSum += aspectSignal.score * weight;
+    totalWeight += weight;
+  }
+
+  if (totalWeight === 0) {
+    return baseScore;
+  }
+
+  const normalizedScore = weightedSum / totalWeight;
+
+  const reviewCount = reviewSignals?.[bikeId]?.reviewCount ?? 0;
+  let adjustmentFactor: number;
+  if (reviewCount < 3) {
+    adjustmentFactor = 0.35;
+  } else if (reviewCount < 10) {
+    adjustmentFactor = 0.7;
+  } else {
+    adjustmentFactor = 1;
+  }
+
+  const maxAdjustment = 5;
+  const adjustment = normalizedScore * maxAdjustment * adjustmentFactor;
+
+  return Math.max(0, Math.min(100, baseScore + adjustment));
 }
 
 export type RankingCategory =
@@ -237,6 +417,7 @@ function buildCategoryRanking(
   motorcycles: readonly Bike[],
   category: RankingCategory,
   reviewSignals?: Record<string, RankingReviewSignal>,
+  aspectSignals?: RankingAspectSignalsByMotorcycleId,
 ): CategoryRanking {
   const categoryMeta = RANKING_CATEGORIES.find((c) => c.id === category)!;
   const scoredBikes = motorcycles
@@ -252,9 +433,10 @@ function buildCategoryRanking(
         case 'reliability': score = scoreReliability(bike); break;
         case 'passenger': score = scorePassenger(bike); break;
       }
+      const adjustedScore = applyAspectAdjustment(score, category, bike.id, reviewSignals, aspectSignals);
       const signal = reviewSignals?.[bike.id];
       const reviewCount = signal?.reviewCount ?? 0;
-      return { bike, score, reviews: reviewCount, keySignal: getKeySignal(bike, category) };
+      return { bike, score: adjustedScore, reviews: reviewCount, keySignal: getKeySignal(bike, category) };
     })
     .filter((item) => item.score >= 0)
     .sort((a, b) => b.score - a.score || b.reviews - a.reviews)
@@ -280,20 +462,49 @@ function buildCategoryRanking(
 export function buildAllRankings(
   motorcycles: readonly Bike[],
   reviewSignals?: Record<string, RankingReviewSignal>,
+  aspectSignals?: RankingAspectSignalsByMotorcycleId,
 ): readonly CategoryRanking[] {
-  return RANKING_CATEGORIES.map((category) => buildCategoryRanking(motorcycles, category.id, reviewSignals));
+  return RANKING_CATEGORIES.map((category) => buildCategoryRanking(motorcycles, category.id, reviewSignals, aspectSignals));
 }
 
 export function buildGlobalRanking(
   motorcycles: readonly Bike[],
   reviewSignals?: Record<string, RankingReviewSignal>,
+  aspectSignals?: RankingAspectSignalsByMotorcycleId,
 ): readonly RankingEntry[] {
-  return buildCategoryRanking(motorcycles, 'global', reviewSignals).entries;
+  return buildCategoryRanking(motorcycles, 'global', reviewSignals, aspectSignals).entries;
 }
 
 export function getPodiumEntries(
   motorcycles: readonly Bike[],
   reviewSignals?: Record<string, RankingReviewSignal>,
+  aspectSignals?: RankingAspectSignalsByMotorcycleId,
 ): readonly RankingEntry[] {
-  return buildGlobalRanking(motorcycles, reviewSignals).slice(0, 3);
+  const allEntries = buildGlobalRanking(motorcycles, reviewSignals, aspectSignals);
+
+  const highEntries = allEntries.filter((e) => e.confidence === 'high');
+  const mediumEntries = allEntries.filter((e) => e.confidence === 'medium');
+  const lowEntries = allEntries.filter((e) => e.confidence === 'low');
+
+  const sortByScoreAndReviews = (a: RankingEntry, b: RankingEntry) =>
+    b.score - a.score || b.reviews - a.reviews;
+
+  const podium: RankingEntry[] = [];
+
+  for (const entry of highEntries.sort(sortByScoreAndReviews)) {
+    if (podium.length >= 3) break;
+    podium.push(entry);
+  }
+
+  for (const entry of mediumEntries.sort(sortByScoreAndReviews)) {
+    if (podium.length >= 3) break;
+    podium.push(entry);
+  }
+
+  for (const entry of lowEntries.sort(sortByScoreAndReviews)) {
+    if (podium.length >= 3) break;
+    podium.push(entry);
+  }
+
+  return podium;
 }

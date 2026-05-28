@@ -1,15 +1,17 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getApprovedCommunityReviews, type MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { getApprovedCommunityReviews, getReviewAspectsByReviewIds, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { createApprovedReviewFixture } from '../../../test/fixtures/reviews';
 import { CommunityRankingsPage } from './CommunityRankingsPage';
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getApprovedCommunityReviews: vi.fn(),
+  getReviewAspectsByReviewIds: vi.fn(),
 }));
 
 const getApprovedCommunityReviewsMock = vi.mocked(getApprovedCommunityReviews);
+const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 
 function createReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
   const id = overrides.id ?? 'review-1';
@@ -41,6 +43,8 @@ describe('CommunityRankingsPage', () => {
   beforeEach(() => {
     getApprovedCommunityReviewsMock.mockReset();
     getApprovedCommunityReviewsMock.mockResolvedValue([]);
+    getReviewAspectsByReviewIdsMock.mockReset();
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
   });
 
   it('renderiza la página sin elementos ficticios de Stitch', () => {
@@ -102,12 +106,13 @@ describe('CommunityRankingsPage', () => {
     expect(table).toBeInTheDocument();
   });
 
-  it('renderiza el bloque de metodología', () => {
+  it('renderiza el bloque de metodología con escala 0-10 y diferenciación de estrellas', () => {
     window.location.hash = '#/comunidad/rankings';
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     expect(screen.getByRole('heading', { name: /Nuestra Metodología/i })).toBeInTheDocument();
-    expect(screen.getByText(/Rankings de MotoAtlas no están influenciados por acuerdos publicitarios/i)).toBeInTheDocument();
+    expect(screen.getByText(/escala 0–10/i)).toBeInTheDocument();
+    expect(screen.getByText(/estrellas pertenecen a las reviews/i)).toBeInTheDocument();
   });
 
   it('renderiza el CTA final', () => {
@@ -143,7 +148,9 @@ describe('CommunityRankingsPage', () => {
     });
   });
 
-  it('muestra Alta confianza cuando hay 10+ reviews', async () => {
+  it('muestra shield con Alta confianza cuando hay 10+ reviews', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
     getApprovedCommunityReviewsMock.mockResolvedValue([
       createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
       createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
@@ -161,11 +168,23 @@ describe('CommunityRankingsPage', () => {
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Alta')).toBeInTheDocument();
+      const shield = document.querySelector('.rankings__confidence-shield--high');
+      expect(shield).toBeInTheDocument();
+      expect(shield?.getAttribute('aria-label')).toBe('Alta confianza');
+      const tooltip = shield?.querySelector('.rankings__confidence-tooltip');
+      expect(tooltip).toBeInTheDocument();
+      expect(tooltip?.getAttribute('role')).toBe('tooltip');
+      expect(tooltip?.textContent).toBe('Alta confianza');
+      const icon = shield?.querySelector('.material-symbols-outlined');
+      expect(icon).toBeInTheDocument();
+      expect(icon?.textContent).toBe('shield');
+      expect(icon?.getAttribute('aria-hidden')).toBe('true');
     });
   });
 
-  it('muestra Media confianza cuando hay 3-9 reviews', async () => {
+  it('muestra shield con Media confianza cuando hay 3-9 reviews', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
     getApprovedCommunityReviewsMock.mockResolvedValue([
       createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
       createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
@@ -176,20 +195,75 @@ describe('CommunityRankingsPage', () => {
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Media')).toBeInTheDocument();
+      const shield = document.querySelector('.rankings__confidence-shield--medium');
+      expect(shield).toBeInTheDocument();
+      expect(shield?.getAttribute('aria-label')).toBe('Media confianza');
+      const tooltip = shield?.querySelector('.rankings__confidence-tooltip');
+      expect(tooltip).toBeInTheDocument();
+      expect(tooltip?.getAttribute('role')).toBe('tooltip');
+      expect(tooltip?.textContent).toBe('Media confianza');
+      const icon = shield?.querySelector('.material-symbols-outlined');
+      expect(icon).toBeInTheDocument();
+      expect(icon?.textContent).toBe('shield');
+      expect(icon?.getAttribute('aria-hidden')).toBe('true');
     });
   });
 
-  it('no muestra confianza cuando no hay reviews', async () => {
+  it('no muestra shield de confianza cuando no hay reviews', async () => {
     getApprovedCommunityReviewsMock.mockResolvedValue([]);
 
     window.location.hash = '#/comunidad/rankings';
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      expect(screen.queryByText('Alta')).not.toBeInTheDocument();
-      expect(screen.queryByText('Media')).not.toBeInTheDocument();
-      expect(screen.queryByText('Baja')).not.toBeInTheDocument();
+      expect(document.querySelector('.rankings__confidence-shield')).not.toBeInTheDocument();
+    });
+  });
+
+  it('muestra shield con Baja confianza cuando hay 1-2 reviews', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+    getApprovedCommunityReviewsMock.mockResolvedValue([
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+    ]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      const shield = document.querySelector('.rankings__confidence-shield--low');
+      expect(shield).toBeInTheDocument();
+      expect(shield?.getAttribute('aria-label')).toBe('Baja confianza');
+      const tooltip = shield?.querySelector('.rankings__confidence-tooltip');
+      expect(tooltip).toBeInTheDocument();
+      expect(tooltip?.getAttribute('role')).toBe('tooltip');
+      expect(tooltip?.textContent).toBe('Baja confianza');
+      const icon = shield?.querySelector('.material-symbols-outlined');
+      expect(icon).toBeInTheDocument();
+      expect(icon?.textContent).toBe('shield');
+      expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    });
+  });
+
+  it('shield de confianza tiene icono visible y aria-hidden en el span interno', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+    getApprovedCommunityReviewsMock.mockResolvedValue([
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+    ]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      const shieldWrapper = document.querySelector('.rankings__confidence-shield--medium');
+      expect(shieldWrapper).toBeInTheDocument();
+      const iconSpan = shieldWrapper?.querySelector('.material-symbols-outlined');
+      expect(iconSpan).toBeInTheDocument();
+      expect(iconSpan?.getAttribute('aria-hidden')).toBe('true');
     });
   });
 
@@ -202,5 +276,40 @@ describe('CommunityRankingsPage', () => {
     await waitFor(() => {
       expect(screen.queryByText(/null/i)).not.toBeInTheDocument();
     });
+  });
+
+  it('usa icono analytics en podium y no estrella', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    const analyticsIcon = document.querySelector('.rankings__rating-icon');
+    expect(analyticsIcon).toBeInTheDocument();
+    expect(analyticsIcon?.textContent).toBe('analytics');
+    expect(document.querySelector('.rankings__rating-star')).not.toBeInTheDocument();
+  });
+
+  it('muestra tooltip en categorías de ranking', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    const globalCard = document.querySelector('.rankings__category-card[title*="Valoración"]');
+    expect(globalCard).toBeInTheDocument();
+  });
+
+  it('muestra tooltips de cada categoría', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    const dailyCard = document.querySelector('.rankings__category-card[title*="Uso diario"]');
+    expect(dailyCard).toBeInTheDocument();
+
+    const travelCard = document.querySelector('.rankings__category-card[title*="Viajes"]');
+    expect(travelCard).toBeInTheDocument();
   });
 });
