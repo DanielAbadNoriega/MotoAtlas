@@ -1,12 +1,13 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getApprovedCommunityReviews, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { getApprovedCommunityReviews, getReviewAspectsByReviewIds, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus, type MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
 import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
 import { CommunityReviewsPage } from './CommunityReviewsPage';
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getApprovedCommunityReviews: vi.fn(),
+  getReviewAspectsByReviewIds: vi.fn(),
 }));
 
 vi.mock('../../../services/reviewReactionService', () => ({
@@ -14,6 +15,7 @@ vi.mock('../../../services/reviewReactionService', () => ({
 }));
 
 const getApprovedCommunityReviewsMock = vi.mocked(getApprovedCommunityReviews);
+const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
 
 function createCommunityReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
@@ -54,9 +56,14 @@ function buildReviews(count: number) {
   return Array.from({ length: count }, (_, index) => createCommunityReview({ id: `community-review-${index + 1}` }));
 }
 
-async function renderPage(reviews: readonly MotorcycleReview[], reactionSummaries: readonly ReviewReactionSummary[] = []) {
+async function renderPage(
+  reviews: readonly MotorcycleReview[],
+  reactionSummaries: readonly ReviewReactionSummary[] = [],
+  aspects: readonly MotorcycleReviewAspect[] = [],
+) {
   getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
   getReviewReactionSummaryMock.mockResolvedValue(reactionSummaries);
+  getReviewAspectsByReviewIdsMock.mockResolvedValue(aspects);
   render(<CommunityReviewsPage />);
   await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
   await screen.findByRole('heading', { name: /Reviews de la comunidad/i });
@@ -88,6 +95,7 @@ describe('CommunityReviewsPage', () => {
     window.location.hash = '';
     getApprovedCommunityReviewsMock.mockReset();
     getReviewReactionSummaryMock.mockReset();
+    getReviewAspectsByReviewIdsMock.mockReset();
     vi.useRealTimers();
   });
 
@@ -275,7 +283,7 @@ describe('CommunityReviewsPage', () => {
     ]);
 
     const featuredSection = getFeaturedSection();
-    const featuredCards = within(featuredSection).getAllByTestId('account-review-card');
+    const featuredCards = within(featuredSection).getAllByTestId('featured-review-card');
 
     expect(featuredCards).toHaveLength(2);
     expect(featuredCards[0]).toHaveTextContent('Sin kilómetros pero buen rating');
@@ -293,7 +301,7 @@ describe('CommunityReviewsPage', () => {
       createCommunityReview({ id: 'latest-4', comment: 'Reporte cuarto', createdAt: '2026-05-15T10:00:00.000Z' }),
     ]);
 
-    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+    const latestCards = within(getLatestSection()).getAllByTestId('featured-review-card');
 
     expect(latestCards).toHaveLength(2);
     expect(latestCards[0]).toHaveTextContent('Reporte más reciente');
@@ -335,7 +343,7 @@ describe('CommunityReviewsPage', () => {
     ]);
 
     const featuredSection = getFeaturedSection();
-    const featuredCards = within(featuredSection).getAllByTestId('account-review-card');
+    const featuredCards = within(featuredSection).getAllByTestId('featured-review-card');
 
     expect(featuredCards).toHaveLength(2);
     const featuredMotorcycleIds = featuredCards.map((card) => {
@@ -370,7 +378,7 @@ describe('CommunityReviewsPage', () => {
       }),
     ]);
 
-    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+    const latestCards = within(getLatestSection()).getAllByTestId('featured-review-card');
 
     expect(latestCards).toHaveLength(2);
     const latestMotorcycleIds = latestCards.map((card) => {
@@ -398,7 +406,7 @@ describe('CommunityReviewsPage', () => {
       }),
     ]);
 
-    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+    const latestCards = within(getLatestSection()).getAllByTestId('featured-review-card');
     expect(latestCards).toHaveLength(2);
   });
 
@@ -513,8 +521,8 @@ describe('CommunityReviewsPage', () => {
       }),
     ]);
 
-    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
-    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('featured-review-card');
+    const latestCards = within(getLatestSection()).getAllByTestId('featured-review-card');
 
     expect(featuredCards).toHaveLength(2);
     expect(latestCards).toHaveLength(2);
@@ -545,7 +553,7 @@ describe('CommunityReviewsPage', () => {
     ];
     await renderPage(reviews, reactions);
 
-    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('featured-review-card');
     expect(featuredCards).toHaveLength(2);
     const firstCard = featuredCards[0];
     const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
@@ -579,7 +587,7 @@ describe('CommunityReviewsPage', () => {
     ];
     await renderPage(reviews, reactions);
 
-    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('featured-review-card');
     const firstCard = featuredCards[0];
     const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
     expect(firstLink.getAttribute('href')).toContain('helpful-bike');
@@ -610,7 +618,7 @@ describe('CommunityReviewsPage', () => {
     ];
     await renderPage(reviews, reactions);
 
-    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('featured-review-card');
     const firstCard = featuredCards[0];
     const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
     expect(firstLink.getAttribute('href')).toContain('tie-high');
@@ -641,7 +649,7 @@ describe('CommunityReviewsPage', () => {
     ];
     await renderPage(reviews, reactions);
 
-    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('featured-review-card');
     const firstCard = featuredCards[0];
     const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
     expect(firstLink.getAttribute('href')).toContain('tie-new');
@@ -668,7 +676,7 @@ describe('CommunityReviewsPage', () => {
     ];
     await renderPage(reviews, []);
 
-    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('featured-review-card');
     expect(featuredCards).toHaveLength(2);
     const firstCard = featuredCards[0];
     const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
@@ -709,7 +717,7 @@ describe('CommunityReviewsPage', () => {
     ];
     await renderPage(reviews, reactions);
 
-    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('featured-review-card');
     expect(featuredCards).toHaveLength(2);
     const featuredHrefs = featuredCards.map((card) => within(card).getByRole('link', { name: /Ver ficha/i }).getAttribute('href'));
     expect(featuredHrefs[0]).toContain('same-bike');
@@ -735,7 +743,7 @@ describe('CommunityReviewsPage', () => {
     ];
     await renderPage(reviews, []);
 
-    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+    const latestCards = within(getLatestSection()).getAllByTestId('featured-review-card');
     const firstCard = latestCards[0];
     const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
     expect(firstLink.getAttribute('href')).toContain('new-bike');
@@ -1074,8 +1082,10 @@ describe('CommunityReviewsPage', () => {
   it('muestra error y permite reintentar', async () => {
     const user = userEvent.setup();
     getReviewReactionSummaryMock.mockReset();
+    getReviewAspectsByReviewIdsMock.mockReset();
     getApprovedCommunityReviewsMock.mockRejectedValueOnce(new Error('permission denied')).mockResolvedValueOnce([createCommunityReview()]);
     getReviewReactionSummaryMock.mockResolvedValueOnce([]);
+    getReviewAspectsByReviewIdsMock.mockResolvedValueOnce([]);
 
     render(<CommunityReviewsPage />);
 
@@ -1124,6 +1134,8 @@ describe('CommunityReviewsPage', () => {
       .mockResolvedValueOnce([createCommunityReview({ id: 'stable-1', motorcycle: { id: 'stable-1', brand: 'BMW', model: 'Stable GS', year: 2024, imageUrl: '/stable.webp', segment: 'trail', license: 'A' } })])
       .mockRejectedValueOnce(new Error('network error'))
       .mockResolvedValueOnce([createCommunityReview({ id: 'stable-1', motorcycle: { id: 'stable-1', brand: 'BMW', model: 'Stable GS', year: 2024, imageUrl: '/stable.webp', segment: 'trail', license: 'A' } })]);
+    getReviewReactionSummaryMock.mockResolvedValue([]);
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
 
     render(<CommunityReviewsPage />);
     await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
@@ -1144,6 +1156,8 @@ describe('CommunityReviewsPage', () => {
 
   it('muestra Actualizado ahora tras la carga inicial en insights', async () => {
     getApprovedCommunityReviewsMock.mockResolvedValue([createCommunityReview({ id: 'insights-ts-1' })]);
+    getReviewReactionSummaryMock.mockResolvedValue([]);
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
     render(<CommunityReviewsPage />);
 
     await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));

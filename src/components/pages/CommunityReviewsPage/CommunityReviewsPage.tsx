@@ -4,13 +4,15 @@ import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountReviewsEmptyState } from '../AccountReviewsPage/AccountReviewsEmptyState';
 import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
 import {
-  AccountReviewCard,
   accountReviewRidingStyleLabels,
   getAccountReviewMotorcycleDisplay,
 } from '../../reviews/AccountReviewCard';
+import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import {
   getApprovedCommunityReviews,
+  getReviewAspectsByReviewIds,
   type MotorcycleReview,
+  type MotorcycleReviewAspect,
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
 import {
@@ -360,12 +362,14 @@ function EditorialReviewSection({
   reviews,
   title,
   tone,
+  aspectsByReviewId,
 }: Readonly<{
   emptyMessage: string;
   id: string;
   reviews: readonly MotorcycleReview[];
   title: string;
   tone: 'featured' | 'latest';
+  aspectsByReviewId: ReadonlyMap<string, readonly MotorcycleReviewAspect[]>;
 }>) {
   const sectionClasses = [
     'community-reviews-page__editorial-section',
@@ -383,7 +387,12 @@ function EditorialReviewSection({
       ) : (
         <div className="community-reviews-page__editorial-list">
           {reviews.map((review) => (
-            <AccountReviewCard headingLevel={3} key={review.id} review={review} variant="communityCompact" />
+            <FeaturedReviewCard
+              headingLevel={3}
+              key={review.id}
+              review={review}
+              aspects={aspectsByReviewId.get(review.id)}
+            />
           ))}
         </div>
       )}
@@ -719,6 +728,7 @@ export function CommunityReviewsPage() {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<number>(0);
   const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
+  const [aspectSummaries, setAspectSummaries] = useState<readonly MotorcycleReviewAspect[]>([]);
 
   const loadReviews = () => {
     setStatus('loading');
@@ -734,10 +744,14 @@ export function CommunityReviewsPage() {
       })
       .then((approved) => {
         const reviewIds = approved.map((r) => r.id);
-        return getReviewReactionSummary(reviewIds);
+        return Promise.all([
+          getReviewReactionSummary(reviewIds),
+          getReviewAspectsByReviewIds(reviewIds),
+        ]) as Promise<[readonly ReviewReactionSummary[], readonly MotorcycleReviewAspect[]]>;
       })
-      .then((summaries) => {
-        setReactionSummaries(summaries);
+      .then(([reactions, aspects]) => {
+        setReactionSummaries(reactions);
+        setAspectSummaries(aspects);
       })
       .catch((reviewsError) => {
         setReviews([]);
@@ -756,10 +770,14 @@ export function CommunityReviewsPage() {
       })
       .then((approved) => {
         const reviewIds = approved.map((r) => r.id);
-        return getReviewReactionSummary(reviewIds);
+        return Promise.all([
+          getReviewReactionSummary(reviewIds),
+          getReviewAspectsByReviewIds(reviewIds),
+        ]) as Promise<[readonly ReviewReactionSummary[], readonly MotorcycleReviewAspect[]]>;
       })
-      .then((summaries) => {
-        setReactionSummaries(summaries);
+      .then(([reactions, aspects]) => {
+        setReactionSummaries(reactions);
+        setAspectSummaries(aspects);
       })
       .catch(() => {
       });
@@ -780,13 +798,18 @@ export function CommunityReviewsPage() {
         return approved;
       })
       .then((approved) => {
-        if (!isMounted || !approved) return;
+        if (!isMounted || !approved) return undefined;
         const reviewIds = approved.map((r) => r.id);
-        return getReviewReactionSummary(reviewIds);
+        return Promise.all([
+          getReviewReactionSummary(reviewIds),
+          getReviewAspectsByReviewIds(reviewIds),
+        ]) as Promise<[readonly ReviewReactionSummary[], readonly MotorcycleReviewAspect[]]>;
       })
-      .then((summaries) => {
-        if (!isMounted || !summaries) return;
-        setReactionSummaries(summaries);
+      .then((result) => {
+        if (!isMounted || !result) return;
+        const [reactions, aspects] = result;
+        setReactionSummaries(reactions);
+        setAspectSummaries(aspects);
       })
       .catch((reviewsError) => {
         if (!isMounted) return;
@@ -811,6 +834,14 @@ export function CommunityReviewsPage() {
     reactionSummaries.forEach((s) => map.set(s.reviewId, s.helpfulCount));
     return map;
   }, [reactionSummaries]);
+  const aspectByReviewId = useMemo(() => {
+    const map = new Map<string, readonly MotorcycleReviewAspect[]>();
+    aspectSummaries.forEach((a) => {
+      const existing = map.get(a.reviewId) ?? [];
+      map.set(a.reviewId, [...existing, a]);
+    });
+    return map as ReadonlyMap<string, readonly MotorcycleReviewAspect[]>;
+  }, [aspectSummaries]);
   const featuredReviews = useMemo(
     () => getFeaturedReviews(approvedReviews, helpfulCountByReviewId),
     [approvedReviews, helpfulCountByReviewId],
@@ -875,6 +906,7 @@ export function CommunityReviewsPage() {
         <div className="community-reviews-page__editorial-grid">
           <div className="community-reviews-page__editorial-main">
             <EditorialReviewSection
+              aspectsByReviewId={aspectByReviewId}
               emptyMessage="Todavía no hay reviews destacadas."
               id="community-featured-reviews-title"
               reviews={featuredReviews}
@@ -882,6 +914,7 @@ export function CommunityReviewsPage() {
               tone="featured"
             />
             <EditorialReviewSection
+              aspectsByReviewId={aspectByReviewId}
               emptyMessage="Todavía no hay actividad reciente."
               id="community-latest-reviews-title"
               reviews={latestReviews}
