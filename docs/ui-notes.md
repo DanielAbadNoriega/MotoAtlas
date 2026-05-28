@@ -47,6 +47,30 @@ El compare tray del buscador muestra mini-slots de motos seleccionadas y skeleto
 
 La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. `Top Rated` ya no aparece como bloque separado en esta landing.
 
+## Comunidad — Rankings
+
+La ruta `#/comunidad/rankings` muestra rankings por categoría con datos reales de reviews aprobadas.
+
+Elementos principales:
+- Podio top 3 con imagen, stats y badge de confianza.
+- Grid de 8 categorías (global, daily, travel, sport, a2, power-weight, reliability, passenger).
+- Tabla técnica con filtros por segmento, carnet y uso.
+
+Datos:
+- `reviewCount`: conteo real de reviews `approved` por moto.
+- `averageRating`: rating medio de reviews aprobadas.
+- `confidence`: Alta (≥10 reviews), Media (≥3), Baja (<3).
+- `score`: basado en `useScores` + `reliabilityReports`, ajustado ±5 puntos máx. por aspectos técnicos.
+
+Aspectos técnicos:
+- Se cargan batch desde `motorcycle_review_aspects` via `getReviewAspectsByReviewIds`.
+- Se agregan por `motorcycleId` y `category` contando positive/negative.
+- Score de aspecto: `(positive - negative) / total`.
+- Pesos por categoría definidos en `RANKING_ASPECT_WEIGHTS`.
+- Ajuste escalonado por confianza: 35% (<3), 70% (3-9), 100% (≥10).
+
+Metodología visible en página menciona datos técnicos, reviews aprobadas y aspectos agregados.
+
 ## Comunidad — Reviews públicas
 
 La ruta `#/comunidad/reviews` funciona como entrada pública a reviews `approved`: los bloques editoriales superiores muestran reviews individuales, mientras `Garaje de la comunidad` agrupa reviews por moto y pagina 9 modelos por página.
