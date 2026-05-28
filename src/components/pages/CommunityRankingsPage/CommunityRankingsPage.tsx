@@ -18,7 +18,7 @@ import {
 import { getApprovedCommunityReviews, getReviewAspectsByReviewIds } from '../../../services/motorcycleReviewService';
 import type { MotorcycleReview, MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
 import type { Bike, BikeSegment } from '../../../types/bike';
-import { formatReviewRating } from '../../../shared/reviews/reviewUtils';
+
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './CommunityRankingsPage.scss';
@@ -105,6 +105,12 @@ function getCommunityHref(bike: Pick<Bike, 'id'>) {
   return `#/comunidad/${bike.id}`;
 }
 
+function formatRankingScore(score: number): string {
+  const clamped = Math.max(0, Math.min(10, score / 10));
+  const rounded = Math.round(clamped * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
 const CONFIDENCE_TOOLTIPS: Record<string, string> = {
   high: 'Alta confianza',
   medium: 'Media confianza',
@@ -151,7 +157,7 @@ function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry
         </div>
         <div className="rankings__podium-rating">
           <span className="rankings__rating-icon material-symbols-outlined" aria-hidden="true">analytics</span>
-          <strong>{formatReviewRating(entry.score / 10)}</strong>
+          <strong>{formatRankingScore(entry.score)}</strong>
           {entry.reviewCount > 0 && (
             <span
               className={`rankings__confidence-shield rankings__confidence-shield--${entry.confidence}`}
@@ -187,7 +193,7 @@ function CategoryCard({ ranking }: { ranking: CategoryRanking }) {
         {ranking.entries.slice(0, 3).map((entry, index) => (
           <li key={entry.bike.id} className="rankings__category-item">
             <span>{index + 1}. {entry.bike.brand} {entry.bike.model}</span>
-            <span className={index === 0 ? 'rankings__category-score--top' : ''}>{formatReviewRating(entry.score / 10)}</span>
+            <span className={index === 0 ? 'rankings__category-score--top' : ''}>{formatRankingScore(entry.score)}</span>
           </li>
         ))}
       </ul>
@@ -274,8 +280,7 @@ function TechnicalTable({ rankings, filters }: { rankings: readonly CategoryRank
             <td className="rankings__table-segment">{segmentLabels[entry.bike.segment]}</td>
             <td className="rankings__table-center">
               <span className="rankings__table-rating">
-                {formatReviewRating(entry.score / 10)}
-                {entry.confidence === 'high' && <span className="rankings__table-confidence" aria-label="Alta confianza">A</span>}
+                {formatRankingScore(entry.score)}
               </span>
             </td>
             <td className="rankings__table-reviews">{entry.reviews}</td>

@@ -235,6 +235,10 @@ export type RankingCategory =
   | 'reliability'
   | 'passenger';
 
+function clampRankingScore(score: number): number {
+  return Math.max(0, Math.min(100, score));
+}
+
 export type RankingCategoryMeta = Readonly<{
   id: RankingCategory;
   label: string;
@@ -436,7 +440,7 @@ function buildCategoryRanking(
       const adjustedScore = applyAspectAdjustment(score, category, bike.id, reviewSignals, aspectSignals);
       const signal = reviewSignals?.[bike.id];
       const reviewCount = signal?.reviewCount ?? 0;
-      return { bike, score: adjustedScore, reviews: reviewCount, keySignal: getKeySignal(bike, category) };
+      return { bike, score: adjustedScore >= 0 ? clampRankingScore(adjustedScore) : -1, reviews: reviewCount, keySignal: getKeySignal(bike, category) };
     })
     .filter((item) => item.score >= 0)
     .sort((a, b) => b.score - a.score || b.reviews - a.reviews)

@@ -312,4 +312,50 @@ describe('CommunityRankingsPage', () => {
     const travelCard = document.querySelector('.rankings__category-card[title*="Viajes"]');
     expect(travelCard).toBeInTheDocument();
   });
+
+  it('TechnicalTable no muestra sufijo A de confianza en rating', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+    getApprovedCommunityReviewsMock.mockResolvedValue([
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+    ]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    const table = screen.getByLabelText('Listado técnico de rankings');
+    const tableContent = table.textContent ?? '';
+    expect(tableContent).not.toMatch(/A\b/);
+    const confidenceBadge = within(table).queryByText('A');
+    expect(confidenceBadge).not.toBeInTheDocument();
+  });
+
+  it('TechnicalTable no muestra .rankings__table-confidence', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+    ]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    expect(document.querySelector('.rankings__table-confidence')).not.toBeInTheDocument();
+  });
 });

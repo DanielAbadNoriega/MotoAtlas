@@ -474,4 +474,39 @@ describe('communityRankings', () => {
       expect(result).toBeGreaterThanOrEqual(75);
     });
   });
+
+  describe('clampRankingScore', () => {
+    it('buildGlobalRanking nunca devuelve entries con score > 100', () => {
+      const ranking = buildGlobalRanking(bikeFixtures);
+      ranking.forEach((entry) => {
+        expect(entry.score).toBeLessThanOrEqual(100);
+      });
+    });
+
+    it('buildAllRankings nunca devuelve entries con score > 100', () => {
+      const rankings = buildAllRankings(bikeFixtures);
+      rankings.forEach((ranking) => {
+        ranking.entries.forEach((entry) => {
+          expect(entry.score).toBeLessThanOrEqual(100);
+        });
+      });
+    });
+
+    it('getPodiumEntries nunca devuelve entries con score > 100', () => {
+      const podium = getPodiumEntries(bikeFixtures);
+      podium.forEach((entry) => {
+        expect(entry.score).toBeLessThanOrEqual(100);
+      });
+    });
+
+    it('buildCategoryRanking clampa score > 100 a 100', () => {
+      const rankings = buildAllRankings(bikeFixtures);
+      rankings.forEach((ranking) => {
+        ranking.entries.forEach((entry) => {
+          expect(entry.score).toBeLessThanOrEqual(100);
+          expect(entry.score).toBeGreaterThanOrEqual(0);
+        });
+      });
+    });
+  });
 });
