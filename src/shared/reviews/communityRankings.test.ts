@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { buildAllRankings, buildGlobalRanking, getPodiumEntries, RANKING_CATEGORIES } from './communityRankings';
+import {
+  buildAllRankings,
+  buildGlobalRanking,
+  buildReviewSignalsByMotorcycleId,
+  getPodiumEntries,
+  getRankingConfidence,
+  RANKING_CATEGORIES,
+} from './communityRankings';
 import { bikeFixtures } from '../../test/fixtures/bikes';
+import {
+  createApprovedReviewFixture,
+  createPendingReviewFixture,
+  createRejectedReviewFixture,
+  createHiddenReviewFixture,
+} from '../../test/fixtures/reviews';
 
 describe('communityRankings', () => {
   describe('RANKING_CATEGORIES', () => {
@@ -36,7 +49,7 @@ describe('communityRankings', () => {
       }
     });
 
-    it('cada entrada tiene bike, score, reviews y keySignal', () => {
+    it('cada entrada tiene bike, score, reviews, reviewCount, averageRating, confidence y keySignal', () => {
       const ranking = buildGlobalRanking(bikeFixtures);
 
       ranking.forEach((entry) => {
@@ -45,6 +58,10 @@ describe('communityRankings', () => {
         expect(entry.score).toBeGreaterThan(0);
         expect(typeof entry.reviews).toBe('number');
         expect(entry.reviews).toBeGreaterThanOrEqual(0);
+        expect(typeof entry.reviewCount).toBe('number');
+        expect(entry.reviewCount).toBeGreaterThanOrEqual(0);
+        expect(entry.averageRating).toBeNull();
+        expect(entry.confidence).toBe('low');
         expect(typeof entry.keySignal).toBe('string');
         expect(entry.keySignal.length).toBeGreaterThan(0);
       });
@@ -123,6 +140,91 @@ describe('communityRankings', () => {
         const isA2 = entry.bike.license === 'A2' || entry.bike.isA2Compatible === true;
         expect(isA2).toBe(true);
       });
+    });
+
+    it('usa reviewCount real cuando se pasan reviewSignals', () => {
+      const signals = {
+        'test-bmw-f-900-gs': { motorcycleId: 'test-bmw-f-900-gs', reviewCount: 15, averageRating: 4.5 },
+      };
+      const ranking = buildGlobalRanking(bikeFixtures, signals);
+
+      const bmwEntry = ranking.find((e) => e.bike.id === 'test-bmw-f-900-gs');
+      expect(bmwEntry?.reviewCount).toBe(15);
+      expect(bmwEntry?.reviews).toBe(15);
+      expect(bmwEntry?.averageRating).toBe(4.5);
+      expect(bmwEntry?.confidence).toBe('high');
+    });
+
+    it('fallback no rompe cuando no hay signals', () => {
+      const ranking = buildGlobalRanking(bikeFixtures, undefined);
+      expect(ranking.length).toBeGreaterThan(0);
+      ranking.forEach((entry) => {
+        expect(entry.reviewCount).toBe(0);
+        expect(entry.confidence).toBe('low');
+      });
+    });
+  });
+
+  describe('buildReviewSignalsByMotorcycleId', () => {
+    it('agrupa y cuenta reviews approved por motorcycleId', () => {
+      const reviews = [
+        createApprovedReviewFixture({ motorcycleId: 'bike-1', rating: 5 }),
+        createApprovedReviewFixture({ motorcycleId: 'bike-1', rating: 4 }),
+        createApprovedReviewFixture({ motorcycleId: 'bike-2', rating: 3 }),
+      ];
+
+      const signals = buildReviewSignalsByMotorcycleId(reviews);
+
+      expect(signals['bike-1'].reviewCount).toBe(2);
+      expect(signals['bike-2'].reviewCount).toBe(1);
+    });
+
+    it('calcula averageRating correctamente', () => {
+      const reviews = [
+        createApprovedReviewFixture({ motorcycleId: 'bike-1', rating: 5 }),
+        createApprovedReviewFixture({ motorcycleId: 'bike-1', rating: 3 }),
+      ];
+
+      const signals = buildReviewSignalsByMotorcycleId(reviews);
+
+      expect(signals['bike-1'].averageRating).toBe(4.0);
+    });
+
+    it('ignora reviews pending, rejected y hidden', () => {
+      const reviews = [
+        createApprovedReviewFixture({ motorcycleId: 'bike-1' }),
+        createPendingReviewFixture({ motorcycleId: 'bike-1' }),
+        createRejectedReviewFixture({ motorcycleId: 'bike-1' }),
+        createHiddenReviewFixture({ motorcycleId: 'bike-1' }),
+      ];
+
+      const signals = buildReviewSignalsByMotorcycleId(reviews);
+
+      expect(signals['bike-1'].reviewCount).toBe(1);
+    });
+
+    it('devuelve averageRating null si no hay reviews', () => {
+      const signals = buildReviewSignalsByMotorcycleId([]);
+      expect(Object.keys(signals)).toHaveLength(0);
+    });
+  });
+
+  describe('getRankingConfidence', () => {
+    it('reviewCount >= 10 devuelve high', () => {
+      expect(getRankingConfidence(10)).toBe('high');
+      expect(getRankingConfidence(15)).toBe('high');
+    });
+
+    it('reviewCount >= 3 y < 10 devuelve medium', () => {
+      expect(getRankingConfidence(3)).toBe('medium');
+      expect(getRankingConfidence(5)).toBe('medium');
+      expect(getRankingConfidence(9)).toBe('medium');
+    });
+
+    it('reviewCount < 3 devuelve low', () => {
+      expect(getRankingConfidence(0)).toBe('low');
+      expect(getRankingConfidence(1)).toBe('low');
+      expect(getRankingConfidence(2)).toBe('low');
     });
   });
 });

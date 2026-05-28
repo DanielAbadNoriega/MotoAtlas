@@ -1,16 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import rankingHeroImage from '../../../assets/hero-comunity.png';
 import { getBikeDisplayName } from '../../../data/bikes';
 import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import {
   buildAllRankings,
   buildGlobalRanking,
+  buildReviewSignalsByMotorcycleId,
   getPodiumEntries,
   RANKING_CATEGORIES,
   type CategoryRanking,
   type RankingCategory,
   type RankingEntry,
+  type RankingReviewSignal,
 } from '../../../shared/reviews/communityRankings';
+import { getApprovedCommunityReviews } from '../../../services/motorcycleReviewService';
+import type { MotorcycleReview } from '../../../services/motorcycleReviewService';
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { formatReviewRating } from '../../../shared/reviews/reviewUtils';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
@@ -99,8 +103,15 @@ function getCommunityHref(bike: Pick<Bike, 'id'>) {
   return `#/comunidad/${bike.id}`;
 }
 
+const CONFIDENCE_LABELS: Record<string, string> = {
+  high: 'Alta',
+  medium: 'Media',
+  low: 'Baja',
+};
+
 function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry; rank: number; variant?: 'featured' | 'compact' }) {
   const bikeName = getBikeDisplayName(entry.bike);
+  const confidenceLabel = CONFIDENCE_LABELS[entry.confidence] ?? '';
 
   return (
     <article className={`rankings__podium-card rankings__podium-card--${variant}`} aria-label={`Puesto ${rank}: ${bikeName}`}>
@@ -128,6 +139,11 @@ function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry
         <div className="rankings__podium-rating">
           <span className="rankings__rating-star" aria-hidden="true">★</span>
           <strong>{formatReviewRating(entry.score / 10)}</strong>
+          {entry.reviewCount > 0 && confidenceLabel && (
+            <span className="rankings__confidence-badge" aria-label={`Confianza ${confidenceLabel}`}>
+              {confidenceLabel}
+            </span>
+          )}
         </div>
         <a href={getCommunityHref(entry.bike)} className="rankings__podium-action">
           Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
@@ -237,7 +253,10 @@ function TechnicalTable({ rankings, filters }: { rankings: readonly CategoryRank
             </td>
             <td className="rankings__table-segment">{segmentLabels[entry.bike.segment]}</td>
             <td className="rankings__table-center">
-              <span className="rankings__table-rating">{formatReviewRating(entry.score / 10)}</span>
+              <span className="rankings__table-rating">
+                {formatReviewRating(entry.score / 10)}
+                {entry.confidence === 'high' && <span className="rankings__table-confidence" aria-label="Alta confianza">A</span>}
+              </span>
             </td>
             <td className="rankings__table-reviews">{entry.reviews}</td>
             <td>
@@ -258,9 +277,39 @@ function TechnicalTable({ rankings, filters }: { rankings: readonly CategoryRank
 
 export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProps) {
   const [filters, setFilters] = useState<RankingFilters>(defaultFilters);
+  const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
 
-  const allRankings = useMemo(() => buildAllRankings(motorcycles), [motorcycles]);
-  const podiumEntries = useMemo(() => getPodiumEntries(motorcycles), [motorcycles]);
+  useEffect(() => {
+    let isMounted = true;
+    getApprovedCommunityReviews()
+      .then((nextReviews) => {
+        if (isMounted) {
+          setReviews(nextReviews.filter((review) => review.status === 'approved'));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setReviews([]);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const reviewSignals = useMemo<Record<string, RankingReviewSignal>>(
+    () => buildReviewSignalsByMotorcycleId(reviews),
+    [reviews],
+  );
+
+  const allRankings = useMemo(
+    () => buildAllRankings(motorcycles, reviewSignals),
+    [motorcycles, reviewSignals],
+  );
+  const podiumEntries = useMemo(
+    () => getPodiumEntries(motorcycles, reviewSignals),
+    [motorcycles, reviewSignals],
+  );
 
   const filteredRankings = useMemo(() => getFilteredRankings(allRankings, filters), [allRankings, filters]);
 

@@ -1,9 +1,48 @@
-import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getApprovedCommunityReviews, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
+import { createApprovedReviewFixture } from '../../../test/fixtures/reviews';
 import { CommunityRankingsPage } from './CommunityRankingsPage';
 
+vi.mock('../../../services/motorcycleReviewService', () => ({
+  getApprovedCommunityReviews: vi.fn(),
+}));
+
+const getApprovedCommunityReviewsMock = vi.mocked(getApprovedCommunityReviews);
+
+function createReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
+  const id = overrides.id ?? 'review-1';
+  const index = Number(id.replace(/\D/g, '')) || 1;
+  const motorcycleId = overrides.motorcycleId ?? bikeFixtures[index % bikeFixtures.length].id;
+
+  return {
+    id,
+    motorcycleId,
+    userId: null,
+    userName: 'Test User',
+    rating: overrides.rating ?? 4,
+    ridingStyle: overrides.ridingStyle ?? 'viaje',
+    ownershipMonths: 12,
+    kilometers: 5000,
+    comment: 'Test comment',
+    pros: ['Good'],
+    cons: ['Bad'],
+    verified: false,
+    status: overrides.status ?? 'approved',
+    source: 'user',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
 describe('CommunityRankingsPage', () => {
+  beforeEach(() => {
+    getApprovedCommunityReviewsMock.mockReset();
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+  });
+
   it('renderiza la página sin elementos ficticios de Stitch', () => {
     window.location.hash = '#/comunidad/rankings';
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
@@ -93,5 +132,75 @@ describe('CommunityRankingsPage', () => {
     segmentSelect.dispatchEvent(new Event('change', { bubbles: true }));
 
     expect(container.querySelector('.rankings__categories-grid')).toBeInTheDocument();
+  });
+
+  it('llama a getApprovedCommunityReviews', async () => {
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('muestra Alta confianza cuando hay 10+ reviews', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+    ]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Alta')).toBeInTheDocument();
+    });
+  });
+
+  it('muestra Media confianza cuando hay 3-9 reviews', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 4 }),
+      createReview({ motorcycleId: 'test-bmw-f-900-gs', rating: 5 }),
+    ]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Media')).toBeInTheDocument();
+    });
+  });
+
+  it('no muestra confianza cuando no hay reviews', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Alta')).not.toBeInTheDocument();
+      expect(screen.queryByText('Media')).not.toBeInTheDocument();
+      expect(screen.queryByText('Baja')).not.toBeInTheDocument();
+    });
+  });
+
+  it('no muestra texto null en el podium', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/null/i)).not.toBeInTheDocument();
+    });
   });
 });
