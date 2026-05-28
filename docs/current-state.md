@@ -23,6 +23,8 @@
 - Listado técnico ya no usa `<table>`; usa cards/grid responsive con columnas alineadas en desktop.
 - Filtros afectan solo al listado técnico: segment, license, use, search.
 - El Podium rankings de `#/comunidad` replica el lenguaje visual del podio de `#/comunidad/rankings`: mismo patrón de cards, shield y tooltip.
+- `#/comunidad/reviews`: filtros apply-on-change en tiempo real; botón "Aplicar" cierra el panel en mobile; copy "Reviews destacadas" (antes "Destacadas del mes").
+- `#/comunidad/reviews` Garaje: card rediseñada con rating /5 con estrella, shield de confianza (tooltip visual Alta/Media/Baja), meta row compacta (uso, reviews, fecha corta DD.MM.YY), CTAs "Reviews" y "Ficha técnica". Sin Km declarados. Base visual para futura extracción a componente compartido.
 
 ### Admin
 - ...
@@ -33,6 +35,9 @@
 ## Pendiente
 
 - Rediseño mobile avanzado de rankings/listado técnico (cards responsive más refinadas).
+- Aspectos agregados en garaje de `#/comunidad/reviews`.
+- Posible extracción de `GarageMotorcycleCard` como componente reutilizable para `#/buscador`.
+- Deduplicación editorial↔garaje.
 
 ## En curso
 
@@ -59,4 +64,4 @@
 ## Riesgos pendientes
 
 - Tendencia no usa serie temporal real.
-- Insights en vivo todavía no tienen refresco suave.
+- Insights en vivo con polling cada 60s (sin Supabase Realtime).

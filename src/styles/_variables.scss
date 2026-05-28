@@ -22,6 +22,8 @@ $color-positive-dark: #102f22;
 $color-positive-soft: rgba(47, 191, 113, 0.12);
 $color-positive-container: rgba(47, 191, 113, 0.2);
 $color-warning: #ffa07a;
+$color-confident: $color-positive; 
+$color-caution: $color-warning;
 
 $font-headline: 'Hanken Grotesk', system-ui, sans-serif;
 $font-body: 'Inter', system-ui, sans-serif;
