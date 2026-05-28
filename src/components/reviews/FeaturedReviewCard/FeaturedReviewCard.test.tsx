@@ -84,7 +84,8 @@ describe('FeaturedReviewCard', () => {
 
     const body = document.getElementById(`featured-review-body-${review.id}`);
     expect(body).toBeInTheDocument();
-    expect(body).toHaveAttribute('hidden', '');
+    expect(body).toHaveAttribute('aria-hidden', 'true');
+    expect(body).not.toHaveClass('featured-review-card__body--open');
   });
 
   it('click en header abre body', async () => {
@@ -95,7 +96,8 @@ describe('FeaturedReviewCard', () => {
     await user.click(header);
 
     const body = document.getElementById(`featured-review-body-${review.id}`);
-    expect(body).not.toHaveAttribute('hidden');
+    expect(body).toHaveAttribute('aria-hidden', 'false');
+    expect(body).toHaveClass('featured-review-card__body--open');
   });
 
   it('click de nuevo cierra body', async () => {
@@ -107,7 +109,8 @@ describe('FeaturedReviewCard', () => {
     await user.click(header);
 
     const body = document.getElementById(`featured-review-body-${review.id}`);
-    expect(body).toHaveAttribute('hidden', '');
+    expect(body).toHaveAttribute('aria-hidden', 'true');
+    expect(body).not.toHaveClass('featured-review-card__body--open');
   });
 
   it('body muestra comentario completo', async () => {

@@ -116,9 +116,9 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
         </button>
 
         <div
-          className="featured-review-card__body"
+          aria-hidden={!isExpanded}
+          className={`featured-review-card__body${isExpanded ? ' featured-review-card__body--open' : ''}`}
           id={bodyId}
-          hidden={!isExpanded}
         >
           <p className="featured-review-card__comment">"{review.comment}"</p>
 
