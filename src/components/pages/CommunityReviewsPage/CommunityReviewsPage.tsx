@@ -21,6 +21,7 @@ import {
 } from '../../../shared/filters/motorcycleFilterOptions';
 import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
 import './CommunityReviewsPage.scss';
 
 type ReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -461,26 +462,27 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
   );
 }
 
-function formatGarageDate(value: string) {
+function formatGarageDateShort(value: string): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return 'Sin dato';
+    return '';
   }
 
   return new Intl.DateTimeFormat('es-ES', {
     day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+    month: '2-digit',
+    year: '2-digit',
   }).format(date);
 }
 
-function formatGarageKilometers(value: number, hasData: boolean) {
-  return hasData ? `${numberFormatter.format(value)} km` : 'Sin dato';
-}
-
 function GarageMotorcycleCard({ item }: Readonly<{ item: CommunityGarageMotorcycle }>) {
+  const confidence = getRankingConfidence(item.reviewCount);
   const reviewLabel = item.reviewCount === 1 ? '1 review' : `${numberFormatter.format(item.reviewCount)} reviews`;
+  const dateLabel = formatGarageDateShort(item.latestReviewAt);
+  const usageLabel = item.topRidingStyle?.label ?? 'Uso mixto';
+
+  const confidenceLabel = confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Media confianza' : 'Baja confianza';
 
   return (
     <article className="community-reviews-page__garage-card" data-testid="community-garage-card" aria-label={`${item.motorcycle.name}: ${reviewLabel}`}>
@@ -493,33 +495,45 @@ function GarageMotorcycleCard({ item }: Readonly<{ item: CommunityGarageMotorcyc
             <h3>{item.motorcycle.name}</h3>
           </div>
           <div className="community-reviews-page__garage-rating" aria-label={`Rating medio ${formatReviewRating(item.averageRating)} de 5`}>
-            <span aria-hidden="true">★</span>
+            <span className="community-reviews-page__garage-rating-start" aria-hidden="true">★</span>
             <strong>{formatReviewRating(item.averageRating)}</strong>
+            <span
+              aria-label={confidenceLabel}
+              className={`community-reviews-page__garage-confidence community-reviews-page__garage-confidence--${confidence}`}
+              role="img"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">shield</span>
+              <span className="community-reviews-page__garage-confidence-tooltip" role="tooltip">{confidenceLabel}</span>
+            </span>
           </div>
         </header>
 
-        <dl className="community-reviews-page__garage-meta">
-          <div>
-            <dt>Uso más repetido</dt>
-            <dd>{item.topRidingStyle?.label ?? 'Sin dato'}</dd>
-          </div>
-          <div>
-            <dt>Km declarados</dt>
-            <dd>{formatGarageKilometers(item.totalKilometers, item.hasDeclaredKilometers)}</dd>
-          </div>
-          <div>
-            <dt>Opiniones</dt>
-            <dd>{reviewLabel}</dd>
-          </div>
-          <div>
-            <dt>Última review</dt>
-            <dd>{formatGarageDate(item.latestReviewAt)}</dd>
-          </div>
-        </dl>
+        <div className="community-reviews-page__garage-meta-row">
+          <span className="community-reviews-page__garage-meta-item">
+            <span className="material-symbols-outlined" aria-hidden="true">explore</span>
+            <span>{usageLabel}</span>
+          </span>
+          <span className="community-reviews-page__garage-meta-item">
+            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+            <span>{reviewLabel}</span>
+          </span>
+          {dateLabel ? (
+            <span className="community-reviews-page__garage-meta-item">
+              <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
+              <span>{dateLabel}</span>
+            </span>
+          ) : null}
+        </div>
 
         <footer className="community-reviews-page__garage-actions">
-          <a href={item.motorcycle.communityHref}>Ver reviews</a>
-          <a href={item.motorcycle.detailHref}>Ver ficha</a>
+          <a className="community-reviews-page__garage-action community-reviews-page__garage-action--primary" href={item.motorcycle.communityHref}>
+            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+            <span>Reviews</span>
+          </a>
+          <a className="community-reviews-page__garage-action community-reviews-page__garage-action--secondary" href={item.motorcycle.detailHref}>
+            <span className="material-symbols-outlined" aria-hidden="true">list_alt</span>
+            <span>Ficha técnica</span>
+          </a>
         </footer>
       </div>
     </article>
