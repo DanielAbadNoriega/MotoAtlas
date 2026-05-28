@@ -80,6 +80,7 @@ describe('CommunityReviewsPage', () => {
     window.history.pushState(null, '', '/');
     window.location.hash = '';
     getApprovedCommunityReviewsMock.mockReset();
+    vi.useRealTimers();
   });
 
   it('renderiza la landing pública y usa filtros responsive', async () => {
@@ -536,5 +537,72 @@ describe('CommunityReviewsPage', () => {
     await user.click(screen.getByRole('button', { name: /Reintentar/i }));
     expect(await within(getGarageList()).findByTestId('community-garage-card')).toBeInTheDocument();
     expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('configura interval de polling en mount y limpia en unmount', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([createCommunityReview()]);
+    vi.useFakeTimers();
+
+    const { unmount } = render(<CommunityReviewsPage />);
+    vi.advanceTimersByTime(0);
+    expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(60_000);
+    expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(2);
+
+    vi.advanceTimersByTime(60_000);
+    expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(3);
+
+    unmount();
+    vi.useRealTimers();
+  });
+
+  it('el polling llama al servicio de nuevo cada 60 segundos sin mostrar loading', () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([createCommunityReview({ id: 'poll-1' })]);
+    vi.useFakeTimers();
+
+    const { rerender } = render(<CommunityReviewsPage />);
+    vi.advanceTimersByTime(0);
+    expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1);
+
+    getApprovedCommunityReviewsMock.mockResolvedValue([createCommunityReview({ id: 'poll-2' })]);
+    vi.advanceTimersByTime(60_000);
+    rerender(<CommunityReviewsPage />);
+    expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
+  it('el fallo del polling no rompe la página y mantiene datos previos', async () => {
+    getApprovedCommunityReviewsMock
+      .mockResolvedValueOnce([createCommunityReview({ id: 'stable-1', motorcycle: { id: 'stable-1', brand: 'BMW', model: 'Stable GS', year: 2024, imageUrl: '/stable.webp', segment: 'trail', license: 'A' } })])
+      .mockRejectedValueOnce(new Error('network error'))
+      .mockResolvedValueOnce([createCommunityReview({ id: 'stable-1', motorcycle: { id: 'stable-1', brand: 'BMW', model: 'Stable GS', year: 2024, imageUrl: '/stable.webp', segment: 'trail', license: 'A' } })]);
+
+    render(<CommunityReviewsPage />);
+    await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+    const garageBefore = within(getGarageList()).getByText('BMW Stable GS 2024');
+    expect(garageBefore).toBeInTheDocument();
+
+    vi.useFakeTimers();
+    vi.advanceTimersByTime(60_000);
+    vi.runAllTicks();
+    vi.useRealTimers();
+
+    await waitFor(() => {
+      expect(within(getGarageList()).getByText('BMW Stable GS 2024')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('muestra Actualizado ahora tras la carga inicial en insights', async () => {
+    getApprovedCommunityReviewsMock.mockResolvedValue([createCommunityReview({ id: 'insights-ts-1' })]);
+    render(<CommunityReviewsPage />);
+
+    await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+    const insights = screen.getByRole('complementary', { name: 'Insights en vivo' });
+    expect(within(insights).getByText('Actualizado ahora')).toBeInTheDocument();
   });
 });

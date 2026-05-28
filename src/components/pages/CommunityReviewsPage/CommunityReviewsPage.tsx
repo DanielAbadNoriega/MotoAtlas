@@ -384,10 +384,27 @@ function CommunityInsightItem({
   );
 }
 
-function CommunityInsightsPanel({ insights }: Readonly<{ insights: CommunityInsights }>) {
+function formatLastRefreshed(timestamp: number): string {
+  if (!timestamp) {
+    return '';
+  }
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 5) {
+    return 'Actualizado ahora';
+  }
+  if (seconds < 60) {
+    return `Actualizado hace ${seconds}s`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  return `Actualizado hace ${minutes}min`;
+}
+
+function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insights: CommunityInsights; lastRefreshedAt: number }>) {
   const highestKilometersMotorcycle = insights.highestKilometersReview
     ? getAccountReviewMotorcycleDisplay(insights.highestKilometersReview)
     : undefined;
+
+  const refreshLabel = formatLastRefreshed(lastRefreshedAt);
 
   return (
     <aside className="community-reviews-page__insights" aria-labelledby="community-reviews-insights-title">
@@ -434,6 +451,12 @@ function CommunityInsightsPanel({ insights }: Readonly<{ insights: CommunityInsi
           meta="Sobre reviews aprobadas"
         />
       </div>
+
+      {refreshLabel ? (
+        <footer className="community-reviews-page__insights-refresh">
+          <span>{refreshLabel}</span>
+        </footer>
+      ) : null}
     </aside>
   );
 }
@@ -725,6 +748,7 @@ export function CommunityReviewsPage() {
   const [filters, setFilters] = useState<CommunityReviewFilters>(defaultFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<number>(0);
 
   const loadReviews = () => {
     setStatus('loading');
@@ -734,11 +758,22 @@ export function CommunityReviewsPage() {
       .then((nextReviews) => {
         setReviews(nextReviews.filter((review) => review.status === 'approved'));
         setStatus('success');
+        setLastRefreshedAt(Date.now());
       })
       .catch((reviewsError) => {
         setReviews([]);
         setError(reviewsError instanceof Error ? reviewsError.message : 'No se han podido cargar las reviews de comunidad.');
         setStatus('error');
+      });
+  };
+
+  const silentLoadReviews = () => {
+    getApprovedCommunityReviews()
+      .then((nextReviews) => {
+        setReviews(nextReviews.filter((review) => review.status === 'approved'));
+        setLastRefreshedAt(Date.now());
+      })
+      .catch(() => {
       });
   };
 
@@ -752,6 +787,7 @@ export function CommunityReviewsPage() {
         if (isMounted) {
           setReviews(nextReviews.filter((review) => review.status === 'approved'));
           setStatus('success');
+          setLastRefreshedAt(Date.now());
         }
       })
       .catch((reviewsError) => {
@@ -765,6 +801,11 @@ export function CommunityReviewsPage() {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(silentLoadReviews, 60_000);
+    return () => window.clearInterval(intervalId);
   }, []);
 
   const approvedReviews = useMemo(() => getApprovedReviews(reviews), [reviews]);
@@ -844,7 +885,7 @@ export function CommunityReviewsPage() {
             />
           </div>
 
-          <CommunityInsightsPanel insights={communityInsights} />
+          <CommunityInsightsPanel insights={communityInsights} lastRefreshedAt={lastRefreshedAt} />
         </div>
       </section>
 

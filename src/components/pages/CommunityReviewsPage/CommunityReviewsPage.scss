@@ -379,6 +379,17 @@ span.community-reviews-page__insight-icon {
   }
 }
 
+.community-reviews-page__insights-refresh {
+  @include label-caps;
+
+  border-top: 1px solid rgba($color-outline-variant, 0.28);
+  color: rgba($color-on-surface-variant, 0.6);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  padding-top: 0.48rem;
+  text-align: right;
+}
+
 .community-reviews-page__mobile-filter-trigger {
   @include container;
 
