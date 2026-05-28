@@ -832,7 +832,7 @@ export function CommunityReviewsPage() {
               emptyMessage="Todavía no hay reviews destacadas."
               id="community-featured-reviews-title"
               reviews={featuredReviews}
-              title="Destacadas del mes"
+              title="Reviews destacadas"
               tone="featured"
             />
             <EditorialReviewSection
@@ -859,7 +859,7 @@ export function CommunityReviewsPage() {
         <CommunityReviewFiltersPanel
           filters={filters}
           isOpen={isFilterPanelOpen}
-          onApply={() => undefined}
+          onApply={/* filtros aplican en tiempo real via onChange */ () => setIsFilterPanelOpen(false)}
           onChange={updateFilters}
           onClose={() => setIsFilterPanelOpen(false)}
           onReset={clearFilters}

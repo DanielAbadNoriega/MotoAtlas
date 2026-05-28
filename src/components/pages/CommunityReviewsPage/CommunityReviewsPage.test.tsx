@@ -56,7 +56,7 @@ async function renderPage(reviews: readonly MotorcycleReview[]) {
 }
 
 function getFeaturedSection() {
-  return screen.getByRole('region', { name: 'Destacadas del mes' });
+  return screen.getByRole('region', { name: 'Reviews destacadas' });
 }
 
 function getLatestSection() {
@@ -91,7 +91,7 @@ describe('CommunityReviewsPage', () => {
     expect(screen.getByRole('button', { name: 'Explorar reviews' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Buscar moto para opinar' })).toHaveAttribute('href', '#community-reviews-garage-header');
     expect(screen.getByRole('region', { name: 'Bloque editorial de reviews' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Destacadas del mes' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Reviews destacadas' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Últimos reportes' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Insights en vivo' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Garaje de la comunidad' })).toBeInTheDocument();

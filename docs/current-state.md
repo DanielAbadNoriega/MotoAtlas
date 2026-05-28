@@ -23,6 +23,7 @@
 - Listado técnico ya no usa `<table>`; usa cards/grid responsive con columnas alineadas en desktop.
 - Filtros afectan solo al listado técnico: segment, license, use, search.
 - El Podium rankings de `#/comunidad` replica el lenguaje visual del podio de `#/comunidad/rankings`: mismo patrón de cards, shield y tooltip.
+- `#/comunidad/reviews`: filtros apply-on-change en tiempo real; botón "Aplicar" cierra el panel en mobile; copy "Reviews destacadas" (antes "Destacadas del mes").
 
 ### Admin
 - ...
@@ -33,6 +34,9 @@
 ## Pendiente
 
 - Rediseño mobile avanzado de rankings/listado técnico (cards responsive más refinadas).
+- Insights en vivo: refresco suave (polling) no implementado.
+- Deduplicación editorial↔garaje.
+- Aspectos agregados en garaje de `#/comunidad/reviews`.
 
 ## En curso
 
