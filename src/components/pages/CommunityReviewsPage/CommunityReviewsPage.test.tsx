@@ -2,13 +2,19 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getApprovedCommunityReviews, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
 import { CommunityReviewsPage } from './CommunityReviewsPage';
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getApprovedCommunityReviews: vi.fn(),
 }));
 
+vi.mock('../../../services/reviewReactionService', () => ({
+  getReviewReactionSummary: vi.fn(),
+}));
+
 const getApprovedCommunityReviewsMock = vi.mocked(getApprovedCommunityReviews);
+const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
 
 function createCommunityReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
   const id = overrides.id ?? 'community-review-1';
@@ -48,8 +54,9 @@ function buildReviews(count: number) {
   return Array.from({ length: count }, (_, index) => createCommunityReview({ id: `community-review-${index + 1}` }));
 }
 
-async function renderPage(reviews: readonly MotorcycleReview[]) {
+async function renderPage(reviews: readonly MotorcycleReview[], reactionSummaries: readonly ReviewReactionSummary[] = []) {
   getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+  getReviewReactionSummaryMock.mockResolvedValue(reactionSummaries);
   render(<CommunityReviewsPage />);
   await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
   await screen.findByRole('heading', { name: /Reviews de la comunidad/i });
@@ -80,6 +87,7 @@ describe('CommunityReviewsPage', () => {
     window.history.pushState(null, '', '/');
     window.location.hash = '';
     getApprovedCommunityReviewsMock.mockReset();
+    getReviewReactionSummaryMock.mockReset();
     vi.useRealTimers();
   });
 
@@ -257,22 +265,22 @@ describe('CommunityReviewsPage', () => {
     expect(within(card).getByText('Ciudad')).toBeInTheDocument();
   });
 
-  it('renderiza máximo 2 destacadas por kilómetros, rating, comentario y fecha', async () => {
+  it('renderiza máximo 2 destacadas ordenadas por rating, comentario y fecha (sin útiles)', async () => {
     await renderPage([
       createCommunityReview({ id: 'featured-1', kilometers: 4000, rating: 5, comment: 'Kilómetros medios' }),
       createCommunityReview({ id: 'featured-2', kilometers: 9000, rating: 3, comment: 'Más kilómetros visible' }),
       createCommunityReview({ id: 'featured-3', kilometers: null, rating: 5, comment: 'Sin kilómetros pero buen rating' }),
-      createCommunityReview({ id: 'featured-4', kilometers: 7000, rating: 4, comment: 'Tercera por kilómetros' }),
-      createCommunityReview({ id: 'featured-5', kilometers: 8000, rating: 4, comment: 'Segunda por kilómetros' }),
+      createCommunityReview({ id: 'featured-4', kilometers: 7000, rating: 4, comment: 'Tercera por rating' }),
+      createCommunityReview({ id: 'featured-5', kilometers: 8000, rating: 4, comment: 'Segunda por rating' }),
     ]);
 
     const featuredSection = getFeaturedSection();
     const featuredCards = within(featuredSection).getAllByTestId('account-review-card');
 
     expect(featuredCards).toHaveLength(2);
-    expect(featuredCards[0]).toHaveTextContent('Más kilómetros visible');
-    expect(featuredCards[1]).toHaveTextContent('Segunda por kilómetros');
-    expect(within(featuredSection).queryByText('Tercera por kilómetros')).not.toBeInTheDocument();
+    expect(featuredCards[0]).toHaveTextContent('Sin kilómetros pero buen rating');
+    expect(featuredCards[1]).toHaveTextContent('Kilómetros medios');
+    expect(within(featuredSection).queryByText('Segunda por rating')).not.toBeInTheDocument();
     expect(within(featuredCards[0]).getByRole('link', { name: /Ver ficha/i })).toBeInTheDocument();
     expect(within(featuredCards[0]).getByRole('link', { name: /Más reviews/i })).toBeInTheDocument();
   });
@@ -510,6 +518,227 @@ describe('CommunityReviewsPage', () => {
 
     expect(featuredCards).toHaveLength(2);
     expect(latestCards).toHaveLength(2);
+  });
+
+  it('Reviews destacadas prioriza la review con más votos útiles', async () => {
+    const reviews = [
+      createCommunityReview({
+        id: 'helpful-low',
+        motorcycleId: 'low-helpful',
+        rating: 3,
+        comment: 'Review con pocos útiles',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'low-helpful', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'helpful-high',
+        motorcycleId: 'high-helpful',
+        rating: 4,
+        comment: 'Review con muchos útiles',
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'high-helpful', brand: 'Honda', model: 'CBR650R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+    ];
+    const reactions = [
+      { reviewId: 'helpful-low', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      { reviewId: 'helpful-high', helpfulCount: 10, hasReactedHelpful: false, hasReactedNotHelpful: false },
+    ];
+    await renderPage(reviews, reactions);
+
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    expect(featuredCards).toHaveLength(2);
+    const firstCard = featuredCards[0];
+    const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
+    expect(firstLink.getAttribute('href')).toContain('high-helpful');
+  });
+
+  it('una review con más km pero menos útiles NO gana a una review con más útiles', async () => {
+    const reviews = [
+      createCommunityReview({
+        id: 'km-more-helpful-less',
+        motorcycleId: 'km-bike',
+        rating: 4,
+        kilometers: 50000,
+        comment: 'Muchos km',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'km-bike', brand: 'Ducati', model: 'Monster', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'km-less-helpful-more',
+        motorcycleId: 'helpful-bike',
+        rating: 4,
+        kilometers: 5000,
+        comment: 'Pocos km',
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'helpful-bike', brand: 'Triumph', model: 'Street Triple', year: 2024, imageUrl: '/triumph.webp', segment: 'naked', license: 'A' },
+      }),
+    ];
+    const reactions = [
+      { reviewId: 'km-more-helpful-less', helpfulCount: 1, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      { reviewId: 'km-less-helpful-more', helpfulCount: 10, hasReactedHelpful: false, hasReactedNotHelpful: false },
+    ];
+    await renderPage(reviews, reactions);
+
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const firstCard = featuredCards[0];
+    const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
+    expect(firstLink.getAttribute('href')).toContain('helpful-bike');
+  });
+
+  it('si empatan en útiles, gana mayor rating', async () => {
+    const reviews = [
+      createCommunityReview({
+        id: 'tie-low-rating',
+        motorcycleId: 'tie-low',
+        rating: 3,
+        comment: 'Rating bajo',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'tie-low', brand: 'Kawasaki', model: 'Z650', year: 2024, imageUrl: '/kawasaki.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'tie-high-rating',
+        motorcycleId: 'tie-high',
+        rating: 5,
+        comment: 'Rating alto',
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'tie-high', brand: 'Aprilia', model: 'Tuareg 660', year: 2024, imageUrl: '/aprilia.webp', segment: 'trail', license: 'A' },
+      }),
+    ];
+    const reactions = [
+      { reviewId: 'tie-low-rating', helpfulCount: 5, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      { reviewId: 'tie-high-rating', helpfulCount: 5, hasReactedHelpful: false, hasReactedNotHelpful: false },
+    ];
+    await renderPage(reviews, reactions);
+
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const firstCard = featuredCards[0];
+    const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
+    expect(firstLink.getAttribute('href')).toContain('tie-high');
+  });
+
+  it('si empatan en útiles y rating, gana la más reciente', async () => {
+    const reviews = [
+      createCommunityReview({
+        id: 'tie-old',
+        motorcycleId: 'tie-old',
+        rating: 4,
+        comment: 'Comentario igual para tiebreaker',
+        createdAt: '2026-05-01T10:00:00.000Z',
+        motorcycle: { id: 'tie-old', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'tie-new',
+        motorcycleId: 'tie-new',
+        rating: 4,
+        comment: 'Comentario igual para tiebreaker',
+        createdAt: '2026-05-25T10:00:00.000Z',
+        motorcycle: { id: 'tie-new', brand: 'Honda', model: 'CB650R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+    ];
+    const reactions = [
+      { reviewId: 'tie-old', helpfulCount: 3, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      { reviewId: 'tie-new', helpfulCount: 3, hasReactedHelpful: false, hasReactedNotHelpful: false },
+    ];
+    await renderPage(reviews, reactions);
+
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const firstCard = featuredCards[0];
+    const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
+    expect(firstLink.getAttribute('href')).toContain('tie-new');
+  });
+
+  it('si todas tienen 0 útiles, usa fallback y sigue mostrando reviews', async () => {
+    const reviews = [
+      createCommunityReview({
+        id: 'no-helpful-1',
+        motorcycleId: 'no-helpful-bike-1',
+        rating: 3,
+        comment: 'Sin útil alguno 1',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'no-helpful-bike-1', brand: 'Suzuki', model: 'GSX-8S', year: 2024, imageUrl: '/suzuki.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'no-helpful-2',
+        motorcycleId: 'no-helpful-bike-2',
+        rating: 5,
+        comment: 'Sin útil alguno 2',
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'no-helpful-bike-2', brand: 'Yamaha', model: 'MT-09', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A' },
+      }),
+    ];
+    await renderPage(reviews, []);
+
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    expect(featuredCards).toHaveLength(2);
+    const firstCard = featuredCards[0];
+    const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
+    expect(firstLink.getAttribute('href')).toContain('no-helpful-bike-2');
+  });
+
+  it('Reviews destacadas mantiene deduplicación por motorcycleId', async () => {
+    const reviews = [
+      createCommunityReview({
+        id: 'dedup-helpful-1',
+        motorcycleId: 'same-bike',
+        rating: 5,
+        comment: 'Primera de misma moto',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'same-bike', brand: 'KTM', model: '390 Duke', year: 2024, imageUrl: '/ktm.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'dedup-helpful-2',
+        motorcycleId: 'same-bike',
+        rating: 4,
+        comment: 'Segunda de misma moto',
+        createdAt: '2026-05-15T10:00:00.000Z',
+        motorcycle: { id: 'same-bike', brand: 'KTM', model: '390 Duke', year: 2024, imageUrl: '/ktm.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'dedup-helpful-3',
+        motorcycleId: 'other-bike',
+        rating: 3,
+        comment: 'Distinta moto',
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'other-bike', brand: 'Benelli', model: 'TRK 502', year: 2024, imageUrl: '/benelli.webp', segment: 'trail', license: 'A' },
+      }),
+    ];
+    const reactions = [
+      { reviewId: 'dedup-helpful-1', helpfulCount: 10, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      { reviewId: 'dedup-helpful-2', helpfulCount: 1, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      { reviewId: 'dedup-helpful-3', helpfulCount: 5, hasReactedHelpful: false, hasReactedNotHelpful: false },
+    ];
+    await renderPage(reviews, reactions);
+
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    expect(featuredCards).toHaveLength(2);
+    const featuredHrefs = featuredCards.map((card) => within(card).getByRole('link', { name: /Ver ficha/i }).getAttribute('href'));
+    expect(featuredHrefs[0]).toContain('same-bike');
+    expect(featuredHrefs[1]).not.toBe(featuredHrefs[0]);
+  });
+
+  it('Últimos reportes sigue ordenado por fecha desc', async () => {
+    const reviews = [
+      createCommunityReview({
+        id: 'latest-old',
+        motorcycleId: 'old-bike',
+        comment: 'Más antigua',
+        createdAt: '2026-05-01T10:00:00.000Z',
+        motorcycle: { id: 'old-bike', brand: 'Honda', model: 'CBR500R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'latest-new',
+        motorcycleId: 'new-bike',
+        comment: 'Más reciente',
+        createdAt: '2026-05-25T10:00:00.000Z',
+        motorcycle: { id: 'new-bike', brand: 'Yamaha', model: 'R7', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A' },
+      }),
+    ];
+    await renderPage(reviews, []);
+
+    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+    const firstCard = latestCards[0];
+    const firstLink = within(firstCard).getByRole('link', { name: /Ver ficha/i });
+    expect(firstLink.getAttribute('href')).toContain('new-bike');
   });
 
   it('calcula insights reales sin datos inventados', async () => {
@@ -844,7 +1073,9 @@ describe('CommunityReviewsPage', () => {
 
   it('muestra error y permite reintentar', async () => {
     const user = userEvent.setup();
+    getReviewReactionSummaryMock.mockReset();
     getApprovedCommunityReviewsMock.mockRejectedValueOnce(new Error('permission denied')).mockResolvedValueOnce([createCommunityReview()]);
+    getReviewReactionSummaryMock.mockResolvedValueOnce([]);
 
     render(<CommunityReviewsPage />);
 

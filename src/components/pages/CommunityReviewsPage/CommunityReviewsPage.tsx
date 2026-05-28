@@ -14,6 +14,10 @@ import {
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
 import {
+  getReviewReactionSummary,
+  type ReviewReactionSummary,
+} from '../../../services/reviewReactionService';
+import {
   matchesMotorcycleSegmentFilter,
   motorcycleLicenseFilterOptions,
   motorcycleSegmentFilterOptions,
@@ -170,9 +174,12 @@ function takeUniqueMotorcycleReviews<T extends { motorcycleId: string }>(
   return unique;
 }
 
-function getFeaturedReviews(reviews: readonly MotorcycleReview[]) {
+function getFeaturedReviews(
+  reviews: readonly MotorcycleReview[],
+  helpfulCountByReviewId: ReadonlyMap<string, number>,
+) {
   const sorted = [...reviews].sort((left, right) => (
-    (right.kilometers ?? -1) - (left.kilometers ?? -1) ||
+    (helpfulCountByReviewId.get(right.id) ?? 0) - (helpfulCountByReviewId.get(left.id) ?? 0) ||
     right.rating - left.rating ||
     right.comment.length - left.comment.length ||
     getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
@@ -711,6 +718,7 @@ export function CommunityReviewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<number>(0);
+  const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
 
   const loadReviews = () => {
     setStatus('loading');
@@ -718,9 +726,18 @@ export function CommunityReviewsPage() {
 
     getApprovedCommunityReviews()
       .then((nextReviews) => {
-        setReviews(nextReviews.filter((review) => review.status === 'approved'));
+        const approved = nextReviews.filter((review) => review.status === 'approved');
+        setReviews(approved);
         setStatus('success');
         setLastRefreshedAt(Date.now());
+        return approved;
+      })
+      .then((approved) => {
+        const reviewIds = approved.map((r) => r.id);
+        return getReviewReactionSummary(reviewIds);
+      })
+      .then((summaries) => {
+        setReactionSummaries(summaries);
       })
       .catch((reviewsError) => {
         setReviews([]);
@@ -732,8 +749,17 @@ export function CommunityReviewsPage() {
   const silentLoadReviews = () => {
     getApprovedCommunityReviews()
       .then((nextReviews) => {
-        setReviews(nextReviews.filter((review) => review.status === 'approved'));
+        const approved = nextReviews.filter((review) => review.status === 'approved');
+        setReviews(approved);
         setLastRefreshedAt(Date.now());
+        return approved;
+      })
+      .then((approved) => {
+        const reviewIds = approved.map((r) => r.id);
+        return getReviewReactionSummary(reviewIds);
+      })
+      .then((summaries) => {
+        setReactionSummaries(summaries);
       })
       .catch(() => {
       });
@@ -746,18 +772,27 @@ export function CommunityReviewsPage() {
 
     getApprovedCommunityReviews()
       .then((nextReviews) => {
-        if (isMounted) {
-          setReviews(nextReviews.filter((review) => review.status === 'approved'));
-          setStatus('success');
-          setLastRefreshedAt(Date.now());
-        }
+        if (!isMounted) return;
+        const approved = nextReviews.filter((review) => review.status === 'approved');
+        setReviews(approved);
+        setStatus('success');
+        setLastRefreshedAt(Date.now());
+        return approved;
+      })
+      .then((approved) => {
+        if (!isMounted || !approved) return;
+        const reviewIds = approved.map((r) => r.id);
+        return getReviewReactionSummary(reviewIds);
+      })
+      .then((summaries) => {
+        if (!isMounted || !summaries) return;
+        setReactionSummaries(summaries);
       })
       .catch((reviewsError) => {
-        if (isMounted) {
-          setReviews([]);
-          setError(reviewsError instanceof Error ? reviewsError.message : 'No se han podido cargar las reviews de comunidad.');
-          setStatus('error');
-        }
+        if (!isMounted) return;
+        setReviews([]);
+        setError(reviewsError instanceof Error ? reviewsError.message : 'No se han podido cargar las reviews de comunidad.');
+        setStatus('error');
       });
 
     return () => {
@@ -771,7 +806,15 @@ export function CommunityReviewsPage() {
   }, []);
 
   const approvedReviews = useMemo(() => getApprovedReviews(reviews), [reviews]);
-  const featuredReviews = useMemo(() => getFeaturedReviews(approvedReviews), [approvedReviews]);
+  const helpfulCountByReviewId = useMemo(() => {
+    const map = new Map<string, number>();
+    reactionSummaries.forEach((s) => map.set(s.reviewId, s.helpfulCount));
+    return map;
+  }, [reactionSummaries]);
+  const featuredReviews = useMemo(
+    () => getFeaturedReviews(approvedReviews, helpfulCountByReviewId),
+    [approvedReviews, helpfulCountByReviewId],
+  );
   const latestReviews = useMemo(() => getLatestReviews(approvedReviews), [approvedReviews]);
   const communityInsights = useMemo(() => getCommunityInsights(approvedReviews), [approvedReviews]);
   const garageMotorcycles = useMemo(() => buildCommunityGarage(approvedReviews), [approvedReviews]);
