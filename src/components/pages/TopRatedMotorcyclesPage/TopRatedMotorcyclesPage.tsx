@@ -17,6 +17,7 @@ import {
   type TopRatedMotorcycle,
   type TopRatedSort,
 } from '../../../shared/reviews/topRatedMotorcycles';
+import { getRankingConfidence } from '../../../shared/reviews/communityRankings';
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
@@ -62,7 +63,7 @@ function getCommunityHref(bike: Pick<Bike, 'id'>) {
 
 function RankingStats({ item }: { item: TopRatedMotorcycle }) {
   return (
-    <div className="top-rated__stats" aria-label={`Datos clave de ${getBikeDisplayName(item.bike)}`}>
+    <div className="top-rated__podium-stats" aria-label={`Datos clave de ${getBikeDisplayName(item.bike)}`}>
       <div aria-label={`${item.reviewCount} reviews aprobadas`}>
         <span>Reviews</span>
         <strong>{numberFormatter.format(item.reviewCount)}</strong>
@@ -71,60 +72,59 @@ function RankingStats({ item }: { item: TopRatedMotorcycle }) {
         <span>Potencia</span>
         <strong>{numberFormatter.format(item.bike.powerHp)} CV</strong>
       </div>
-      <div>
-        <span>Peso</span>
-        <strong>{numberFormatter.format(item.bike.wetWeightKg)} kg</strong>
-      </div>
     </div>
   );
 }
 
-function RatingPill({ item }: { item: TopRatedMotorcycle }) {
-  return (
-    <div className="top-rated__rating" aria-label={`Rating medio ${formatReviewRating(item.averageRating)} de 5`}>
-      <span className="top-rated__rating-star" aria-hidden="true">★</span>
-      <strong>{formatReviewRating(item.averageRating)}</strong>
-    </div>
-  );
+function formatRankingScore(rating: number): string {
+  const scaled = rating * 2;
+  const clamped = Math.max(0, Math.min(10, scaled));
+  const rounded = Math.round(clamped * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
-function PodiumReviewsLink({ item }: { item: TopRatedMotorcycle }) {
+const CONFIDENCE_TOOLTIPS: Record<string, string> = {
+  high: 'Alta confianza',
+  medium: 'Media confianza',
+  low: 'Baja confianza',
+};
+
+function PodiumCard({ item, rank, variant = 'winner' }: { item: TopRatedMotorcycle; rank: number; variant?: 'winner' | 'compact' }) {
   const bikeName = getBikeDisplayName(item.bike);
+  const confidence = getRankingConfidence(item.reviewCount);
+  const confidenceTooltip = CONFIDENCE_TOOLTIPS[confidence] ?? '';
 
   return (
-    <div className="top-rated__card-actions">
-      <a href={getCommunityHref(item.bike)} aria-label={`Ver reviews de ${bikeName}`}>
-        Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-      </a>
-    </div>
-  );
-}
-
-function PodiumCard({ item, variant = 'featured' }: { item: TopRatedMotorcycle; variant?: 'featured' | 'compact' }) {
-  const bikeName = getBikeDisplayName(item.bike);
-
-  return (
-    <article className={`top-rated__podium-card top-rated__podium-card--${variant}`} aria-label={`Puesto ${item.rank}: ${bikeName}`}>
-      <MotorcycleImage motorcycle={item.bike} alt={`Imagen de ${bikeName}`} loading={item.rank === 1 ? 'eager' : 'lazy'} />
+    <article className={`top-rated__podium-card top-rated__podium-card--${variant}`} aria-label={`Puesto ${rank}: ${bikeName}`}>
+      <MotorcycleImage motorcycle={item.bike} alt={`Imagen de ${bikeName}`} loading={rank === 1 ? 'eager' : 'lazy'} />
       <div className="top-rated__podium-overlay" aria-hidden="true" />
       <div className="top-rated__rank-badge">
-        <strong>{item.rank}</strong>
-        <i aria-hidden="true" />
-        <div>
-          <span>Ranking global</span>
-          <RatingPill item={item} />
-        </div>
+        <strong>{String(rank).padStart(2, '0')}</strong>
       </div>
       <div className="top-rated__podium-content">
         <div>
           <p>{item.bike.brand}</p>
           <h3>{item.bike.model}</h3>
-          <span>
-            {item.bike.year} · {segmentLabels[item.bike.segment]} · {numberFormatter.format(item.bike.displacementCc)} cc
+          <span>{item.bike.year} · {segmentLabels[item.bike.segment]} · {numberFormatter.format(item.bike.displacementCc)} cc</span>
+        </div>
+        <RankingStats item={item} />
+        <div className="top-rated__podium-rating">
+          <span className="top-rated__rating-icon material-symbols-outlined" aria-hidden="true">analytics</span>
+          <strong>{formatRankingScore(item.averageRating)}</strong>
+          <span
+            className={`top-rated__confidence-shield top-rated__confidence-shield--${confidence}`}
+            aria-label={confidenceTooltip}
+            tabIndex={0}
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">shield</span>
+            <span className="top-rated__confidence-tooltip" role="tooltip">
+              {confidenceTooltip}
+            </span>
           </span>
         </div>
-        {variant === 'featured' ? <RankingStats item={item} /> : null}
-        <PodiumReviewsLink item={item} />
+        <a href={getCommunityHref(item.bike)} className="top-rated__podium-action">
+          Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        </a>
       </div>
     </article>
   );
@@ -498,15 +498,12 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
           <TopRatedEmptyState hasActiveFilters={hasActiveFilters} onReset={resetFilters} />
         ) : (
           <>
-            <section className="top-rated__podium" aria-label="Top 3 motos mejor valoradas">
-              {podium[0] ? <PodiumCard item={podium[0]} /> : null}
-              {podium.length > 1 ? (
-                <div className="top-rated__podium-side">
-                  {podium.slice(1).map((item) => (
-                    <PodiumCard key={item.bike.id} item={item} variant="compact" />
-                  ))}
-                </div>
-              ) : null}
+            <section className="top-rated__podium-section" aria-label="Top 3 motos mejor valoradas">
+              <div className="top-rated__podium">
+                {podium[1] ? <PodiumCard item={podium[1]} rank={2} variant="compact" /> : null}
+                {podium[0] ? <PodiumCard item={podium[0]} rank={1} variant="winner" /> : null}
+                {podium[2] ? <PodiumCard item={podium[2]} rank={3} variant="compact" /> : null}
+              </div>
             </section>
 
             <div className="top-rated__podium-cta">

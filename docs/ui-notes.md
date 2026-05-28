@@ -26,6 +26,8 @@ Criterio actual del ranking:
 - por defecto exige al menos 1 review aprobada.
 - si no hay reviews suficientes o los filtros dejan el ranking vacío, muestra empty state técnico.
 
+Podio visual: replica el lenguaje del podio de `#/comunidad/rankings` — 3 cards con imagen full-background, overlay, badge numérico `01`/`02`/`03`, score con icono `analytics`, shield de confianza con tooltip (Alta/Media/Baja confianza) y CTA "Ver reviews". La card 01 ocupa la columna central destacada.
+
 Filtros disponibles:
 
 - segmento.
@@ -45,7 +47,43 @@ El compare tray del buscador muestra mini-slots de motos seleccionadas y skeleto
 
 ## Comunidad landing
 
-La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. `Top Rated` ya no aparece como bloque separado en esta landing.
+La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing.
+
+## Comunidad — Rankings
+
+La ruta `#/comunidad/rankings` muestra rankings por categoría con datos reales de reviews aprobadas.
+
+Elementos principales:
+- Podio top 3 con imagen, stats y shield de confianza con tooltip visual. **NO se ve afectado por filtros.**
+- Grid de 8 categorías (global, daily, travel, sport, a2, power-weight, reliability, passenger).
+- Listado técnico con filtros por segmento, carnet y uso. **No usa `<table>`; usa cards/grid responsive.**
+
+**Pendiente:** rediseño mobile avanzado del listado técnico (cards responsive más refinadas).
+
+Datos:
+- `reviewCount`: conteo real de reviews `approved` por moto.
+- `averageRating`: rating medio de reviews aprobadas.
+- `confidence`: Alta (≥10 reviews), Media (≥3), Baja (<3).
+- `score`: presentado como índice 0–10 (no estrellas); usa icono `analytics`.
+- Score interno clampado 0–100; score visible clampado 0–10.
+
+Confidence shield:
+- Visual: shield con colores (high=verde, medium=ámbar, low=gris).
+- Tooltip propio en hover/focus: "Alta confianza", "Media confianza", "Baja confianza".
+- No usa `title` nativo del navegador.
+
+Aspectos técnicos:
+- Se cargan batch desde `motorcycle_review_aspects` via `getReviewAspectsByReviewIds`.
+- Se agregan por `motorcycleId` y `category` contando positive/negative.
+- Score de aspecto: `(positive - negative) / total`.
+- Pesos por categoría definidos en `RANKING_ASPECT_WEIGHTS`.
+- Ajuste escalonado por confianza: 35% (<3), 70% (3-9), 100% (≥10).
+
+**Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros.
+
+Metodología visible en página menciona datos técnicos, reviews aprobadas y aspectos agregados.
+
+Nota: el score de rankings (0–10 con icono `analytics`) es independiente del rating de reviews individuales (/5 con estrellas).
 
 ## Comunidad — Reviews públicas
 
