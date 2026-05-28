@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'r
 import communityHeroImage from '../../../assets/hero-community.png';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountReviewsEmptyState } from '../AccountReviewsPage/AccountReviewsEmptyState';
-import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
 import {
   AccountReviewCard,
   accountReviewRidingStyleLabels,
@@ -21,7 +21,6 @@ import {
 } from '../../../shared/filters/motorcycleFilterOptions';
 import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
-import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
 import './CommunityReviewsPage.scss';
 
 type ReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -462,84 +461,6 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
   );
 }
 
-function formatGarageDateShort(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-  }).format(date);
-}
-
-function GarageMotorcycleCard({ item }: Readonly<{ item: CommunityGarageMotorcycle }>) {
-  const confidence = getRankingConfidence(item.reviewCount);
-  const reviewLabel = item.reviewCount === 1 ? '1 review' : `${numberFormatter.format(item.reviewCount)} reviews`;
-  const dateLabel = formatGarageDateShort(item.latestReviewAt);
-  const usageLabel = item.topRidingStyle?.label ?? 'Uso mixto';
-
-  const confidenceLabel = confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Media confianza' : 'Baja confianza';
-
-  return (
-    <article className="community-reviews-page__garage-card" data-testid="community-garage-card" aria-label={`${item.motorcycle.name}: ${reviewLabel}`}>
-      <MotorcycleImage decorative className="community-reviews-page__garage-image" motorcycle={item.motorcycle.imageSource} />
-      <div className="community-reviews-page__garage-card-overlay" aria-hidden="true" />
-
-      <div className="community-reviews-page__garage-card-content">
-        <header className="community-reviews-page__garage-card-header">
-          <div>
-            <h3>{item.motorcycle.name}</h3>
-          </div>
-          <div className="community-reviews-page__garage-rating" aria-label={`Rating medio ${formatReviewRating(item.averageRating)} de 5`}>
-            <span className="community-reviews-page__garage-rating-start" aria-hidden="true">★</span>
-            <strong>{formatReviewRating(item.averageRating)}</strong>
-            <span
-              aria-label={confidenceLabel}
-              className={`community-reviews-page__garage-confidence community-reviews-page__garage-confidence--${confidence}`}
-              role="img"
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">shield</span>
-              <span className="community-reviews-page__garage-confidence-tooltip" role="tooltip">{confidenceLabel}</span>
-            </span>
-          </div>
-        </header>
-
-        <div className="community-reviews-page__garage-meta-row">
-          <span className="community-reviews-page__garage-meta-item">
-            <span className="material-symbols-outlined" aria-hidden="true">explore</span>
-            <span>{usageLabel}</span>
-          </span>
-          <span className="community-reviews-page__garage-meta-item">
-            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-            <span>{reviewLabel}</span>
-          </span>
-          {dateLabel ? (
-            <span className="community-reviews-page__garage-meta-item">
-              <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
-              <span>{dateLabel}</span>
-            </span>
-          ) : null}
-        </div>
-
-        <footer className="community-reviews-page__garage-actions">
-          <a className="community-reviews-page__garage-action community-reviews-page__garage-action--primary" href={item.motorcycle.communityHref}>
-            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-            <span>Reviews</span>
-          </a>
-          <a className="community-reviews-page__garage-action community-reviews-page__garage-action--secondary" href={item.motorcycle.detailHref}>
-            <span className="material-symbols-outlined" aria-hidden="true">list_alt</span>
-            <span>Ficha técnica</span>
-          </a>
-        </footer>
-      </div>
-    </article>
-  );
-}
-
 function FilterGroup({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
   return (
     <details className="community-reviews-page__filter-group" open>
@@ -957,7 +878,18 @@ export function CommunityReviewsPage() {
             <>
               <section className="community-reviews-page__garage-grid" aria-label="Modelos con reviews de la comunidad">
                 {paginatedGarageMotorcycles.map((item) => (
-                  <GarageMotorcycleCard item={item} key={item.motorcycleId} />
+                  <MotorcycleGarageCard
+                    detailHref={item.motorcycle.detailHref}
+                    imageAlt={item.motorcycle.name}
+                    imageSource={item.motorcycle.imageSource}
+                    key={item.motorcycleId}
+                    lastReviewDate={item.latestReviewAt}
+                    primaryUseLabel={item.topRidingStyle?.label}
+                    rating={item.averageRating}
+                    reviewCount={item.reviewCount}
+                    reviewsHref={item.motorcycle.communityHref}
+                    title={item.motorcycle.name}
+                  />
                 ))}
               </section>
               <AccountPagination

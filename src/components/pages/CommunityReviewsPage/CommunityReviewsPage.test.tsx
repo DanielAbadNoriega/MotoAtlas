@@ -72,7 +72,7 @@ function getGarageList() {
 }
 
 function getGarageCards() {
-  return within(getGarageList()).getAllByTestId('community-garage-card');
+  return within(getGarageList()).getAllByTestId('motorcycle-garage-card');
 }
 
 describe('CommunityReviewsPage', () => {
@@ -633,7 +633,7 @@ describe('CommunityReviewsPage', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('permission denied');
     await user.click(screen.getByRole('button', { name: /Reintentar/i }));
-    expect(await within(getGarageList()).findByTestId('community-garage-card')).toBeInTheDocument();
+    expect(await within(getGarageList()).findByTestId('motorcycle-garage-card')).toBeInTheDocument();
     expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(2);
   });
 
