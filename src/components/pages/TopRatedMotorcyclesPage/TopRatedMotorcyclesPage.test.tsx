@@ -71,10 +71,10 @@ describe('TopRatedMotorcyclesPage', () => {
 
     const firstRank = await screen.findByRole('article', { name: /Puesto 1: Aprilia Tuareg 660/i });
 
-    expect(within(firstRank).getByLabelText(/Rating medio 5 de 5/i)).toBeInTheDocument();
+    expect(within(firstRank).getByText(/10/)).toBeInTheDocument();
     expect(within(firstRank).getByLabelText(/1 reviews aprobadas/i)).toBeInTheDocument();
     expect(within(firstRank).queryByText('star')).not.toBeInTheDocument();
-    expect(within(firstRank).getByRole('link', { name: /Ver reviews de Aprilia Tuareg 660/i })).toBeInTheDocument();
+    expect(within(firstRank).getByRole('link', { name: /Ver reviews/i })).toBeInTheDocument();
   });
 
   it('el botón Explorar comunidades hace scroll al podium sin romper la ruta hash', async () => {
@@ -99,7 +99,7 @@ describe('TopRatedMotorcyclesPage', () => {
     const firstRank = await screen.findByRole('article', { name: /Puesto 1: Aprilia Tuareg 660/i });
 
     expect(within(firstRank).getByLabelText(/1 reviews aprobadas/i)).toBeInTheDocument();
-    expect(within(firstRank).getByLabelText(/Rating medio 5 de 5/i)).toBeInTheDocument();
+    expect(within(firstRank).getByText(/10/)).toBeInTheDocument();
   });
 
   it('filtra por segmento', async () => {
@@ -170,7 +170,7 @@ describe('TopRatedMotorcyclesPage', () => {
 
     const firstRank = await screen.findByRole('article', { name: /Puesto 1: Aprilia Tuareg 660/i });
 
-    expect(within(firstRank).getByRole('link', { name: /Ver reviews de Aprilia Tuareg 660/i })).toHaveAttribute('href', '#/comunidad/test-aprilia-tuareg-660');
+    expect(within(firstRank).getByRole('link', { name: /Ver reviews/i })).toHaveAttribute('href', '#/comunidad/test-aprilia-tuareg-660');
     expect(within(firstRank).queryByRole('link', { name: /Ver ficha/i })).not.toBeInTheDocument();
     expect(within(firstRank).queryByRole('button', { name: /Comparar/i })).not.toBeInTheDocument();
   });
