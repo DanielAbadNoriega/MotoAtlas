@@ -295,6 +295,223 @@ describe('CommunityReviewsPage', () => {
     expect(within(latestCards[0]).getByRole('link', { name: /Más reviews/i })).toBeInTheDocument();
   });
 
+  it('Reviews destacadas no repite motorcycleId si hay alternativas distintas', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'dedup-feat-1',
+        motorcycleId: 'triumph-street-triple',
+        kilometers: 50000,
+        rating: 5,
+        comment: 'Primera Triumph',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'triumph-street-triple', brand: 'Triumph', model: 'Street Triple 765 R', year: 2024, imageUrl: '/triumph.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'dedup-feat-2',
+        motorcycleId: 'triumph-street-triple',
+        kilometers: 45000,
+        rating: 4,
+        comment: 'Segunda Triumph con menos km',
+        createdAt: '2026-05-19T10:00:00.000Z',
+        motorcycle: { id: 'triumph-street-triple', brand: 'Triumph', model: 'Street Triple 765 R', year: 2024, imageUrl: '/triumph.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'dedup-feat-3',
+        motorcycleId: 'ducati-multistrada',
+        kilometers: 30000,
+        rating: 5,
+        comment: 'Ducati con menos km pero distinta moto',
+        createdAt: '2026-05-18T10:00:00.000Z',
+        motorcycle: { id: 'ducati-multistrada', brand: 'Ducati', model: 'Multistrada V2', year: 2024, imageUrl: '/ducati.webp', segment: 'trail', license: 'A' },
+      }),
+    ]);
+
+    const featuredSection = getFeaturedSection();
+    const featuredCards = within(featuredSection).getAllByTestId('account-review-card');
+
+    expect(featuredCards).toHaveLength(2);
+    const featuredMotorcycleIds = featuredCards.map((card) => {
+      const link = within(card).getByRole('link', { name: /Ver ficha/i });
+      return link.getAttribute('href');
+    });
+    expect(featuredMotorcycleIds[0]).not.toBe(featuredMotorcycleIds[1]);
+  });
+
+  it('Últimos reportes no repite motorcycleId si hay alternativas distintas', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'dedup-latest-1',
+        motorcycleId: 'ducati-multistrada',
+        comment: 'Primera Ducati más reciente',
+        createdAt: '2026-05-25T10:00:00.000Z',
+        motorcycle: { id: 'ducati-multistrada', brand: 'Ducati', model: 'Multistrada V2', year: 2024, imageUrl: '/ducati.webp', segment: 'trail', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'dedup-latest-2',
+        motorcycleId: 'ducati-multistrada',
+        comment: 'Segunda Ducati menos reciente',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'ducati-multistrada', brand: 'Ducati', model: 'Multistrada V2', year: 2024, imageUrl: '/ducati.webp', segment: 'trail', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'dedup-latest-3',
+        motorcycleId: 'bmw-f900gs',
+        comment: 'BMW más antiguo',
+        createdAt: '2026-05-15T10:00:00.000Z',
+        motorcycle: { id: 'bmw-f900gs', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' },
+      }),
+    ]);
+
+    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+
+    expect(latestCards).toHaveLength(2);
+    const latestMotorcycleIds = latestCards.map((card) => {
+      const link = within(card).getByRole('link', { name: /Ver ficha/i });
+      return link.getAttribute('href');
+    });
+    expect(latestMotorcycleIds[0]).not.toBe(latestMotorcycleIds[1]);
+  });
+
+  it('si solo hay reviews de una moto, permite repetidas para completar el límite', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'dedup-single-1',
+        motorcycleId: 'only-bike',
+        comment: 'Primera review',
+        createdAt: '2026-05-25T10:00:00.000Z',
+        motorcycle: { id: 'only-bike', brand: 'Honda', model: 'CB650R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'dedup-single-2',
+        motorcycleId: 'only-bike',
+        comment: 'Segunda review',
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'only-bike', brand: 'Honda', model: 'CB650R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+    ]);
+
+    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+    expect(latestCards).toHaveLength(2);
+  });
+
+  it('deduplicación NO afecta al garaje: agrupa todas las reviews sin exclusión', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'garage-dedup-1',
+        motorcycleId: 'triumph-dupe',
+        comment: 'Triumph 1',
+        rating: 5,
+        kilometers: 50000,
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'triumph-dupe', brand: 'Triumph', model: 'Street Triple', year: 2024, imageUrl: '/triumph.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'garage-dedup-2',
+        motorcycleId: 'triumph-dupe',
+        comment: 'Triumph 2',
+        rating: 4,
+        kilometers: 30000,
+        createdAt: '2026-05-15T10:00:00.000Z',
+        motorcycle: { id: 'triumph-dupe', brand: 'Triumph', model: 'Street Triple', year: 2024, imageUrl: '/triumph.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'garage-dedup-3',
+        motorcycleId: 'ducati-dupe',
+        comment: 'Ducati',
+        rating: 5,
+        kilometers: 20000,
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'ducati-dupe', brand: 'Ducati', model: 'Monster', year: 2024, imageUrl: '/ducati.webp', segment: 'naked', license: 'A' },
+      }),
+    ]);
+
+    const garageCards = getGarageCards();
+    expect(garageCards).toHaveLength(2);
+
+    const triumphCard = within(getGarageList()).getByRole('article', { name: /Triumph Street Triple.*2 reviews/i });
+    expect(within(triumphCard).getByText('2 reviews')).toBeInTheDocument();
+  });
+
+  it('deduplicación NO afecta filtros del garaje', async () => {
+    const user = userEvent.setup();
+    await renderPage([
+      createCommunityReview({
+        id: 'filter-dedup-1',
+        motorcycleId: 'filter-bike-1',
+        comment: 'Bike 1 viaje 1',
+        rating: 5,
+        ridingStyle: 'viaje',
+        kilometers: 50000,
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'filter-bike-1', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A2' },
+      }),
+      createCommunityReview({
+        id: 'filter-dedup-2',
+        motorcycleId: 'filter-bike-1',
+        comment: 'Bike 1 viaje 2',
+        rating: 4,
+        ridingStyle: 'viaje',
+        kilometers: 30000,
+        createdAt: '2026-05-15T10:00:00.000Z',
+        motorcycle: { id: 'filter-bike-1', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A2' },
+      }),
+      createCommunityReview({
+        id: 'filter-dedup-3',
+        motorcycleId: 'filter-bike-2',
+        comment: 'Bike 2 offroad',
+        rating: 3,
+        ridingStyle: 'offroad',
+        kilometers: 10000,
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'filter-bike-2', brand: 'BMW', model: 'F 850 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' },
+      }),
+    ]);
+
+    await user.click(screen.getByRole('button', { name: 'Uso principal: Viaje' }));
+
+    const garageCards = getGarageCards();
+    expect(garageCards).toHaveLength(1);
+    expect(within(getGarageList()).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
+  });
+
+  it('no se deduplica entre Reviews destacadas y Últimos reportes', async () => {
+    await renderPage([
+      createCommunityReview({
+        id: 'cross-dedup-1',
+        motorcycleId: 'shared-bike',
+        comment: 'Misma moto en ambos',
+        rating: 5,
+        kilometers: 50000,
+        createdAt: '2026-05-20T10:00:00.000Z',
+        motorcycle: { id: 'shared-bike', brand: 'Honda', model: 'CBR650R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'cross-dedup-2',
+        motorcycleId: 'shared-bike',
+        comment: 'Otra review misma moto',
+        rating: 4,
+        kilometers: 40000,
+        createdAt: '2026-05-15T10:00:00.000Z',
+        motorcycle: { id: 'shared-bike', brand: 'Honda', model: 'CBR650R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+      }),
+      createCommunityReview({
+        id: 'cross-dedup-3',
+        motorcycleId: 'other-bike',
+        comment: 'Otra moto',
+        rating: 3,
+        kilometers: 10000,
+        createdAt: '2026-05-10T10:00:00.000Z',
+        motorcycle: { id: 'other-bike', brand: 'Kawasaki', model: 'Z900', year: 2024, imageUrl: '/kawasaki.webp', segment: 'naked', license: 'A' },
+      }),
+    ]);
+
+    const featuredCards = within(getFeaturedSection()).getAllByTestId('account-review-card');
+    const latestCards = within(getLatestSection()).getAllByTestId('account-review-card');
+
+    expect(featuredCards).toHaveLength(2);
+    expect(latestCards).toHaveLength(2);
+  });
+
   it('calcula insights reales sin datos inventados', async () => {
     await renderPage([
       createCommunityReview({

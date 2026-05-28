@@ -143,19 +143,46 @@ function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
   return reviews.filter((review) => review.status === 'approved');
 }
 
+function takeUniqueMotorcycleReviews<T extends { motorcycleId: string }>(
+  reviews: readonly T[],
+  limit: number,
+): T[] {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+
+  for (const review of reviews) {
+    if (!seen.has(review.motorcycleId)) {
+      seen.add(review.motorcycleId);
+      unique.push(review);
+      if (unique.length === limit) return unique;
+    }
+  }
+
+  if (unique.length < limit) {
+    for (const review of reviews) {
+      if (!unique.includes(review)) {
+        unique.push(review);
+        if (unique.length === limit) return unique;
+      }
+    }
+  }
+
+  return unique;
+}
+
 function getFeaturedReviews(reviews: readonly MotorcycleReview[]) {
-  return [...reviews]
-    .sort((left, right) => (
-      (right.kilometers ?? -1) - (left.kilometers ?? -1) ||
-      right.rating - left.rating ||
-      right.comment.length - left.comment.length ||
-      getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
-    ))
-    .slice(0, EDITORIAL_REVIEWS_LIMIT);
+  const sorted = [...reviews].sort((left, right) => (
+    (right.kilometers ?? -1) - (left.kilometers ?? -1) ||
+    right.rating - left.rating ||
+    right.comment.length - left.comment.length ||
+    getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
+  ));
+  return takeUniqueMotorcycleReviews(sorted, EDITORIAL_REVIEWS_LIMIT);
 }
 
 function getLatestReviews(reviews: readonly MotorcycleReview[]) {
-  return sortReviews(reviews, 'recent').slice(0, EDITORIAL_REVIEWS_LIMIT);
+  const sorted = sortReviews(reviews, 'recent');
+  return takeUniqueMotorcycleReviews(sorted, EDITORIAL_REVIEWS_LIMIT);
 }
 
 function getTopRidingStyle(reviews: readonly MotorcycleReview[]) {

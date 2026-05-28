@@ -24,7 +24,7 @@
 - Filtros afectan solo al listado técnico: segment, license, use, search.
 - El Podium rankings de `#/comunidad` replica el lenguaje visual del podio de `#/comunidad/rankings`: mismo patrón de cards, shield y tooltip.
 - `#/comunidad/reviews`: filtros apply-on-change en tiempo real; botón "Aplicar" cierra el panel en mobile; copy "Reviews destacadas" (antes "Destacadas del mes").
-- `#/comunidad/reviews` Garaje: card rediseñada con rating /5 con estrella, shield de confianza (tooltip visual Alta/Media/Baja), meta row compacta (uso, reviews, fecha corta DD.MM.YY), CTAs "Reviews" y "Ficha técnica". Sin Km declarados. Base visual para futura extracción a componente compartido.
+- `#/comunidad/reviews` Garaje: `MotorcycleGarageCard` extraído a `src/components/motorcycles/MotorcycleGarageCard/`. Props planas reutilizables (title, imageSource, imageAlt, rating, reviewCount, primaryUseLabel, lastReviewDate, reviewsHref, detailHref). Presentacional sin fetch ni estado. Base para futura reutilización en `#/buscador`.
 
 ### Admin
 - ...
@@ -36,8 +36,8 @@
 
 - Rediseño mobile avanzado de rankings/listado técnico (cards responsive más refinadas).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
-- Posible extracción de `GarageMotorcycleCard` como componente reutilizable para `#/buscador`.
 - Deduplicación editorial↔garaje.
+- Reutilización de `MotorcycleGarageCard` en `#/buscador` (pendiente, aún no aplicada).
 
 ## En curso
 
