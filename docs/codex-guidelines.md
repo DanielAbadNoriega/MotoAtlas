@@ -20,6 +20,14 @@ Breve y práctica: reglas mínimas para usar Codex/Copilot en este repo.
   - Reusar componentes y estilos existentes (ej.: `CommunityHero`, `AccountPagination`, `admin-page__filters`, `account-page__card`).
   - Preferir patrones ya usados antes que introducir nuevos paradigmas.
 
+- SCSS y tokens
+  - No inventar variables locales en componentes. Usar tokens existentes de `_variables.scss`.
+  - Si hace falta un token nuevo, añadirlo al archivo global con justificación.
+
+- Anti-regresión
+  - Ver `docs/product-behavior-contracts.md` antes de extraer o reutilizar comportamiento de reviews, acciones comunitarias o cards.
+  - Regla: no dejar acciones clicables con handlers no-op. Si no hay handler real, no renderizar la acción o deshabilitarla claramente.
+
 - Rutas principales (referencia en repo)
   - Cuenta: `#/login` y páginas que usan `account-page`.
   - Comunidad: `#/motos` y fichas `#/motos/:id`.

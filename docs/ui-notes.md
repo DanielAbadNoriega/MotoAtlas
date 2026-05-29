@@ -95,9 +95,13 @@ Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews 
 
 **Criterio `Reviews destacadas`:** prioriza utilidad comunitaria (votos `Útil`). Criterio: 1) `helpfulCount` desc, 2) rating desc, 3) comentario más largo, 4) más reciente. Si no hay votos útiles (o fallan las reactions), usa fallback por rating/fecha/completitud — nunca queda vacío. **Los kilómetros declarados NO son criterio** para destacar. `Últimos reportes` es cronológico puro (fecha desc), no usa helpfulCount. Cada bloque editorial deduplica internamente por `motorcycleId`; no hay deduplicación editorial↔garaje.
 
-Los bloques editoriales reutilizan `AccountReviewCard`: `community` muestra alias público, rating, metadatos y oculta estado; `communityCompact` muestra 2 items por sección con densidad mayor. El garaje usa cards de moto agrupada con fondo completo, rating medio /5 con estrella y shield de confianza. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile. Likes/dislikes, debate/respuestas y fotos de usuario quedan para fases futuras.
+Los bloques editoriales reutilizan `AccountReviewCard`: `community` muestra alias público, rating, metadatos y oculta estado; `communityCompact` muestra 2 items por sección con densidad mayor. El garaje usa cards de moto agrupada con fondo completo, rating medio /5 con estrella y shield de confianza. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile.
+
+Las `FeaturedReviewCard` de reviews destacadas y últimos reportes tienen acciones comunitarias reales: Helpful, NotHelpful, Report (con formulario) y Reply (con lazy loading por review). Si la review es propia, muestra chip `Propia` en la zona de acciones en vez de los botones interactivos. Fotos de usuario quedan para fases futuras.
 
 Los filtros de segmento/carnet usan las mismas constantes visuales que el buscador; `Sport` usa `speed`, `Touring` usa `explore` y el carnet se presenta como `Carnet A2`, `Carnet A`, `A2 limitable`.
+
+**Contratos de comportamiento:** Ver `docs/product-behavior-contracts.md` para reglas de FeaturedReviewCard, acciones comunitarias (Helpful/NotHelpful/Report), chip `Propia`, deduplicación editorial y garaje.
 
 ## Comunidad por moto — Reviews
 
