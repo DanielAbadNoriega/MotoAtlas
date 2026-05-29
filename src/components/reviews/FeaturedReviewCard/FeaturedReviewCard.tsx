@@ -108,6 +108,10 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
           type="button"
         >
           <div className="featured-review-card__title-group">
+            <div className="featured-review-card__author">
+              <span className="featured-review-card__author-avatar" aria-hidden="true">{getInitials(review.userName)}</span>
+              <span className="featured-review-card__author-name">{formatCommunityAlias(review.userName)}</span>
+            </div>
             <div className="featured-review-card__title-row">
               <Heading className="featured-review-card__title">{motorcycle.name}</Heading>
               <span className="featured-review-card__rating" aria-label={`Rating ${formatReviewRating(review.rating)} de 5`}>
@@ -150,11 +154,6 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
 
         <footer className="featured-review-card__footer">
           <div className="featured-review-card__footer-main">
-            <div className="featured-review-card__author">
-              <span className="featured-review-card__author-avatar" aria-hidden="true">{getInitials(review.userName)}</span>
-              <span className="featured-review-card__author-name">{formatCommunityAlias(review.userName)}</span>
-            </div>
-
             {Boolean(actionsSlot) || isOwnReview ? (
               <div className="featured-review-card__actions">
                 {actionsSlot}
@@ -165,12 +164,19 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
               </div>
             ) : null}
 
+            {footerContentSlot ? (
+              <div className="featured-review-card__footer-content">
+                {footerContentSlot}
+              </div>
+            ) : null}
+
             <nav className="featured-review-card__links">
               <a href={motorcycle.detailHref}>Ver ficha</a>
               <a href={motorcycle.communityHref}>Más reviews</a>
             </nav>
+
+            
           </div>
-          {footerContentSlot}
         </footer>
       </div>
     </article>

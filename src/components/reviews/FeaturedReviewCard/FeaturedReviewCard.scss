@@ -223,13 +223,19 @@
 }
 
 .featured-review-card__footer {
-  align-items: center;
-  border-top: 1px solid rgba($color-outline-variant, 0.22);
-  display: flex;
-  gap: 0.55rem;
-  justify-content: space-between;
   margin-top: auto;
   padding: 0.42rem 0.9rem;
+  border-top: 1px solid rgba($color-outline-variant, 0.22);
+
+  &-main {
+    display: grid;
+    align-content: space-between;
+    gap: 0.8rem;
+
+  }
+  .motorcycle-community__reply-trigger {
+    margin: 0;
+  }
 }
 
 .featured-review-card__author {

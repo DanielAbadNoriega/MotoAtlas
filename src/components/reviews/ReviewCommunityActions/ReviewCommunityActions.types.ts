@@ -69,4 +69,5 @@ export interface ReviewReplySectionProps {
   readonly inline?: boolean;
   readonly visibleRepliesCount?: Record<string, number>;
   readonly onToggleReplyVisibility?: (reviewId: string) => void;
+  readonly showActions?: boolean;
 }

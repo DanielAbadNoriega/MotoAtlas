@@ -468,6 +468,12 @@ function EditorialReviewSection({
             const summary = reactionSummaryByReviewId.get(review.id);
             const isPending = reactionPendingIds.includes(review.id);
             const isOwnReview = review.userId !== null && userId !== null && review.userId === userId;
+            const isReplyFormOpen = replyForm?.reviewId === review.id;
+            const reviewReplies = replies[review.id] ?? [];
+            const visibleRepliesCount = reviewReplies.filter(
+              (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
+            ).length;
+            const isRepliesExpanded = Boolean(expandedReplyReviewIds[review.id]);
             return (
               <FeaturedReviewCard
                 headingLevel={3}
@@ -509,6 +515,30 @@ function EditorialReviewSection({
                         reviewId={review.id}
                       />
                     )}
+                    {user && !isReplyFormOpen && !isOwnReview ? (
+                      <button
+                        className="motorcycle-community__helpful-action motorcycle-community__reply-trigger"
+                        onClick={() => onOpenReply(review)}
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined" aria-hidden="true">reply</span>
+                        Responder
+                      </button>
+                    ) : null}
+                    {visibleRepliesCount > 0 ? (
+                      <button
+                        className="motorcycle-community__helpful-action"
+                        onClick={() => onToggleReplyVisibility?.(review.id)}
+                        aria-expanded={isRepliesExpanded}
+                        aria-controls={`reply-list-${review.id}`}
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+                        {isRepliesExpanded
+                          ? `Ocultar ${visibleRepliesCount} ${visibleRepliesCount === 1 ? 'respuesta' : 'respuestas'}`
+                          : `Ver ${visibleRepliesCount} ${visibleRepliesCount === 1 ? 'respuesta' : 'respuestas'}`}
+                      </button>
+                    ) : null}
                   </>
                 }
                 footerContentSlot={
@@ -516,17 +546,15 @@ function EditorialReviewSection({
                     onCancelReply={onCancelReply}
                     onChangeReplyComment={onChangeReplyComment}
                     onSubmitReply={() => onSubmitReply(review)}
-                    onOpenReply={() => onOpenReply(review)}
-                    replies={replies[review.id] ?? []}
+                    replies={reviewReplies}
                     replyForm={replyForm}
                     replyToast={replyToast}
                     review={review}
                     user={user}
-                    expanded={Boolean(expandedReplyReviewIds[review.id])}
+                    expanded={isRepliesExpanded}
                     isExpanded={true}
                     inline={true}
-                    visibleRepliesCount={{ [review.id]: (replies[review.id] ?? []).filter((r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId)).length }}
-                    onToggleReplyVisibility={onToggleReplyVisibility}
+                    showActions={false}
                   />
                 }
               />

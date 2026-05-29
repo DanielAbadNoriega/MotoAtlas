@@ -16,6 +16,7 @@ export function ReviewReplySection({
   inline,
   visibleRepliesCount,
   onToggleReplyVisibility,
+  showActions = true,
 }: ReviewReplySectionProps) {
   const isReplyFormOpen = replyForm?.reviewId === review.id;
   const isOwnReview = user?.id === review.userId;
@@ -28,11 +29,15 @@ export function ReviewReplySection({
 
   const hasExpandedContent = (expanded && visibleReplies.length > 0) || isReplyFormOpen || (replyToast && replyToast.reviewId === review.id);
 
-  if (!canReply && !isExpanded && !isReplyFormOpen && !replyToast) {
+  if (!showActions && !hasExpandedContent) {
     return null;
   }
 
-  const triggerButton = !isReplyFormOpen && user && !isOwnReview && onOpenReply ? (
+  if (!canReply && !isExpanded && !isReplyFormOpen && !replyToast && showActions) {
+    return null;
+  }
+
+  const triggerButton = showActions && !isReplyFormOpen && user && !isOwnReview && onOpenReply ? (
     <button
       className="motorcycle-community__helpful-action motorcycle-community__reply-trigger"
       onClick={onOpenReply}
@@ -43,7 +48,7 @@ export function ReviewReplySection({
     </button>
   ) : null;
 
-  const toggleRepliesButton = inline && visibleRepliesCount && onToggleReplyVisibility && count > 0 ? (
+  const toggleRepliesButton = showActions && inline && visibleRepliesCount && onToggleReplyVisibility && count > 0 ? (
     <button
       className="motorcycle-community__helpful-action"
       onClick={() => onToggleReplyVisibility(review.id)}
