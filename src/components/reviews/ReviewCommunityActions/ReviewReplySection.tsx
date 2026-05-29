@@ -14,6 +14,8 @@ export function ReviewReplySection({
   expanded,
   isExpanded,
   inline,
+  visibleRepliesCount,
+  onToggleReplyVisibility,
 }: ReviewReplySectionProps) {
   const isReplyFormOpen = replyForm?.reviewId === review.id;
   const isOwnReview = user?.id === review.userId;
@@ -22,6 +24,7 @@ export function ReviewReplySection({
     (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
   );
   const repliesListId = `reply-list-${review.id}`;
+  const count = visibleRepliesCount?.[review.id] ?? 0;
 
   const hasExpandedContent = (expanded && visibleReplies.length > 0) || isReplyFormOpen || (replyToast && replyToast.reviewId === review.id);
 
@@ -37,6 +40,21 @@ export function ReviewReplySection({
     >
       <span className="material-symbols-outlined" aria-hidden="true">reply</span>
       Responder
+    </button>
+  ) : null;
+
+  const toggleRepliesButton = inline && visibleRepliesCount && onToggleReplyVisibility && count > 0 ? (
+    <button
+      className="motorcycle-community__helpful-action"
+      onClick={() => onToggleReplyVisibility(review.id)}
+      aria-expanded={expanded}
+      aria-controls={repliesListId}
+      type="button"
+    >
+      <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+      {expanded
+        ? `Ocultar ${count} ${count === 1 ? 'respuesta' : 'respuestas'}`
+        : `Ver ${count} ${count === 1 ? 'respuesta' : 'respuestas'}`}
     </button>
   ) : null;
 
@@ -105,6 +123,7 @@ export function ReviewReplySection({
     return (
       <>
         {triggerButton}
+        {toggleRepliesButton}
         {hasExpandedContent ? (
           <div className="motorcycle-community__replies">
             {replyList}

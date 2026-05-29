@@ -1684,11 +1684,12 @@ describe('CommunityReviewsPage', () => {
       const featuredSection = getFeaturedSection();
       const card = within(featuredSection).getByTestId('featured-review-card');
 
-      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
-
       await waitFor(() => {
         expect(getRepliesByReviewIdMock).toHaveBeenCalled();
       }, { timeout: 2000 });
+
+      const verBtn = within(card).getByRole('button', { name: /Ver 2 respuestas/i });
+      await user.click(verBtn);
 
       await waitFor(() => {
         expect(within(card).getByRole('list', { name: 'Respuestas a esta review' })).toBeInTheDocument();
@@ -1722,11 +1723,12 @@ describe('CommunityReviewsPage', () => {
       const featuredSection = getFeaturedSection();
       const card = within(featuredSection).getByTestId('featured-review-card');
 
-      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
-
       await waitFor(() => {
         expect(getRepliesByReviewIdMock).toHaveBeenCalled();
       }, { timeout: 2000 });
+
+      const verBtn = within(card).getByRole('button', { name: /Ver 1 respuesta/i });
+      await user.click(verBtn);
 
       await waitFor(() => {
         expect(within(card).getByRole('list', { name: 'Respuestas a esta review' })).toBeInTheDocument();
@@ -1759,11 +1761,12 @@ describe('CommunityReviewsPage', () => {
       const featuredSection = getFeaturedSection();
       const card = within(featuredSection).getByTestId('featured-review-card');
 
-      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
-
       await waitFor(() => {
         expect(getRepliesByReviewIdMock).toHaveBeenCalled();
       }, { timeout: 2000 });
+
+      const verBtn = within(card).getByRole('button', { name: /Ver 1 respuesta/i });
+      await user.click(verBtn);
 
       await waitFor(() => {
         expect(within(card).getByText('Tú')).toBeInTheDocument();
@@ -1794,15 +1797,10 @@ describe('CommunityReviewsPage', () => {
       render(<CommunityReviewsPage />);
       await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
-      const featuredSection = getFeaturedSection();
-      const cards = within(featuredSection).getAllByTestId('featured-review-card');
-
-      await user.click(within(cards[0]).getByRole('button', { name: /BMW F 900 GS/i }));
-
       await waitFor(() => {
         expect(getRepliesByReviewIdMock).toHaveBeenCalledWith('reply-lazy-1', expect.any(Object));
       });
-      expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(1);
+      expect(getRepliesByReviewIdMock).toHaveBeenCalledWith('reply-lazy-2', expect.any(Object));
     });
 
     it('expandir segunda review no recarga replies de la primera ya cargadas', async () => {
@@ -1830,14 +1828,14 @@ describe('CommunityReviewsPage', () => {
       render(<CommunityReviewsPage />);
       await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
+      await waitFor(() => expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(2));
+
       const featuredSection = getFeaturedSection();
       const cards = within(featuredSection).getAllByTestId('featured-review-card');
 
       await user.click(within(cards[0]).getByRole('button', { name: /BMW F 900 GS/i }));
-      await waitFor(() => expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(1));
 
-      await user.click(within(cards[1]).getByRole('button', { name: /Yamaha MT-07/i }));
-      await waitFor(() => expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(2));
+      expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(2);
     });
 
     it('click en Responder abre el formulario de reply', async () => {
@@ -2234,6 +2232,93 @@ describe('CommunityReviewsPage', () => {
       await waitFor(() => {
         expect(within(card).queryByText('null', { exact: true })).not.toBeInTheDocument();
       });
+    });
+
+    it('click en Responder carga replies existentes y muestra el texto de la reply approved', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updated_at: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-click-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-click-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([
+        createReply({ id: 'reply-existing-1', reviewId: 'reply-click-1', userName: 'Otro Rider', status: 'approved' }),
+      ]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      const responderBtn = within(card).getByRole('button', { name: /Responder/i });
+      await user.click(responderBtn);
+
+      await waitFor(() => {
+        expect(within(card).getByLabelText('Tu respuesta')).toBeInTheDocument();
+      });
+      expect(within(card).queryByRole('list', { name: 'Respuestas a esta review' })).not.toBeInTheDocument();
+      expect(within(card).queryByText('Otro Rider')).not.toBeInTheDocument();
+
+      const verBtn = within(card).getByRole('button', { name: /Ver 1 respuesta/i });
+      await user.click(verBtn);
+
+      await waitFor(() => {
+        expect(within(card).getByRole('list', { name: 'Respuestas a esta review' })).toBeInTheDocument();
+      });
+      expect(within(card).getByText('Otro Rider')).toBeInTheDocument();
+    });
+
+    it('reabrir header de la misma card no oculta replies (showReplies es idempotente)', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updated_at: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-reopen-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-reopen-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([
+        createReply({ id: 'reply-reopen-r1', reviewId: 'reply-reopen-1', userName: 'Rider Existente', status: 'approved' }),
+      ]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      const headerBtn = within(card).getByRole('button', { name: /BMW F 900 GS/i });
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      const verBtn = within(card).getByRole('button', { name: /Ver 1 respuesta/i });
+      await user.click(verBtn);
+
+      await waitFor(() => {
+        expect(within(card).getByRole('list', { name: 'Respuestas a esta review' })).toBeInTheDocument();
+      });
+
+      await user.click(headerBtn);
+      await user.click(headerBtn);
+
+      await waitFor(() => {
+        expect(within(card).getByRole('list', { name: 'Respuestas a esta review' })).toBeInTheDocument();
+      });
+      expect(within(card).getByText('Rider Existente')).toBeInTheDocument();
     });
   });
 });

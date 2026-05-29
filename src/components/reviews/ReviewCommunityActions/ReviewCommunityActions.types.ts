@@ -67,4 +67,6 @@ export interface ReviewReplySectionProps {
   readonly expanded: boolean;
   readonly isExpanded: boolean;
   readonly inline?: boolean;
+  readonly visibleRepliesCount?: Record<string, number>;
+  readonly onToggleReplyVisibility?: (reviewId: string) => void;
 }

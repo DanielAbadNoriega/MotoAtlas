@@ -413,6 +413,7 @@ function EditorialReviewSection({
   onCancelReply,
   onChangeReplyComment,
   onSubmitReply,
+  onShowReplies,
   onToggleReplyVisibility,
 }: Readonly<{
   emptyMessage: string;
@@ -443,7 +444,9 @@ function EditorialReviewSection({
   onCancelReply: () => void;
   onChangeReplyComment: (comment: string) => void;
   onSubmitReply: (review: MotorcycleReview) => void;
-  onToggleReplyVisibility: (reviewId: string) => void;
+  onShowReplies: (reviewId: string) => void;
+  onToggleReplyVisibility?: (reviewId: string) => void;
+  visibleRepliesCount?: Record<string, number>;
 }>)
 {
   const sectionClasses = [
@@ -470,7 +473,6 @@ function EditorialReviewSection({
                 headingLevel={3}
                 isOwnReview={isOwnReview}
                 key={review.id}
-                onExpandedChange={(expanded) => expanded && onToggleReplyVisibility(review.id)}
                 review={review}
                 aspects={aspectsByReviewId.get(review.id)}
                 actionsSlot={
@@ -509,7 +511,7 @@ function EditorialReviewSection({
                     )}
                   </>
                 }
-                replySlot={(isExpanded) => (
+                footerContentSlot={
                   <ReviewReplySection
                     onCancelReply={onCancelReply}
                     onChangeReplyComment={onChangeReplyComment}
@@ -520,11 +522,13 @@ function EditorialReviewSection({
                     replyToast={replyToast}
                     review={review}
                     user={user}
-                    expanded={isExpanded}
-                    isExpanded={isExpanded}
+                    expanded={Boolean(expandedReplyReviewIds[review.id])}
+                    isExpanded={true}
                     inline={true}
+                    visibleRepliesCount={{ [review.id]: (replies[review.id] ?? []).filter((r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId)).length }}
+                    onToggleReplyVisibility={onToggleReplyVisibility}
                   />
-                )}
+                }
               />
             );
           })}
@@ -997,11 +1001,25 @@ export function CommunityReviewsPage() {
     });
     return map as ReadonlyMap<string, readonly MotorcycleReviewAspect[]>;
   }, [aspectSummaries]);
+  const visibleRepliesCountByReviewId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const [reviewId, reviewReplies] of Object.entries(replies)) {
+      if (!reviewReplies) continue;
+      const count = reviewReplies.filter(
+        (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
+      ).length;
+      map.set(reviewId, count);
+    }
+    return map;
+  }, [replies, user?.id]);
   const featuredReviews = useMemo(
     () => getFeaturedReviews(approvedReviews, helpfulCountByReviewId),
     [approvedReviews, helpfulCountByReviewId],
   );
   const latestReviews = useMemo(() => getLatestReviews(approvedReviews), [approvedReviews]);
+  const editorialReviewIds = useMemo(() => {
+    return Array.from(new Set([...featuredReviews, ...latestReviews].map((review) => review.id)));
+  }, [featuredReviews, latestReviews]);
   const communityInsights = useMemo(() => getCommunityInsights(approvedReviews), [approvedReviews]);
   const garageMotorcycles = useMemo(() => buildCommunityGarage(approvedReviews), [approvedReviews]);
   const filteredGarageMotorcycles = useMemo(
@@ -1151,6 +1169,10 @@ export function CommunityReviewsPage() {
     setReplyForm(null);
   };
 
+  const showReplies = (reviewId: string) => {
+    setExpandedReplyReviewIds((prev) => ({ ...prev, [reviewId]: true }));
+  };
+
   const toggleReplyVisibility = (reviewId: string) => {
     setExpandedReplyReviewIds((prev) => ({ ...prev, [reviewId]: !prev[reviewId] }));
   };
@@ -1195,6 +1217,60 @@ export function CommunityReviewsPage() {
   };
 
   useEffect(() => {
+    const idsToLoad = editorialReviewIds.filter((id) => !loadedReplyReviewIds.has(id));
+
+    if (idsToLoad.length === 0) {
+      return undefined;
+    }
+
+    if (!reactionAuthContext) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    void (async () => {
+      const results = await Promise.allSettled(
+        idsToLoad.map(async (reviewId) => ({
+          reviewId,
+          replies: await getRepliesByReviewId(reviewId, reactionAuthContext),
+        })),
+      );
+
+      if (!isMounted) return;
+
+      const succeeded: { reviewId: string; reviewReplies: readonly ReviewReply[] }[] = [];
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          succeeded.push({ reviewId: result.value.reviewId, reviewReplies: result.value.replies });
+        }
+      }
+
+      if (succeeded.length === 0) return;
+
+      setReplies((prev) => {
+        const next = { ...prev };
+        for (const { reviewId, reviewReplies } of succeeded) {
+          next[reviewId] = reviewReplies;
+        }
+        return next;
+      });
+
+      setLoadedReplyReviewIds((prev) => {
+        const next = new Set(prev);
+        for (const { reviewId } of succeeded) {
+          next.add(reviewId);
+        }
+        return next;
+      });
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [editorialReviewIds, loadedReplyReviewIds, reactionAuthContext]);
+
+  useEffect(() => {
     const expandedReviewIds = Object.keys(expandedReplyReviewIds).filter((id) => expandedReplyReviewIds[id]);
     const reviewsNeedingLoad = expandedReviewIds.filter((id) => !loadedReplyReviewIds.has(id));
 
@@ -1204,20 +1280,15 @@ export function CommunityReviewsPage() {
 
     let isMounted = true;
 
-    const fetchReplies = async () => {
-      const results = [];
+    (async () => {
+      const results: { reviewId: string; reviewReplies: readonly ReviewReply[] }[] = [];
       for (const reviewId of reviewsNeedingLoad) {
         try {
           const reviewReplies = await getRepliesByReviewId(reviewId, reactionAuthContext);
           results.push({ reviewId, reviewReplies });
         } catch {
-          // silently fail — replies are non-critical
         }
       }
-      return results;
-    };
-
-    fetchReplies().then((results) => {
       if (!isMounted) return;
       if (results.length === 0) return;
       setReplies((currentReplies) => {
@@ -1234,7 +1305,7 @@ export function CommunityReviewsPage() {
         }
         return next;
       });
-    });
+    })();
 
     return () => {
       isMounted = false;
@@ -1299,7 +1370,9 @@ export function CommunityReviewsPage() {
               onCancelReply={cancelReplyForm}
               onChangeReplyComment={updateReplyComment}
               onSubmitReply={submitReply}
+              onShowReplies={showReplies}
               onToggleReplyVisibility={toggleReplyVisibility}
+              visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
             />
             <EditorialReviewSection
               aspectsByReviewId={aspectByReviewId}
@@ -1330,7 +1403,9 @@ export function CommunityReviewsPage() {
               onCancelReply={cancelReplyForm}
               onChangeReplyComment={updateReplyComment}
               onSubmitReply={submitReply}
+              onShowReplies={showReplies}
               onToggleReplyVisibility={toggleReplyVisibility}
+              visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
             />
           </div>
 

@@ -17,7 +17,7 @@ export type FeaturedReviewCardProps = Readonly<{
   review: MotorcycleReview;
   aspects?: readonly MotorcycleReviewAspect[] | null;
   actionsSlot?: React.ReactNode;
-  replySlot?: React.ReactNode | ((isExpanded: boolean) => React.ReactNode);
+  footerContentSlot?: React.ReactNode;
   isOwnReview?: boolean;
   onExpandedChange?: (isExpanded: boolean) => void;
 }>;
@@ -66,7 +66,7 @@ function ReviewMetadata({ review }: Readonly<{ review: MotorcycleReview }>) {
   );
 }
 
-export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot, replySlot, isOwnReview, onExpandedChange }: FeaturedReviewCardProps) {
+export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot, footerContentSlot, isOwnReview, onExpandedChange }: FeaturedReviewCardProps) {
   const Heading = `h${headingLevel}` as const;
   const motorcycle = getAccountReviewMotorcycleDisplay(review);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -155,12 +155,9 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
               <span className="featured-review-card__author-name">{formatCommunityAlias(review.userName)}</span>
             </div>
 
-            {Boolean(actionsSlot) || isOwnReview || Boolean(replySlot) ? (
+            {Boolean(actionsSlot) || isOwnReview ? (
               <div className="featured-review-card__actions">
                 {actionsSlot}
-                {replySlot ? (
-                  typeof replySlot === 'function' ? replySlot(isExpanded) : replySlot
-                ) : null}
                 {isOwnReview && <span className="featured-review-card__own-action motorcycle-community__helpful-action motorcycle-community__helpful-action--passive" aria-label="Review propia">
                   <span className="material-symbols-outlined" aria-hidden="true">block</span>
                   Propia
@@ -173,6 +170,7 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
               <a href={motorcycle.communityHref}>Más reviews</a>
             </nav>
           </div>
+          {footerContentSlot}
         </footer>
       </div>
     </article>
