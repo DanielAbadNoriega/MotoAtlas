@@ -413,7 +413,6 @@ function EditorialReviewSection({
   onCancelReply,
   onChangeReplyComment,
   onSubmitReply,
-  onShowReplies,
   onToggleReplyVisibility,
 }: Readonly<{
   emptyMessage: string;
@@ -444,7 +443,6 @@ function EditorialReviewSection({
   onCancelReply: () => void;
   onChangeReplyComment: (comment: string) => void;
   onSubmitReply: (review: MotorcycleReview) => void;
-  onShowReplies: (reviewId: string) => void;
   onToggleReplyVisibility?: (reviewId: string) => void;
   visibleRepliesCount?: Record<string, number>;
 }>)
@@ -1199,10 +1197,6 @@ export function CommunityReviewsPage() {
     setReplyForm(null);
   };
 
-  const showReplies = (reviewId: string) => {
-    setExpandedReplyReviewIds((prev) => ({ ...prev, [reviewId]: true }));
-  };
-
   const toggleReplyVisibility = (reviewId: string) => {
     setExpandedReplyReviewIds((prev) => ({ ...prev, [reviewId]: !prev[reviewId] }));
   };
@@ -1400,7 +1394,6 @@ export function CommunityReviewsPage() {
               onCancelReply={cancelReplyForm}
               onChangeReplyComment={updateReplyComment}
               onSubmitReply={submitReply}
-              onShowReplies={showReplies}
               onToggleReplyVisibility={toggleReplyVisibility}
               visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
             />
@@ -1433,7 +1426,6 @@ export function CommunityReviewsPage() {
               onCancelReply={cancelReplyForm}
               onChangeReplyComment={updateReplyComment}
               onSubmitReply={submitReply}
-              onShowReplies={showReplies}
               onToggleReplyVisibility={toggleReplyVisibility}
               visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
             />

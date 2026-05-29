@@ -55,7 +55,7 @@
   gap: 0.5rem;
   justify-content: space-between;
 
-  > div > span:not(.material-symbols-outlined):not(&-star) {
+  > div > span:not(.material-symbols-outlined) {
     @include label-caps;
 
     color: rgba($color-on-surface-variant, 0.74);
