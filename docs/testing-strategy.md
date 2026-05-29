@@ -103,3 +103,19 @@ npm run test
 ```
 
 Si queda un hueco que pertenece a E2E o necesita decisión de producto, se documenta explícitamente en el resumen final.
+
+## Contratos de producto — testing
+
+Ver `docs/product-behavior-contracts.md` para contratos de comportamiento de producto.
+
+Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben validar:
+- ownership (review propia vs ajena).
+- auth/no auth (sesión presente o no).
+- útil/no útil mutuamente excluyentes.
+- reportar una sola vez por usuario.
+- no autoreacción ni autoreporte.
+- pending states bloquean interacción.
+- ausencia de handlers no-op.
+- no texto literal `null`/`undefined`.
+- filtros solo afectan la sección que deben afectar.
+- deduplicación dentro de cada bloque editorial, no entre bloques.

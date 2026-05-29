@@ -1,0 +1,1 @@
+export { FeaturedReviewCard } from './FeaturedReviewCard';

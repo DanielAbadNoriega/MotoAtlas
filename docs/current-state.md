@@ -24,7 +24,9 @@
 - Filtros afectan solo al listado técnico: segment, license, use, search.
 - El Podium rankings de `#/comunidad` replica el lenguaje visual del podio de `#/comunidad/rankings`: mismo patrón de cards, shield y tooltip.
 - `#/comunidad/reviews`: filtros apply-on-change en tiempo real; botón "Aplicar" cierra el panel en mobile; copy "Reviews destacadas" (antes "Destacadas del mes").
-- `#/comunidad/reviews` Garaje: card rediseñada con rating /5 con estrella, shield de confianza (tooltip visual Alta/Media/Baja), meta row compacta (uso, reviews, fecha corta DD.MM.YY), CTAs "Reviews" y "Ficha técnica". Sin Km declarados. Base visual para futura extracción a componente compartido.
+- `#/comunidad/reviews` Garaje: `MotorcycleGarageCard` extraído a `src/components/motorcycles/MotorcycleGarageCard/`. Props planas reutilizables (title, imageSource, imageAlt, rating, reviewCount, primaryUseLabel, lastReviewDate, reviewsHref, detailHref). Presentacional sin fetch ni estado. Base para futura reutilización en `#/buscador`.
+- `#/comunidad/reviews` `Reviews destacadas`: criterio = utilidad comunitaria (`helpfulCount` desc). Desempates: rating, comentario más largo, más reciente. Kilómetros NO son criterio. Fallback si no hay útiles funciona por rating/fecha. `Últimos reportes`: cronológico puro. Deduplicación interna por `motorcycleId` en cada bloque editorial, sin deduplicación editorial↔garaje.
+- `#/comunidad/reviews` `FeaturedReviewCard` (reviews destacadas y últimos reportes): acciones comunitarias reales conectadas — HelpfulReviewAction, NotHelpfulReviewAction, ReportReviewAction con ReviewReportForm, y ReviewReplySection con lazy loading. Chip `Propia` visible en zona de acciones para reviews propias. El botón `Responder` aparece como action chip en `.featured-review-card__actions`; ReviewReplySection usa `inline=true` para que el trigger sea hijo directo de actions y el contenido expandido quede en `.motorcycle-community__replies`. `MotorcycleCommunityPage` mantiene comportamiento original sin `inline`.
 
 ### Admin
 - ...
@@ -36,8 +38,8 @@
 
 - Rediseño mobile avanzado de rankings/listado técnico (cards responsive más refinadas).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
-- Posible extracción de `GarageMotorcycleCard` como componente reutilizable para `#/buscador`.
 - Deduplicación editorial↔garaje.
+- Reutilización de `MotorcycleGarageCard` en `#/buscador` (pendiente, aún no aplicada).
 
 ## En curso
 
@@ -65,3 +67,8 @@
 
 - Tendencia no usa serie temporal real.
 - Insights en vivo con polling cada 60s (sin Supabase Realtime).
+
+## Referencias de contratos
+
+- Contratos de comportamiento: `docs/product-behavior-contracts.md`
+- Contratos de producto para reviews, acciones comunitarias, FeaturedReviewCard, confianza, rating vs score y deduplicación.

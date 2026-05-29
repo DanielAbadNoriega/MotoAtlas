@@ -1,0 +1,393 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.featured-review-card {
+  background:
+    linear-gradient(135deg, rgba($color-surface-container-high, 0.72), rgba($color-surface-low, 0.92)),
+    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.08), transparent 18rem);
+  border: 1px solid rgba($color-outline-variant, 0.28);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-glass;
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.28fr) minmax(0, 1fr);
+  min-height: 10rem;
+  overflow: hidden;
+  transition:
+    border-color $transition-base,
+    transform $transition-base;
+
+  &:hover {
+    border-color: rgba($color-accent-container, 0.52);
+    transform: translateY(-2px);
+  }
+}
+
+.featured-review-card__media {
+  background: #000;
+  min-height: 100%;
+  overflow: hidden;
+  position: relative;
+
+  .motorcycle-image,
+  img {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.featured-review-card__image {
+  filter: saturate(0.92) contrast(1.05);
+  object-fit: cover;
+  opacity: 0.82;
+  transition: transform $transition-slow;
+}
+
+.featured-review-card:hover .featured-review-card__image {
+  transform: scale(1.045);
+}
+
+.featured-review-card__gradient {
+  background: linear-gradient(90deg, transparent, rgba($color-surface-low, 0.96));
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.featured-review-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.featured-review-card__header {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.72rem 0.9rem;
+  text-align: left;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid rgba($color-accent-container, 0.6);
+    outline-offset: -2px;
+  }
+}
+
+.featured-review-card__title-group {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.featured-review-card__title-row {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+
+  h2,
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: clamp(0.95rem, 1.35vw, 1.16rem);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    margin: 0;
+    text-transform: uppercase;
+  }
+}
+
+.featured-review-card__rating {
+  @include label-caps;
+
+  align-items: center;
+  color: $color-accent-container;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.95rem;
+  font-weight: 900;
+  gap: 0.18rem;
+  line-height: 1;
+  padding-inline: 0;
+
+  .featured-review-card__rating-icon {
+    color: $color-accent;
+    font-size: 1.15rem;
+    padding-bottom: 2px;
+  }
+}
+
+.featured-review-card__own-action {
+  // Decoupled hook: base visual styles come from
+  // .motorcycle-community__helpful-action--passive
+}
+
+.featured-review-card__meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.24rem 0.58rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    @include label-caps;
+
+    align-items: center;
+    color: rgba($color-on-surface-variant, 0.78);
+    display: inline-flex;
+    font-size: 0.55rem;
+    gap: 0.2rem;
+  }
+
+  .material-symbols-outlined {
+    color: rgba($color-accent-container, 0.88);
+    font-size: 0.84rem;
+  }
+}
+
+.featured-review-card__expand-icon {
+  color: rgba($color-on-surface-variant, 0.6);
+  flex: 0 0 auto;
+  font-size: 1.2rem;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.featured-review-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 0.9rem;
+  transition:
+    max-height 280ms ease-out,
+    opacity 220ms ease-out,
+    padding 280ms ease-out;
+}
+
+.featured-review-card__body--open {
+  max-height: 56rem;
+  opacity: 1;
+  overflow: visible;
+  padding-bottom: 0.72rem;
+}
+
+.featured-review-card__comment {
+  color: rgba($color-on-surface-variant, 0.9);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.featured-review-card__pros,
+.featured-review-card__cons {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.featured-review-card__pros {
+  .featured-review-card__pros-label {
+    color: #4ade80;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .featured-review-card__pros-text {
+    color: rgba($color-on-surface-variant, 0.85);
+    font-size: 0.78rem;
+  }
+}
+
+.featured-review-card__cons {
+  .featured-review-card__cons-label {
+    color: #f87171;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .featured-review-card__cons-text {
+    color: rgba($color-on-surface-variant, 0.85);
+    font-size: 0.78rem;
+  }
+}
+
+.featured-review-card__footer {
+  margin-top: auto;
+  padding: 0.42rem 0.9rem;
+  border-top: 1px solid rgba($color-outline-variant, 0.22);
+
+  &-main {
+    display: grid;
+    align-content: space-between;
+    gap: 0.8rem;
+
+  }
+  .motorcycle-community__reply-trigger {
+    margin: 0;
+  }
+}
+
+.featured-review-card__author {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.38rem;
+  min-width: 0;
+
+  .featured-review-card__author-avatar {
+    align-items: center;
+    background: rgba($color-surface-bright, 0.18);
+    border: 1px solid rgba($color-outline-variant, 0.36);
+    border-radius: 999px;
+    color: $color-on-surface;
+    display: inline-flex;
+    font-family: $font-mono;
+    font-size: 0.55rem;
+    font-weight: 900;
+    height: 1.35rem;
+    justify-content: center;
+    width: 1.35rem;
+  }
+
+  .featured-review-card__author-name {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.86);
+    font-size: 0.58rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
+  }
+}
+
+.featured-review-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+
+  a {
+    @include label-caps;
+    font-family: $font-body;
+    align-items: center;
+    background: transparent;
+    border: 1px solid rgba($color-outline, 0.78);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: inline-flex;
+    font-size: 0.54rem;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.36rem 0.52rem;
+    text-decoration: none;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+  }
+
+  a:first-child {
+    background: rgba($color-accent, 0.1);
+    border-color: rgba($color-accent, 0.42);
+  }
+
+  a:hover,
+  a:focus-visible {
+    outline: 0;
+    transform: translateY(-1px);
+  }
+
+  a:focus-visible {
+    box-shadow: 0 0 0 3px rgba($color-accent-container, 0.28);
+  }
+}
+
+.featured-review-card__links {
+  display: flex;
+  gap: 0.5rem;
+
+  a {
+    @include label-caps;
+    font-family: $font-body;
+    align-items: center;
+    background: transparent;
+    border: 1px solid rgba($color-outline, 0.78);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: inline-flex;
+    font-size: 0.54rem;
+    justify-content: center;
+    min-height: 1.75rem;
+    padding: 0.36rem 0.52rem;
+    text-decoration: none;
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      color $transition-base,
+      transform $transition-fast;
+
+    &:hover,
+    &:focus-visible {
+      outline: 0;
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px rgba($color-accent-container, 0.28);
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .featured-review-card {
+    grid-template-columns: minmax(10rem, 0.32fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .featured-review-card {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-review-card__media {
+    min-height: 13rem;
+  }
+
+  .featured-review-card__gradient {
+    background: linear-gradient(180deg, transparent, rgba($color-surface-low, 0.96));
+  }
+
+  .featured-review-card__header {
+    flex-direction: column;
+  }
+
+  .featured-review-card__title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .featured-review-card__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .featured-review-card__actions {
+    width: 100%;
+
+    a {
+      flex: 1 1 10rem;
+    }
+  }
+}

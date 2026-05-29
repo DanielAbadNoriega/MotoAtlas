@@ -1,18 +1,46 @@
-import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import communityHeroImage from '../../../assets/hero-community.png';
+import { useAuth } from '../../../features/auth';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountReviewsEmptyState } from '../AccountReviewsPage/AccountReviewsEmptyState';
-import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
 import {
-  AccountReviewCard,
   accountReviewRidingStyleLabels,
   getAccountReviewMotorcycleDisplay,
 } from '../../reviews/AccountReviewCard';
+import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
+import {
+  HelpfulReviewAction,
+  NotHelpfulReviewAction,
+  ReportReviewAction,
+  ReviewReplySection,
+  ReviewReportForm,
+  type ReplyFormState,
+  type ReplyToastState,
+} from '../../reviews/ReviewCommunityActions';
 import {
   getApprovedCommunityReviews,
+  getReviewAspectsByReviewIds,
   type MotorcycleReview,
+  type MotorcycleReviewAspect,
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
+import {
+  getReviewReactionSummary,
+  toggleHelpfulReaction,
+  toggleNotHelpfulReaction,
+  type ReviewReactionSummary,
+} from '../../../services/reviewReactionService';
+import {
+  createReviewReport,
+  getMyReviewReports,
+  type ReviewReportReason,
+} from '../../../services/reviewReportService';
+import {
+  createReviewReply,
+  getRepliesByReviewId,
+  type ReviewReply,
+} from '../../../services/reviewReplyService';
 import {
   matchesMotorcycleSegmentFilter,
   motorcycleLicenseFilterOptions,
@@ -21,8 +49,14 @@ import {
 } from '../../../shared/filters/motorcycleFilterOptions';
 import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
-import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
 import './CommunityReviewsPage.scss';
+
+type ReviewReportFormState = Readonly<{
+  comment: string;
+  isSubmitting: boolean;
+  reason: ReviewReportReason;
+  reviewId: string;
+}>;
 
 type ReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
 type LicenseFilter = 'all' | BikeA2Status;
@@ -144,19 +178,49 @@ function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
   return reviews.filter((review) => review.status === 'approved');
 }
 
-function getFeaturedReviews(reviews: readonly MotorcycleReview[]) {
-  return [...reviews]
-    .sort((left, right) => (
-      (right.kilometers ?? -1) - (left.kilometers ?? -1) ||
-      right.rating - left.rating ||
-      right.comment.length - left.comment.length ||
-      getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
-    ))
-    .slice(0, EDITORIAL_REVIEWS_LIMIT);
+function takeUniqueMotorcycleReviews<T extends { motorcycleId: string }>(
+  reviews: readonly T[],
+  limit: number,
+): T[] {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+
+  for (const review of reviews) {
+    if (!seen.has(review.motorcycleId)) {
+      seen.add(review.motorcycleId);
+      unique.push(review);
+      if (unique.length === limit) return unique;
+    }
+  }
+
+  if (unique.length < limit) {
+    for (const review of reviews) {
+      if (!unique.includes(review)) {
+        unique.push(review);
+        if (unique.length === limit) return unique;
+      }
+    }
+  }
+
+  return unique;
+}
+
+function getFeaturedReviews(
+  reviews: readonly MotorcycleReview[],
+  helpfulCountByReviewId: ReadonlyMap<string, number>,
+) {
+  const sorted = [...reviews].sort((left, right) => (
+    (helpfulCountByReviewId.get(right.id) ?? 0) - (helpfulCountByReviewId.get(left.id) ?? 0) ||
+    right.rating - left.rating ||
+    right.comment.length - left.comment.length ||
+    getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
+  ));
+  return takeUniqueMotorcycleReviews(sorted, EDITORIAL_REVIEWS_LIMIT);
 }
 
 function getLatestReviews(reviews: readonly MotorcycleReview[]) {
-  return sortReviews(reviews, 'recent').slice(0, EDITORIAL_REVIEWS_LIMIT);
+  const sorted = sortReviews(reviews, 'recent');
+  return takeUniqueMotorcycleReviews(sorted, EDITORIAL_REVIEWS_LIMIT);
 }
 
 function getTopRidingStyle(reviews: readonly MotorcycleReview[]) {
@@ -320,20 +384,69 @@ function ReviewSkeletonList() {
     </div>
   );
 }
-
 function EditorialReviewSection({
   emptyMessage,
   id,
+  reactionSummaryByReviewId,
   reviews,
   title,
   tone,
+  aspectsByReviewId,
+  onToggleHelpful,
+  onToggleNotHelpful,
+  reactionPendingIds,
+  userId,
+  reportedReviewIds,
+  reportForm,
+  reportPendingIds,
+  onOpenReport,
+  onCancelReport,
+  onChangeReportReason,
+  onChangeReportComment,
+  onSubmitReport,
+  replies,
+  replyForm,
+  replyToast,
+  expandedReplyReviewIds,
+  user,
+  onOpenReply,
+  onCancelReply,
+  onChangeReplyComment,
+  onSubmitReply,
+  onToggleReplyVisibility,
 }: Readonly<{
   emptyMessage: string;
   id: string;
+  reactionSummaryByReviewId: ReadonlyMap<string, ReviewReactionSummary>;
   reviews: readonly MotorcycleReview[];
   title: string;
   tone: 'featured' | 'latest';
-}>) {
+  aspectsByReviewId: ReadonlyMap<string, readonly MotorcycleReviewAspect[]>;
+  onToggleHelpful: (review: MotorcycleReview) => void;
+  onToggleNotHelpful: (review: MotorcycleReview) => void;
+  reactionPendingIds: readonly string[];
+  userId: string | null;
+  reportedReviewIds: Record<string, boolean>;
+  reportForm: ReviewReportFormState | null;
+  reportPendingIds: readonly string[];
+  onOpenReport: (review: MotorcycleReview) => void;
+  onCancelReport: () => void;
+  onChangeReportReason: (reason: ReviewReportReason) => void;
+  onChangeReportComment: (comment: string) => void;
+  onSubmitReport: (review: MotorcycleReview) => void;
+  replies: Record<string, readonly ReviewReply[]>;
+  replyForm: ReplyFormState | null;
+  replyToast: ReplyToastState | null;
+  expandedReplyReviewIds: Record<string, boolean>;
+  user: ReturnType<typeof useAuth>['user'];
+  onOpenReply: (review: MotorcycleReview) => void;
+  onCancelReply: () => void;
+  onChangeReplyComment: (comment: string) => void;
+  onSubmitReply: (review: MotorcycleReview) => void;
+  onToggleReplyVisibility?: (reviewId: string) => void;
+  visibleRepliesCount?: Record<string, number>;
+}>)
+{
   const sectionClasses = [
     'community-reviews-page__editorial-section',
     `community-reviews-page__editorial-section--${tone}`,
@@ -349,9 +462,104 @@ function EditorialReviewSection({
         <p className="community-reviews-page__editorial-empty">{emptyMessage}</p>
       ) : (
         <div className="community-reviews-page__editorial-list">
-          {reviews.map((review) => (
-            <AccountReviewCard headingLevel={3} key={review.id} review={review} variant="communityCompact" />
-          ))}
+          {reviews.map((review) => {
+            const summary = reactionSummaryByReviewId.get(review.id);
+            const isPending = reactionPendingIds.includes(review.id);
+            const isOwnReview = review.userId !== null && userId !== null && review.userId === userId;
+            const isReplyFormOpen = replyForm?.reviewId === review.id;
+            const reviewReplies = replies[review.id] ?? [];
+            const visibleRepliesCount = reviewReplies.filter(
+              (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
+            ).length;
+            const isRepliesExpanded = Boolean(expandedReplyReviewIds[review.id]);
+            return (
+              <FeaturedReviewCard
+                headingLevel={3}
+                isOwnReview={isOwnReview}
+                key={review.id}
+                review={review}
+                aspects={aspectsByReviewId.get(review.id)}
+                actionsSlot={
+                  <>
+                    <HelpfulReviewAction
+                      isBlocked={false}
+                      isOwnReview={isOwnReview}
+                      isPending={isPending}
+                      onToggle={() => onToggleHelpful(review)}
+                      summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
+                    />
+                    <NotHelpfulReviewAction
+                      isBlocked={false}
+                      isOwnReview={isOwnReview}
+                      isPending={isPending}
+                      onToggle={() => onToggleNotHelpful(review)}
+                      summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
+                    />
+                    <ReportReviewAction
+                      hasReported={Boolean(reportedReviewIds[review.id])}
+                      isOwnReview={isOwnReview}
+                      isPending={reportPendingIds.includes(review.id)}
+                      onOpen={() => onOpenReport(review)}
+                    />
+                    {user && !isReplyFormOpen && !isOwnReview ? (
+                      <button
+                        className="motorcycle-community__helpful-action motorcycle-community__reply-trigger"
+                        onClick={() => onOpenReply(review)}
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined" aria-hidden="true">reply</span>
+                        Responder
+                      </button>
+                    ) : null}
+                    {visibleRepliesCount > 0 ? (
+                      <button
+                        className="motorcycle-community__helpful-action"
+                        onClick={() => onToggleReplyVisibility?.(review.id)}
+                        aria-expanded={isRepliesExpanded}
+                        aria-controls={`reply-list-${review.id}`}
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+                        {isRepliesExpanded
+                          ? `Ocultar ${visibleRepliesCount} ${visibleRepliesCount === 1 ? 'respuesta' : 'respuestas'}`
+                          : `Ver ${visibleRepliesCount} ${visibleRepliesCount === 1 ? 'respuesta' : 'respuestas'}`}
+                      </button>
+                    ) : null}
+                  </>
+                }
+                footerContentSlot={
+                  <ReviewReplySection
+                    onCancelReply={onCancelReply}
+                    onChangeReplyComment={onChangeReplyComment}
+                    onSubmitReply={() => onSubmitReply(review)}
+                    replies={reviewReplies}
+                    replyForm={replyForm}
+                    replyToast={replyToast}
+                    review={review}
+                    user={user}
+                    expanded={isRepliesExpanded}
+                    isExpanded={true}
+                    inline={true}
+                    showActions={false}
+                  />
+                }
+                reportContentSlot={
+                  reportForm?.reviewId === review.id ? (
+                    <ReviewReportForm
+                      comment={reportForm.comment}
+                      isSubmitting={reportForm.isSubmitting}
+                      onCancel={onCancelReport}
+                      onCommentChange={onChangeReportComment}
+                      onReasonChange={onChangeReportReason}
+                      onSubmit={() => onSubmitReport(review)}
+                      reason={reportForm.reason}
+                      reviewId={reportForm.reviewId}
+                    />
+                  ) : null
+                }
+              />
+            );
+          })}
         </div>
       )}
     </section>
@@ -459,84 +667,6 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
         </footer>
       ) : null}
     </aside>
-  );
-}
-
-function formatGarageDateShort(value: string): string {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-  }).format(date);
-}
-
-function GarageMotorcycleCard({ item }: Readonly<{ item: CommunityGarageMotorcycle }>) {
-  const confidence = getRankingConfidence(item.reviewCount);
-  const reviewLabel = item.reviewCount === 1 ? '1 review' : `${numberFormatter.format(item.reviewCount)} reviews`;
-  const dateLabel = formatGarageDateShort(item.latestReviewAt);
-  const usageLabel = item.topRidingStyle?.label ?? 'Uso mixto';
-
-  const confidenceLabel = confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Media confianza' : 'Baja confianza';
-
-  return (
-    <article className="community-reviews-page__garage-card" data-testid="community-garage-card" aria-label={`${item.motorcycle.name}: ${reviewLabel}`}>
-      <MotorcycleImage decorative className="community-reviews-page__garage-image" motorcycle={item.motorcycle.imageSource} />
-      <div className="community-reviews-page__garage-card-overlay" aria-hidden="true" />
-
-      <div className="community-reviews-page__garage-card-content">
-        <header className="community-reviews-page__garage-card-header">
-          <div>
-            <h3>{item.motorcycle.name}</h3>
-          </div>
-          <div className="community-reviews-page__garage-rating" aria-label={`Rating medio ${formatReviewRating(item.averageRating)} de 5`}>
-            <span className="community-reviews-page__garage-rating-start" aria-hidden="true">★</span>
-            <strong>{formatReviewRating(item.averageRating)}</strong>
-            <span
-              aria-label={confidenceLabel}
-              className={`community-reviews-page__garage-confidence community-reviews-page__garage-confidence--${confidence}`}
-              role="img"
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">shield</span>
-              <span className="community-reviews-page__garage-confidence-tooltip" role="tooltip">{confidenceLabel}</span>
-            </span>
-          </div>
-        </header>
-
-        <div className="community-reviews-page__garage-meta-row">
-          <span className="community-reviews-page__garage-meta-item">
-            <span className="material-symbols-outlined" aria-hidden="true">explore</span>
-            <span>{usageLabel}</span>
-          </span>
-          <span className="community-reviews-page__garage-meta-item">
-            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-            <span>{reviewLabel}</span>
-          </span>
-          {dateLabel ? (
-            <span className="community-reviews-page__garage-meta-item">
-              <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
-              <span>{dateLabel}</span>
-            </span>
-          ) : null}
-        </div>
-
-        <footer className="community-reviews-page__garage-actions">
-          <a className="community-reviews-page__garage-action community-reviews-page__garage-action--primary" href={item.motorcycle.communityHref}>
-            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-            <span>Reviews</span>
-          </a>
-          <a className="community-reviews-page__garage-action community-reviews-page__garage-action--secondary" href={item.motorcycle.detailHref}>
-            <span className="material-symbols-outlined" aria-hidden="true">list_alt</span>
-            <span>Ficha técnica</span>
-          </a>
-        </footer>
-      </div>
-    </article>
   );
 }
 
@@ -756,6 +886,7 @@ function CommunityReviewFiltersPanel({
 }
 
 export function CommunityReviewsPage() {
+  const { isAuthenticated, profile, session, user } = useAuth();
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [status, setStatus] = useState<ReviewsStatus>('idle');
   const [error, setError] = useState('');
@@ -763,6 +894,23 @@ export function CommunityReviewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<number>(0);
+  const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
+  const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
+  const [aspectSummaries, setAspectSummaries] = useState<readonly MotorcycleReviewAspect[]>([]);
+  const [reportedReviewIds, setReportedReviewIds] = useState<Record<string, boolean>>({});
+  const [reportForm, setReportForm] = useState<ReviewReportFormState | null>(null);
+  const [reportPendingIds, setReportPendingIds] = useState<readonly string[]>([]);
+  const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
+  const [replyForm, setReplyForm] = useState<ReplyFormState | null>(null);
+  const [replyPendingIds, setReplyPendingIds] = useState<readonly string[]>([]);
+  const [expandedReplyReviewIds, setExpandedReplyReviewIds] = useState<Record<string, boolean>>({});
+  const [replyToast, setReplyToast] = useState<ReplyToastState | null>(null);
+  const replyToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [loadedReplyReviewIds, setLoadedReplyReviewIds] = useState<ReadonlySet<string>>(new Set());
+
+  const reactionAuthContext = isAuthenticated && user?.id && session?.access_token
+    ? { accessToken: session.access_token, userId: user.id }
+    : null;
 
   const loadReviews = () => {
     setStatus('loading');
@@ -770,9 +918,22 @@ export function CommunityReviewsPage() {
 
     getApprovedCommunityReviews()
       .then((nextReviews) => {
-        setReviews(nextReviews.filter((review) => review.status === 'approved'));
+        const approved = nextReviews.filter((review) => review.status === 'approved');
+        setReviews(approved);
         setStatus('success');
         setLastRefreshedAt(Date.now());
+        return approved;
+      })
+      .then((approved) => {
+        const reviewIds = approved.map((r) => r.id);
+        return Promise.all([
+          getReviewReactionSummary(reviewIds),
+          getReviewAspectsByReviewIds(reviewIds),
+        ]) as Promise<[readonly ReviewReactionSummary[], readonly MotorcycleReviewAspect[]]>;
+      })
+      .then(([reactions, aspects]) => {
+        setReactionSummaries(reactions);
+        setAspectSummaries(aspects);
       })
       .catch((reviewsError) => {
         setReviews([]);
@@ -784,8 +945,21 @@ export function CommunityReviewsPage() {
   const silentLoadReviews = () => {
     getApprovedCommunityReviews()
       .then((nextReviews) => {
-        setReviews(nextReviews.filter((review) => review.status === 'approved'));
+        const approved = nextReviews.filter((review) => review.status === 'approved');
+        setReviews(approved);
         setLastRefreshedAt(Date.now());
+        return approved;
+      })
+      .then((approved) => {
+        const reviewIds = approved.map((r) => r.id);
+        return Promise.all([
+          getReviewReactionSummary(reviewIds),
+          getReviewAspectsByReviewIds(reviewIds),
+        ]) as Promise<[readonly ReviewReactionSummary[], readonly MotorcycleReviewAspect[]]>;
+      })
+      .then(([reactions, aspects]) => {
+        setReactionSummaries(reactions);
+        setAspectSummaries(aspects);
       })
       .catch(() => {
       });
@@ -798,18 +972,32 @@ export function CommunityReviewsPage() {
 
     getApprovedCommunityReviews()
       .then((nextReviews) => {
-        if (isMounted) {
-          setReviews(nextReviews.filter((review) => review.status === 'approved'));
-          setStatus('success');
-          setLastRefreshedAt(Date.now());
-        }
+        if (!isMounted) return;
+        const approved = nextReviews.filter((review) => review.status === 'approved');
+        setReviews(approved);
+        setStatus('success');
+        setLastRefreshedAt(Date.now());
+        return approved;
+      })
+      .then((approved) => {
+        if (!isMounted || !approved) return undefined;
+        const reviewIds = approved.map((r) => r.id);
+        return Promise.all([
+          getReviewReactionSummary(reviewIds),
+          getReviewAspectsByReviewIds(reviewIds),
+        ]) as Promise<[readonly ReviewReactionSummary[], readonly MotorcycleReviewAspect[]]>;
+      })
+      .then((result) => {
+        if (!isMounted || !result) return;
+        const [reactions, aspects] = result;
+        setReactionSummaries(reactions);
+        setAspectSummaries(aspects);
       })
       .catch((reviewsError) => {
-        if (isMounted) {
-          setReviews([]);
-          setError(reviewsError instanceof Error ? reviewsError.message : 'No se han podido cargar las reviews de comunidad.');
-          setStatus('error');
-        }
+        if (!isMounted) return;
+        setReviews([]);
+        setError(reviewsError instanceof Error ? reviewsError.message : 'No se han podido cargar las reviews de comunidad.');
+        setStatus('error');
       });
 
     return () => {
@@ -823,8 +1011,43 @@ export function CommunityReviewsPage() {
   }, []);
 
   const approvedReviews = useMemo(() => getApprovedReviews(reviews), [reviews]);
-  const featuredReviews = useMemo(() => getFeaturedReviews(approvedReviews), [approvedReviews]);
+  const helpfulCountByReviewId = useMemo(() => {
+    const map = new Map<string, number>();
+    reactionSummaries.forEach((s) => map.set(s.reviewId, s.helpfulCount));
+    return map;
+  }, [reactionSummaries]);
+  const reactionSummaryByReviewId = useMemo(() => {
+    const map = new Map<string, ReviewReactionSummary>();
+    reactionSummaries.forEach((s) => map.set(s.reviewId, s));
+    return map;
+  }, [reactionSummaries]);
+  const aspectByReviewId = useMemo(() => {
+    const map = new Map<string, readonly MotorcycleReviewAspect[]>();
+    aspectSummaries.forEach((a) => {
+      const existing = map.get(a.reviewId) ?? [];
+      map.set(a.reviewId, [...existing, a]);
+    });
+    return map as ReadonlyMap<string, readonly MotorcycleReviewAspect[]>;
+  }, [aspectSummaries]);
+  const visibleRepliesCountByReviewId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const [reviewId, reviewReplies] of Object.entries(replies)) {
+      if (!reviewReplies) continue;
+      const count = reviewReplies.filter(
+        (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
+      ).length;
+      map.set(reviewId, count);
+    }
+    return map;
+  }, [replies, user?.id]);
+  const featuredReviews = useMemo(
+    () => getFeaturedReviews(approvedReviews, helpfulCountByReviewId),
+    [approvedReviews, helpfulCountByReviewId],
+  );
   const latestReviews = useMemo(() => getLatestReviews(approvedReviews), [approvedReviews]);
+  const editorialReviewIds = useMemo(() => {
+    return Array.from(new Set([...featuredReviews, ...latestReviews].map((review) => review.id)));
+  }, [featuredReviews, latestReviews]);
   const communityInsights = useMemo(() => getCommunityInsights(approvedReviews), [approvedReviews]);
   const garageMotorcycles = useMemo(() => buildCommunityGarage(approvedReviews), [approvedReviews]);
   const filteredGarageMotorcycles = useMemo(
@@ -853,6 +1076,265 @@ export function CommunityReviewsPage() {
     event.preventDefault();
     document.getElementById('community-reviews-garage-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  const toggleHelpful = async (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      return;
+    }
+
+    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    try {
+      const summary = await toggleHelpfulReaction(review.id, reactionAuthContext);
+      setReactionSummaries((currentSummaries) => {
+        const filtered = currentSummaries.filter((s) => s.reviewId !== review.id);
+        return [...filtered, summary];
+      });
+    } catch {
+    } finally {
+      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
+  };
+
+  const toggleNotHelpful = async (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      return;
+    }
+
+    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    try {
+      const summary = await toggleNotHelpfulReaction(review.id, reactionAuthContext);
+      setReactionSummaries((currentSummaries) => {
+        const filtered = currentSummaries.filter((s) => s.reviewId !== review.id);
+        return [...filtered, summary];
+      });
+    } catch {
+    } finally {
+      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
+  };
+
+  const openReportForm = (review: MotorcycleReview) => {
+    if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      return;
+    }
+
+    if (reportedReviewIds[review.id]) {
+      return;
+    }
+
+    setReportForm({
+      comment: '',
+      isSubmitting: false,
+      reason: 'spam',
+      reviewId: review.id,
+    });
+  };
+
+  const updateReportFormReason = (reason: ReviewReportReason) => {
+    setReportForm((currentForm) => (currentForm ? { ...currentForm, reason } : currentForm));
+  };
+
+  const updateReportFormComment = (comment: string) => {
+    setReportForm((currentForm) => (currentForm ? { ...currentForm, comment } : currentForm));
+  };
+
+  const submitReport = async (review: MotorcycleReview) => {
+    if (!reactionAuthContext || !reportForm || reportForm.reviewId !== review.id) {
+      return;
+    }
+
+    setReportForm((currentForm) => (currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: true } : currentForm));
+    setReportPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+
+    try {
+      await createReviewReport(
+        {
+          comment: reportForm.comment,
+          reason: reportForm.reason,
+          reviewId: review.id,
+        },
+        reactionAuthContext,
+      );
+      setReportedReviewIds((currentReports: Record<string, boolean>) => ({ ...currentReports, [review.id]: true }));
+      setReportForm(null);
+    } catch {
+      setReportForm((currentForm) => (
+        currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: false } : currentForm
+      ));
+    } finally {
+      setReportPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    }
+  };
+
+  const openReplyForm = (review: MotorcycleReview) => {
+    if (!user) {
+      return;
+    }
+
+    if (!reactionAuthContext) {
+      return;
+    }
+
+    setReplyForm({ comment: '', isSubmitting: false, reviewId: review.id });
+    setReplyToast(null);
+  };
+
+  const cancelReplyForm = () => {
+    setReplyForm(null);
+  };
+
+  const toggleReplyVisibility = (reviewId: string) => {
+    setExpandedReplyReviewIds((prev) => ({ ...prev, [reviewId]: !prev[reviewId] }));
+  };
+
+  const updateReplyComment = (comment: string) => {
+    setReplyForm((currentForm) => (currentForm ? { ...currentForm, comment } : currentForm));
+  };
+
+  const submitReply = async (review: MotorcycleReview) => {
+    if (!user || !replyForm || replyForm.reviewId !== review.id || !reactionAuthContext) {
+      return;
+    }
+
+    if (review.userId && user.id === review.userId) {
+      return;
+    }
+
+    setReplyForm((currentForm) => (currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: true } : currentForm));
+
+    try {
+      const newReply = await createReviewReply({ comment: replyForm.comment, reviewId: review.id, userName: profile?.displayName ?? undefined }, reactionAuthContext);
+      setReplies((currentReplies) => ({
+        ...currentReplies,
+        [review.id]: [...(currentReplies[review.id] ?? []), newReply],
+      }));
+      setExpandedReplyReviewIds((prev) => ({ ...prev, [review.id]: true }));
+      setReplyForm(null);
+
+      const toastTicket = Date.now();
+      setReplyToast({ message: 'Respuesta enviada. Quedará visible tras revisión.', reviewId: review.id, visible: true, ticket: toastTicket });
+      replyToastTimeoutRef.current = setTimeout(() => {
+        setReplyToast((current) => (current?.ticket === toastTicket ? { ...current, visible: false } : current));
+        setTimeout(() => {
+          setReplyToast((current) => (current?.ticket === toastTicket ? null : current));
+        }, 300);
+      }, 3000);
+    } catch (error) {
+      setReplyForm((currentForm) => (
+        currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: false } : currentForm
+      ));
+    }
+  };
+
+  useEffect(() => {
+    const idsToLoad = editorialReviewIds.filter((id) => !loadedReplyReviewIds.has(id));
+
+    if (idsToLoad.length === 0) {
+      return undefined;
+    }
+
+    if (!reactionAuthContext) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    void (async () => {
+      const results = await Promise.allSettled(
+        idsToLoad.map(async (reviewId) => ({
+          reviewId,
+          replies: await getRepliesByReviewId(reviewId, reactionAuthContext),
+        })),
+      );
+
+      if (!isMounted) return;
+
+      const succeeded: { reviewId: string; reviewReplies: readonly ReviewReply[] }[] = [];
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          succeeded.push({ reviewId: result.value.reviewId, reviewReplies: result.value.replies });
+        }
+      }
+
+      if (succeeded.length === 0) return;
+
+      setReplies((prev) => {
+        const next = { ...prev };
+        for (const { reviewId, reviewReplies } of succeeded) {
+          next[reviewId] = reviewReplies;
+        }
+        return next;
+      });
+
+      setLoadedReplyReviewIds((prev) => {
+        const next = new Set(prev);
+        for (const { reviewId } of succeeded) {
+          next.add(reviewId);
+        }
+        return next;
+      });
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [editorialReviewIds, loadedReplyReviewIds, reactionAuthContext]);
+
+  useEffect(() => {
+    const expandedReviewIds = Object.keys(expandedReplyReviewIds).filter((id) => expandedReplyReviewIds[id]);
+    const reviewsNeedingLoad = expandedReviewIds.filter((id) => !loadedReplyReviewIds.has(id));
+
+    if (reviewsNeedingLoad.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    (async () => {
+      const results: { reviewId: string; reviewReplies: readonly ReviewReply[] }[] = [];
+      for (const reviewId of reviewsNeedingLoad) {
+        try {
+          const reviewReplies = await getRepliesByReviewId(reviewId, reactionAuthContext);
+          results.push({ reviewId, reviewReplies });
+        } catch {
+        }
+      }
+      if (!isMounted) return;
+      if (results.length === 0) return;
+      setReplies((currentReplies) => {
+        const next = { ...currentReplies };
+        for (const { reviewId, reviewReplies } of results) {
+          next[reviewId] = reviewReplies;
+        }
+        return next;
+      });
+      setLoadedReplyReviewIds((current) => {
+        const next = new Set(current);
+        for (const { reviewId } of results) {
+          next.add(reviewId);
+        }
+        return next;
+      });
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [expandedReplyReviewIds, loadedReplyReviewIds, reactionAuthContext]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -884,18 +1366,68 @@ export function CommunityReviewsPage() {
         <div className="community-reviews-page__editorial-grid">
           <div className="community-reviews-page__editorial-main">
             <EditorialReviewSection
+              aspectsByReviewId={aspectByReviewId}
               emptyMessage="Todavía no hay reviews destacadas."
               id="community-featured-reviews-title"
+              onToggleHelpful={toggleHelpful}
+              onToggleNotHelpful={toggleNotHelpful}
+              reactionPendingIds={reactionPendingIds}
+              reactionSummaryByReviewId={reactionSummaryByReviewId}
+              reportedReviewIds={reportedReviewIds}
+              reportForm={reportForm}
+              reportPendingIds={reportPendingIds}
               reviews={featuredReviews}
               title="Reviews destacadas"
               tone="featured"
+              userId={user?.id ?? null}
+              onOpenReport={openReportForm}
+              onCancelReport={() => setReportForm(null)}
+              onChangeReportReason={updateReportFormReason}
+              onChangeReportComment={updateReportFormComment}
+              onSubmitReport={submitReport}
+              replies={replies}
+              replyForm={replyForm}
+              replyToast={replyToast}
+              expandedReplyReviewIds={expandedReplyReviewIds}
+              user={user}
+              onOpenReply={openReplyForm}
+              onCancelReply={cancelReplyForm}
+              onChangeReplyComment={updateReplyComment}
+              onSubmitReply={submitReply}
+              onToggleReplyVisibility={toggleReplyVisibility}
+              visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
             />
             <EditorialReviewSection
+              aspectsByReviewId={aspectByReviewId}
               emptyMessage="Todavía no hay actividad reciente."
               id="community-latest-reviews-title"
+              onToggleHelpful={toggleHelpful}
+              onToggleNotHelpful={toggleNotHelpful}
+              reactionPendingIds={reactionPendingIds}
+              reactionSummaryByReviewId={reactionSummaryByReviewId}
+              reportedReviewIds={reportedReviewIds}
+              reportForm={reportForm}
+              reportPendingIds={reportPendingIds}
               reviews={latestReviews}
               title="Últimos reportes"
               tone="latest"
+              userId={user?.id ?? null}
+              onOpenReport={openReportForm}
+              onCancelReport={() => setReportForm(null)}
+              onChangeReportReason={updateReportFormReason}
+              onChangeReportComment={updateReportFormComment}
+              onSubmitReport={submitReport}
+              replies={replies}
+              replyForm={replyForm}
+              replyToast={replyToast}
+              expandedReplyReviewIds={expandedReplyReviewIds}
+              user={user}
+              onOpenReply={openReplyForm}
+              onCancelReply={cancelReplyForm}
+              onChangeReplyComment={updateReplyComment}
+              onSubmitReply={submitReply}
+              onToggleReplyVisibility={toggleReplyVisibility}
+              visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
             />
           </div>
 
@@ -957,7 +1489,18 @@ export function CommunityReviewsPage() {
             <>
               <section className="community-reviews-page__garage-grid" aria-label="Modelos con reviews de la comunidad">
                 {paginatedGarageMotorcycles.map((item) => (
-                  <GarageMotorcycleCard item={item} key={item.motorcycleId} />
+                  <MotorcycleGarageCard
+                    detailHref={item.motorcycle.detailHref}
+                    imageAlt={item.motorcycle.name}
+                    imageSource={item.motorcycle.imageSource}
+                    key={item.motorcycleId}
+                    lastReviewDate={item.latestReviewAt}
+                    primaryUseLabel={item.topRidingStyle?.label}
+                    rating={item.averageRating}
+                    reviewCount={item.reviewCount}
+                    reviewsHref={item.motorcycle.communityHref}
+                    title={item.motorcycle.name}
+                  />
                 ))}
               </section>
               <AccountPagination

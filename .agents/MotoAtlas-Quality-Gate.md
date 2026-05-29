@@ -51,6 +51,10 @@ npm run test
 
 Comprobar:
 
+* no hay variables SCSS no definidas.
+* no hay tokens inventados en el componente.
+* las variables nuevas, si existen, están declaradas en el archivo global correcto.
+* no hay imports SCSS incorrectos.
 * typecheck limpio
 * tests pasando
 * no hay cambios fuera del alcance
@@ -60,6 +64,7 @@ Comprobar:
 * no hay cambios de layout inesperados si afecta UI
 * no hay dependencias nuevas salvo petición explícita
 * no hay build/commit/push
+
 
 ## Checklist Supabase/RLS
 
