@@ -124,14 +124,6 @@ const ownerReportsSortOptions = [
   { label: 'Más tiempo con la moto', value: 'ownership-desc' },
 ] satisfies readonly { label: string; value: OwnerReportsSortOption }[];
 
-const reviewReportReasonOptions = [
-  { label: 'Spam', value: 'spam' },
-  { label: 'Ofensivo', value: 'offensive' },
-  { label: 'Información falsa', value: 'false_information' },
-  { label: 'Acoso', value: 'harassment' },
-  { label: 'Otro', value: 'other' },
-] satisfies readonly { label: string; value: ReviewReportReason }[];
-
 function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
   return (reviews ?? []).filter((review) => review?.status === 'approved');
 }
@@ -685,6 +677,7 @@ function OwnerReportRow({
           review={review}
           user={user}
           expanded={isExpanded}
+          isExpanded={true}
         />
         {/* {aspects && aspects.length > 0 ? (
           <ReviewAspectSummary aspects={aspects} />

@@ -17,6 +17,9 @@ export type FeaturedReviewCardProps = Readonly<{
   review: MotorcycleReview;
   aspects?: readonly MotorcycleReviewAspect[] | null;
   actionsSlot?: React.ReactNode;
+  replySlot?: React.ReactNode | ((isExpanded: boolean) => React.ReactNode);
+  isOwnReview?: boolean;
+  onExpandedChange?: (isExpanded: boolean) => void;
 }>;
 
 function formatCommunityAlias(userName: string) {
@@ -63,7 +66,7 @@ function ReviewMetadata({ review }: Readonly<{ review: MotorcycleReview }>) {
   );
 }
 
-export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot }: FeaturedReviewCardProps) {
+export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot, replySlot, isOwnReview, onExpandedChange }: FeaturedReviewCardProps) {
   const Heading = `h${headingLevel}` as const;
   const motorcycle = getAccountReviewMotorcycleDisplay(review);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -74,7 +77,11 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
   const hasCons = cons.length > 0;
 
   function handleToggle() {
-    setIsExpanded((prev) => !prev);
+    setIsExpanded((prev) => {
+      const next = !prev;
+      onExpandedChange?.(next);
+      return next;
+    });
   }
 
   function handleKeyDown(event: React.KeyboardEvent) {
@@ -142,14 +149,29 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
         </div>
 
         <footer className="featured-review-card__footer">
-          <div className="featured-review-card__author">
-            <span className="featured-review-card__author-avatar" aria-hidden="true">{getInitials(review.userName)}</span>
-            <span className="featured-review-card__author-name">{formatCommunityAlias(review.userName)}</span>
-          </div>
-          <div className="featured-review-card__actions">
-            {actionsSlot}
-            <a href={motorcycle.detailHref}>Ver ficha</a>
-            <a href={motorcycle.communityHref}>Más reviews</a>
+          <div className="featured-review-card__footer-main">
+            <div className="featured-review-card__author">
+              <span className="featured-review-card__author-avatar" aria-hidden="true">{getInitials(review.userName)}</span>
+              <span className="featured-review-card__author-name">{formatCommunityAlias(review.userName)}</span>
+            </div>
+
+            {Boolean(actionsSlot) || isOwnReview || Boolean(replySlot) ? (
+              <div className="featured-review-card__actions">
+                {actionsSlot}
+                {replySlot ? (
+                  typeof replySlot === 'function' ? replySlot(isExpanded) : replySlot
+                ) : null}
+                {isOwnReview && <span className="featured-review-card__own-action motorcycle-community__helpful-action motorcycle-community__helpful-action--passive" aria-label="Review propia">
+                  <span className="material-symbols-outlined" aria-hidden="true">block</span>
+                  Propia
+                </span>}
+              </div>
+            ) : null}
+
+            <nav className="featured-review-card__links">
+              <a href={motorcycle.detailHref}>Ver ficha</a>
+              <a href={motorcycle.communityHref}>Más reviews</a>
+            </nav>
           </div>
         </footer>
       </div>

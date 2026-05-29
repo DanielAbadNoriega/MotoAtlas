@@ -58,10 +58,13 @@ export interface ReviewReplySectionProps {
   readonly onCancelReply: () => void;
   readonly onChangeReplyComment: (comment: string) => void;
   readonly onSubmitReply: () => void;
+  readonly onOpenReply?: () => void;
   readonly replies: readonly ReviewReply[];
   readonly replyForm: ReplyFormState | null;
   readonly replyToast: ReplyToastState | null;
   readonly review: MotorcycleReview;
   readonly user: User | null;
   readonly expanded: boolean;
+  readonly isExpanded: boolean;
+  readonly inline?: boolean;
 }

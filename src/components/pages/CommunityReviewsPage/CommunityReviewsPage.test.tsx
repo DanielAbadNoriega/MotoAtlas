@@ -1,9 +1,16 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAuth } from '../../../features/auth';
 import { getApprovedCommunityReviews, getReviewAspectsByReviewIds, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus, type MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
-import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
+import { getReviewReactionSummary, toggleHelpfulReaction, toggleNotHelpfulReaction, type ReviewReactionSummary } from '../../../services/reviewReactionService';
+import { createReviewReport, getMyReviewReports } from '../../../services/reviewReportService';
+import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
 import { CommunityReviewsPage } from './CommunityReviewsPage';
+
+vi.mock('../../../features/auth', () => ({
+  useAuth: vi.fn(),
+}));
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getApprovedCommunityReviews: vi.fn(),
@@ -12,11 +19,46 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
 
 vi.mock('../../../services/reviewReactionService', () => ({
   getReviewReactionSummary: vi.fn(),
+  toggleHelpfulReaction: vi.fn(),
+  toggleNotHelpfulReaction: vi.fn(),
+}));
+
+vi.mock('../../../services/reviewReportService', () => ({
+  createReviewReport: vi.fn(),
+  getMyReviewReports: vi.fn(),
+}));
+
+vi.mock('../../../services/reviewReplyService', () => ({
+  createReviewReply: vi.fn(),
+  getRepliesByReviewId: vi.fn(),
 }));
 
 const getApprovedCommunityReviewsMock = vi.mocked(getApprovedCommunityReviews);
 const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
+const toggleHelpfulReactionMock = vi.mocked(toggleHelpfulReaction);
+const toggleNotHelpfulReactionMock = vi.mocked(toggleNotHelpfulReaction);
+const createReviewReportMock = vi.mocked(createReviewReport);
+const getMyReviewReportsMock = vi.mocked(getMyReviewReports);
+const createReviewReplyMock = vi.mocked(createReviewReply);
+const getRepliesByReviewIdMock = vi.mocked(getRepliesByReviewId);
+const useAuthMock = vi.mocked(useAuth);
+
+function mockAuth(overrides = {}) {
+  useAuthMock.mockReturnValue({
+    user: null,
+    session: null,
+    profile: null,
+    isAuthenticated: false,
+    isAdmin: false,
+    isLoading: false,
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+    refreshProfile: vi.fn(),
+    ...overrides,
+  } as never);
+}
 
 function createCommunityReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
   const id = overrides.id ?? 'community-review-1';
@@ -61,6 +103,7 @@ async function renderPage(
   reactionSummaries: readonly ReviewReactionSummary[] = [],
   aspects: readonly MotorcycleReviewAspect[] = [],
 ) {
+  cleanup();
   getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
   getReviewReactionSummaryMock.mockResolvedValue(reactionSummaries);
   getReviewAspectsByReviewIdsMock.mockResolvedValue(aspects);
@@ -91,11 +134,17 @@ function getGarageCards() {
 
 describe('CommunityReviewsPage', () => {
   beforeEach(() => {
+    cleanup();
     window.history.pushState(null, '', '/');
     window.location.hash = '';
     getApprovedCommunityReviewsMock.mockReset();
     getReviewReactionSummaryMock.mockReset();
     getReviewAspectsByReviewIdsMock.mockReset();
+    toggleHelpfulReactionMock.mockReset();
+    toggleNotHelpfulReactionMock.mockReset();
+    createReviewReplyMock.mockReset();
+    getRepliesByReviewIdMock.mockReset();
+    mockAuth();
     vi.useRealTimers();
   });
 
@@ -1164,5 +1213,1027 @@ describe('CommunityReviewsPage', () => {
 
     const insights = screen.getByRole('complementary', { name: 'Insights en vivo' });
     expect(within(insights).getByText('Actualizado ahora')).toBeInTheDocument();
+  });
+
+  describe('HelpfulReviewAction y NotHelpfulReviewAction en FeaturedReviewCard', () => {
+    it('HelpfulReviewAction en FeaturedReviewCard llama a toggleHelpfulReaction al hacer click autenticado', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reaction-1', userId: 'other-user', rating: 5, motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reaction-1', helpfulCount: 5, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      toggleHelpfulReactionMock.mockResolvedValue({ reviewId: 'reaction-1', helpfulCount: 6, hasReactedHelpful: true, hasReactedNotHelpful: false });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const firstCard = within(featuredSection).getAllByTestId('featured-review-card')[0];
+      const helpfulButton = await within(firstCard).findByRole('button', { name: /Útil 5/i });
+      await user.click(helpfulButton);
+
+      expect(toggleHelpfulReactionMock).toHaveBeenCalledWith('reaction-1', {
+        accessToken: 'session-token',
+        userId: 'user-1',
+      });
+    });
+
+    it('NotHelpfulReviewAction en FeaturedReviewCard llama a toggleNotHelpfulReaction al hacer click autenticado', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reaction-2', userId: 'other-user', rating: 5, motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reaction-2', helpfulCount: 5, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      toggleNotHelpfulReactionMock.mockResolvedValue({ reviewId: 'reaction-2', helpfulCount: 4, hasReactedHelpful: false, hasReactedNotHelpful: true });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const firstCard = within(featuredSection).getAllByTestId('featured-review-card')[0];
+      const notHelpfulButton = await within(firstCard).findByRole('button', { name: /No útil/i });
+      await user.click(notHelpfulButton);
+
+      expect(toggleNotHelpfulReactionMock).toHaveBeenCalledWith('reaction-2', {
+        accessToken: 'session-token',
+        userId: 'user-1',
+      });
+    });
+
+    it('útil y no útil son mutuamente excluyentes: marcar útil desactiva no útil y viceversa', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reaction-3', userId: 'other-user', rating: 5, motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reaction-3', helpfulCount: 5, hasReactedHelpful: false, hasReactedNotHelpful: true }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      toggleHelpfulReactionMock.mockResolvedValue({ reviewId: 'reaction-3', helpfulCount: 6, hasReactedHelpful: true, hasReactedNotHelpful: false });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const firstCard = within(featuredSection).getAllByTestId('featured-review-card')[0];
+      await waitFor(() => expect(within(firstCard).getByRole('button', { name: /Quitar no útil/i })).toBeInTheDocument());
+      await user.click(within(firstCard).getByRole('button', { name: /Marcar como útil\. Útil 5/i }));
+
+      await waitFor(() => expect(within(firstCard).getByRole('button', { name: /Quitar útil\. Útil 6/i })).toHaveAttribute('aria-pressed', 'true'));
+      expect(within(firstCard).queryByRole('button', { name: /Quitar no útil/i })).not.toBeInTheDocument();
+    });
+
+    it('contador de útiles se actualiza tras interacción', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reaction-4', userId: 'other-user', rating: 5, motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reaction-4', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      toggleHelpfulReactionMock.mockResolvedValue({ reviewId: 'reaction-4', helpfulCount: 3, hasReactedHelpful: true, hasReactedNotHelpful: false });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const firstCard = within(featuredSection).getAllByTestId('featured-review-card')[0];
+      const helpfulButton = await within(firstCard).findByRole('button', { name: /Útil 2/i });
+      await user.click(helpfulButton);
+
+      await waitFor(() => expect(within(firstCard).getByRole('button', { name: /Útil 3/i })).toBeInTheDocument());
+    });
+
+    it('pending deshabilita acciones', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reaction-5', userId: 'other-user', rating: 5, motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reaction-5', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      let resolveToggle: (value: { reviewId: string; helpfulCount: number; hasReactedHelpful: boolean; hasReactedNotHelpful: boolean }) => void;
+      toggleHelpfulReactionMock.mockImplementation(() => new Promise((resolve) => { resolveToggle = resolve; }));
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const helpfulButton = await within(featuredSection).findByRole('button', { name: /Útil 2/i });
+      await user.click(helpfulButton);
+
+      await waitFor(() => expect(helpfulButton).toBeDisabled());
+      expect(within(featuredSection).getByRole('button', { name: /No útil/i })).toBeDisabled();
+
+      resolveToggle!({ reviewId: 'reaction-5', helpfulCount: 3, hasReactedHelpful: true, hasReactedNotHelpful: false });
+      await waitFor(() => expect(within(featuredSection).getByRole('button', { name: /Útil 3/i })).not.toBeDisabled());
+    });
+
+    it('no se permite autoreacción: review propia muestra acciones deshabilitadas como texto pasivo', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reaction-6', userId: 'user-1', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reaction-6', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      const helpfulSpan = within(card).getByText(/Útil 2/);
+      expect(helpfulSpan.closest('button')).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
+    });
+
+    it('ReportReviewAction SÍ se renderiza en FeaturedReviewCard cuando el usuario es ajeno a la review', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'no-report-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'no-report-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).getByRole('button', { name: /Reportar review/i })).toBeInTheDocument();
+    });
+
+    it('ReportReviewAction NO se renderiza cuando la review es propia', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'own-review-1', userId: 'user-1', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'own-review-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).queryByRole('button', { name: /Reportar/i })).not.toBeInTheDocument();
+    });
+
+    it('review con userId === user.id muestra chip Propia', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'own-chip-1', userId: 'user-1', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'own-chip-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).getByText('Propia')).toBeInTheDocument();
+      expect(within(card).getByLabelText('Review propia')).toBeInTheDocument();
+    });
+
+    it('review ajena no muestra chip Propia', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'other-chip-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'other-chip-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).queryByText('Propia')).not.toBeInTheDocument();
+    });
+
+
+    it('ReportReviewAction se renderiza cuando el usuario no está autenticado (el handler no hace nada sin auth)', async () => {
+      mockAuth({
+        user: null,
+        session: null,
+        isAuthenticated: false,
+      });
+      const reviews = [createCommunityReview({ id: 'no-auth-report-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'no-auth-report-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).getByRole('button', { name: /Reportar review/i })).toBeInTheDocument();
+      await userEvent.click(within(card).getByRole('button', { name: /Reportar review/i }));
+      expect(within(card).queryByRole('form', { name: /Reportar review/i })).not.toBeInTheDocument();
+    });
+
+    it('Click en reportar abre ReviewReportForm con Cancelar funcional', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'report-form-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'report-form-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      const reportBtn = within(card).getByRole('button', { name: /Reportar review/i });
+
+      await user.click(reportBtn);
+      expect(within(card).getByRole('form', { name: /Reportar review/i })).toBeInTheDocument();
+
+      const cancelBtn = within(card).getByRole('button', { name: /Cancelar/i });
+      await user.click(cancelBtn);
+      expect(within(card).queryByRole('form', { name: /Reportar review/i })).not.toBeInTheDocument();
+    });
+
+    it('Enviar reporte llama al servicio con parámetros correctos', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'submit-report-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'submit-report-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      createReviewReportMock.mockResolvedValue({ comment: null, reason: 'spam', reviewId: 'submit-report-1', status: 'pending', userId: 'user-1' });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      await user.click(within(card).getByRole('button', { name: /Reportar review/i }));
+
+      const form = within(card).getByRole('form', { name: /Reportar review/i });
+      await user.click(within(form).getByRole('button', { name: /Enviar reporte/i }));
+
+      await waitFor(() => {
+        expect(createReviewReportMock).toHaveBeenCalledWith(
+          expect.objectContaining({ reviewId: 'submit-report-1', reason: 'spam' }),
+          { accessToken: 'session-token', userId: 'user-1' },
+        );
+      });
+      expect(within(card).queryByRole('form', { name: /Reportar review/i })).not.toBeInTheDocument();
+    });
+
+    it('Tras enviar correctamente, la review queda marcada como reportada y boton desaparece', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [
+        createCommunityReview({ id: 'reported-success-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } }),
+        createCommunityReview({ id: 'reported-success-2', userId: 'other-user', motorcycle: { id: 'moto-2', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A' } }),
+      ];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([
+        { reviewId: 'reported-success-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
+        { reviewId: 'reported-success-2', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      ]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      createReviewReportMock.mockResolvedValue({ comment: null, reason: 'spam', reviewId: 'reported-success-1', status: 'pending', userId: 'user-1' });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const allCards = within(featuredSection).getAllByTestId('featured-review-card');
+      const firstCard = allCards[0];
+      await user.click(within(firstCard).getByRole('button', { name: /Reportar review/i }));
+      await user.click(within(within(firstCard).getByRole('form', { name: /Reportar review/i })).getByRole('button', { name: /Enviar reporte/i }));
+
+      await waitFor(() => {
+        expect(within(firstCard).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
+      });
+      const secondCard = allCards[1];
+      expect(within(secondCard).getByRole('button', { name: /Reportar review/i })).toBeInTheDocument();
+    });
+
+    it('FeaturedReviewCard sigue renderizando body desplegable tras click en header', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'expand-1', userId: 'other-user', comment: 'Comentario expandible para toggle', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'expand-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(card.querySelector('.featured-review-card__body--open')).not.toBeInTheDocument();
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS 2024/i }));
+      await waitFor(() => expect(within(card).getByText(/Comentario expandible para toggle/i)).toBeInTheDocument());
+      expect(card.querySelector('.featured-review-card__body--open')).toBeInTheDocument();
+    });
+
+    it('garaje/filtros/polling siguen intactos tras interacción de reacción', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [
+        createCommunityReview({ id: 'garage-intact-1', userId: 'other-user', rating: 5, motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } }),
+        createCommunityReview({ id: 'garage-intact-2', userId: 'other-user', rating: 3, motorcycle: { id: 'moto-2', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A2' } }),
+      ];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([
+        { reviewId: 'garage-intact-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
+        { reviewId: 'garage-intact-2', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      ]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      toggleHelpfulReactionMock.mockResolvedValue({ reviewId: 'garage-intact-1', helpfulCount: 3, hasReactedHelpful: true, hasReactedNotHelpful: false });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      expect(screen.getAllByTestId('motorcycle-garage-card')).toHaveLength(2);
+      const filtrosBtn = screen.getByRole('button', { name: 'Filtros de reviews' });
+      expect(filtrosBtn).toBeInTheDocument();
+
+      const firstCard = within(getFeaturedSection()).getAllByTestId('featured-review-card')[0];
+      const helpfulButton = await within(firstCard).findByRole('button', { name: /Útil 2/i });
+      await user.click(helpfulButton);
+      await waitFor(() => expect(within(firstCard).getByRole('button', { name: /Útil 3/i })).toBeInTheDocument());
+
+      expect(screen.getAllByTestId('motorcycle-garage-card')).toHaveLength(2);
+      expect(screen.getByRole('button', { name: 'Filtros de reviews' })).toBeInTheDocument();
+    });
+  });
+
+  describe('ReviewReplySection en FeaturedReviewCard', () => {
+    function createReply(overrides: Partial<ReviewReply> = {}): ReviewReply {
+      return {
+        id: overrides.id ?? 'reply-1',
+        reviewId: overrides.reviewId ?? 'community-review-1',
+        userId: overrides.userId ?? 'reply-user-1',
+        userName: overrides.userName ?? 'Rider Reply',
+        comment: overrides.comment ?? 'Comentario de prueba',
+        status: overrides.status ?? 'approved',
+        createdAt: overrides.createdAt ?? '2026-05-20T10:00:00.000Z',
+        updatedAt: overrides.updatedAt ?? '2026-05-20T10:00:00.000Z',
+      };
+    }
+
+    it('review ajena con usuario logueado muestra botón Responder aunque no haya replies', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-no-render-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-no-render-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      const responderBtn = within(card).getByRole('button', { name: 'Responder' });
+      expect(responderBtn).toBeInTheDocument();
+      expect(responderBtn).toHaveClass('motorcycle-community__helpful-action');
+      expect(within(responderBtn).getByText('reply')).toBeInTheDocument();
+      const nav = within(card).getByRole('navigation');
+      expect(within(nav).getByText('Ver ficha')).toHaveAttribute('href', '#/motos/community-moto-1');
+      expect(within(nav).getByText('Más reviews')).toHaveAttribute('href', '#/comunidad/community-moto-1');
+      expect(within(card).queryByText('Respuestas a esta review')).not.toBeInTheDocument();
+    });
+
+    it('expandir review con replies aprobadas muestra la lista de respuestas', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-show-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-show-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([
+        createReply({ id: 'reply-1', reviewId: 'reply-show-1', userName: 'Otro Rider', status: 'approved' }),
+        createReply({ id: 'reply-2', reviewId: 'reply-show-1', userName: 'Tercer Rider', status: 'approved' }),
+      ]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      await waitFor(() => {
+        expect(within(card).getByRole('list', { name: 'Respuestas a esta review' })).toBeInTheDocument();
+      });
+      expect(within(card).getByText('Otro Rider')).toBeInTheDocument();
+      expect(within(card).getByText('Tercer Rider')).toBeInTheDocument();
+    });
+
+    it('no muestra replies hidden, rejected ni pending de otros usuarios', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-filter-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-filter-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([
+        createReply({ id: 'reply-1', reviewId: 'reply-filter-1', userName: 'Otro Rider', userId: 'other-user', status: 'approved' }),
+        createReply({ id: 'reply-2', reviewId: 'reply-filter-1', userId: 'other-user', status: 'hidden' }),
+        createReply({ id: 'reply-3', reviewId: 'reply-filter-1', userId: 'other-user', status: 'rejected' }),
+        createReply({ id: 'reply-4', reviewId: 'reply-filter-1', userId: 'other-user', status: 'pending' }),
+      ]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      await waitFor(() => {
+        expect(within(card).getByRole('list', { name: 'Respuestas a esta review' })).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(within(card).getAllByText('Otro Rider')).toHaveLength(1);
+      });
+    });
+
+    it('muestra badge Pendiente en reply propia pending', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-pending-own-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-pending-own-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([
+        createReply({ id: 'reply-pending-1', reviewId: 'reply-pending-own-1', userId: 'user-1', status: 'pending' }),
+      ]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      await waitFor(() => {
+        expect(within(card).getByText('Tú')).toBeInTheDocument();
+      });
+      expect(within(card).getByText('Pendiente')).toBeInTheDocument();
+    });
+
+    it('expandir review llama a getRepliesByReviewId con el reviewId correcto', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [
+        createCommunityReview({ id: 'reply-lazy-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } }),
+        createCommunityReview({ id: 'reply-lazy-2', userId: 'other-user', motorcycle: { id: 'moto-2', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A' } }),
+      ];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([
+        { reviewId: 'reply-lazy-1', helpfulCount: 10, hasReactedHelpful: false, hasReactedNotHelpful: false },
+        { reviewId: 'reply-lazy-2', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      ]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const cards = within(featuredSection).getAllByTestId('featured-review-card');
+
+      await user.click(within(cards[0]).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalledWith('reply-lazy-1', expect.any(Object));
+      });
+      expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('expandir segunda review no recarga replies de la primera ya cargadas', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [
+        createCommunityReview({ id: 'reply-no-reload-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } }),
+        createCommunityReview({ id: 'reply-no-reload-2', userId: 'other-user', motorcycle: { id: 'moto-2', brand: 'Yamaha', model: 'MT-07', year: 2024, imageUrl: '/yamaha.webp', segment: 'naked', license: 'A' } }),
+      ];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([
+        { reviewId: 'reply-no-reload-1', helpfulCount: 10, hasReactedHelpful: false, hasReactedNotHelpful: false },
+        { reviewId: 'reply-no-reload-2', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
+      ]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock
+        .mockResolvedValueOnce([createReply({ id: 'r1', reviewId: 'reply-no-reload-1' })])
+        .mockResolvedValueOnce([createReply({ id: 'r2', reviewId: 'reply-no-reload-2' })]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const cards = within(featuredSection).getAllByTestId('featured-review-card');
+
+      await user.click(within(cards[0]).getByRole('button', { name: /BMW F 900 GS/i }));
+      await waitFor(() => expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(1));
+
+      await user.click(within(cards[1]).getByRole('button', { name: /Yamaha MT-07/i }));
+      await waitFor(() => expect(getRepliesByReviewIdMock).toHaveBeenCalledTimes(2));
+    });
+
+    it('click en Responder abre el formulario de reply', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-open-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-open-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      const responderBtn = within(card).getByRole('button', { name: /Responder/i });
+      await user.click(responderBtn);
+
+      await waitFor(() => {
+        expect(within(card).getByLabelText('Tu respuesta')).toBeInTheDocument();
+      });
+    });
+
+    it('Cancelar cierra el formulario de reply', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-cancel-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-cancel-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+      expect(within(card).getByLabelText('Tu respuesta')).toBeInTheDocument();
+
+      await user.click(within(card).getByRole('button', { name: /Cancelar/i }));
+      expect(within(card).queryByLabelText('Tu respuesta')).not.toBeInTheDocument();
+    });
+
+    it('escribir en el textarea actualiza el estado del formulario', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-type-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-type-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      const textarea = within(card).getByLabelText('Tu respuesta');
+      await user.type(textarea, 'Mi experiencia con esta moto');
+
+      expect(textarea).toHaveValue('Mi experiencia con esta moto');
+    });
+
+    it('submit con comment llama a createReviewReply con parámetros correctos', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-submit-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-submit-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+      createReviewReplyMock.mockResolvedValue(createReply({ id: 'new-reply-1', reviewId: 'reply-submit-1', userId: 'user-1', userName: 'Rider Test', status: 'pending' }));
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      const textarea = within(card).getByLabelText('Tu respuesta');
+      await user.type(textarea, 'Gran moto para viajes');
+
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      await waitFor(() => {
+        expect(createReviewReplyMock).toHaveBeenCalledWith(
+          expect.objectContaining({ comment: 'Gran moto para viajes', reviewId: 'reply-submit-1', userName: 'Rider Test' }),
+          { accessToken: 'session-token', userId: 'user-1' },
+        );
+      });
+    });
+
+    it('submit exitoso cierra formulario y muestra toast', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-success-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-success-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+      createReviewReplyMock.mockResolvedValue(createReply({ id: 'new-reply-2', reviewId: 'reply-success-1', userId: 'user-1', userName: 'Rider Test', status: 'pending' }));
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      const textarea = within(card).getByLabelText('Tu respuesta');
+      await user.type(textarea, 'Test reply');
+
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      await waitFor(() => {
+        expect(within(card).queryByLabelText('Tu respuesta')).not.toBeInTheDocument();
+      });
+      expect(within(card).getByText('Respuesta enviada. Quedará visible tras revisión.')).toBeInTheDocument();
+    });
+
+    it('submit con isSubmitting true deshabilita el botón de enviar', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-pending-btn-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-pending-btn-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+      let resolveReply: (value: ReviewReply) => void;
+      createReviewReplyMock.mockImplementation(() => new Promise((resolve) => { resolveReply = resolve; }));
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      const textarea = within(card).getByLabelText('Tu respuesta');
+      await user.type(textarea, 'Test reply');
+
+      const submitBtn = within(card).getByRole('button', { name: /Responder/i });
+      await user.click(submitBtn);
+
+      await waitFor(() => expect(submitBtn).toBeDisabled());
+      expect(within(card).getByText('Enviando...')).toBeInTheDocument();
+
+      resolveReply!(createReply({ id: 'pending-reply-1', reviewId: 'reply-pending-btn-1', status: 'pending' }));
+    });
+
+    it('submit que falla no cierra el formulario y mantiene el texto', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-error-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-error-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+      createReviewReplyMock.mockRejectedValue(new Error('Error de red'));
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      const textarea = within(card).getByLabelText('Tu respuesta');
+      await user.type(textarea, 'Test reply que falla');
+
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      await waitFor(() => {
+        expect(within(card).getByLabelText('Tu respuesta')).toBeInTheDocument();
+      });
+      expect(textarea).toHaveValue('Test reply que falla');
+    });
+
+    it('review propia no muestra botón de responder', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-own-1', userId: 'user-1', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-own-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      expect(within(card).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
+    });
+
+    it('usuario no autenticado no ve botón de responder', async () => {
+      mockAuth({
+        user: null,
+        session: null,
+        profile: null,
+        isAuthenticated: false,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-noauth-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-noauth-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await userEvent.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      expect(within(card).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
+    });
+
+    it('no se llama a createReviewReply sin auth', async () => {
+      mockAuth({
+        user: null,
+        session: null,
+        profile: null,
+        isAuthenticated: false,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-noauth-call-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-noauth-call-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await userEvent.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      expect(createReviewReplyMock).not.toHaveBeenCalled();
+    });
+
+    it('helpful/not helpful/report siguen funcionando tras añadir reply', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-regression-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-regression-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([]);
+      createReviewReplyMock.mockResolvedValue(createReply({ id: 'reg-reply-1', reviewId: 'reply-regression-1', userId: 'user-1', status: 'pending' }));
+      toggleHelpfulReactionMock.mockResolvedValue({ reviewId: 'reply-regression-1', helpfulCount: 3, hasReactedHelpful: true, hasReactedNotHelpful: false });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      const textarea = within(card).getByLabelText('Tu respuesta');
+      await user.type(textarea, 'Reply regression test');
+      await user.click(within(card).getByRole('button', { name: /Responder/i }));
+
+      await waitFor(() => expect(within(card).queryByLabelText('Tu respuesta')).not.toBeInTheDocument());
+
+      const helpfulButton = within(card).getByRole('button', { name: /Útil 2/i });
+      await user.click(helpfulButton);
+
+      await waitFor(() => expect(toggleHelpfulReactionMock).toHaveBeenCalledWith('reply-regression-1', { accessToken: 'session-token', userId: 'user-1' }));
+    });
+
+    it('chip Propia sigue visible en review propia con replies', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-chip-1', userId: 'user-1', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-chip-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).getByText('Propia')).toBeInTheDocument();
+      expect(within(card).getByLabelText('Review propia')).toBeInTheDocument();
+    });
+
+    it('no aparece texto literal null o undefined en replies', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        profile: { id: 'user-1', displayName: 'Rider Test', role: 'user', email: 'rider@motoatlas.com', updatedAt: '2026-05-01T10:00:00.000Z' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reply-null-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reply-null-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getRepliesByReviewIdMock.mockResolvedValue([
+        createReply({ id: 'reply-null-check', reviewId: 'reply-null-1', comment: 'Reply con null en otro campo', userName: null as unknown as string }),
+      ]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /BMW F 900 GS/i }));
+
+      await waitFor(() => {
+        expect(getRepliesByReviewIdMock).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      await waitFor(() => {
+        expect(within(card).queryByText('null', { exact: true })).not.toBeInTheDocument();
+      });
+    });
   });
 });

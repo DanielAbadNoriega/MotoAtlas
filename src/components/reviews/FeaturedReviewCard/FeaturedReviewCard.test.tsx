@@ -308,6 +308,67 @@ describe('FeaturedReviewCard', () => {
     expect(screen.getByRole('link', { name: 'Más reviews' })).toBeInTheDocument();
   });
 
+  it('mostrar chip Propia cuando isOwnReview={true}', async () => {
+    const review = createReview({ id: 'own-test-1', userId: 'user-1' });
+    render(<FeaturedReviewCard review={review} isOwnReview={true} />);
+    expect(screen.getByText('Propia')).toBeInTheDocument();
+    expect(screen.getByLabelText('Review propia')).toBeInTheDocument();
+  });
+
+  it('no mostrar chip cuando isOwnReview={false}', async () => {
+    const review = createReview({ id: 'not-own-test-1', userId: 'other-user' });
+    render(<FeaturedReviewCard review={review} isOwnReview={false} />);
+    expect(screen.queryByText('Propia')).not.toBeInTheDocument();
+  });
+
+  it('no mostrar chip cuando isOwnReview no se pasa', async () => {
+    const review = createReview({ id: 'no-badge-test-1' });
+    render(<FeaturedReviewCard review={review} />);
+    expect(screen.queryByText('Propia')).not.toBeInTheDocument();
+  });
+
+  it('chip no rompe el header desplegable', async () => {
+    const review = createReview({ id: 'header-toggle-badge-1', userId: 'user-1' });
+    render(<FeaturedReviewCard review={review} isOwnReview={true} />);
+    const header = screen.getByRole('button');
+    expect(screen.getByText('Propia')).toBeInTheDocument();
+    await user.click(header);
+    const body = document.getElementById('featured-review-body-header-toggle-badge-1');
+    expect(body).toHaveAttribute('aria-hidden', 'false');
+    expect(body).toHaveClass('featured-review-card__body--open');
+  });
+
+  it('Propia tiene icono block con aria-hidden=true', async () => {
+    const review = createReview({ id: 'icon-test-1', userId: 'user-1' });
+    render(<FeaturedReviewCard review={review} isOwnReview={true} />);
+    const chip = screen.getByLabelText('Review propia');
+    const icon = within(chip).getByText('block');
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('Propia no es elemento interactivo (no button, no link)', async () => {
+    const review = createReview({ id: 'non-interactive-1', userId: 'user-1' });
+    render(<FeaturedReviewCard review={review} isOwnReview={true} />);
+    const chip = screen.getByLabelText('Review propia');
+    expect(chip.tagName).toBe('SPAN');
+    expect(chip).not.toHaveAttribute('onClick');
+    expect(chip).not.toHaveAttribute('onKeyDown');
+  });
+
+  it('isOwnReview=true sin actionsSlot muestra actions wrapper con Propia', async () => {
+    const review = createReview({ id: 'own-no-actions-1', userId: 'user-1' });
+    render(<FeaturedReviewCard review={review} isOwnReview={true} />);
+    const actionsWrapper = document.querySelector('.featured-review-card__actions');
+    expect(actionsWrapper).toBeInTheDocument();
+    expect(within(actionsWrapper as HTMLElement).getByText('Propia')).toBeInTheDocument();
+  });
+
+  it('isOwnReview=false sin actionsSlot no muestra actions wrapper', async () => {
+    const review = createReview({ id: 'not-own-no-actions-1' });
+    render(<FeaturedReviewCard review={review} isOwnReview={false} />);
+    expect(document.querySelector('.featured-review-card__actions')).not.toBeInTheDocument();
+  });
+
   it('renderiza con actionsSlot personalizado', async () => {
     const review = createReview();
     render(
