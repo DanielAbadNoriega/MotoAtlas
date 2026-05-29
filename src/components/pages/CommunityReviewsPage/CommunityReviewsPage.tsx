@@ -503,18 +503,6 @@ function EditorialReviewSection({
                       isPending={reportPendingIds.includes(review.id)}
                       onOpen={() => onOpenReport(review)}
                     />
-                    {reportForm?.reviewId === review.id && (
-                      <ReviewReportForm
-                        comment={reportForm.comment}
-                        isSubmitting={reportForm.isSubmitting}
-                        onCancel={onCancelReport}
-                        onCommentChange={onChangeReportComment}
-                        onReasonChange={onChangeReportReason}
-                        onSubmit={() => onSubmitReport(review)}
-                        reason={reportForm.reason}
-                        reviewId={review.id}
-                      />
-                    )}
                     {user && !isReplyFormOpen && !isOwnReview ? (
                       <button
                         className="motorcycle-community__helpful-action motorcycle-community__reply-trigger"
@@ -556,6 +544,20 @@ function EditorialReviewSection({
                     inline={true}
                     showActions={false}
                   />
+                }
+                reportContentSlot={
+                  reportForm?.reviewId === review.id ? (
+                    <ReviewReportForm
+                      comment={reportForm.comment}
+                      isSubmitting={reportForm.isSubmitting}
+                      onCancel={onCancelReport}
+                      onCommentChange={onChangeReportComment}
+                      onReasonChange={onChangeReportReason}
+                      onSubmit={() => onSubmitReport(review)}
+                      reason={reportForm.reason}
+                      reviewId={reportForm.reviewId}
+                    />
+                  ) : null
                 }
               />
             );

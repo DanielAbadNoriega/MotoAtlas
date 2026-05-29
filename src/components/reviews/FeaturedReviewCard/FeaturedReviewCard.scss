@@ -60,11 +60,11 @@
 }
 
 .featured-review-card__header {
-  align-items: flex-start;
   background: transparent;
   border: none;
   cursor: pointer;
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   padding: 0.72rem 0.9rem;
   text-align: left;

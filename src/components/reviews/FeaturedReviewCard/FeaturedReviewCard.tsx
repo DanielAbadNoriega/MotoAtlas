@@ -18,6 +18,7 @@ export type FeaturedReviewCardProps = Readonly<{
   aspects?: readonly MotorcycleReviewAspect[] | null;
   actionsSlot?: React.ReactNode;
   footerContentSlot?: React.ReactNode;
+  reportContentSlot?: React.ReactNode;
   isOwnReview?: boolean;
   onExpandedChange?: (isExpanded: boolean) => void;
 }>;
@@ -66,7 +67,7 @@ function ReviewMetadata({ review }: Readonly<{ review: MotorcycleReview }>) {
   );
 }
 
-export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot, footerContentSlot, isOwnReview, onExpandedChange }: FeaturedReviewCardProps) {
+export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot, footerContentSlot, reportContentSlot, isOwnReview, onExpandedChange }: FeaturedReviewCardProps) {
   const Heading = `h${headingLevel}` as const;
   const motorcycle = getAccountReviewMotorcycleDisplay(review);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -164,6 +165,12 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
               </div>
             ) : null}
 
+            {reportContentSlot ? (
+              <div className="featured-review-card__report-content">
+                {reportContentSlot}
+              </div>
+            ) : null}
+
             {footerContentSlot ? (
               <div className="featured-review-card__footer-content">
                 {footerContentSlot}
@@ -171,11 +178,9 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
             ) : null}
 
             <nav className="featured-review-card__links">
-              <a href={motorcycle.detailHref}>Ver ficha</a>
               <a href={motorcycle.communityHref}>Más reviews</a>
+              <a href={motorcycle.detailHref}>Ver ficha</a>
             </nav>
-
-            
           </div>
         </footer>
       </div>
