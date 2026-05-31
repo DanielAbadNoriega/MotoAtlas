@@ -32,11 +32,7 @@ import {
   toggleNotHelpfulReaction,
   type ReviewReactionSummary,
 } from '../../../services/reviewReactionService';
-import {
-  createReviewReport,
-  getMyReviewReports,
-  type ReviewReportReason,
-} from '../../../services/reviewReportService';
+import { type ReviewReportReason } from '../../../services/reviewReportService';
 import {
   createReviewReply,
   getRepliesByReviewId,
@@ -51,20 +47,12 @@ import {
 import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import {
   buildReviewAuthContext,
-  isDuplicateReviewReportError,
   isOwnReview,
-  markReportsByReviewId,
   upsertReactionSummaryInList,
 } from '../../../shared/reviews/reviewCommunityActions';
+import { useReviewReports, type ReviewReportFormState } from '../../../shared/reviews/useReviewReports';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import './CommunityReviewsPage.scss';
-
-type ReviewReportFormState = Readonly<{
-  comment: string;
-  isSubmitting: boolean;
-  reason: ReviewReportReason;
-  reviewId: string;
-}>;
 
 type ReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
 type LicenseFilter = 'all' | BikeA2Status;
@@ -916,9 +904,6 @@ export function CommunityReviewsPage() {
   const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
   const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
   const [aspectSummaries, setAspectSummaries] = useState<readonly MotorcycleReviewAspect[]>([]);
-  const [reportedReviewIds, setReportedReviewIds] = useState<Record<string, boolean>>({});
-  const [reportForm, setReportForm] = useState<ReviewReportFormState | null>(null);
-  const [reportPendingIds, setReportPendingIds] = useState<readonly string[]>([]);
   const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
   const [replyForm, setReplyForm] = useState<ReplyFormState | null>(null);
   const [replyPendingIds, setReplyPendingIds] = useState<readonly string[]>([]);
@@ -1079,34 +1064,35 @@ export function CommunityReviewsPage() {
   const paginatedGarageMotorcycles = filteredGarageMotorcycles.slice((currentPage - 1) * REVIEWS_PER_PAGE, currentPage * REVIEWS_PER_PAGE);
   const activeFilters = hasActiveFilters(filters);
 
-  useEffect(() => {
-    if (!reactionAuthContext) {
-      setReportedReviewIds({});
-      setReportForm(null);
-      return undefined;
+  const clearReactionAfterReport = async ({
+    authContext,
+    reviewId,
+  }: Readonly<{
+    authContext: NonNullable<typeof reactionAuthContext>;
+    reviewId: string;
+  }>) => {
+    try {
+      const cleanedSummary = await clearMyReviewReaction(reviewId, authContext);
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, cleanedSummary));
+    } catch {
     }
+  };
 
-    if (editorialReviewIds.length === 0) {
-      return undefined;
-    }
-
-    let isMounted = true;
-
-    getMyReviewReports(editorialReviewIds, reactionAuthContext)
-      .then((reports) => {
-        if (!isMounted) {
-          return;
-        }
-
-        setReportedReviewIds((currentReports) => markReportsByReviewId(currentReports, reports));
-      })
-      .catch(() => {
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, editorialReviewIds.join('|')]);
+  const {
+    reportedReviewIds,
+    reportForm,
+    reportPendingIds,
+    openReportForm,
+    cancelReportForm,
+    updateReportReason: updateReportFormReason,
+    updateReportComment: updateReportFormComment,
+    submitReport,
+  } = useReviewReports({
+    authContext: reactionAuthContext,
+    onClearReactionAfterReport: clearReactionAfterReport,
+    reviewIds: editorialReviewIds,
+    userId: user?.id,
+  });
 
   const updateFilters = (next: Partial<CommunityReviewFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
@@ -1172,79 +1158,6 @@ export function CommunityReviewsPage() {
     } catch {
     } finally {
       setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
-    }
-  };
-
-  const openReportForm = (review: MotorcycleReview) => {
-    if (isOwnReview(review, user?.id)) {
-      return;
-    }
-
-    if (!reactionAuthContext) {
-      return;
-    }
-
-    if (reportedReviewIds[review.id]) {
-      return;
-    }
-
-    setReportForm({
-      comment: '',
-      isSubmitting: false,
-      reason: 'spam',
-      reviewId: review.id,
-    });
-  };
-
-  const updateReportFormReason = (reason: ReviewReportReason) => {
-    setReportForm((currentForm) => (currentForm ? { ...currentForm, reason } : currentForm));
-  };
-
-  const updateReportFormComment = (comment: string) => {
-    setReportForm((currentForm) => (currentForm ? { ...currentForm, comment } : currentForm));
-  };
-
-  const submitReport = async (review: MotorcycleReview) => {
-    if (!reactionAuthContext || !reportForm || reportForm.reviewId !== review.id) {
-      return;
-    }
-
-    setReportForm((currentForm) => (currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: true } : currentForm));
-    setReportPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
-
-    const applyReactionCleanup = async () => {
-      try {
-        const cleanedSummary = await clearMyReviewReaction(review.id, reactionAuthContext);
-        setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, cleanedSummary));
-      } catch {
-      }
-    };
-
-    try {
-      await createReviewReport(
-        {
-          comment: reportForm.comment,
-          reason: reportForm.reason,
-          reviewId: review.id,
-        },
-        reactionAuthContext,
-      );
-      await applyReactionCleanup();
-      setReportedReviewIds((currentReports: Record<string, boolean>) => ({ ...currentReports, [review.id]: true }));
-      setReportForm(null);
-    } catch (error) {
-      if (isDuplicateReviewReportError(error instanceof Error ? error.message : null)) {
-        await applyReactionCleanup();
-        setReportedReviewIds((currentReports: Record<string, boolean>) => ({ ...currentReports, [review.id]: true }));
-        setReportForm(null);
-        return;
-      }
-
-      setReportForm((currentForm) => (
-        currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: false } : currentForm
-      ));
-    } finally {
-      setReportPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
     }
   };
 
@@ -1450,7 +1363,7 @@ export function CommunityReviewsPage() {
               tone="featured"
               userId={user?.id ?? null}
               onOpenReport={openReportForm}
-              onCancelReport={() => setReportForm(null)}
+              onCancelReport={cancelReportForm}
               onChangeReportReason={updateReportFormReason}
               onChangeReportComment={updateReportFormComment}
               onSubmitReport={submitReport}
@@ -1483,7 +1396,7 @@ export function CommunityReviewsPage() {
               tone="latest"
               userId={user?.id ?? null}
               onOpenReport={openReportForm}
-              onCancelReport={() => setReportForm(null)}
+              onCancelReport={cancelReportForm}
               onChangeReportReason={updateReportFormReason}
               onChangeReportComment={updateReportFormComment}
               onSubmitReport={submitReport}
