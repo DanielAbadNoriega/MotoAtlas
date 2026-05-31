@@ -232,6 +232,30 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 - accesibilidad.
 - sin fetch interno.
 
+### 8.1 Utilidad compartida `reviewCommunityActions.ts` (Fase A P1)
+
+**Contrato:**
+- Ubicación: `src/shared/reviews/reviewCommunityActions.ts`.
+- Es capa de helpers puros compartibles entre páginas (no es hook).
+- No depende de React.
+- No hace fetch.
+- No lee auth/context directamente.
+- No llama servicios.
+- Mantiene shapes de summaries separados:
+  - `upsertReactionSummaryInList` para listas (`CommunityReviewsPage`).
+  - `upsertReactionSummaryById` para mapas/records (`MotorcycleCommunityPage`).
+- `isDuplicateReviewReportError` cubre el caso `"Ya has reportado esta review."`.
+
+**Riesgo residual conocido:**
+- La detección de duplicado depende de ese literal; si cambia el mensaje backend hay que actualizar helper + test.
+
+**Tests obligatorios:**
+- unit tests para `buildReviewAuthContext`.
+- unit tests para `isOwnReview`.
+- unit tests para `isDuplicateReviewReportError`.
+- unit tests para `markReportsByReviewId`.
+- unit tests para `upsertReactionSummaryInList` y `upsertReactionSummaryById`.
+
 ---
 
 ## 9. Componentes presentacionales

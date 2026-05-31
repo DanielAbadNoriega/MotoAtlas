@@ -101,6 +101,7 @@ src/
     images/
       getMotorcycleImage.ts
     reviews/
+      reviewCommunityActions.ts
       reviewSourcePolicy.ts
       reviewUtils.ts
       topRatedMotorcycles.ts
@@ -628,6 +629,29 @@ No aplica en: `getReviewsByUserId` (cuenta), admin, moderación.
 - El promedio y contador se calculan con `src/shared/reviews/reviewUtils.ts`
 - `verified` solo puede ser `true` si lo marca un admin; inserciones públicas son `false`
 - `source` campo: `user` (real), `seed` (SQL demo), `mock` (script/JSON), `import` (importador masivo)
+
+### Helpers puros compartidos de acciones comunitarias (Fase A P1)
+
+Archivo:
+
+```txt
+src/shared/reviews/reviewCommunityActions.ts
+```
+
+Objetivo:
+- Compartir lógica pura entre `CommunityReviewsPage` y `MotorcycleCommunityPage` sin extraer todavía un hook monolítico.
+
+Reglas:
+- No depende de React.
+- No hace fetch.
+- No lee auth/context directamente.
+- No llama servicios.
+- Mantiene dos shapes de summaries:
+  - lista (`upsertReactionSummaryInList`)
+  - map/record (`upsertReactionSummaryById`)
+
+Nota de riesgo:
+- `isDuplicateReviewReportError` depende del literal `"Ya has reportado esta review."` para el caso duplicado.
 
 ## 11. Testing actual
 
