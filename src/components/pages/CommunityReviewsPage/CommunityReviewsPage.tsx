@@ -26,6 +26,7 @@ import {
   type MotorcycleReviewRidingStyle,
 } from '../../../services/motorcycleReviewService';
 import {
+  clearMyReviewReaction,
   getReviewReactionSummary,
   toggleHelpfulReaction,
   toggleNotHelpfulReaction,
@@ -396,6 +397,7 @@ function EditorialReviewSection({
   onToggleNotHelpful,
   reactionPendingIds,
   userId,
+  hasReactionAuth,
   reportedReviewIds,
   reportForm,
   reportPendingIds,
@@ -426,6 +428,7 @@ function EditorialReviewSection({
   onToggleNotHelpful: (review: MotorcycleReview) => void;
   reactionPendingIds: readonly string[];
   userId: string | null;
+  hasReactionAuth: boolean;
   reportedReviewIds: Record<string, boolean>;
   reportForm: ReviewReportFormState | null;
   reportPendingIds: readonly string[];
@@ -466,12 +469,15 @@ function EditorialReviewSection({
             const summary = reactionSummaryByReviewId.get(review.id);
             const isPending = reactionPendingIds.includes(review.id);
             const isOwnReview = review.userId !== null && userId !== null && review.userId === userId;
+            const hasReported = Boolean(reportedReviewIds[review.id]);
             const isReplyFormOpen = replyForm?.reviewId === review.id;
             const reviewReplies = replies[review.id] ?? [];
             const visibleRepliesCount = reviewReplies.filter(
               (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
             ).length;
             const isRepliesExpanded = Boolean(expandedReplyReviewIds[review.id]);
+            const canUseReactionActions = hasReactionAuth || isOwnReview;
+            const shouldRenderActionsSlot = canUseReactionActions || hasReactionAuth || visibleRepliesCount > 0;
             return (
               <FeaturedReviewCard
                 headingLevel={3}
@@ -479,29 +485,35 @@ function EditorialReviewSection({
                 key={review.id}
                 review={review}
                 aspects={aspectsByReviewId.get(review.id)}
-                actionsSlot={
+                actionsSlot={shouldRenderActionsSlot ? (
                   <>
-                    <HelpfulReviewAction
-                      isBlocked={false}
-                      isOwnReview={isOwnReview}
-                      isPending={isPending}
-                      onToggle={() => onToggleHelpful(review)}
-                      summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
-                    />
-                    <NotHelpfulReviewAction
-                      isBlocked={false}
-                      isOwnReview={isOwnReview}
-                      isPending={isPending}
-                      onToggle={() => onToggleNotHelpful(review)}
-                      summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
-                    />
-                    <ReportReviewAction
-                      hasReported={Boolean(reportedReviewIds[review.id])}
-                      isOwnReview={isOwnReview}
-                      isPending={reportPendingIds.includes(review.id)}
-                      onOpen={() => onOpenReport(review)}
-                    />
-                    {user && !isReplyFormOpen && !isOwnReview ? (
+                    {canUseReactionActions ? (
+                      <HelpfulReviewAction
+                        isBlocked={hasReported}
+                        isOwnReview={isOwnReview}
+                        isPending={isPending}
+                        onToggle={() => onToggleHelpful(review)}
+                        summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
+                      />
+                    ) : null}
+                    {hasReactionAuth ? (
+                      <NotHelpfulReviewAction
+                        isBlocked={hasReported}
+                        isOwnReview={isOwnReview}
+                        isPending={isPending}
+                        onToggle={() => onToggleNotHelpful(review)}
+                        summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
+                      />
+                    ) : null}
+                    {hasReactionAuth ? (
+                      <ReportReviewAction
+                        hasReported={hasReported}
+                        isOwnReview={isOwnReview}
+                        isPending={reportPendingIds.includes(review.id)}
+                        onOpen={() => onOpenReport(review)}
+                      />
+                    ) : null}
+                    {hasReactionAuth && user && !isReplyFormOpen && !isOwnReview ? (
                       <button
                         className="motorcycle-community__helpful-action motorcycle-community__reply-trigger"
                         onClick={() => onOpenReply(review)}
@@ -526,7 +538,7 @@ function EditorialReviewSection({
                       </button>
                     ) : null}
                   </>
-                }
+                ) : undefined}
                 footerContentSlot={
                   <ReviewReplySection
                     onCancelReply={onCancelReply}
@@ -544,7 +556,7 @@ function EditorialReviewSection({
                   />
                 }
                 reportContentSlot={
-                  reportForm?.reviewId === review.id ? (
+                  hasReactionAuth && reportForm?.reviewId === review.id ? (
                     <ReviewReportForm
                       comment={reportForm.comment}
                       isSubmitting={reportForm.isSubmitting}
@@ -1058,6 +1070,38 @@ export function CommunityReviewsPage() {
   const paginatedGarageMotorcycles = filteredGarageMotorcycles.slice((currentPage - 1) * REVIEWS_PER_PAGE, currentPage * REVIEWS_PER_PAGE);
   const activeFilters = hasActiveFilters(filters);
 
+  useEffect(() => {
+    if (!reactionAuthContext) {
+      setReportedReviewIds({});
+      setReportForm(null);
+      return undefined;
+    }
+
+    if (editorialReviewIds.length === 0) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    getMyReviewReports(editorialReviewIds, reactionAuthContext)
+      .then((reports) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setReportedReviewIds((currentReports) => ({
+          ...currentReports,
+          ...Object.fromEntries(reports.map((report) => [report.reviewId, true])),
+        }));
+      })
+      .catch(() => {
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, editorialReviewIds.join('|')]);
+
   const updateFilters = (next: Partial<CommunityReviewFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
     setCurrentPage(1);
@@ -1082,6 +1126,10 @@ export function CommunityReviewsPage() {
       return;
     }
 
+    if (reportedReviewIds[review.id]) {
+      return;
+    }
+
     if (!reactionAuthContext) {
       return;
     }
@@ -1102,6 +1150,10 @@ export function CommunityReviewsPage() {
 
   const toggleNotHelpful = async (review: MotorcycleReview) => {
     if (review.userId && user?.id && review.userId === user.id) {
+      return;
+    }
+
+    if (reportedReviewIds[review.id]) {
       return;
     }
 
@@ -1160,6 +1212,17 @@ export function CommunityReviewsPage() {
     setReportForm((currentForm) => (currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: true } : currentForm));
     setReportPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
 
+    const applyReactionCleanup = async () => {
+      try {
+        const cleanedSummary = await clearMyReviewReaction(review.id, reactionAuthContext);
+        setReactionSummaries((currentSummaries) => {
+          const filtered = currentSummaries.filter((s) => s.reviewId !== review.id);
+          return [...filtered, cleanedSummary];
+        });
+      } catch {
+      }
+    };
+
     try {
       await createReviewReport(
         {
@@ -1169,9 +1232,17 @@ export function CommunityReviewsPage() {
         },
         reactionAuthContext,
       );
+      await applyReactionCleanup();
       setReportedReviewIds((currentReports: Record<string, boolean>) => ({ ...currentReports, [review.id]: true }));
       setReportForm(null);
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Ya has reportado esta review.') {
+        await applyReactionCleanup();
+        setReportedReviewIds((currentReports: Record<string, boolean>) => ({ ...currentReports, [review.id]: true }));
+        setReportForm(null);
+        return;
+      }
+
       setReportForm((currentForm) => (
         currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: false } : currentForm
       ));
@@ -1368,6 +1439,7 @@ export function CommunityReviewsPage() {
             <EditorialReviewSection
               aspectsByReviewId={aspectByReviewId}
               emptyMessage="Todavía no hay reviews destacadas."
+              hasReactionAuth={Boolean(reactionAuthContext)}
               id="community-featured-reviews-title"
               onToggleHelpful={toggleHelpful}
               onToggleNotHelpful={toggleNotHelpful}
@@ -1400,6 +1472,7 @@ export function CommunityReviewsPage() {
             <EditorialReviewSection
               aspectsByReviewId={aspectByReviewId}
               emptyMessage="Todavía no hay actividad reciente."
+              hasReactionAuth={Boolean(reactionAuthContext)}
               id="community-latest-reviews-title"
               onToggleHelpful={toggleHelpful}
               onToggleNotHelpful={toggleNotHelpful}

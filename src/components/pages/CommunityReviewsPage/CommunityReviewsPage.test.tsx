@@ -3,7 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '../../../features/auth';
 import { getApprovedCommunityReviews, getReviewAspectsByReviewIds, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus, type MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
-import { getReviewReactionSummary, toggleHelpfulReaction, toggleNotHelpfulReaction, type ReviewReactionSummary } from '../../../services/reviewReactionService';
+import {
+  clearMyReviewReaction,
+  getReviewReactionSummary,
+  toggleHelpfulReaction,
+  toggleNotHelpfulReaction,
+  type ReviewReactionSummary,
+} from '../../../services/reviewReactionService';
 import { createReviewReport, getMyReviewReports } from '../../../services/reviewReportService';
 import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
 import { CommunityReviewsPage } from './CommunityReviewsPage';
@@ -18,6 +24,7 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
 }));
 
 vi.mock('../../../services/reviewReactionService', () => ({
+  clearMyReviewReaction: vi.fn(),
   getReviewReactionSummary: vi.fn(),
   toggleHelpfulReaction: vi.fn(),
   toggleNotHelpfulReaction: vi.fn(),
@@ -36,6 +43,7 @@ vi.mock('../../../services/reviewReplyService', () => ({
 const getApprovedCommunityReviewsMock = vi.mocked(getApprovedCommunityReviews);
 const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 const getReviewReactionSummaryMock = vi.mocked(getReviewReactionSummary);
+const clearMyReviewReactionMock = vi.mocked(clearMyReviewReaction);
 const toggleHelpfulReactionMock = vi.mocked(toggleHelpfulReaction);
 const toggleNotHelpfulReactionMock = vi.mocked(toggleNotHelpfulReaction);
 const createReviewReportMock = vi.mocked(createReviewReport);
@@ -140,10 +148,20 @@ describe('CommunityReviewsPage', () => {
     getApprovedCommunityReviewsMock.mockReset();
     getReviewReactionSummaryMock.mockReset();
     getReviewAspectsByReviewIdsMock.mockReset();
+    clearMyReviewReactionMock.mockReset();
     toggleHelpfulReactionMock.mockReset();
     toggleNotHelpfulReactionMock.mockReset();
+    createReviewReportMock.mockReset();
+    getMyReviewReportsMock.mockReset();
     createReviewReplyMock.mockReset();
     getRepliesByReviewIdMock.mockReset();
+    getMyReviewReportsMock.mockResolvedValue([]);
+    clearMyReviewReactionMock.mockImplementation(async (reviewId) => ({
+      reviewId,
+      helpfulCount: 0,
+      hasReactedHelpful: false,
+      hasReactedNotHelpful: false,
+    }));
     mockAuth();
     vi.useRealTimers();
   });
@@ -1444,7 +1462,7 @@ describe('CommunityReviewsPage', () => {
     });
 
 
-    it('ReportReviewAction se renderiza cuando el usuario no está autenticado (el handler no hace nada sin auth)', async () => {
+    it('usuario no autenticado no ve acciones comunitarias clicables sin efecto', async () => {
       mockAuth({
         user: null,
         session: null,
@@ -1460,8 +1478,10 @@ describe('CommunityReviewsPage', () => {
 
       const featuredSection = getFeaturedSection();
       const card = within(featuredSection).getByTestId('featured-review-card');
-      expect(within(card).getByRole('button', { name: /Reportar review/i })).toBeInTheDocument();
-      await userEvent.click(within(card).getByRole('button', { name: /Reportar review/i }));
+      expect(within(card).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /útil/i })).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /no útil/i })).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('form', { name: /Reportar review/i })).not.toBeInTheDocument();
     });
 
@@ -1557,6 +1577,79 @@ describe('CommunityReviewsPage', () => {
       });
       const secondCard = allCards[1];
       expect(within(secondCard).getByRole('button', { name: /Reportar review/i })).toBeInTheDocument();
+    });
+
+    it('si la review ya está reportada por el usuario, bloquea Helpful/NotHelpful', async () => {
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'reported-loaded-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'reported-loaded-1', helpfulCount: 7, hasReactedHelpful: true, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      getMyReviewReportsMock.mockResolvedValue([
+        { comment: null, reason: 'spam', reviewId: 'reported-loaded-1', status: 'pending', userId: 'user-1' },
+      ]);
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+      await waitFor(() => {
+        expect(getMyReviewReportsMock).toHaveBeenCalledWith(
+          expect.arrayContaining(['reported-loaded-1']),
+          { accessToken: 'session-token', userId: 'user-1' },
+        );
+      });
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      expect(within(card).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
+      expect(within(card).getByText('Reportada')).toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
+
+      const helpfulText = within(card).getByText(/Útil 7/i);
+      expect(helpfulText.closest('button')).not.toBeInTheDocument();
+    });
+
+    it('al reportar limpia la reacción previa y bloquea nuevas reacciones', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'report-cleanup-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'report-cleanup-1', helpfulCount: 5, hasReactedHelpful: true, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      createReviewReportMock.mockResolvedValue({ comment: null, reason: 'spam', reviewId: 'report-cleanup-1', status: 'pending', userId: 'user-1' });
+      clearMyReviewReactionMock.mockResolvedValue({ reviewId: 'report-cleanup-1', helpfulCount: 4, hasReactedHelpful: false, hasReactedNotHelpful: false });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /Reportar review/i }));
+      await user.click(within(within(card).getByRole('form', { name: /Reportar review/i })).getByRole('button', { name: /Enviar reporte/i }));
+
+      await waitFor(() => {
+        expect(clearMyReviewReactionMock).toHaveBeenCalledWith(
+          'report-cleanup-1',
+          { accessToken: 'session-token', userId: 'user-1' },
+        );
+      });
+
+      expect(within(card).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /Marcar como útil/i })).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
+      expect(within(card).getByText('Reportada')).toBeInTheDocument();
+
+      const helpfulText = within(card).getByText(/Útil 4/i);
+      expect(helpfulText.closest('button')).not.toBeInTheDocument();
     });
 
     it('FeaturedReviewCard sigue renderizando body desplegable tras click en header', async () => {
