@@ -155,6 +155,7 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
   - el chip va en la zona de acciones, no en el header.
   - usa icono `block`.
   - es pasivo, no botón.
+  - `Útil N` debe seguir visible como contador público en modo pasivo/no interactivo.
   - no permitir útil.
   - no permitir no útil.
   - no permitir reportar.
@@ -163,7 +164,8 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 - Si no hay sesión:
   - no llamar servicios con auth incompleto.
   - no dejar botones clicables sin efecto.
-  - en `#/comunidad/reviews`, no renderizar acciones comunitarias interactivas (Helpful/NotHelpful/Report/Reply) para evitar no-op silencioso.
+  - en `#/comunidad/reviews`, `Útil N` se mantiene visible como contador público pasivo (sin botón ni click).
+  - en `#/comunidad/reviews`, no renderizar acciones comunitarias interactivas sin permiso real (NotHelpful/Report/Reply), para evitar no-op silencioso.
 - Útil y No útil:
   - mutuamente excluyentes.
   - pending bloquea doble click.
@@ -176,6 +178,7 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
   - si devuelve duplicado (`"Ya has reportado esta review."`), mantener estado reportado y aplicar cleanup de reacción.
 - Estado reportada / bloqueo:
   - `isBlocked` debe derivarse de estado real de reportes (`reportedReviewIds`), no hardcode.
+  - `Útil N` debe permanecer visible como contador público en estado pasivo/bloqueado.
   - si la review ya está reportada por el usuario actual, bloquear Helpful/NotHelpful.
   - tras reportar, no permitir nuevas reacciones sobre esa review.
 - Respuestas:
@@ -194,6 +197,8 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 **Tests obligatorios:**
 - ownership.
 - chip `Propia`.
+- no-auth muestra `Útil N` pasivo (sin botón) y sin acciones falsas.
+- review propia muestra `Útil N` pasivo + chip `Propia`.
 - no autoreacción.
 - no autoreporte.
 - no handler no-op.

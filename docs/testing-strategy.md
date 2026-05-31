@@ -112,6 +112,8 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 - ownership (review propia vs ajena).
 - auth/no auth (sesión presente o no).
 - no-auth sin acciones clicables falsas/no-op.
+- no-auth muestra `Útil N` como elemento pasivo (sin botón de voto).
+- review propia muestra `Útil N` pasivo y chip `Propia`.
 - útil/no útil mutuamente excluyentes.
 - reportar una sola vez por usuario.
 - reportar limpia reacción previa del usuario.
@@ -126,6 +128,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
+- `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
 - `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
 - `src/shared/reviews/useReviewReports.test.tsx` cubre el hook compartido de reportes:
