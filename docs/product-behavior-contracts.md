@@ -258,6 +258,40 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 
 ---
 
+### 8.2 Hook compartido `useReviewReports` (Fase B P1)
+
+**Contrato:**
+- Ubicación: `src/shared/reviews/useReviewReports.ts`.
+- Centraliza solo lógica de reportes comunitarios:
+  - `reportedReviewIds`
+  - `reportForm`
+  - `reportPendingIds`
+  - hidratación con `getMyReviewReports` (solo con auth context + ids no vacíos)
+  - guards: `unauthenticated | own_review | already_reported`
+  - submit outcomes: `success | duplicate | blocked | error`
+- Es UI-agnóstico:
+  - no lee `useAuth`
+  - no renderiza UI
+  - no decide tooltips/notices/copy
+  - no toca replies
+  - no gestiona Helpful/NotHelpful salvo cleanup opcional por callback `onClearReactionAfterReport`
+- Debe mantener desacoplado el shape de reaction summaries entre páginas:
+  - `CommunityReviewsPage` (lista) vía `upsertReactionSummaryInList`
+  - `MotorcycleCommunityPage` (map/record) vía `upsertReactionSummaryById`
+- Las diferencias legítimas de UX se resuelven en cada contenedor:
+  - `CommunityReviewsPage`: sin acciones no-auth falsas/no-op.
+  - `MotorcycleCommunityPage`: feedback con tooltip/notice propio.
+
+**Riesgo residual conocido:**
+- La hidratación de reportes actualmente absorbe errores de forma silenciosa; si se necesita feedback explícito por página, debe cablearse en contenedor o evolucionar el contrato del hook.
+
+**Tests obligatorios:**
+- unit tests de hook para guards, pending y outcomes (`success`, `duplicate`, `blocked`, `error`) + `cleanupError`.
+- integración en `CommunityReviewsPage` manteniendo contrato no-auth/bloqueo/cleanup.
+- integración en `MotorcycleCommunityPage` manteniendo UX propia (tooltips/notices) + bloqueo/cleanup/pending combinado.
+
+---
+
 ## 9. Componentes presentacionales
 
 **Contrato:**

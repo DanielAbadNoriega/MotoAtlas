@@ -127,6 +127,13 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 Cobertura actual relevante:
 
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
+- `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
+- `src/shared/reviews/useReviewReports.test.tsx` cubre el hook compartido de reportes:
+  - hidratación con auth + ids normalizados
+  - guards (`unauthenticated`, `own_review`, `already_reported`)
+  - submit outcomes (`success`, `duplicate`, `blocked`, `error`)
+  - pending (`reportPendingIds`)
+  - `cleanupError` sin romper outcomes de éxito/duplicado
 - `src/shared/reviews/reviewCommunityActions.test.ts` cubre helpers puros compartidos:
   - `buildReviewAuthContext`
   - `isOwnReview`
@@ -137,3 +144,4 @@ Cobertura actual relevante:
 
 Pendiente/riesgo menor:
 - La detección de reporte duplicado depende de un literal; si backend cambia el mensaje, debe actualizarse helper + test.
+- En hidratación de reportes, el hook compartido absorbe errores silenciosamente; si producto requiere feedback específico en UI, hay que añadir cobertura + contrato explícito por contenedor.

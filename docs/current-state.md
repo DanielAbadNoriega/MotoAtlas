@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual:
-- Último bloque cerrado:
-- Tests: 954 passed
+- Último bloque cerrado: Fase B (P1) — consolidación de reportes comunitarios
+- Tests: 972 passed
 - Typecheck: clean
 - Último commit:
 
@@ -29,6 +29,9 @@
 - `#/comunidad/reviews` `FeaturedReviewCard` (reviews destacadas y últimos reportes): acciones comunitarias reales conectadas — HelpfulReviewAction, NotHelpfulReviewAction, ReportReviewAction con ReviewReportForm, y ReviewReplySection con lazy loading. Chip `Propia` visible en zona de acciones para reviews propias. El botón `Responder` aparece como action chip en `.featured-review-card__actions`; ReviewReplySection usa `inline=true` para que el trigger sea hijo directo de actions y el contenido expandido quede en `.motorcycle-community__replies`. `MotorcycleCommunityPage` mantiene comportamiento original sin `inline`. En no-auth no se renderizan acciones comunitarias clicables (sin no-op silencioso). `isBlocked` deriva de `reportedReviewIds` (hidratado con `getMyReviewReports`), y al reportar se limpia reacción previa con `clearMyReviewReaction`; tras reportar, esa review queda bloqueada para nuevas reacciones.
 - Fase A de consolidación P1: utilidades compartidas en `src/shared/reviews/reviewCommunityActions.ts` (`buildReviewAuthContext`, `isOwnReview`, `isDuplicateReviewReportError`, `markReportsByReviewId`, `upsertReactionSummaryInList`, `upsertReactionSummaryById`) reutilizadas por `CommunityReviewsPage` y `MotorcycleCommunityPage` sin introducir hooks.
 - `reviewCommunityActions.ts` es capa de helpers puros: no hace fetch, no lee auth directamente y no llama servicios. Mantiene shapes separados de reaction summaries (list para `CommunityReviewsPage`, map para `MotorcycleCommunityPage`).
+- Fase B de consolidación P1 cerrada: `src/shared/reviews/useReviewReports.ts` centraliza estado/flujo de reportes (`reportedReviewIds`, `reportForm`, `reportPendingIds`, hidratación con `getMyReviewReports`, guards `unauthenticated | own_review | already_reported`, submit `success | duplicate | blocked | error` y cleanup opcional por callback).
+- `CommunityReviewsPage` usa `useReviewReports` en modo UX silenciosa: mantiene no-auth sin acciones falsas y cleanup con `clearMyReviewReaction` + `upsertReactionSummaryInList`.
+- `MotorcycleCommunityPage` usa `useReviewReports` conservando UX propia (tooltips no-auth/success/duplicate + `reactionNotice` en error no duplicado), cleanup con `clearMyReviewReaction` + `upsertReactionSummaryById`, y pending combinado (`reactionPendingIds + reportPendingIds`).
 - `TopRatedMotorcyclesPage` (`#/comunidad` y `#/motos-mejor-valoradas`) reutiliza `FeaturedReviewCard` en `RecentReviews` como card visual común: reemplaza cards legacy cuando hay datos, mantiene orden cronológico (fecha desc), límite `slice(0, 3)` y empty state. En esta fase no conecta Helpful/NotHelpful/Report/Replies ni renderiza acciones falsas/no-op.
 
 ### Admin
@@ -71,6 +74,7 @@
 - Tendencia no usa serie temporal real.
 - Insights en vivo con polling cada 60s (sin Supabase Realtime).
 - El branch de duplicado en reportes depende del literal `"Ya has reportado esta review."`; si cambia el mensaje backend, hay que ajustar la detección.
+- En fallo de hidratación de reportes (`getMyReviewReports`), `useReviewReports` absorbe el error de forma silenciosa; en `MotorcycleCommunityPage` puede perderse el notice específico de ese edge case.
 
 ## Referencias de contratos
 

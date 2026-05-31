@@ -102,6 +102,7 @@ src/
       getMotorcycleImage.ts
     reviews/
       reviewCommunityActions.ts
+      useReviewReports.ts
       reviewSourcePolicy.ts
       reviewUtils.ts
       topRatedMotorcycles.ts
@@ -652,6 +653,32 @@ Reglas:
 
 Nota de riesgo:
 - `isDuplicateReviewReportError` depende del literal `"Ya has reportado esta review."` para el caso duplicado.
+
+### Hook compartido de reportes comunitarios (Fase B P1)
+
+Archivo:
+
+```txt
+src/shared/reviews/useReviewReports.ts
+```
+
+Objetivo:
+- Consolidar flujo de reportes (`reportedReviewIds`, `reportForm`, `reportPendingIds`, hidratación, guards y submit outcomes) sin mezclar UI.
+
+Reglas:
+- Hook UI-agnóstico: no lee `useAuth`, no renderiza UI, no toca replies.
+- No decide feedback visual de cada página (tooltip/notice/copy).
+- No gestiona Helpful/NotHelpful, salvo cleanup opcional vía callback `onClearReactionAfterReport`.
+- No fuerza un shape único de reaction summaries; cada contenedor mantiene su helper:
+  - `CommunityReviewsPage` → `upsertReactionSummaryInList`
+  - `MotorcycleCommunityPage` → `upsertReactionSummaryById`
+
+Integraciones actuales:
+- `CommunityReviewsPage` usa el hook con UX silenciosa (sin acciones no-auth falsas/no-op).
+- `MotorcycleCommunityPage` usa el hook conservando UX propia (tooltips + `reactionNotice`) y pending combinado (`reactionPendingIds + reportPendingIds`).
+
+Riesgo residual:
+- En hidratación (`getMyReviewReports`) los errores se absorben silenciosamente; si se requiere notice explícito, hay que extender contrato/cobertura.
 
 ## 11. Testing actual
 
