@@ -105,26 +105,29 @@
 .featured-review-card__rating {
   @include label-caps;
 
-  align-items: center;
-  color: $color-accent-container;
+  height: 42px;
+  min-width: 42px;
+  border: 1px solid rgba(227, 24, 55, 0.35);
+  color: $color-on-surface;
   display: inline-flex;
   flex: 0 0 auto;
-  font-size: 0.95rem;
+  justify-content: center;
+  align-items: center;
+  color: $color-accent;
+  font-size: 0.75rem;
   font-weight: 900;
   gap: 0.18rem;
   line-height: 1;
   padding-inline: 0;
+  border: 1px solid rgba($color-accent, 0.35);
+  border-radius: 50%;
+  background: rgba(227, 24, 55, 0.12);
 
   .featured-review-card__rating-icon {
     color: $color-accent;
-    font-size: 1.15rem;
+    font-size: 1rem;
     padding-bottom: 2px;
   }
-}
-
-.featured-review-card__own-action {
-  // Decoupled hook: base visual styles come from
-  // .motorcycle-community__helpful-action--passive
 }
 
 .featured-review-card__meta {
@@ -149,6 +152,7 @@
   .material-symbols-outlined {
     color: rgba($color-accent-container, 0.88);
     font-size: 0.84rem;
+    color: $color-warning;
   }
 }
 
