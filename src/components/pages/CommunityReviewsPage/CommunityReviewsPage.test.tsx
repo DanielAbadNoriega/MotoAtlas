@@ -1462,7 +1462,7 @@ describe('CommunityReviewsPage', () => {
     });
 
 
-    it('usuario no autenticado no ve acciones comunitarias clicables sin efecto', async () => {
+    it('usuario no autenticado ve Útil en modo pasivo y no ve acciones clicables sin efecto', async () => {
       mockAuth({
         user: null,
         session: null,
@@ -1478,11 +1478,14 @@ describe('CommunityReviewsPage', () => {
 
       const featuredSection = getFeaturedSection();
       const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).getByLabelText('Útil 2')).toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /útil/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /no útil/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('form', { name: /Reportar review/i })).not.toBeInTheDocument();
+      expect(toggleHelpfulReactionMock).not.toHaveBeenCalled();
+      expect(toggleNotHelpfulReactionMock).not.toHaveBeenCalled();
     });
 
     it('Click en reportar abre ReviewReportForm con Cancelar funcional', async () => {

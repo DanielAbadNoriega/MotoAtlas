@@ -28,8 +28,6 @@ import {
 import {
   clearMyReviewReaction,
   getReviewReactionSummary,
-  toggleHelpfulReaction,
-  toggleNotHelpfulReaction,
   type ReviewReactionSummary,
 } from '../../../services/reviewReactionService';
 import { type ReviewReportReason } from '../../../services/reviewReportService';
@@ -51,6 +49,7 @@ import {
   upsertReactionSummaryInList,
 } from '../../../shared/reviews/reviewCommunityActions';
 import { useReviewReports, type ReviewReportFormState } from '../../../shared/reviews/useReviewReports';
+import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import './CommunityReviewsPage.scss';
 
@@ -471,8 +470,7 @@ function EditorialReviewSection({
               (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
             ).length;
             const isRepliesExpanded = Boolean(expandedReplyReviewIds[review.id]);
-            const canUseReactionActions = hasReactionAuth || isOwn;
-            const shouldRenderActionsSlot = canUseReactionActions || hasReactionAuth || visibleRepliesCount > 0;
+            const canInteractHelpful = hasReactionAuth && !isOwn && !hasReported;
             return (
               <FeaturedReviewCard
                 headingLevel={3}
@@ -480,17 +478,15 @@ function EditorialReviewSection({
                 key={review.id}
                 review={review}
                 aspects={aspectsByReviewId.get(review.id)}
-                actionsSlot={shouldRenderActionsSlot ? (
+                actionsSlot={(
                   <>
-                    {canUseReactionActions ? (
-                      <HelpfulReviewAction
-                        isBlocked={hasReported}
-                        isOwnReview={isOwn}
-                        isPending={isPending}
-                        onToggle={() => onToggleHelpful(review)}
-                        summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
-                      />
-                    ) : null}
+                    <HelpfulReviewAction
+                      isBlocked={!canInteractHelpful}
+                      isOwnReview={isOwn}
+                      isPending={isPending}
+                      onToggle={() => onToggleHelpful(review)}
+                      summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
+                    />
                     {hasReactionAuth ? (
                       <NotHelpfulReviewAction
                         isBlocked={hasReported}
@@ -533,7 +529,7 @@ function EditorialReviewSection({
                       </button>
                     ) : null}
                   </>
-                ) : undefined}
+                )}
                 footerContentSlot={
                   <ReviewReplySection
                     onCancelReply={onCancelReply}
@@ -902,7 +898,6 @@ export function CommunityReviewsPage() {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<number>(0);
   const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
-  const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
   const [aspectSummaries, setAspectSummaries] = useState<readonly MotorcycleReviewAspect[]>([]);
   const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
   const [replyForm, setReplyForm] = useState<ReplyFormState | null>(null);
@@ -1094,6 +1089,16 @@ export function CommunityReviewsPage() {
     userId: user?.id,
   });
 
+  const {
+    reactionPendingIds,
+    toggleHelpful: toggleHelpfulReactionForReview,
+    toggleNotHelpful: toggleNotHelpfulReactionForReview,
+  } = useReviewReactions({
+    authContext: reactionAuthContext,
+    isReported: (reviewId) => Boolean(reportedReviewIds[reviewId]),
+    userId: user?.id,
+  });
+
   const updateFilters = (next: Partial<CommunityReviewFilters>) => {
     setFilters((current) => ({ ...current, ...next }));
     setCurrentPage(1);
@@ -1114,50 +1119,16 @@ export function CommunityReviewsPage() {
   };
 
   const toggleHelpful = async (review: MotorcycleReview) => {
-    if (isOwnReview(review, user?.id)) {
-      return;
-    }
-
-    if (reportedReviewIds[review.id]) {
-      return;
-    }
-
-    if (!reactionAuthContext) {
-      return;
-    }
-
-    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
-
-    try {
-      const summary = await toggleHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, summary));
-    } catch {
-    } finally {
-      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    const outcome = await toggleHelpfulReactionForReview(review);
+    if (outcome.outcome === 'success') {
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, outcome.summary));
     }
   };
 
   const toggleNotHelpful = async (review: MotorcycleReview) => {
-    if (isOwnReview(review, user?.id)) {
-      return;
-    }
-
-    if (reportedReviewIds[review.id]) {
-      return;
-    }
-
-    if (!reactionAuthContext) {
-      return;
-    }
-
-    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
-
-    try {
-      const summary = await toggleNotHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, summary));
-    } catch {
-    } finally {
-      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+    const outcome = await toggleNotHelpfulReactionForReview(review);
+    if (outcome.outcome === 'success') {
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, outcome.summary));
     }
   };
 
