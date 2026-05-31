@@ -155,6 +155,7 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
   - el chip va en la zona de acciones, no en el header.
   - usa icono `block`.
   - es pasivo, no botón.
+  - `Útil N` debe seguir visible como contador público en modo pasivo/no interactivo.
   - no permitir útil.
   - no permitir no útil.
   - no permitir reportar.
@@ -163,7 +164,8 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 - Si no hay sesión:
   - no llamar servicios con auth incompleto.
   - no dejar botones clicables sin efecto.
-  - en `#/comunidad/reviews`, no renderizar acciones comunitarias interactivas (Helpful/NotHelpful/Report/Reply) para evitar no-op silencioso.
+  - en `#/comunidad/reviews`, `Útil N` se mantiene visible como contador público pasivo (sin botón ni click).
+  - en `#/comunidad/reviews`, no renderizar acciones comunitarias interactivas sin permiso real (NotHelpful/Report/Reply), para evitar no-op silencioso.
 - Útil y No útil:
   - mutuamente excluyentes.
   - pending bloquea doble click.
@@ -176,6 +178,7 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
   - si devuelve duplicado (`"Ya has reportado esta review."`), mantener estado reportado y aplicar cleanup de reacción.
 - Estado reportada / bloqueo:
   - `isBlocked` debe derivarse de estado real de reportes (`reportedReviewIds`), no hardcode.
+  - `Útil N` debe permanecer visible como contador público en estado pasivo/bloqueado.
   - si la review ya está reportada por el usuario actual, bloquear Helpful/NotHelpful.
   - tras reportar, no permitir nuevas reacciones sobre esa review.
 - Respuestas:
@@ -194,6 +197,8 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 **Tests obligatorios:**
 - ownership.
 - chip `Propia`.
+- no-auth muestra `Útil N` pasivo (sin botón) y sin acciones falsas.
+- review propia muestra `Útil N` pasivo + chip `Propia`.
 - no autoreacción.
 - no autoreporte.
 - no handler no-op.
@@ -231,6 +236,93 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 - pending/disabled.
 - accesibilidad.
 - sin fetch interno.
+
+### 8.1 Utilidad compartida `reviewCommunityActions.ts` (Fase A P1)
+
+**Contrato:**
+- Ubicación: `src/shared/reviews/reviewCommunityActions.ts`.
+- Es capa de helpers puros compartibles entre páginas (no es hook).
+- No depende de React.
+- No hace fetch.
+- No lee auth/context directamente.
+- No llama servicios.
+- Mantiene shapes de summaries separados:
+  - `upsertReactionSummaryInList` para listas (`CommunityReviewsPage`).
+  - `upsertReactionSummaryById` para mapas/records (`MotorcycleCommunityPage`).
+- `isDuplicateReviewReportError` cubre el caso `"Ya has reportado esta review."`.
+
+**Riesgo residual conocido:**
+- La detección de duplicado depende de ese literal; si cambia el mensaje backend hay que actualizar helper + test.
+
+**Tests obligatorios:**
+- unit tests para `buildReviewAuthContext`.
+- unit tests para `isOwnReview`.
+- unit tests para `isDuplicateReviewReportError`.
+- unit tests para `markReportsByReviewId`.
+- unit tests para `upsertReactionSummaryInList` y `upsertReactionSummaryById`.
+
+---
+
+### 8.2 Hook compartido `useReviewReports` (Fase B P1)
+
+**Contrato:**
+- Ubicación: `src/shared/reviews/useReviewReports.ts`.
+- Centraliza solo lógica de reportes comunitarios:
+  - `reportedReviewIds`
+  - `reportForm`
+  - `reportPendingIds`
+  - hidratación con `getMyReviewReports` (solo con auth context + ids no vacíos)
+  - guards: `unauthenticated | own_review | already_reported`
+  - submit outcomes: `success | duplicate | blocked | error`
+- Es UI-agnóstico:
+  - no lee `useAuth`
+  - no renderiza UI
+  - no decide tooltips/notices/copy
+  - no toca replies
+  - no gestiona Helpful/NotHelpful salvo cleanup opcional por callback `onClearReactionAfterReport`
+- Debe mantener desacoplado el shape de reaction summaries entre páginas:
+  - `CommunityReviewsPage` (lista) vía `upsertReactionSummaryInList`
+  - `MotorcycleCommunityPage` (map/record) vía `upsertReactionSummaryById`
+- Las diferencias legítimas de UX se resuelven en cada contenedor:
+  - `CommunityReviewsPage`: sin acciones no-auth falsas/no-op.
+  - `MotorcycleCommunityPage`: feedback con tooltip/notice propio.
+
+**Riesgo residual conocido:**
+- La hidratación de reportes actualmente absorbe errores de forma silenciosa; si se necesita feedback explícito por página, debe cablearse en contenedor o evolucionar el contrato del hook.
+
+**Tests obligatorios:**
+- unit tests de hook para guards, pending y outcomes (`success`, `duplicate`, `blocked`, `error`) + `cleanupError`.
+- integración en `CommunityReviewsPage` manteniendo contrato no-auth/bloqueo/cleanup.
+- integración en `MotorcycleCommunityPage` manteniendo UX propia (tooltips/notices) + bloqueo/cleanup/pending combinado.
+
+---
+
+### 8.3 Hook compartido `useReviewReactions` (Fase C P1)
+
+**Contrato:**
+- Ubicación: `src/shared/reviews/useReviewReactions.ts`.
+- Centraliza solo mutaciones Helpful/NotHelpful:
+  - guards: `unauthenticated | own_review | reported | pending`
+  - pending por `reviewId`
+  - outcomes: `success | blocked | error`
+- Es UI-agnóstico:
+  - no lee `useAuth`
+  - no renderiza UI
+  - no decide tooltips/notices/copy
+  - no hace fetch inicial de summaries
+  - no toca reportes ni replies
+  - no actualiza summaries externas (cada contenedor mantiene su shape)
+- Integración por contenedor:
+  - `CommunityReviewsPage`: UX silenciosa; success actualiza con `upsertReactionSummaryInList`; `Útil N` se mantiene visible como contador público (pasivo cuando no hay permiso real).
+  - `MotorcycleCommunityPage`: UX con tooltip/notice propia; success actualiza con `upsertReactionSummaryById`; pending combinado con `reportPendingIds`.
+
+**Riesgo residual conocido:**
+- No hay test explícito de doble toggle en el mismo tick exacto; la protección actual se apoya en guard por ref interno + cobertura de pending durante request.
+
+**Tests obligatorios:**
+- unit tests de hook para blocked (`unauthenticated`, `own_review`, `reported`, `pending`), success y error.
+- integración en `CommunityReviewsPage` manteniendo contrato de contador público `Útil N` + no-auth sin acciones falsas.
+- integración en `MotorcycleCommunityPage` manteniendo tooltip/notice propia + pending combinado.
 
 ---
 

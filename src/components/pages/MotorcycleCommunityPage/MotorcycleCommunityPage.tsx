@@ -12,18 +12,19 @@ import {
 import {
   clearMyReviewReaction,
   getReviewReactionSummary,
-  toggleHelpfulReaction,
-  toggleNotHelpfulReaction,
   type ReviewReactionSummary,
 } from '../../../services/reviewReactionService';
-import {
-  createReviewReport,
-  getMyReviewReports,
-  type ReviewReportReason,
-} from '../../../services/reviewReportService';
+import { type ReviewReportReason } from '../../../services/reviewReportService';
 import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
+import {
+  buildReviewAuthContext,
+  isOwnReview,
+  upsertReactionSummaryById,
+} from '../../../shared/reviews/reviewCommunityActions';
+import { useReviewReports, type ReviewReportFormState } from '../../../shared/reviews/useReviewReports';
+import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
 import { formatReviewAggregate, formatReviewRating, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
 import { getTopCommunityItemsSafe, getMostCommonRidingStyleSafe } from '../../../shared/reviews/communityUtils';
 import type { Bike } from '../../../types/bike';
@@ -60,13 +61,6 @@ type OwnerReportsFilters = Readonly<{
 type ReactionSummaryMap = Record<string, ReviewReactionSummary>;
 type ReactionNotice = Readonly<{
   message: string;
-}>;
-type ReviewReportMap = Record<string, boolean>;
-type ReviewReportFormState = Readonly<{
-  comment: string;
-  isSubmitting: boolean;
-  reason: ReviewReportReason;
-  reviewId: string;
 }>;
 type HelpfulTooltipState = Readonly<{
   message: string;
@@ -696,11 +690,8 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   const [ownerReportsPage, setOwnerReportsPage] = useState(1);
   const [isOwnerReportFiltersOpen, setIsOwnerReportFiltersOpen] = useState(false);
   const [reactionSummaries, setReactionSummaries] = useState<ReactionSummaryMap>({});
-  const [reactionPendingIds, setReactionPendingIds] = useState<readonly string[]>([]);
   const [reactionNotice, setReactionNotice] = useState<ReactionNotice | null>(null);
   const [replyToast, setReplyToast] = useState<ReplyToastState | null>(null);
-  const [reportedReviewIds, setReportedReviewIds] = useState<ReviewReportMap>({});
-  const [reportForm, setReportForm] = useState<ReviewReportFormState | null>(null);
   const [helpfulTooltip, setHelpfulTooltip] = useState<HelpfulTooltipState | null>(null);
   const [replies, setReplies] = useState<Record<string, readonly ReviewReply[]>>({});
   const [replyForm, setReplyForm] = useState<ReplyFormState | null>(null);
@@ -768,9 +759,11 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   );
   const hasActiveOwnerFilters = hasActiveOwnerReportFilters(ownerReportFilters);
   const visibleOwnerReportIds = useMemo(() => paginatedOwnerReports.map((review) => review.id), [paginatedOwnerReports]);
-  const reactionAuthContext = isAuthenticated && user?.id && session?.access_token
-    ? { accessToken: session.access_token, userId: user.id }
-    : null;
+  const reactionAuthContext = buildReviewAuthContext({
+    accessToken: session?.access_token,
+    isAuthenticated,
+    userId: user?.id,
+  });
 
   useEffect(() => {
     if (ownerReportsPage > ownerReportsTotalPages) {
@@ -923,143 +916,117 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     };
   }, [visibleOwnerReportIds.join('|')]);
 
-  useEffect(() => {
-    if (!reactionAuthContext) {
-      setReportedReviewIds({});
-      setReportForm(null);
-      return undefined;
-    }
+  const clearReactionAfterReport = async ({
+    authContext,
+    reviewId,
+  }: Readonly<{
+    authContext: NonNullable<typeof reactionAuthContext>;
+    reviewId: string;
+  }>) => {
+    const cleanedSummary = await clearMyReviewReaction(reviewId, authContext);
+    setReactionSummaries((currentSummaries) => upsertReactionSummaryById(currentSummaries, cleanedSummary));
+  };
 
-    if (visibleOwnerReportIds.length === 0) {
-      return undefined;
-    }
+  const {
+    reportedReviewIds,
+    reportForm,
+    reportPendingIds,
+    openReportForm: openReportFormFromHook,
+    cancelReportForm,
+    updateReportReason: updateReportFormReason,
+    updateReportComment: updateReportFormComment,
+    submitReport: submitReportFromHook,
+  } = useReviewReports({
+    authContext: reactionAuthContext,
+    onClearReactionAfterReport: clearReactionAfterReport,
+    reviewIds: visibleOwnerReportIds,
+    userId: user?.id,
+  });
 
-    let isMounted = true;
-
-    getMyReviewReports(visibleOwnerReportIds, reactionAuthContext)
-      .then((reports) => {
-        if (!isMounted) {
-          return;
-        }
-
-        setReportedReviewIds((currentReports) => ({
-          ...currentReports,
-          ...Object.fromEntries(reports.map((report) => [report.reviewId, true])),
-        }));
-      })
-      .catch(() => {
-        if (isMounted) {
-          setReactionNotice({ message: 'No se pudo cargar el estado de reportes.' });
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, visibleOwnerReportIds.join('|')]);
+  const {
+    reactionPendingIds,
+    toggleHelpful: toggleHelpfulReactionForReview,
+    toggleNotHelpful: toggleNotHelpfulReactionForReview,
+  } = useReviewReactions({
+    authContext: reactionAuthContext,
+    isReported: (reviewId) => Boolean(reportedReviewIds[reviewId]),
+    userId: user?.id,
+  });
 
   const toggleHelpful = async (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
-      return;
-    }
+    const toggleResult = await toggleHelpfulReactionForReview(review);
 
-    if (reportedReviewIds[review.id]) {
-      showHelpfulTooltip(review.id, 'Ya reportaste esta review.');
-      return;
-    }
-
-    if (!reactionAuthContext) {
-      showHelpfulTooltip(review.id, 'Inicia sesión para marcar esta review como útil.');
+    if (toggleResult.outcome === 'blocked') {
+      if (toggleResult.reason === 'unauthenticated') {
+        showHelpfulTooltip(review.id, 'Inicia sesión para marcar esta review como útil.');
+      } else if (toggleResult.reason === 'reported') {
+        showHelpfulTooltip(review.id, 'Ya reportaste esta review.');
+      }
       return;
     }
 
     clearHelpfulTooltipTimers();
     setHelpfulTooltip(null);
-    setReactionNotice(null);
-    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
 
-    try {
-      const summary = await toggleHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => ({
-        ...currentSummaries,
-        [review.id]: summary,
-      }));
-    } catch (error) {
+    if (toggleResult.outcome === 'success') {
+      setReactionNotice(null);
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryById(currentSummaries, toggleResult.summary));
+      return;
+    }
+
+    if (toggleResult.outcome === 'error') {
       setReactionNotice({
-        message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción útil.',
+        message: toggleResult.error instanceof Error ? toggleResult.error.message : 'No se pudo actualizar la reacción útil.',
       });
-    } finally {
-      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
     }
   };
 
   const toggleNotHelpful = async (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
-      return;
-    }
+    const toggleResult = await toggleNotHelpfulReactionForReview(review);
 
-    if (reportedReviewIds[review.id]) {
-      showHelpfulTooltip(review.id, 'Ya reportaste esta review.');
-      return;
-    }
-
-    if (!reactionAuthContext) {
-      showHelpfulTooltip(review.id, 'Inicia sesión para valorar esta review.');
+    if (toggleResult.outcome === 'blocked') {
+      if (toggleResult.reason === 'unauthenticated') {
+        showHelpfulTooltip(review.id, 'Inicia sesión para valorar esta review.');
+      } else if (toggleResult.reason === 'reported') {
+        showHelpfulTooltip(review.id, 'Ya reportaste esta review.');
+      }
       return;
     }
 
     clearHelpfulTooltipTimers();
     setHelpfulTooltip(null);
-    setReactionNotice(null);
-    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
 
-    try {
-      const summary = await toggleNotHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => ({
-        ...currentSummaries,
-        [review.id]: summary,
-      }));
-    } catch (error) {
+    if (toggleResult.outcome === 'success') {
+      setReactionNotice(null);
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryById(currentSummaries, toggleResult.summary));
+      return;
+    }
+
+    if (toggleResult.outcome === 'error') {
       setReactionNotice({
-        message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción.',
+        message: toggleResult.error instanceof Error ? toggleResult.error.message : 'No se pudo actualizar la reacción.',
       });
-    } finally {
-      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
     }
   };
 
   const openReportForm = (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
+    const openResult = openReportFormFromHook(review);
+
+    if (openResult.ok) {
+      clearHelpfulTooltipTimers();
+      setHelpfulTooltip(null);
+      setReactionNotice(null);
       return;
     }
 
-    if (!reactionAuthContext) {
+    if (openResult.reason === 'unauthenticated') {
       showHelpfulTooltip(review.id, 'Inicia sesión para reportar esta review.');
       return;
     }
 
-    if (reportedReviewIds[review.id]) {
+    if (openResult.reason === 'already_reported') {
       showHelpfulTooltip(review.id, 'Ya has reportado esta review.');
-      return;
     }
-
-    clearHelpfulTooltipTimers();
-    setHelpfulTooltip(null);
-    setReactionNotice(null);
-    setReportForm({
-      comment: '',
-      isSubmitting: false,
-      reason: 'spam',
-      reviewId: review.id,
-    });
-  };
-
-  const updateReportFormReason = (reason: ReviewReportReason) => {
-    setReportForm((currentForm) => (currentForm ? { ...currentForm, reason } : currentForm));
-  };
-
-  const updateReportFormComment = (comment: string) => {
-    setReportForm((currentForm) => (currentForm ? { ...currentForm, comment } : currentForm));
   };
 
   const submitReport = async (review: MotorcycleReview) => {
@@ -1067,57 +1034,37 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
       return;
     }
 
-    setReportForm((currentForm) => (currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: true } : currentForm));
     setReactionNotice(null);
-    setReactionPendingIds((currentIds) => [...new Set([...currentIds, review.id])]);
+    const submitResult = await submitReportFromHook(review);
 
-    const applyReactionCleanup = async (messageOnError?: string) => {
-      try {
-        const cleanedSummary = await clearMyReviewReaction(review.id, reactionAuthContext);
-        setReactionSummaries((currentSummaries) => ({
-          ...currentSummaries,
-          [review.id]: cleanedSummary,
-        }));
-      } catch (cleanupError) {
+    if (submitResult.outcome === 'blocked') {
+      return;
+    }
+
+    if (submitResult.outcome === 'success') {
+      if (submitResult.cleanupError) {
+        setReactionNotice({ message: 'Reporte enviado, pero no se pudo actualizar tu reacción previa.' });
+      }
+      showHelpfulTooltip(review.id, 'Gracias. Revisaremos esta review.');
+      return;
+    }
+
+    if (submitResult.outcome === 'duplicate') {
+      if (submitResult.cleanupError) {
         setReactionNotice({
-          message: messageOnError ?? (cleanupError instanceof Error
-            ? cleanupError.message
-            : 'No se pudieron limpiar tus reacciones en esta review.'),
+          message: submitResult.cleanupError instanceof Error
+            ? submitResult.cleanupError.message
+            : 'No se pudieron limpiar tus reacciones en esta review.',
         });
       }
-    };
-
-    try {
-      await createReviewReport(
-        {
-          comment: reportForm.comment,
-          reason: reportForm.reason,
-          reviewId: review.id,
-        },
-        reactionAuthContext,
-      );
-      await applyReactionCleanup('Reporte enviado, pero no se pudo actualizar tu reacción previa.');
-      setReportedReviewIds((currentReports) => ({ ...currentReports, [review.id]: true }));
-      setReportForm(null);
-      showHelpfulTooltip(review.id, 'Gracias. Revisaremos esta review.');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'No se pudo enviar el reporte.';
-
-      if (message === 'Ya has reportado esta review.') {
-        await applyReactionCleanup();
-        setReportedReviewIds((currentReports) => ({ ...currentReports, [review.id]: true }));
-        setReportForm(null);
-        showHelpfulTooltip(review.id, message);
-        return;
-      }
-
-      setReportForm((currentForm) => (
-        currentForm && currentForm.reviewId === review.id ? { ...currentForm, isSubmitting: false } : currentForm
-      ));
-      setReactionNotice({ message });
-    } finally {
-      setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
+      showHelpfulTooltip(review.id, submitResult.message);
+      return;
     }
+
+    const message = submitResult.error instanceof Error
+      ? submitResult.error.message
+      : 'No se pudo enviar el reporte.';
+    setReactionNotice({ message });
   };
 
   const openReplyForm = (review: MotorcycleReview) => {
@@ -1358,11 +1305,11 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                         feedbackTooltipVisible={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.visible : false}
                         hasReported={Boolean(reportedReviewIds[review.id])}
                         index={(ownerReportsPage - 1) * OWNER_REPORTS_PER_PAGE + index}
-                        isOwnReview={Boolean(user?.id && review.userId === user.id)}
+                        isOwnReview={isOwnReview(review, user?.id)}
                         isReportFormOpen={reportForm?.reviewId === review.id}
-                        isReactionPending={reactionPendingIds.includes(review.id)}
+                        isReactionPending={reactionPendingIds.includes(review.id) || reportPendingIds.includes(review.id)}
                         key={review.id}
-                        onCancelReport={() => setReportForm(null)}
+                        onCancelReport={cancelReportForm}
                         onChangeReportComment={updateReportFormComment}
                         onChangeReportReason={updateReportFormReason}
                         onOpenReport={() => openReportForm(review)}

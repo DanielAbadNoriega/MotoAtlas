@@ -112,6 +112,8 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 - ownership (review propia vs ajena).
 - auth/no auth (sesión presente o no).
 - no-auth sin acciones clicables falsas/no-op.
+- no-auth muestra `Útil N` como elemento pasivo (sin botón de voto).
+- review propia muestra `Útil N` pasivo y chip `Propia`.
 - útil/no útil mutuamente excluyentes.
 - reportar una sola vez por usuario.
 - reportar limpia reacción previa del usuario.
@@ -124,6 +126,31 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 - deduplicación dentro de cada bloque editorial, no entre bloques.
 - si `FeaturedReviewCard` se usa en modo visual (sin infraestructura de acciones), confirmar explícitamente ausencia de botones Helpful/NotHelpful/Report/Reply y mantener CTAs reales.
 
-### Pendiente menor de cobertura
+Cobertura actual relevante:
 
-- Añadir test explícito para branch de reporte duplicado: mensaje `"Ya has reportado esta review."` en `CommunityReviewsPage`.
+- `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
+- `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
+- `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
+- `src/shared/reviews/useReviewReactions.test.tsx` cubre el hook compartido de reacciones:
+  - blocked (`unauthenticated`, `own_review`, `reported`, `pending`)
+  - success/error de Helpful y NotHelpful
+  - pending entra/sale y evita doble request durante la request
+- `src/shared/reviews/useReviewReports.test.tsx` cubre el hook compartido de reportes:
+  - hidratación con auth + ids normalizados
+  - guards (`unauthenticated`, `own_review`, `already_reported`)
+  - submit outcomes (`success`, `duplicate`, `blocked`, `error`)
+  - pending (`reportPendingIds`)
+  - `cleanupError` sin romper outcomes de éxito/duplicado
+- `src/shared/reviews/reviewCommunityActions.test.ts` cubre helpers puros compartidos:
+  - `buildReviewAuthContext`
+  - `isOwnReview`
+  - `isDuplicateReviewReportError`
+  - `markReportsByReviewId`
+  - `upsertReactionSummaryInList`
+  - `upsertReactionSummaryById`
+
+Pendiente/riesgo menor:
+- Existe reporte de flaky aislado en `AdminPage` (`no muestra paginación cuando hay 6 reportes o menos`); no se observó relación con consolidación de reacciones.
+- No hay test explícito para doble toggle en el mismo tick exacto; el hook usa ref interno y hay cobertura de pending en request.
+- La detección de reporte duplicado depende de un literal; si backend cambia el mensaje, debe actualizarse helper + test.
+- En hidratación de reportes, el hook compartido absorbe errores silenciosamente; si producto requiere feedback específico en UI, hay que añadir cobertura + contrato explícito por contenedor.

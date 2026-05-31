@@ -1462,7 +1462,7 @@ describe('CommunityReviewsPage', () => {
     });
 
 
-    it('usuario no autenticado no ve acciones comunitarias clicables sin efecto', async () => {
+    it('usuario no autenticado ve Útil en modo pasivo y no ve acciones clicables sin efecto', async () => {
       mockAuth({
         user: null,
         session: null,
@@ -1478,11 +1478,14 @@ describe('CommunityReviewsPage', () => {
 
       const featuredSection = getFeaturedSection();
       const card = within(featuredSection).getByTestId('featured-review-card');
+      expect(within(card).getByLabelText('Útil 2')).toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /útil/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /no útil/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
       expect(within(card).queryByRole('form', { name: /Reportar review/i })).not.toBeInTheDocument();
+      expect(toggleHelpfulReactionMock).not.toHaveBeenCalled();
+      expect(toggleNotHelpfulReactionMock).not.toHaveBeenCalled();
     });
 
     it('Click en reportar abre ReviewReportForm con Cancelar funcional', async () => {
@@ -1649,6 +1652,57 @@ describe('CommunityReviewsPage', () => {
       expect(within(card).getByText('Reportada')).toBeInTheDocument();
 
       const helpfulText = within(card).getByText(/Útil 4/i);
+      expect(helpfulText.closest('button')).not.toBeInTheDocument();
+    });
+
+    it('si reportar devuelve duplicado, marca como reportada, cierra form y limpia reacción previa', async () => {
+      const user = userEvent.setup();
+      mockAuth({
+        user: { id: 'user-1', email: 'rider@motoatlas.com' },
+        session: { access_token: 'session-token' },
+        isAuthenticated: true,
+      });
+      const reviews = [createCommunityReview({ id: 'report-duplicate-1', userId: 'other-user', motorcycle: { id: 'moto-1', brand: 'BMW', model: 'F 900 GS', year: 2024, imageUrl: '/bmw.webp', segment: 'trail', license: 'A' } })];
+      getApprovedCommunityReviewsMock.mockResolvedValue(reviews);
+      getReviewReactionSummaryMock.mockResolvedValue([{ reviewId: 'report-duplicate-1', helpfulCount: 5, hasReactedHelpful: true, hasReactedNotHelpful: false }]);
+      getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+      createReviewReportMock.mockRejectedValue(new Error('Ya has reportado esta review.'));
+      clearMyReviewReactionMock.mockResolvedValue({ reviewId: 'report-duplicate-1', helpfulCount: 3, hasReactedHelpful: false, hasReactedNotHelpful: false });
+
+      render(<CommunityReviewsPage />);
+      await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
+
+      const featuredSection = getFeaturedSection();
+      const card = within(featuredSection).getByTestId('featured-review-card');
+
+      await user.click(within(card).getByRole('button', { name: /Reportar review/i }));
+      expect(within(card).getByRole('form', { name: /Reportar review/i })).toBeInTheDocument();
+
+      await user.click(within(within(card).getByRole('form', { name: /Reportar review/i })).getByRole('button', { name: /Enviar reporte/i }));
+
+      await waitFor(() => {
+        expect(createReviewReportMock).toHaveBeenCalledWith(
+          expect.objectContaining({ reviewId: 'report-duplicate-1', reason: 'spam' }),
+          { accessToken: 'session-token', userId: 'user-1' },
+        );
+      });
+
+      await waitFor(() => {
+        expect(clearMyReviewReactionMock).toHaveBeenCalledWith(
+          'report-duplicate-1',
+          { accessToken: 'session-token', userId: 'user-1' },
+        );
+      });
+
+      expect(within(card).queryByRole('form', { name: /Reportar review/i })).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /Reportar review/i })).not.toBeInTheDocument();
+      expect(within(card).getByText('Reportada')).toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /Marcar como útil/i })).not.toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
+      expect(within(card).queryByText(/\bnull\b/i)).not.toBeInTheDocument();
+      expect(within(card).queryByText(/\bundefined\b/i)).not.toBeInTheDocument();
+
+      const helpfulText = within(card).getByText(/Útil 3/i);
       expect(helpfulText.closest('button')).not.toBeInTheDocument();
     });
 

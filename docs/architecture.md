@@ -101,6 +101,9 @@ src/
     images/
       getMotorcycleImage.ts
     reviews/
+      reviewCommunityActions.ts
+      useReviewReports.ts
+      useReviewReactions.ts
       reviewSourcePolicy.ts
       reviewUtils.ts
       topRatedMotorcycles.ts
@@ -628,6 +631,85 @@ No aplica en: `getReviewsByUserId` (cuenta), admin, moderación.
 - El promedio y contador se calculan con `src/shared/reviews/reviewUtils.ts`
 - `verified` solo puede ser `true` si lo marca un admin; inserciones públicas son `false`
 - `source` campo: `user` (real), `seed` (SQL demo), `mock` (script/JSON), `import` (importador masivo)
+
+### Helpers puros compartidos de acciones comunitarias (Fase A P1)
+
+Archivo:
+
+```txt
+src/shared/reviews/reviewCommunityActions.ts
+```
+
+Objetivo:
+- Compartir lógica pura entre `CommunityReviewsPage` y `MotorcycleCommunityPage` sin extraer todavía un hook monolítico.
+
+Reglas:
+- No depende de React.
+- No hace fetch.
+- No lee auth/context directamente.
+- No llama servicios.
+- Mantiene dos shapes de summaries:
+  - lista (`upsertReactionSummaryInList`)
+  - map/record (`upsertReactionSummaryById`)
+
+Nota de riesgo:
+- `isDuplicateReviewReportError` depende del literal `"Ya has reportado esta review."` para el caso duplicado.
+
+### Hook compartido de reportes comunitarios (Fase B P1)
+
+Archivo:
+
+```txt
+src/shared/reviews/useReviewReports.ts
+```
+
+Objetivo:
+- Consolidar flujo de reportes (`reportedReviewIds`, `reportForm`, `reportPendingIds`, hidratación, guards y submit outcomes) sin mezclar UI.
+
+Reglas:
+- Hook UI-agnóstico: no lee `useAuth`, no renderiza UI, no toca replies.
+- No decide feedback visual de cada página (tooltip/notice/copy).
+- No gestiona Helpful/NotHelpful, salvo cleanup opcional vía callback `onClearReactionAfterReport`.
+- No fuerza un shape único de reaction summaries; cada contenedor mantiene su helper:
+  - `CommunityReviewsPage` → `upsertReactionSummaryInList`
+  - `MotorcycleCommunityPage` → `upsertReactionSummaryById`
+
+Integraciones actuales:
+- `CommunityReviewsPage` usa el hook con UX silenciosa (sin acciones no-auth falsas/no-op).
+- `MotorcycleCommunityPage` usa el hook conservando UX propia (tooltips + `reactionNotice`) y pending combinado (`reactionPendingIds + reportPendingIds`).
+
+Riesgo residual:
+- En hidratación (`getMyReviewReports`) los errores se absorben silenciosamente; si se requiere notice explícito, hay que extender contrato/cobertura.
+
+### Hook compartido de reacciones comunitarias (Fase C P1)
+
+Archivo:
+
+```txt
+src/shared/reviews/useReviewReactions.ts
+```
+
+Objetivo:
+- Consolidar mutaciones Helpful/NotHelpful (guards + pending + outcomes) sin mezclar UI ni fetch de summaries.
+
+Reglas:
+- Hook UI-agnóstico: no lee `useAuth`, no renderiza UI, no decide copy/tooltips/notices.
+- No hace fetch inicial de reaction summaries.
+- No toca reportes ni replies.
+- No actualiza summaries externas; cada contenedor mantiene su shape:
+  - `CommunityReviewsPage` → `upsertReactionSummaryInList`
+  - `MotorcycleCommunityPage` → `upsertReactionSummaryById`
+- Outcomes del hook:
+  - `success` (incluye `summary`)
+  - `blocked` (`unauthenticated | own_review | reported | pending`)
+  - `error`
+
+Integraciones actuales:
+- `CommunityReviewsPage`: UX silenciosa; `Útil N` siempre visible como contador público (pasivo en no-auth/propia/reportada).
+- `MotorcycleCommunityPage`: UX con tooltip/notice propia; pending combinado (`reactionPendingIds + reportPendingIds`).
+
+Riesgo residual:
+- No hay test explícito para doble toggle en el mismo tick exacto; la mitigación actual usa guard por ref interno y cobertura de pending durante request.
 
 ## 11. Testing actual
 
