@@ -24,6 +24,13 @@ import {
 import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
+import {
+  buildReviewAuthContext,
+  isDuplicateReviewReportError,
+  isOwnReview,
+  markReportsByReviewId,
+  upsertReactionSummaryById,
+} from '../../../shared/reviews/reviewCommunityActions';
 import { formatReviewAggregate, formatReviewRating, getReviewAggregate, getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
 import { getTopCommunityItemsSafe, getMostCommonRidingStyleSafe } from '../../../shared/reviews/communityUtils';
 import type { Bike } from '../../../types/bike';
@@ -768,9 +775,11 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   );
   const hasActiveOwnerFilters = hasActiveOwnerReportFilters(ownerReportFilters);
   const visibleOwnerReportIds = useMemo(() => paginatedOwnerReports.map((review) => review.id), [paginatedOwnerReports]);
-  const reactionAuthContext = isAuthenticated && user?.id && session?.access_token
-    ? { accessToken: session.access_token, userId: user.id }
-    : null;
+  const reactionAuthContext = buildReviewAuthContext({
+    accessToken: session?.access_token,
+    isAuthenticated,
+    userId: user?.id,
+  });
 
   useEffect(() => {
     if (ownerReportsPage > ownerReportsTotalPages) {
@@ -942,10 +951,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
           return;
         }
 
-        setReportedReviewIds((currentReports) => ({
-          ...currentReports,
-          ...Object.fromEntries(reports.map((report) => [report.reviewId, true])),
-        }));
+        setReportedReviewIds((currentReports) => markReportsByReviewId(currentReports, reports));
       })
       .catch(() => {
         if (isMounted) {
@@ -959,7 +965,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   }, [reactionAuthContext?.accessToken, reactionAuthContext?.userId, visibleOwnerReportIds.join('|')]);
 
   const toggleHelpful = async (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
+    if (isOwnReview(review, user?.id)) {
       return;
     }
 
@@ -980,10 +986,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
 
     try {
       const summary = await toggleHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => ({
-        ...currentSummaries,
-        [review.id]: summary,
-      }));
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryById(currentSummaries, summary));
     } catch (error) {
       setReactionNotice({
         message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción útil.',
@@ -994,7 +997,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   };
 
   const toggleNotHelpful = async (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
+    if (isOwnReview(review, user?.id)) {
       return;
     }
 
@@ -1015,10 +1018,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
 
     try {
       const summary = await toggleNotHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => ({
-        ...currentSummaries,
-        [review.id]: summary,
-      }));
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryById(currentSummaries, summary));
     } catch (error) {
       setReactionNotice({
         message: error instanceof Error ? error.message : 'No se pudo actualizar la reacción.',
@@ -1029,7 +1029,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
   };
 
   const openReportForm = (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
+    if (isOwnReview(review, user?.id)) {
       return;
     }
 
@@ -1074,10 +1074,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     const applyReactionCleanup = async (messageOnError?: string) => {
       try {
         const cleanedSummary = await clearMyReviewReaction(review.id, reactionAuthContext);
-        setReactionSummaries((currentSummaries) => ({
-          ...currentSummaries,
-          [review.id]: cleanedSummary,
-        }));
+        setReactionSummaries((currentSummaries) => upsertReactionSummaryById(currentSummaries, cleanedSummary));
       } catch (cleanupError) {
         setReactionNotice({
           message: messageOnError ?? (cleanupError instanceof Error
@@ -1103,7 +1100,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo enviar el reporte.';
 
-      if (message === 'Ya has reportado esta review.') {
+      if (isDuplicateReviewReportError(message)) {
         await applyReactionCleanup();
         setReportedReviewIds((currentReports) => ({ ...currentReports, [review.id]: true }));
         setReportForm(null);
@@ -1358,7 +1355,7 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                         feedbackTooltipVisible={helpfulTooltip?.reviewId === review.id ? helpfulTooltip.visible : false}
                         hasReported={Boolean(reportedReviewIds[review.id])}
                         index={(ownerReportsPage - 1) * OWNER_REPORTS_PER_PAGE + index}
-                        isOwnReview={Boolean(user?.id && review.userId === user.id)}
+                        isOwnReview={isOwnReview(review, user?.id)}
                         isReportFormOpen={reportForm?.reviewId === review.id}
                         isReactionPending={reactionPendingIds.includes(review.id)}
                         key={review.id}

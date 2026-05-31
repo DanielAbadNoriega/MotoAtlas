@@ -49,6 +49,13 @@ import {
   type MotorcycleSegmentFilterValue,
 } from '../../../shared/filters/motorcycleFilterOptions';
 import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import {
+  buildReviewAuthContext,
+  isDuplicateReviewReportError,
+  isOwnReview,
+  markReportsByReviewId,
+  upsertReactionSummaryInList,
+} from '../../../shared/reviews/reviewCommunityActions';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import './CommunityReviewsPage.scss';
 
@@ -468,7 +475,7 @@ function EditorialReviewSection({
           {reviews.map((review) => {
             const summary = reactionSummaryByReviewId.get(review.id);
             const isPending = reactionPendingIds.includes(review.id);
-            const isOwnReview = review.userId !== null && userId !== null && review.userId === userId;
+            const isOwn = isOwnReview(review, userId);
             const hasReported = Boolean(reportedReviewIds[review.id]);
             const isReplyFormOpen = replyForm?.reviewId === review.id;
             const reviewReplies = replies[review.id] ?? [];
@@ -476,12 +483,12 @@ function EditorialReviewSection({
               (r) => r.status === 'approved' || (r.status === 'pending' && user?.id === r.userId),
             ).length;
             const isRepliesExpanded = Boolean(expandedReplyReviewIds[review.id]);
-            const canUseReactionActions = hasReactionAuth || isOwnReview;
+            const canUseReactionActions = hasReactionAuth || isOwn;
             const shouldRenderActionsSlot = canUseReactionActions || hasReactionAuth || visibleRepliesCount > 0;
             return (
               <FeaturedReviewCard
                 headingLevel={3}
-                isOwnReview={isOwnReview}
+                isOwnReview={isOwn}
                 key={review.id}
                 review={review}
                 aspects={aspectsByReviewId.get(review.id)}
@@ -490,7 +497,7 @@ function EditorialReviewSection({
                     {canUseReactionActions ? (
                       <HelpfulReviewAction
                         isBlocked={hasReported}
-                        isOwnReview={isOwnReview}
+                        isOwnReview={isOwn}
                         isPending={isPending}
                         onToggle={() => onToggleHelpful(review)}
                         summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
@@ -499,7 +506,7 @@ function EditorialReviewSection({
                     {hasReactionAuth ? (
                       <NotHelpfulReviewAction
                         isBlocked={hasReported}
-                        isOwnReview={isOwnReview}
+                        isOwnReview={isOwn}
                         isPending={isPending}
                         onToggle={() => onToggleNotHelpful(review)}
                         summary={summary ?? { helpfulCount: 0, hasReactedHelpful: false, hasReactedNotHelpful: false, reviewId: review.id }}
@@ -508,12 +515,12 @@ function EditorialReviewSection({
                     {hasReactionAuth ? (
                       <ReportReviewAction
                         hasReported={hasReported}
-                        isOwnReview={isOwnReview}
+                        isOwnReview={isOwn}
                         isPending={reportPendingIds.includes(review.id)}
                         onOpen={() => onOpenReport(review)}
                       />
                     ) : null}
-                    {hasReactionAuth && user && !isReplyFormOpen && !isOwnReview ? (
+                    {hasReactionAuth && user && !isReplyFormOpen && !isOwn ? (
                       <button
                         className="motorcycle-community__helpful-action motorcycle-community__reply-trigger"
                         onClick={() => onOpenReply(review)}
@@ -920,9 +927,11 @@ export function CommunityReviewsPage() {
   const replyToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [loadedReplyReviewIds, setLoadedReplyReviewIds] = useState<ReadonlySet<string>>(new Set());
 
-  const reactionAuthContext = isAuthenticated && user?.id && session?.access_token
-    ? { accessToken: session.access_token, userId: user.id }
-    : null;
+  const reactionAuthContext = buildReviewAuthContext({
+    accessToken: session?.access_token,
+    isAuthenticated,
+    userId: user?.id,
+  });
 
   const loadReviews = () => {
     setStatus('loading');
@@ -1089,10 +1098,7 @@ export function CommunityReviewsPage() {
           return;
         }
 
-        setReportedReviewIds((currentReports) => ({
-          ...currentReports,
-          ...Object.fromEntries(reports.map((report) => [report.reviewId, true])),
-        }));
+        setReportedReviewIds((currentReports) => markReportsByReviewId(currentReports, reports));
       })
       .catch(() => {
       });
@@ -1122,7 +1128,7 @@ export function CommunityReviewsPage() {
   };
 
   const toggleHelpful = async (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
+    if (isOwnReview(review, user?.id)) {
       return;
     }
 
@@ -1138,10 +1144,7 @@ export function CommunityReviewsPage() {
 
     try {
       const summary = await toggleHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => {
-        const filtered = currentSummaries.filter((s) => s.reviewId !== review.id);
-        return [...filtered, summary];
-      });
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, summary));
     } catch {
     } finally {
       setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
@@ -1149,7 +1152,7 @@ export function CommunityReviewsPage() {
   };
 
   const toggleNotHelpful = async (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
+    if (isOwnReview(review, user?.id)) {
       return;
     }
 
@@ -1165,10 +1168,7 @@ export function CommunityReviewsPage() {
 
     try {
       const summary = await toggleNotHelpfulReaction(review.id, reactionAuthContext);
-      setReactionSummaries((currentSummaries) => {
-        const filtered = currentSummaries.filter((s) => s.reviewId !== review.id);
-        return [...filtered, summary];
-      });
+      setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, summary));
     } catch {
     } finally {
       setReactionPendingIds((currentIds) => currentIds.filter((id) => id !== review.id));
@@ -1176,7 +1176,7 @@ export function CommunityReviewsPage() {
   };
 
   const openReportForm = (review: MotorcycleReview) => {
-    if (review.userId && user?.id && review.userId === user.id) {
+    if (isOwnReview(review, user?.id)) {
       return;
     }
 
@@ -1215,10 +1215,7 @@ export function CommunityReviewsPage() {
     const applyReactionCleanup = async () => {
       try {
         const cleanedSummary = await clearMyReviewReaction(review.id, reactionAuthContext);
-        setReactionSummaries((currentSummaries) => {
-          const filtered = currentSummaries.filter((s) => s.reviewId !== review.id);
-          return [...filtered, cleanedSummary];
-        });
+        setReactionSummaries((currentSummaries) => upsertReactionSummaryInList(currentSummaries, cleanedSummary));
       } catch {
       }
     };
@@ -1236,7 +1233,7 @@ export function CommunityReviewsPage() {
       setReportedReviewIds((currentReports: Record<string, boolean>) => ({ ...currentReports, [review.id]: true }));
       setReportForm(null);
     } catch (error) {
-      if (error instanceof Error && error.message === 'Ya has reportado esta review.') {
+      if (isDuplicateReviewReportError(error instanceof Error ? error.message : null)) {
         await applyReactionCleanup();
         setReportedReviewIds((currentReports: Record<string, boolean>) => ({ ...currentReports, [review.id]: true }));
         setReportForm(null);
