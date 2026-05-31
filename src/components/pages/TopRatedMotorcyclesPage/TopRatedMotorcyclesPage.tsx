@@ -21,6 +21,7 @@ import { getRankingConfidence } from '../../../shared/reviews/communityRankings'
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import './TopRatedMotorcyclesPage.scss';
 
 type TopRatedMotorcyclesPageProps = Readonly<{
@@ -269,19 +270,25 @@ function RecentReviews({ isLoading, recentReviews }: { isLoading: boolean; recen
       </div>
       <div className="top-rated__recent-list">
         {recentReviews.length > 0 ? recentReviews.slice(0, 3).map(({ bike, review }) => (
-          <article key={review.id}>
-            <div>
-              <span>{review.userName}</span>
-              <small>{getBikeDisplayName(bike)}</small>
-            </div>
-            <p>“{review.comment}”</p>
-            <div>
-              <span className="top-rated__rating-star" aria-hidden="true">★</span>
-              <small>{formatReviewRating(review.rating)}/5</small>
-            </div>
-          </article>
+          <FeaturedReviewCard
+            key={review.id}
+            headingLevel={3}
+            review={{
+              ...review,
+              motorcycle: {
+                id: bike.id,
+                brand: bike.brand,
+                model: bike.model,
+                year: bike.year,
+                imageUrl: bike.imageUrl,
+                license: bike.license,
+                segment: bike.segment,
+              },
+            }}
+            aspects={null}
+          />
         )) : (
-          <article>
+          <article className="top-rated__recent-empty">
             <div>
               <span>{isLoading ? 'Calibrando' : 'Sin reviews recientes'}</span>
               <small>Comunidad MotoAtlas</small>
