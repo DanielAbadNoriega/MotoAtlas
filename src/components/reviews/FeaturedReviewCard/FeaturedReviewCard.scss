@@ -182,18 +182,30 @@
 }
 
 .featured-review-card__comment {
+  margin: 0;
+  padding: 0.9rem;
   color: rgba($color-on-surface-variant, 0.9);
   font-style: italic;
+  font-size: 0.85rem;
   line-height: 1.5;
-  margin: 0;
+  background: rgba($color-surface-lowest, 0.38);
+  border: 1px solid rgba($color-outline-variant, 0.32);
+  border-left: 3px solid rgba($color-accent, 0.75);
+  border-radius: $radius-lg;
 }
 
 .featured-review-card__pros,
 .featured-review-card__cons {
+  margin: 0;
+  padding: 0.9rem;
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  background: rgba($color-surface-lowest, 0.38);
+  border: 1px solid rgba($color-outline-variant, 0.32);
+  border-left: 3px solid rgba($color-accent, 0.75);
+  border-radius: $radius-lg;
 }
 
 .featured-review-card__pros {
