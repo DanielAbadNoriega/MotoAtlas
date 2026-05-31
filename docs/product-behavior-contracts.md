@@ -297,6 +297,35 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 
 ---
 
+### 8.3 Hook compartido `useReviewReactions` (Fase C P1)
+
+**Contrato:**
+- Ubicación: `src/shared/reviews/useReviewReactions.ts`.
+- Centraliza solo mutaciones Helpful/NotHelpful:
+  - guards: `unauthenticated | own_review | reported | pending`
+  - pending por `reviewId`
+  - outcomes: `success | blocked | error`
+- Es UI-agnóstico:
+  - no lee `useAuth`
+  - no renderiza UI
+  - no decide tooltips/notices/copy
+  - no hace fetch inicial de summaries
+  - no toca reportes ni replies
+  - no actualiza summaries externas (cada contenedor mantiene su shape)
+- Integración por contenedor:
+  - `CommunityReviewsPage`: UX silenciosa; success actualiza con `upsertReactionSummaryInList`; `Útil N` se mantiene visible como contador público (pasivo cuando no hay permiso real).
+  - `MotorcycleCommunityPage`: UX con tooltip/notice propia; success actualiza con `upsertReactionSummaryById`; pending combinado con `reportPendingIds`.
+
+**Riesgo residual conocido:**
+- No hay test explícito de doble toggle en el mismo tick exacto; la protección actual se apoya en guard por ref interno + cobertura de pending durante request.
+
+**Tests obligatorios:**
+- unit tests de hook para blocked (`unauthenticated`, `own_review`, `reported`, `pending`), success y error.
+- integración en `CommunityReviewsPage` manteniendo contrato de contador público `Útil N` + no-auth sin acciones falsas.
+- integración en `MotorcycleCommunityPage` manteniendo tooltip/notice propia + pending combinado.
+
+---
+
 ## 9. Componentes presentacionales
 
 **Contrato:**

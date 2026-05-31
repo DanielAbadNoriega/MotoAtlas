@@ -103,6 +103,7 @@ src/
     reviews/
       reviewCommunityActions.ts
       useReviewReports.ts
+      useReviewReactions.ts
       reviewSourcePolicy.ts
       reviewUtils.ts
       topRatedMotorcycles.ts
@@ -679,6 +680,36 @@ Integraciones actuales:
 
 Riesgo residual:
 - En hidratación (`getMyReviewReports`) los errores se absorben silenciosamente; si se requiere notice explícito, hay que extender contrato/cobertura.
+
+### Hook compartido de reacciones comunitarias (Fase C P1)
+
+Archivo:
+
+```txt
+src/shared/reviews/useReviewReactions.ts
+```
+
+Objetivo:
+- Consolidar mutaciones Helpful/NotHelpful (guards + pending + outcomes) sin mezclar UI ni fetch de summaries.
+
+Reglas:
+- Hook UI-agnóstico: no lee `useAuth`, no renderiza UI, no decide copy/tooltips/notices.
+- No hace fetch inicial de reaction summaries.
+- No toca reportes ni replies.
+- No actualiza summaries externas; cada contenedor mantiene su shape:
+  - `CommunityReviewsPage` → `upsertReactionSummaryInList`
+  - `MotorcycleCommunityPage` → `upsertReactionSummaryById`
+- Outcomes del hook:
+  - `success` (incluye `summary`)
+  - `blocked` (`unauthenticated | own_review | reported | pending`)
+  - `error`
+
+Integraciones actuales:
+- `CommunityReviewsPage`: UX silenciosa; `Útil N` siempre visible como contador público (pasivo en no-auth/propia/reportada).
+- `MotorcycleCommunityPage`: UX con tooltip/notice propia; pending combinado (`reactionPendingIds + reportPendingIds`).
+
+Riesgo residual:
+- No hay test explícito para doble toggle en el mismo tick exacto; la mitigación actual usa guard por ref interno y cobertura de pending durante request.
 
 ## 11. Testing actual
 

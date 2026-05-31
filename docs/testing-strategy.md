@@ -131,6 +131,10 @@ Cobertura actual relevante:
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
 - `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
+- `src/shared/reviews/useReviewReactions.test.tsx` cubre el hook compartido de reacciones:
+  - blocked (`unauthenticated`, `own_review`, `reported`, `pending`)
+  - success/error de Helpful y NotHelpful
+  - pending entra/sale y evita doble request durante la request
 - `src/shared/reviews/useReviewReports.test.tsx` cubre el hook compartido de reportes:
   - hidratación con auth + ids normalizados
   - guards (`unauthenticated`, `own_review`, `already_reported`)
@@ -146,5 +150,7 @@ Cobertura actual relevante:
   - `upsertReactionSummaryById`
 
 Pendiente/riesgo menor:
+- Existe reporte de flaky aislado en `AdminPage` (`no muestra paginación cuando hay 6 reportes o menos`); no se observó relación con consolidación de reacciones.
+- No hay test explícito para doble toggle en el mismo tick exacto; el hook usa ref interno y hay cobertura de pending en request.
 - La detección de reporte duplicado depende de un literal; si backend cambia el mensaje, debe actualizarse helper + test.
 - En hidratación de reportes, el hook compartido absorbe errores silenciosamente; si producto requiere feedback específico en UI, hay que añadir cobertura + contrato explícito por contenedor.
