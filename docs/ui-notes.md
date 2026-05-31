@@ -37,6 +37,13 @@ Filtros disponibles:
 
 Limitación actual: la tendencia no usa una serie temporal real; es una señal simple basada en rating y volumen de reviews. No se muestran reviews `pending`, `rejected` ni `hidden`.
 
+Bloque `Reviews recientes` en esta página:
+- reutiliza `FeaturedReviewCard` (sin tocar su SCSS interno).
+- muestra máximo 3 reviews recientes (`slice(0, 3)`) ordenadas por fecha descendente.
+- mantiene empty state cuando no hay reviews.
+- mantiene CTA de sección `Ver todas las reviews` (`#/comunidad/reviews`) y CTAs de card `Más reviews` / `Ver ficha`.
+- en esta fase NO integra acciones comunitarias (Helpful/NotHelpful/Report/Replies) ni handlers no-op.
+
 ## Buscador
 
 La ruta `#/buscador` pagina el listado a 9 motos por página. La paginación se calcula después de aplicar búsqueda, filtros y ordenación, mientras el contador conserva el total filtrado.
@@ -47,7 +54,7 @@ El compare tray del buscador muestra mini-slots de motos seleccionadas y skeleto
 
 ## Comunidad landing
 
-La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing.
+La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` en modo visual (sin acciones comunitarias conectadas en esta página).
 
 ## Comunidad — Rankings
 
@@ -95,7 +102,7 @@ Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews 
 
 **Criterio `Reviews destacadas`:** prioriza utilidad comunitaria (votos `Útil`). Criterio: 1) `helpfulCount` desc, 2) rating desc, 3) comentario más largo, 4) más reciente. Si no hay votos útiles (o fallan las reactions), usa fallback por rating/fecha/completitud — nunca queda vacío. **Los kilómetros declarados NO son criterio** para destacar. `Últimos reportes` es cronológico puro (fecha desc), no usa helpfulCount. Cada bloque editorial deduplica internamente por `motorcycleId`; no hay deduplicación editorial↔garaje.
 
-Los bloques editoriales reutilizan `AccountReviewCard`: `community` muestra alias público, rating, metadatos y oculta estado; `communityCompact` muestra 2 items por sección con densidad mayor. El garaje usa cards de moto agrupada con fondo completo, rating medio /5 con estrella y shield de confianza. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile.
+Los bloques editoriales superiores reutilizan `FeaturedReviewCard` (alias público, rating, metadatos y body expandible con comentario/pros/contras/aspectos cuando existan). El garaje usa cards de moto agrupada con fondo completo, rating medio /5 con estrella y shield de confianza. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile.
 
 Las `FeaturedReviewCard` de reviews destacadas y últimos reportes tienen acciones comunitarias reales: Helpful, NotHelpful, Report (con formulario) y Reply (con lazy loading por review). Si la review es propia, muestra chip `Propia` en la zona de acciones en vez de los botones interactivos. Fotos de usuario quedan para fases futuras.
 

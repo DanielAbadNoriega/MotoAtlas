@@ -105,9 +105,9 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 ## 6. FeaturedReviewCard
 
 **Contrato:**
-- Se usa en bloques editoriales de `#/comunidad/reviews`:
-  - `Reviews destacadas`
-  - `Últimos reportes`
+- Se reutiliza en dos modos:
+  - **Modo interactivo** en `#/comunidad/reviews` (`Reviews destacadas` y `Últimos reportes`), con acciones comunitarias reales conectadas desde la página contenedora.
+  - **Modo visual** en `TopRatedMotorcyclesPage` (`#/comunidad` y `#/motos-mejor-valoradas`, bloque `Reviews recientes`), sin `actionsSlot`, sin `reportContentSlot` y sin wiring de replies.
 - No sustituye globalmente a `AccountReviewCard`.
 - Debe mantener imagen visible de la moto.
 - Header siempre visible:
@@ -121,10 +121,12 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
   - contras completos
   - `ReviewAspectSummary` si hay aspectos.
 - Footer siempre visible:
-  - autor
-  - acciones comunitarias reales (Helpful, NotHelpful, Report, Reply)
-  - chip `Propia` si es review propia
   - CTAs `Ver ficha` y `Más reviews`.
+- En **modo interactivo**:
+  - mostrar acciones comunitarias reales (Helpful, NotHelpful, Report, Reply) cuando haya infraestructura real.
+  - mostrar chip `Propia` si es review propia.
+- En **modo visual**:
+  - no renderizar acciones comunitarias falsas ni botones sin lógica real.
 - Pros/contras no usan tooltip; se muestran completos dentro del body.
 - El header actúa como trigger accesible:
   - `aria-expanded`
@@ -140,6 +142,7 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 - renderiza `ReviewAspectSummary` si hay aspectos.
 - mantiene imagen visible.
 - mantiene CTAs.
+- en modo visual (TopRated RecentReviews): no renderiza acciones comunitarias falsas y no muestra texto literal `null`/`undefined`.
 
 ---
 

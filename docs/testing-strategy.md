@@ -119,3 +119,4 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 - no texto literal `null`/`undefined`.
 - filtros solo afectan la sección que deben afectar.
 - deduplicación dentro de cada bloque editorial, no entre bloques.
+- si `FeaturedReviewCard` se usa en modo visual (sin infraestructura de acciones), confirmar explícitamente ausencia de botones Helpful/NotHelpful/Report/Reply y mantener CTAs reales.

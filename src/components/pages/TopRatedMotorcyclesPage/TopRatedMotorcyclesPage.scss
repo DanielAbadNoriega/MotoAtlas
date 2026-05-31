@@ -792,7 +792,7 @@
   }
 }
 
-.top-rated__recent-list article {
+.top-rated__recent-list .top-rated__recent-empty {
   background: rgba($color-surface-container, 0.3);
   border-left: 1px solid rgba($color-outline-variant, 0.8);
   padding: 1.5rem;
@@ -820,21 +820,6 @@
     font-size: 0.92rem;
     font-style: italic;
     line-height: 1.7;
-  }
-
-  > div:last-child {
-    align-items: center;
-    display: flex;
-    gap: 0.35rem;
-    margin-top: 1rem;
-
-    .top-rated__rating-star {
-      color: $color-accent;
-      font-family: inherit;
-      font-size: 1rem;
-      line-height: 1;
-      text-shadow: 0 0 10px rgba($color-accent, 0.35);
-    }
   }
 }
 
@@ -1193,11 +1178,16 @@
     margin-block: 3rem;
   }
 
-  .top-rated__recent-list article > div:first-child {
-    align-items: start;
-    flex-direction: column;
-    gap: 0.35rem;
+  .top-rated__recent-list article {
+    min-height: 13rem;
+
+    > div:first-child {
+      align-items: start;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
   }
+  
 
   .top-rated__active-header,
   .top-rated__recent-header {

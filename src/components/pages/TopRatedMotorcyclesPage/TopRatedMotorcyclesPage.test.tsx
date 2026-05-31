@@ -238,13 +238,64 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(screen.getByRole('link', { name: /Ver rankings completos/i })).toHaveAttribute('href', '#/comunidad/rankings');
   });
 
-  it('usa estrella real en las puntuaciones de Reviews recientes', async () => {
+  it('RecentReviews renderiza FeaturedReviewCard con contenido principal y CTAs', async () => {
+    const user = userEvent.setup();
     await renderPage();
 
-    const recentReview = screen.getAllByText(/Fantástica para viajar con equipaje/i)[0].closest('article');
+    const recentSection = screen.getByRole('heading', { name: /Reviews recientes/i }).closest('section');
 
-    expect(recentReview).not.toBeNull();
-    expect(within(recentReview as HTMLElement).queryByText('star')).not.toBeInTheDocument();
-    expect(within(recentReview as HTMLElement).getByText('★')).toBeInTheDocument();
+    expect(recentSection).not.toBeNull();
+
+    const recentScope = within(recentSection as HTMLElement);
+    expect(recentScope.getByRole('link', { name: /Ver todas las reviews/i })).toHaveAttribute('href', '#/comunidad/reviews');
+
+    const cards = recentScope.getAllByTestId('featured-review-card');
+    expect(cards).toHaveLength(3);
+
+    const firstCard = cards[0] as HTMLElement;
+    expect(within(firstCard).getByRole('heading', { level: 3, name: /BMW F 900 GS/i })).toBeInTheDocument();
+    expect(within(firstCard).getByLabelText(/Rating 4 de 5/i)).toBeInTheDocument();
+    expect(within(firstCard).queryByText('star')).not.toBeInTheDocument();
+    expect(within(firstCard).getByText('★')).toBeInTheDocument();
+
+    await user.click(within(firstCard).getByRole('button'));
+
+    expect(within(firstCard).getByText(/Fantástica para viajar con equipaje\./i)).toBeInTheDocument();
+    expect(within(firstCard).getByRole('link', { name: 'Más reviews' })).toHaveAttribute('href', '#/comunidad/test-bmw-f-900-gs');
+    expect(within(firstCard).getByRole('link', { name: 'Ver ficha' })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+  });
+
+  it('RecentReviews no muestra acciones comunitarias ni textos null/undefined', async () => {
+    mockReviews({
+      [bikeFixtures[0].id]: [
+        createApprovedReviewFixture({
+          id: 'bmw-null-values',
+          motorcycleId: bikeFixtures[0].id,
+          pros: ['null' as unknown as string],
+          cons: ['undefined' as unknown as string],
+        }),
+      ],
+      [bikeFixtures[1].id]: reviewsById[bikeFixtures[1].id] ?? [],
+      [bikeFixtures[2].id]: reviewsById[bikeFixtures[2].id] ?? [],
+      [bikeFixtures[3].id]: reviewsById[bikeFixtures[3].id] ?? [],
+    });
+
+    const user = userEvent.setup();
+    await renderPage();
+
+    const recentSection = screen.getByRole('heading', { name: /Reviews recientes/i }).closest('section');
+    expect(recentSection).not.toBeNull();
+
+    const firstCard = within(recentSection as HTMLElement).getAllByTestId('featured-review-card')[0] as HTMLElement;
+    await user.click(within(firstCard).getByRole('button'));
+
+    expect(within(firstCard).queryByRole('button', { name: /Útil/i })).not.toBeInTheDocument();
+    expect(within(firstCard).queryByRole('button', { name: /No útil/i })).not.toBeInTheDocument();
+    expect(within(firstCard).queryByRole('button', { name: /Reportar/i })).not.toBeInTheDocument();
+    expect(within(firstCard).queryByRole('button', { name: /Responder/i })).not.toBeInTheDocument();
+    expect(within(firstCard).queryByText(/^Pros:/)).not.toBeInTheDocument();
+    expect(within(firstCard).queryByText(/^Contras:/)).not.toBeInTheDocument();
+    expect(within(firstCard).queryByText(/\bnull\b/i)).not.toBeInTheDocument();
+    expect(within(firstCard).queryByText(/\bundefined\b/i)).not.toBeInTheDocument();
   });
 });
