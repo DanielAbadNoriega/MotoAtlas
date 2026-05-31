@@ -28,9 +28,23 @@ Breve y práctica: reglas mínimas para usar Codex/Copilot en este repo.
   - Ver `docs/product-behavior-contracts.md` antes de extraer o reutilizar comportamiento de reviews, acciones comunitarias o cards.
   - Regla: no dejar acciones clicables con handlers no-op. Si no hay handler real, no renderizar la acción o deshabilitarla claramente.
 
+- Flujo recomendado de agentes
+  - Secuencia por defecto: `Auditor → Safe Builder → Quality Gate → Docs Sync`.
+  - Excepciones:
+    - schema/RLS/Supabase: `MotoAtlas-Supabase-Guard`.
+    - auditoría global: `MotoAtlas-Global-Auditor` (si existe) o `MotoAtlas-Page-Auditor` en modo global.
+    - polish SCSS/UI: `MotoAtlas-Safe-Builder` + `frontend-design` / `accessibility`.
+  - Referencia completa: `docs/agents-runbook.md`.
+
+- Modelos (regla rápida)
+  - `MiniMax M2.7`: bajo/medio riesgo, tareas mecánicas y docs.
+  - `GPT-5.3 Codex`: implementación real, refactors, handlers y tests.
+  - `GPT-5.4/GPT-5.5`: auditoría, planificación y arquitectura.
+  - Modelos free: solo tareas simples y no críticas.
+
 - Rutas principales (referencia en repo)
   - Cuenta: `#/login` y páginas que usan `account-page`.
-  - Comunidad: `#/motos` y fichas `#/motos/:id`.
+  - Comunidad: `#/comunidad`, `#/comunidad/reviews` y fichas `#/comunidad/:id`.
   - Admin: `#/admin`, `#/admin/moderacion`, `#/admin/reviews`.
 
 - Patrones UI a preferir

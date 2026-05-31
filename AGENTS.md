@@ -160,6 +160,7 @@ Regla crítica: scripts usan `SUPABASE_SERVICE_ROLE_KEY` de `.env.import`, NUNCA
 - `docs/admin.md` — admin en detalle
 - `docs/ui-notes.md` — páginas y componentes
 - `docs/codex-guidelines.md` — reglas mínimas Codex/Copilot
+- `docs/agents-runbook.md` — runbook operativo de agentes, skills y modelos
 - `docs/motorcycle-data-inventory.md` — inventario de campos Bike
 - `docs/motorcycle-import-workflow.md` — flujo importación
 - `docs/mock-data.md` — utilidades mock reviews
@@ -213,6 +214,31 @@ Debe revisar:
 
 Se usa para confirmar que un bloque queda cerrado antes de seguir.
 
+### `MotoAtlas-Docs-Sync`
+
+Sincronización documental tras cambios ya aprobados. Se usa **después** de un `MotoAtlas-Quality-Gate` aprobado para alinear docs con el estado real implementado.
+
+Reglas de uso:
+- cuándo usarlo: cambios funcionales aprobados que afectan comportamiento, arquitectura, testing o flujos.
+- cuándo NO usarlo: para implementar features, corregir bugs de app o tocar schema/RLS.
+- modelo recomendado: `MiniMax M2.7` para actualización mecánica de docs; `GPT-5.3 Codex` cuando haya contradicciones o decisiones documentales más delicadas.
+- no tocar: código fuente, tests, estilos, schema/RLS/Supabase.
+
+## Runbook operativo (agentes/skills/modelos)
+
+Secuencia oficial por defecto:
+
+```txt
+Auditor → Safe Builder → Quality Gate → Docs Sync
+```
+
+Excepciones:
+- Supabase/RLS → `MotoAtlas-Supabase-Guard`
+- Auditoría global → `MotoAtlas-Global-Auditor` (cuando exista) o `MotoAtlas-Page-Auditor` en modo global controlado
+- CSS/UI polish → `MotoAtlas-Safe-Builder` + skills `frontend-design` / `accessibility`
+
+Detalle completo en `docs/agents-runbook.md`.
+
 ## Skills externas
 
 Prioridad: 1. usuario, 2. AGENTS.md, 3. docs del repo, 4. skills externas, 5. preferencias del modelo.
@@ -250,6 +276,26 @@ No hagas build, commit ni push.
 Tarea: ...
 Alcance: schema/RLS/servicio/tests relacionados.
 No implementar UI todavía.
+Ejecuta typecheck y test.
+No hagas build, commit ni push.
+```
+
+### Quality Gate
+```text
+@MotoAtlas-Quality-Gate
+
+Valida el bloque recién aplicado.
+Ejecuta typecheck y test.
+No agregues features.
+No hagas build, commit ni push.
+```
+
+### Docs Sync
+```text
+@MotoAtlas-Docs-Sync
+
+Sincroniza docs tras Quality Gate aprobado.
+No toques código/tests/estilos/schema.
 Ejecuta typecheck y test.
 No hagas build, commit ni push.
 ```
