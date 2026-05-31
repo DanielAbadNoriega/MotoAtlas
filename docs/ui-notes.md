@@ -104,7 +104,7 @@ Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews 
 
 Los bloques editoriales superiores reutilizan `FeaturedReviewCard` (alias público, rating, metadatos y body expandible con comentario/pros/contras/aspectos cuando existan). El garaje usa cards de moto agrupada con fondo completo, rating medio /5 con estrella y shield de confianza. Los filtros replican el patrón visual del buscador: grupos con botones/chips, rating con estrellas y panel inferior en mobile.
 
-Las `FeaturedReviewCard` de reviews destacadas y últimos reportes tienen acciones comunitarias reales: Helpful, NotHelpful, Report (con formulario) y Reply (con lazy loading por review). Si la review es propia, muestra chip `Propia` en la zona de acciones en vez de los botones interactivos. Fotos de usuario quedan para fases futuras.
+Las `FeaturedReviewCard` de reviews destacadas y últimos reportes tienen acciones comunitarias reales: Helpful, NotHelpful, Report (con formulario) y Reply (con lazy loading por review). Si la review es propia, muestra chip `Propia` en la zona de acciones en vez de los botones interactivos. En no-auth no se renderizan acciones clicables falsas (sin handlers no-op). El bloqueo de reacciones se calcula desde `reportedReviewIds` (`getMyReviewReports`): si una review ya fue reportada, Helpful/NotHelpful quedan bloqueadas. Al reportar, la reacción previa del usuario se limpia con `clearMyReviewReaction` y la review queda bloqueada para nuevas reacciones. Fotos de usuario quedan para fases futuras.
 
 Los filtros de segmento/carnet usan las mismas constantes visuales que el buscador; `Sport` usa `speed`, `Touring` usa `explore` y el carnet se presenta como `Carnet A2`, `Carnet A`, `A2 limitable`.
 

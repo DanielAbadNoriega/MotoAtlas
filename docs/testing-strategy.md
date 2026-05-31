@@ -111,8 +111,11 @@ Ver `docs/product-behavior-contracts.md` para contratos de comportamiento de pro
 Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben validar:
 - ownership (review propia vs ajena).
 - auth/no auth (sesión presente o no).
+- no-auth sin acciones clicables falsas/no-op.
 - útil/no útil mutuamente excluyentes.
 - reportar una sola vez por usuario.
+- reportar limpia reacción previa del usuario.
+- review reportada bloquea Helpful/NotHelpful (`isBlocked` derivado de estado real).
 - no autoreacción ni autoreporte.
 - pending states bloquean interacción.
 - ausencia de handlers no-op.
@@ -120,3 +123,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 - filtros solo afectan la sección que deben afectar.
 - deduplicación dentro de cada bloque editorial, no entre bloques.
 - si `FeaturedReviewCard` se usa en modo visual (sin infraestructura de acciones), confirmar explícitamente ausencia de botones Helpful/NotHelpful/Report/Reply y mantener CTAs reales.
+
+### Pendiente menor de cobertura
+
+- Añadir test explícito para branch de reporte duplicado: mensaje `"Ya has reportado esta review."` en `CommunityReviewsPage`.

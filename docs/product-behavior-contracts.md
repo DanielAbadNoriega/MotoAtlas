@@ -163,6 +163,7 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 - Si no hay sesión:
   - no llamar servicios con auth incompleto.
   - no dejar botones clicables sin efecto.
+  - en `#/comunidad/reviews`, no renderizar acciones comunitarias interactivas (Helpful/NotHelpful/Report/Reply) para evitar no-op silencioso.
 - Útil y No útil:
   - mutuamente excluyentes.
   - pending bloquea doble click.
@@ -171,6 +172,12 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
   - no doble reporte.
   - formulario real.
   - submit con servicio real.
+  - al reportar exitosamente, limpiar reacción previa del usuario (`clearMyReviewReaction`).
+  - si devuelve duplicado (`"Ya has reportado esta review."`), mantener estado reportado y aplicar cleanup de reacción.
+- Estado reportada / bloqueo:
+  - `isBlocked` debe derivarse de estado real de reportes (`reportedReviewIds`), no hardcode.
+  - si la review ya está reportada por el usuario actual, bloquear Helpful/NotHelpful.
+  - tras reportar, no permitir nuevas reacciones sobre esa review.
 - Respuestas:
   - integradas con servicio real en `#/comunidad/reviews`.
   - lazy loading por review (no carga todas de golpe, no recarga ya cargadas).
@@ -192,6 +199,9 @@ Contratos de comportamiento ya definidos. Si una futura atomización, refactor o
 - no handler no-op.
 - útil/no útil excluyentes.
 - reportar una sola vez.
+- reportar limpia reacción previa.
+- review reportada bloquea Helpful/NotHelpful.
+- branch duplicado (`"Ya has reportado esta review."`) con comportamiento consistente.
 - pending disabled.
 - no texto literal `null`/`undefined`.
 
