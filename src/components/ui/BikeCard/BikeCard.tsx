@@ -1,5 +1,6 @@
 import { cardActions } from '../../../data/home';
 import { getBikeCardSpecs, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import { MotorcycleImage } from '../MotorcycleImage';
@@ -11,6 +12,7 @@ type BikeCardProps = {
 
 export function BikeCard({ bike }: BikeCardProps) {
   const specs = getBikeCardSpecs(bike);
+  const segmentLabel = segmentLabels[bike.segment] ?? 'Segmento desconocido';
 
   return (
     <article className="bike-card">
@@ -21,7 +23,7 @@ export function BikeCard({ bike }: BikeCardProps) {
       <div className="bike-card__body">
         <div className="bike-card__header">
           <h3>{getBikeDisplayName(bike)}</h3>
-          <span>{bike.segment}</span>
+          <span>{segmentLabel}</span>
         </div>
 
         <dl className="bike-card__specs">

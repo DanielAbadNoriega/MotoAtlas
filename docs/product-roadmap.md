@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1002 passed`.
+- Tests de referencia: `1004 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -174,6 +174,9 @@ Implementado en Fase 3.1:
   - secundarios → `other`;
   - grupos visibles → targets canónicos válidos.
 - Estrategia compacta reusable centralizada sin abrir 16 chips públicos.
+- Guardrail UI legacy aplicado en `BikeCard`:
+  - evita render de slug crudo (`bike.segment`);
+  - muestra label amigable desde `segmentLabels` con fallback controlado.
 
 Pendiente de Fase 4:
 - admin catálogo con 16 categorías explícitas;

@@ -58,6 +58,13 @@ Estrategia vigente de segmentos en UI pública:
 
 El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante.
 
+## Cards legacy — `BikeCard`
+
+Guardrail UI aplicado:
+- `BikeCard` no muestra slugs técnicos de segmento (`sport-touring`, `neo-retro`, etc.).
+- El segmento visible se renderiza con label amigable desde `segmentLabels`.
+- Si faltara label, usa fallback controlado `Segmento desconocido` (sin `undefined` visible).
+
 ## Ficha de moto — Quick specs (backlog)
 
 Estado: backlog estratégico / futuro cercano.
