@@ -143,18 +143,36 @@ Este bloque agrupa herramientas internas y bases de plataforma necesarias para e
 
 ### Tarea transversal: Taxonomía de segmentos de motos
 
-Estado: cierre por fases en progreso (F0/F1 cerradas; F2 parcialmente aplicada; F3/F4 pendientes).
+Estado: cierre por fases en progreso (F0/F1 cerradas; F2 parcialmente aplicada; F3 auditoría cerrada; F3.1/F4 pendientes).
 
 Fases de cierre (estado actualizado):
 - Fase 0 — Auditoría inicial: **cerrada**.
 - Fase 1 — Guardrails/tests de contrato: **cerrada**.
 - Fase 2 — Saneo puntual de datos y clasificaciones dudosas: **parcialmente aplicada**.
-- Fase 3 — Estrategia final de filtros (`primary + other` vs 16 categorías explícitas): **pendiente**.
+- Fase 3 — Auditoría de estrategia final de filtros: **cerrada**.
+- Fase 3.1 — Formalización de estrategia final (`canónico vs visible`) y criterios de exposición: **pendiente**.
 - Fase 4 — Preparación SEO/Admin/landings por categoría: **pendiente**.
 
 Caso aplicado en Fase 2:
 - `cfmoto-800mt-x-2025`: `segment` corregido de `naked` a `trail` por warning explícito del merge report (modelo apuntaba a `trail/adventure`).
-- La frontera semántica `trail` vs `adventure` queda como deuda de producto para Fase 3.
+- La frontera semántica `trail` vs `adventure` queda como deuda de producto para Fase 4.
+
+Resultado de Fase 3 (auditoría):
+- Recomendación estratégica: **híbrida**.
+- Mantener ahora UI pública compacta con `primary + other`.
+- Conservar taxonomía canónica de 16 segmentos como fuente de verdad.
+- No abrir 16 chips públicos en buscador/comunidad/cuenta/admin hasta tener cobertura de catálogo suficiente y criterios claros de UX.
+- Hallazgo clave: hoy ya existe estrategia mixta (compacto en varias vistas y 16 explícitas en rankings), por lo que Fase 3.1 debe cerrar ese drift de forma deliberada.
+
+Pendiente de Fase 3.1:
+- formalizar `segmento canónico` vs `grupo visible de filtro`;
+- unificar criterio cross-page para evitar drift;
+- definir thresholds de catálogo/uso para exponer categorías explícitas.
+
+Pendiente de Fase 4:
+- admin catálogo con 16 categorías explícitas;
+- landings SEO por categoría;
+- decisión final `trail` vs `adventure` con contrato de producto.
 
 Objetivo:
 Cerrar una taxonomía clara de segmentos para que el catálogo sea coherente y escalable.

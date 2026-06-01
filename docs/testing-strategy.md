@@ -106,6 +106,12 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
+Pendiente recomendado (Fase 3.1):
+- añadir tests de mapping `segmento canónico` → `grupo visible de filtro`;
+- añadir tests cross-page para evitar drift entre:
+  - vistas compactas (`Search`, `CommunityReviews`, `AccountReviews`, `Admin`);
+  - vistas con exposición explícita de segmentos (`TopRated`, `CommunityRankings`).
+
 ## Cómo mockear Supabase y fetch
 
 Servicios frontend:
