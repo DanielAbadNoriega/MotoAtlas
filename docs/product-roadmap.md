@@ -221,6 +221,60 @@ Reglas críticas:
 - El frontend **NO** ejecuta scripts con claves sensibles.
 - Nunca exponer `SUPABASE_SERVICE_ROLE_KEY`.
 
+### Automatización avanzada del pipeline de imágenes
+
+Estado:
+- backlog estratégico / futuro.
+
+Objetivo:
+Evolucionar el pipeline actual de imágenes para mejorar rendimiento, SEO, maquetación responsive y escalabilidad del catálogo.
+
+Base actual:
+- imágenes locales por `motorcycle.id`;
+- normalización a WebP;
+- sync de `image_url` / `image_source`;
+- respeto de `image_locked`;
+- dry-run en scripts de normalización/sync.
+
+Mejoras previstas:
+- generar thumbnails;
+- generar variantes desktop/mobile;
+- optimización Lighthouse;
+- validación de dimensiones;
+- compresión avanzada;
+- detectar imágenes mal nombradas;
+- detectar imágenes sin correspondencia con `motorcycle.id`;
+- marcar correctamente `image_source`;
+- proteger `image_locked`;
+- generar reportes de imágenes pendientes, inválidas o mejorables.
+
+Reglas:
+- no sobrescribir imágenes con `image_locked=true`;
+- no degradar imágenes manuales curadas;
+- no ejecutar tareas pesadas/sensibles desde frontend público;
+- mantener dry-run antes de aplicar cambios;
+- cualquier ejecución desde admin debe pasar por backend/edge functions protegidas;
+- nunca exponer `SUPABASE_SERVICE_ROLE_KEY`.
+
+Relación con roadmap:
+- conecta con Admin imágenes de modelos;
+- conecta con Admin catálogo/modelos;
+- conecta con rendimiento/Lighthouse;
+- conecta con SEO técnico;
+- conecta con revisión global UI/SCSS;
+- prepara catálogo escalable con imágenes consistentes.
+
+Criterios de aceptación futuros:
+- thumbnails generados correctamente;
+- variantes desktop/mobile disponibles si se decide implementarlas;
+- dimensiones inválidas reportadas;
+- imágenes mal nombradas detectadas;
+- `image_source` coherente;
+- `image_locked` respetado siempre;
+- Lighthouse no empeora y, si procede, mejora;
+- `npm run typecheck` pasa;
+- `npm run test` pasa.
+
 ### Admin tareas internas seguras
 
 Estado: pendiente.
@@ -631,3 +685,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.
 - Tarjeta incorporada: “Crear fixtures de usuarios y perfiles para tests de auth” clasificada como **P2 Auth baseline / Testing / Fixtures**.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
+- Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).

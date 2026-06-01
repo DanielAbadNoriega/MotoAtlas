@@ -44,6 +44,11 @@
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - Flujo de solicitudes admin disponible, pendiente de auditoría funcional final y contratos de producto.
 
+### Catálogo / imágenes
+- Pipeline base de imágenes operativo: assets locales por `motorcycle.id` en `public/images/motorcycles/*.webp`.
+- Scripts de normalización + sync con dry-run (`normalize:images:*`, `sync:images:*`) documentados y activos.
+- Contrato actual de imagen: sincronización de `image_url`/`image_source` y respeto de `image_locked` para no pisar curación manual.
+
 ### Datos demo
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.
 - Policy por entorno vigente: producción solo `source='user'`; dev/pre puede incluir `seed` y `mock`.
@@ -62,6 +67,7 @@
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: crear fixtures de auth/perfiles/sesión para tests (user/admin/no-auth) y reducir mocks repetidos por archivo.
 - Backlog P2: auditoría residual de admin/moderación (solicitudes, avisos al autor y cierre de contratos de respuestas).
+- Backlog P2/P3: automatización avanzada del pipeline de imágenes (thumbnails, variantes responsive, validación/reportes de calidad y performance) como evolución del pipeline actual.
 
 ## En curso
 
@@ -85,6 +91,7 @@
 - “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
 - Crear fixtures de usuarios/perfiles para auth queda como **P2 Auth baseline / Testing / Fixtures** para reforzar auditoría de cierre de auth.
 - “Fase 2.5 moderación/admin de respuestas” queda reclasificada como base mayoritariamente implementada con pendientes residuales auditables.
+- “Automatización avanzada de imágenes” queda clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual de imágenes.
 - ...
 
 ## No tocar sin decisión explícita
