@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1004` tests passing.
+- `1005` tests passing.
 
 ## Stack actual
 
@@ -121,7 +121,6 @@ Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:
   - vistas compactas (`Search`, `CommunityReviews`, `AccountReviews`, `Admin`);
   - vistas con exposición explícita de segmentos (`TopRated`, `CommunityRankings`).
-- añadir test de paridad de podio entre `#/comunidad` y `#/comunidad/rankings` para proteger metadatos visibles en cards compactas (posiciones 2 y 3).
 
 ## Cómo mockear Supabase y fetch
 
@@ -214,6 +213,8 @@ Cobertura actual relevante:
   - `markReportsByReviewId`
   - `upsertReactionSummaryInList`
   - `upsertReactionSummaryById`
+- `src/components/pages/TopRatedMotorcyclesPage/TopRatedMotorcyclesPage.test.tsx` cubre paridad de metadatos en podio de `#/comunidad`:
+  - las cards compactas 2 y 3 mantienen visible en DOM el span `año · segmento · cilindrada`.
 
 Pendiente/riesgo menor:
 - Existe reporte de flaky aislado en `AdminPage` (`no muestra paginación cuando hay 6 reportes o menos`); no se observó relación con consolidación de reacciones.

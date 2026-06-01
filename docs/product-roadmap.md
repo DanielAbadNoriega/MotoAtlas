@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1004 passed`.
+- Tests de referencia: `1005 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -56,13 +56,17 @@ Notas:
 
 ### Paridad visual de Podium rankings (`#/comunidad` vs `#/comunidad/rankings`)
 
-Estado: pendiente (ajuste UI puntual).
+Estado: implementado / cerrado.
 
 Objetivo:
 - alinear contenido entre ambos podios para evitar drift visual/semántico.
 
-Pendiente concreto:
-- en `#/comunidad`, las podium cards 2 y 3 deben mostrar el mismo span de metadatos que `#/comunidad/rankings` (`año · segmento · potencia`).
+Aplicado:
+- en `#/comunidad`, las podium cards 2 y 3 ya muestran el mismo span de metadatos que `#/comunidad/rankings` (`año · segmento · cilindrada`).
+
+Nota de contrato actual:
+- el metadato actual de podio es `año · segmento · cilindrada (cc)`.
+- si en el futuro se quiere cambiar a potencia, debe abrirse como mejora UI separada con decisión explícita de producto.
 
 ### MotorcycleGarageCard en buscador
 
