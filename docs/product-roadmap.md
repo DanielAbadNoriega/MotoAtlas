@@ -613,6 +613,98 @@ Ejemplos de piezas:
 - “Lo que más se repite sobre la F 900 GS”.
 - “Puntos fuertes y débiles de la Tracer 9 según propietarios”.
 
+### Noticias dinámicas y artículos generados desde datos MotoAtlas
+
+Estado:
+- backlog estratégico / futuro.
+
+Principio de producto:
+MotoAtlas no se centrará en noticias genéricas de actualidad. La sección de artículos debe orientarse a contenido útil, evergreen, SEO y descubrimiento de motos basado en datos propios.
+
+Fuentes futuras de contenido:
+- especificaciones técnicas;
+- reviews de usuarios;
+- puntuaciones de comunidad;
+- comparativas populares;
+- patrones de búsqueda;
+- motos más guardadas o comparadas;
+- motos más solicitadas;
+- datos por carnet;
+- datos por uso;
+- datos por segmento;
+- datos por ergonomía/altura si se incorporan de forma voluntaria y segura.
+
+Ejemplos de artículos:
+- “Mejores motos A2 según la comunidad”.
+- “Trails más recomendadas para viajar”.
+- “Naked más divertidas para ciudad”.
+- “Motos con mejor relación peso/potencia”.
+- “Modelos con más reviews de propietarios”.
+- “Comparativas más populares”.
+- “Motos más solicitadas por usuarios”.
+- “Motos mejor valoradas por usuarios de menos de 1,73 m” (solo con dato suficiente y contrato de privacidad/consentimiento adecuado).
+
+Fases recomendadas:
+1. Manual/editorial:
+   - artículos escritos por el usuario;
+   - basados en catálogo, reviews externas observadas y criterio editorial.
+2. Data generated:
+   - artículos generados desde datos internos;
+   - rankings, comparativas, reviews agregadas, solicitudes y patrones de búsqueda.
+3. AI assisted:
+   - IA como asistente de resumen, estructura y redacción;
+   - siempre con revisión humana antes de publicar.
+
+Futuro modelo de datos propuesto:
+- `articles`
+  - `id`
+  - `slug`
+  - `title`
+  - `subtitle`
+  - `excerpt`
+  - `content`
+  - `category`
+  - `tags`
+  - `related_motorcycle_ids`
+  - `source_type`
+  - `status`
+  - `created_at`
+  - `updated_at`
+  - `published_at`
+
+`source_type`:
+- `manual`
+- `data_generated`
+- `community_generated`
+- `ai_assisted`
+
+Requisitos previos:
+- catálogo más amplio;
+- reviews suficientes;
+- testing fuerte;
+- taxonomía cerrada;
+- SEO base;
+- admin/editorial;
+- moderación y datos de comunidad estables;
+- criterios de privacidad claros si se usan datos personales/ergonómicos.
+
+Reglas:
+- no implementar generación automática sin revisión humana;
+- no publicar datos débiles como si fueran conclusiones sólidas;
+- no crear artículos basados en mocks/seed en producción;
+- no usar datos sensibles como altura sin contrato claro de privacidad y consentimiento;
+- diferenciar contenido manual, generado por datos, generado por comunidad y asistido por IA;
+- mantener trazabilidad de fuentes internas.
+
+Relación con roadmap:
+- conecta con IA futura;
+- conecta con SEO técnico;
+- conecta con rankings;
+- conecta con taxonomía de segmentos;
+- conecta con admin/editorial;
+- conecta con reviews y comparador;
+- puede convertirse en una fuente importante de tráfico orgánico.
+
 ## 11. P4 — IA futura
 
 Estado: pendiente.
@@ -686,3 +778,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta incorporada: “Crear fixtures de usuarios y perfiles para tests de auth” clasificada como **P2 Auth baseline / Testing / Fixtures**.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
+- Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).
