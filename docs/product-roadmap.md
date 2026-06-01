@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `997 passed`.
+- Tests de referencia: `1002 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -143,14 +143,14 @@ Este bloque agrupa herramientas internas y bases de plataforma necesarias para e
 
 ### Tarea transversal: Taxonomía de segmentos de motos
 
-Estado: cierre por fases en progreso (F0/F1 cerradas; F2 parcialmente aplicada; F3 auditoría cerrada; F3.1/F4 pendientes).
+Estado: cierre por fases en progreso (F0/F1 cerradas; F2 parcialmente aplicada; F3 auditoría cerrada; F3.1 cerrada; F4 pendiente).
 
 Fases de cierre (estado actualizado):
 - Fase 0 — Auditoría inicial: **cerrada**.
 - Fase 1 — Guardrails/tests de contrato: **cerrada**.
 - Fase 2 — Saneo puntual de datos y clasificaciones dudosas: **parcialmente aplicada**.
 - Fase 3 — Auditoría de estrategia final de filtros: **cerrada**.
-- Fase 3.1 — Formalización de estrategia final (`canónico vs visible`) y criterios de exposición: **pendiente**.
+- Fase 3.1 — Formalización de estrategia final (`canónico vs visible`) y criterios de exposición: **cerrada**.
 - Fase 4 — Preparación SEO/Admin/landings por categoría: **pendiente**.
 
 Caso aplicado en Fase 2:
@@ -164,10 +164,16 @@ Resultado de Fase 3 (auditoría):
 - No abrir 16 chips públicos en buscador/comunidad/cuenta/admin hasta tener cobertura de catálogo suficiente y criterios claros de UX.
 - Hallazgo clave: hoy ya existe estrategia mixta (compacto en varias vistas y 16 explícitas en rankings), por lo que Fase 3.1 debe cerrar ese drift de forma deliberada.
 
-Pendiente de Fase 3.1:
-- formalizar `segmento canónico` vs `grupo visible de filtro`;
-- unificar criterio cross-page para evitar drift;
-- definir thresholds de catálogo/uso para exponer categorías explícitas.
+Implementado en Fase 3.1:
+- Contrato formal `segmento canónico` vs `grupo visible`.
+- Segmento canónico: 16 `BIKE_SEGMENTS`.
+- Grupo visible: `all`, segmentos primarios y `other`.
+- `other` formalizado como bucket UI-only (no segmento real).
+- Mapping formalizado:
+  - primarios → sí mismos;
+  - secundarios → `other`;
+  - grupos visibles → targets canónicos válidos.
+- Estrategia compacta reusable centralizada sin abrir 16 chips públicos.
 
 Pendiente de Fase 4:
 - admin catálogo con 16 categorías explícitas;

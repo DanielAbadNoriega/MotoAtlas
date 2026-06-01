@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual:
-- Último bloque validado: Fase 3 taxonomía — auditoría de estrategia final de filtros (sin cambios funcionales, recomendación híbrida)
-- Tests: 997 passed
+- Último bloque validado: Fase 3.1 taxonomía — contrato canónico vs grupo visible formalizado (sin cambios visuales)
+- Tests: 1002 passed
 - Typecheck: clean
 - Último commit:
 
@@ -57,17 +57,24 @@
 - Scripts de normalización + sync con dry-run (`normalize:images:*`, `sync:images:*`) documentados y activos.
 - Contrato actual de imagen: sincronización de `image_url`/`image_source` y respeto de `image_locked` para no pisar curación manual.
 
-### Taxonomía de segmentos (Fase 0-3)
+### Taxonomía de segmentos (Fase 0-3.1)
 - Fase 0 (auditoría inicial): cerrada.
 - Fase 1 (guardrails/tests de contrato): cerrada.
 - Fase 2 (saneo puntual inicial de datos): aplicada parcialmente.
 - Fase 3 (auditoría de estrategia final de filtros): cerrada.
+- Fase 3.1 (formalización canónico vs visible): cerrada.
 - Caso saneado en Fase 2:
   - `cfmoto-800mt-x-2025`: `segment` de `naked` a `trail`.
 - Decisión recomendada en Fase 3:
   - estrategia **híbrida**: UI pública compacta con `primary + other` + taxonomía canónica de 16 segmentos como fuente de verdad.
 - Hallazgo de Fase 3:
   - existe estrategia mixta real entre páginas (compacto en buscador/comunidad/cuenta/admin y 16 explícitas en rankings/top rated).
+- Contrato formalizado en Fase 3.1:
+  - segmento canónico = `BIKE_SEGMENTS` (16 categorías);
+  - grupo visible = `all` + primarios + `other`;
+  - `other` es UI-only (no segmento canónico);
+  - secundarios mapean a `other`;
+  - targets de grupos visibles devuelven solo segmentos canónicos válidos.
 - Guardrails implementados:
   - `BIKE_SEGMENTS` exacto (16 categorías esperadas).
   - alineación `BikeSegment` (`src/types/bike.ts`) ↔ `BIKE_SEGMENTS`.
@@ -95,7 +102,6 @@
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
 - Backlog P2: auditoría residual de admin/moderación (solicitudes, avisos al autor y cierre de contratos de respuestas).
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
-- Backlog P2/P3: Fase 3.1 formalizar contrato `segmento canónico` vs `grupo visible de filtro`.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
 - Backlog P2/P3: resolver deuda semántica final `trail` vs `adventure` con criterio de producto estable.
@@ -112,7 +118,7 @@
 - Cierre completo de taxonomía de segmentos de motos (tarea transversal de plataforma):
   - Fase 2 en curso: saneo puntual (primer ajuste aplicado; quedan casos por auditar).
   - Fase 3 auditoría: cerrada (recomendación híbrida validada).
-  - Fase 3.1 pendiente: formalización canónico vs visible + criterios de exposición.
+  - Fase 3.1 cerrada: contrato canónico vs visible formalizado.
   - Fase 4 pendiente: preparación SEO/Admin/landings por categoría.
 - ...
 
@@ -127,7 +133,7 @@
 - Rankings usan reviewCount real y confidence.
 - La tarjeta histórica “Implementar login y cuentas de usuario” se reclasifica en roadmap como **Auth baseline** dentro de **P2 Plataforma/Admin/Productividad interna**; capa social avanzada queda para fase futura separada.
 - La tarea “Revisar y cerrar taxonomía de categorías de motos” se clasifica como dependencia estratégica previa para filtros reutilizables, admin catálogo y futuras landings SEO por segmento.
-- Estado de taxonomía actualizado por fases: Fase 0 y Fase 1 cerradas; Fase 2 parcialmente aplicada; Fase 3 auditoría cerrada con recomendación híbrida; Fase 3.1 y Fase 4 pendientes.
+- Estado de taxonomía actualizado por fases: Fase 0 y Fase 1 cerradas; Fase 2 parcialmente aplicada; Fase 3 auditoría cerrada con recomendación híbrida; Fase 3.1 cerrada con contrato formal; Fase 4 pendiente.
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
 - La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
