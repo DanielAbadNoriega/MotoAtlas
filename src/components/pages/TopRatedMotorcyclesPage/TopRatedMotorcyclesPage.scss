@@ -274,10 +274,6 @@
     font-size: clamp(1.1rem, 2vw, 1.5rem);
   }
 
-  > div:first-child span {
-    display: none;
-  }
-
   .top-rated__card-actions a {
     background: transparent;
     border-color: rgba($color-outline-variant, 0.75);
