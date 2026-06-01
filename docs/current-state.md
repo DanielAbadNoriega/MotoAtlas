@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual:
-- Último bloque validado: Fase 3.1 taxonomía — contrato canónico vs grupo visible formalizado (sin cambios visuales)
-- Tests: 1002 passed
+- Último bloque validado: guardrail UI de segmentos legacy en `BikeCard` (slug crudo → label amigable)
+- Tests: 1004 passed
 - Typecheck: clean
 - Último commit:
 
@@ -75,6 +75,9 @@
   - `other` es UI-only (no segmento canónico);
   - secundarios mapean a `other`;
   - targets de grupos visibles devuelven solo segmentos canónicos válidos.
+- Guardrail UI legacy cerrado:
+  - `BikeCard` ya no renderiza `bike.segment` crudo;
+  - usa `segmentLabels[bike.segment]` con fallback controlado `Segmento desconocido`.
 - Guardrails implementados:
   - `BIKE_SEGMENTS` exacto (16 categorías esperadas).
   - alineación `BikeSegment` (`src/types/bike.ts`) ↔ `BIKE_SEGMENTS`.
@@ -105,7 +108,6 @@
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
 - Backlog P2/P3: resolver deuda semántica final `trail` vs `adventure` con criterio de producto estable.
-- Backlog P2: guardrail adicional para evitar render de slug crudo de segmento en componentes legacy donde aún aparezca.
 - Backlog P3: `model_requests.segment` sigue como texto libre; evaluar contrato tipado en fase de cierre taxonómico end-to-end.
 - Backlog P2/P3: automatización avanzada del pipeline de imágenes (thumbnails, variantes responsive, validación/reportes de calidad y performance) como evolución del pipeline actual.
 - Backlog P3/P4: noticias dinámicas y artículos evergreen generados desde datos propios (catálogo/reviews/rankings/comparativas), con fase futura IA asistida y revisión humana obligatoria.
