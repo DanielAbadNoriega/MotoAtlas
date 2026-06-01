@@ -587,7 +587,11 @@ export function BikeResultCard({
         as="div"
         detailHref={detailHref}
         footerActions={(
-          <Button fullWidth variant={isSelected ? 'secondary' : 'primary'} onClick={() => onToggleCompare(bike)}>
+          <Button
+            className="motorcycle-garage-card__action motorcycle-garage-card__compare-action"
+            variant={isSelected ? 'secondary' : 'primary'}
+            onClick={() => onToggleCompare(bike)}
+          >
             <span className="material-symbols-outlined" aria-hidden="true">
               {isSelected ? 'check_circle' : 'compare_arrows'}
             </span>

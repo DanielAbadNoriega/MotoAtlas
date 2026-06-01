@@ -328,7 +328,8 @@ describe('BikeResultCard', () => {
     render(<BikeResultCard bike={bikeFixtures[0]} isSelected={false} onToggleCompare={onToggleCompare} />);
 
     expect(screen.getByRole('heading', { name: /F 900 GS/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Ficha técnica/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+    expect(screen.getByRole('link', { name: /Ver ficha técnica/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+    expect(screen.getByRole('link', { name: /Ver ficha técnica/i })).toHaveTextContent('Ficha');
     expect(screen.getByRole('link', { name: /Reviews/i })).toHaveAttribute('href', '#/comunidad/test-bmw-f-900-gs');
 
     await user.click(screen.getByRole('button', { name: /Comparar/i }));

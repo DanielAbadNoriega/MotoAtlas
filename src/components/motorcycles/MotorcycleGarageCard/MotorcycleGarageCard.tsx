@@ -107,9 +107,13 @@ export function MotorcycleGarageCard({
             <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
             <span>Reviews</span>
           </a>
-          <a className="motorcycle-garage-card__action motorcycle-garage-card__action--secondary" href={detailHref}>
+          <a
+            className="motorcycle-garage-card__action motorcycle-garage-card__action--secondary"
+            href={detailHref}
+            aria-label="Ver ficha técnica"
+          >
             <span className="material-symbols-outlined" aria-hidden="true">list_alt</span>
-            <span>Ficha técnica</span>
+            <span>Ficha</span>
           </a>
           {footerActions}
         </footer>
