@@ -424,7 +424,7 @@
     "reliabilitySource": "estimated",
     "scoresSource": "estimated",
     "seatHeightMm": 825,
-    "segment": "naked",
+    "segment": "trail",
     "specsSource": "api",
     "torqueNm": 75,
     "useScores": {
