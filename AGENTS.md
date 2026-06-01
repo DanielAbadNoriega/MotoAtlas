@@ -161,6 +161,7 @@ Regla crítica: scripts usan `SUPABASE_SERVICE_ROLE_KEY` de `.env.import`, NUNCA
 - `docs/ui-notes.md` — páginas y componentes
 - `docs/codex-guidelines.md` — reglas mínimas Codex/Copilot
 - `docs/agents-runbook.md` — runbook operativo de agentes, skills y modelos
+- `docs/product-roadmap.md` — roadmap estratégico y backlog del producto
 - `docs/motorcycle-data-inventory.md` — inventario de campos Bike
 - `docs/motorcycle-import-workflow.md` — flujo importación
 - `docs/mock-data.md` — utilidades mock reviews

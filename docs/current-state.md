@@ -85,3 +85,4 @@
 
 - Contratos de comportamiento: `docs/product-behavior-contracts.md`
 - Contratos de producto para reviews, acciones comunitarias, FeaturedReviewCard, confianza, rating vs score y deduplicación.
+- Roadmap estratégico y backlog de producto: `docs/product-roadmap.md`

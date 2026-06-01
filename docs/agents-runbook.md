@@ -10,7 +10,7 @@ Runbook oficial para elegir **qué agente**, **qué skills** y **qué modelo** u
 | `MotoAtlas-Safe-Builder` | Implementación segura y acotada | Cambios aprobados, alcance claro | Cambios de schema/RLS no pedidos | `GPT-5.3 Codex` |
 | `MotoAtlas-Quality-Gate` | Verificación final del bloque | Después de implementar un bloque | Para construir features nuevas | `GPT-5.3 Codex` |
 | `MotoAtlas-Supabase-Guard` | Cambios schema/RLS/policies/grants | Solo cuando la tarea pide DB/RLS explícito | UI/estilos/rutas no relacionadas | `GPT-5.3 Codex` / `GPT-5.5` |
-| `MotoAtlas-Docs-Sync` | Sincronización documental post-cambio | Después de `Quality Gate` aprobado | Código fuente/tests/estilos/schema | `MiniMax M2.7` (mecánico) / `GPT-5.3 Codex` (contradicciones) |
+| `MotoAtlas-Docs-Sync` | Sincronización documental post-cambio y roadmap | Después de `Quality Gate` aprobado o para actualizar estrategia/backlog documental | Código fuente/tests/estilos/schema | `MiniMax M2.7` (mecánico) / `GPT-5.3 Codex` (contradicciones) |
 
 ## 2) Secuencia oficial
 
@@ -29,7 +29,7 @@ Excepciones:
 |---|---|---|---|
 | Implementación segura | `MotoAtlas-Safe-Builder` | `typescript-advanced-types`, `react-best-practices`, `vite` | `GPT-5.3 Codex` |
 | Quality Gate | `MotoAtlas-Quality-Gate` | `vitest`, `accessibility` (si UI) | `GPT-5.3 Codex` |
-| Docs Sync | `MotoAtlas-Docs-Sync` | `vitest` (referencia de estrategia), `seo` (si aplica) | `MiniMax M2.7` / `GPT-5.3 Codex` |
+| Docs Sync / roadmap | `MotoAtlas-Docs-Sync` | `vitest` (referencia de estrategia), `seo` (si aplica) | `MiniMax M2.7` / `GPT-5.3 Codex` |
 | Auditoría de página | `MotoAtlas-Page-Auditor` | `accessibility`, `seo`, `frontend-design`, `vitest` | `GPT-5.4/5.5` |
 | Auditoría global | `MotoAtlas-Global-Auditor` (recomendado) o `Page-Auditor` modo global | `accessibility`, `seo`, `react-best-practices`, `composition-patterns` | `GPT-5.4/5.5` |
 | SCSS/UI polish | `MotoAtlas-Safe-Builder` | `frontend-design`, `accessibility` | `GPT-5.3 Codex` |
