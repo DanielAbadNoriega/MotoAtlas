@@ -597,7 +597,164 @@ No implementar ahora:
 - IA real
 - sistema completo tipo foro generalista
 
-## 10. P3 — Noticias / contenido editorial
+## 10. P3/P4 — Engagement sano y retorno de usuario
+
+Estado:
+- backlog estratégico / futuro.
+
+Principio de producto:
+No se busca crear adicción ni un feed infinito. Se busca crear bucles sanos de retorno basados en utilidad real, reconocimiento de aportaciones, cambios relevantes y comunidad motera viva.
+
+Idea central:
+El usuario debe sentir que MotoAtlas cambia con su actividad y con la actividad de otros usuarios.
+
+Líneas futuras:
+
+### 1. Desde tu última visita
+
+Mostrar al usuario cambios relevantes desde su última sesión:
+- tu review fue aprobada;
+- tu review recibió votos útiles;
+- una moto de tu garaje recibió nuevas reviews;
+- una moto que sigues subió o bajó en rankings;
+- una comparativa guardada cambió;
+- nuevas reviews publicadas en modelos que sigues;
+- tu solicitud de modelo fue revisada.
+
+Dependencias:
+- auth baseline cerrado;
+- reviews asociadas a usuario;
+- cuenta estable;
+- sistema de actividad/eventos;
+- contratos de privacidad.
+
+### 2. Radar MotoAtlas / Pulso de la Comunidad
+
+Evolución futura de los insights y actividad comunitaria:
+- reviews recientes;
+- motos que están subiendo;
+- modelos más comentados;
+- comparativas calientes;
+- solicitudes populares;
+- opiniones destacadas;
+- segmentos más activos;
+- usos más activos;
+- “La Semana MotoAtlas”.
+
+Relación con el foco actual:
+- conecta con rediseño de `Insights en vivo`;
+- conecta con artículos dinámicos data-driven;
+- conecta con rankings y comunidad.
+
+### 3. Mi garaje / motos seguidas
+
+Permitir que el usuario marque motos como:
+- la tengo;
+- la he tenido;
+- la quiero;
+- la estoy comparando;
+- la probé;
+- la sigo.
+
+Uso futuro:
+- personalización;
+- notificaciones suaves;
+- “Desde tu última visita”;
+- artículos relevantes;
+- rankings personalizados;
+- actividad de modelos seguidos.
+
+Dependencias:
+- auth baseline;
+- perfiles/cuenta;
+- privacidad;
+- modelo de datos para garaje/saved motorcycles/followed motorcycles.
+
+### 4. Comparativas vivas
+
+Crear comparativas con lectura comunitaria:
+- “BMW F900GS vs Aprilia Tuareg 660: la comunidad opina”.
+- “MT-09 vs Street Triple: cuál gusta más a propietarios”.
+- “CFMoto 800MT-X vs Ténéré 700: datos, precio y percepción”.
+
+Pueden basarse en:
+- specs técnicas;
+- reviews agregadas;
+- rankings;
+- votos/comparaciones populares;
+- opiniones de propietarios.
+
+Relación:
+- conecta con comparador;
+- conecta con artículos dinámicos;
+- conecta con IA futura;
+- conecta con SEO.
+
+### 5. Notificaciones suaves
+
+Notificaciones controladas por el usuario:
+- review aprobada;
+- alguien marcó tu review como útil;
+- solicitud revisada;
+- nuevas reviews de una moto seguida;
+- nueva actividad en tu garaje;
+- nuevo artículo sobre una moto seguida.
+
+Reglas:
+- sin spam;
+- preferencias configurables;
+- no enviar notificaciones sin consentimiento;
+- respetar privacidad/RGPD.
+
+### 6. Reputación técnica
+
+Gamificación sana basada en prestigio útil:
+- reviewer fiable;
+- experto en trail;
+- experto en naked;
+- propietario verificado;
+- colaborador técnico;
+- veterano MotoAtlas.
+
+Debe basarse en:
+- reviews aprobadas;
+- votos útiles;
+- aportaciones aceptadas;
+- datos corregidos;
+- experiencia de largo plazo;
+- especialización por segmento.
+
+Reglas:
+- no puntos vacíos;
+- no recompensas engañosas;
+- no fomentar spam de reviews;
+- reputación ligada a calidad y utilidad.
+
+Dependencias generales:
+- auth baseline cerrado;
+- cuenta y reviews propias estables;
+- moderación sólida;
+- sistema anti-spam;
+- privacidad y preferencias;
+- suficientes datos reales de comunidad.
+
+No implementar ahora:
+- feed infinito;
+- notificaciones reales;
+- reputación pública;
+- seguidores;
+- automatismos agresivos;
+- rankings de usuarios sin reglas de calidad.
+
+Relación con roadmap:
+- conecta con capa social futura;
+- conecta con noticias/artículos data-driven;
+- conecta con IA futura;
+- conecta con rankings;
+- conecta con reviews, solicitudes y comparador;
+- refuerza la idea de MotoAtlas como comunidad viva.
+
+## 11. P3 — Noticias / contenido editorial
 
 Estado: pendiente.
 
@@ -705,7 +862,7 @@ Relación con roadmap:
 - conecta con reviews y comparador;
 - puede convertirse en una fuente importante de tráfico orgánico.
 
-## 11. P4 — IA futura
+## 12. P4 — IA futura
 
 Estado: pendiente.
 
@@ -733,7 +890,7 @@ Arquitectura futura posible:
 - `aiModerationService`
 - Supabase Edge Function protegida
 
-## 12. P3/P4 — Revisión global UI/SCSS
+## 13. P3/P4 — Revisión global UI/SCSS
 
 Estado: pendiente.
 
@@ -744,7 +901,7 @@ Al cerrar funcionalidades principales:
 - revisar cards, chips, actions, filtros, formularios y layouts
 - convertir patrones repetidos en componentes/mixins/placeholders
 
-## 13. Riesgos y deuda conocida
+## 14. Riesgos y deuda conocida
 
 - flaky test aislado en `AdminPage`.
 - doble toggle en el mismo tick sin test explícito dedicado.
@@ -753,7 +910,7 @@ Al cerrar funcionalidades principales:
 - filtros actuales todavía no atomizados.
 - futura ejecución de scripts desde admin requiere backend seguro.
 
-## 14. Qué NO hacer todavía
+## 15. Qué NO hacer todavía
 
 - No implementar IA real todavía.
 - No ejecutar scripts desde frontend.
@@ -763,7 +920,7 @@ Al cerrar funcionalidades principales:
 - No automatizar noticias hasta tener datos suficientes.
 - No exponer `service role key` en frontend.
 
-## 15. Relación con Trello
+## 16. Relación con Trello
 
 - Trello = tablero operativo.
 - Este documento = fuente estratégica del repositorio.
@@ -779,3 +936,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
 - Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).
+- Idea histórica incorporada: “Engagement sano y retorno de usuario” clasificada como **P3/P4 Comunidad / Personalización / Engagement sano** (backlog estratégico, no implementación inmediata).
