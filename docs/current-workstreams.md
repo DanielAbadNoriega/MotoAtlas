@@ -25,7 +25,7 @@ Rama:
 
 Estado:
 
-* cerrado
+* cerrado / mergeado a main
 
 Objetivo:
 Rediseñar el bloque `Insights en vivo` de `#/comunidad/reviews` para sustituir métricas poco útiles por señales de descubrimiento comunitario más relevantes.
@@ -91,7 +91,7 @@ Rama:
 
 Estado:
 
-* cerrado / pendiente de merge
+* cerrado / mergeado a main
 
 Objetivo:
 Crear una capa central de fixtures/mocks locales para testear autenticación, perfiles, sesión, roles y futuros permisos sin depender de Supabase real.
@@ -145,7 +145,6 @@ Resultado esperado:
 
 * typecheck: OK
 * test: OK (66 files, 985 tests)
+* main: mergeado y verificado
 
-Siguiente paso:
-
-* mantener como referencia cerrada y preparar merge de la rama `test/auth-fixtures`.
+* mantener como referencia cerrada.
