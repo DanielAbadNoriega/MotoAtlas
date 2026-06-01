@@ -1,7 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
+import {
+  createAuthSnapshot,
+  createAuthState,
+  createAuthUser,
+  createSession,
+  mockUnauthenticatedAuthState,
+} from '../../../test/fixtures/auth';
 import { AuthPage } from './AuthPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -11,28 +18,37 @@ vi.mock('../../../features/auth', () => ({
 const useAuthMock = vi.mocked(useAuth);
 const signInMock = vi.fn();
 const signUpMock = vi.fn();
+const signOutMock = vi.fn();
+const refreshProfileMock = vi.fn();
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({
-    user: null,
-    session: null,
-    profile: null,
-    isAuthenticated: false,
-    isAdmin: false,
-    isLoading: false,
+function mockAuth(overrides: Partial<AuthContextValue> = {}) {
+  useAuthMock.mockReturnValue(createAuthState({
+    ...mockUnauthenticatedAuthState,
     signIn: signInMock,
     signUp: signUpMock,
-    signOut: vi.fn(),
-    refreshProfile: vi.fn(),
+    signOut: signOutMock,
+    refreshProfile: refreshProfileMock,
     ...overrides,
-  } as never);
+  }) as never);
 }
 
 describe('AuthPage', () => {
   beforeEach(() => {
     window.location.hash = '';
-    signInMock.mockReset().mockResolvedValue({ user: { id: 'user-1', email: 'rider@motoatlas.com' }, session: {}, profile: null });
-    signUpMock.mockReset().mockResolvedValue({ user: { id: 'user-1', email: 'new@motoatlas.com' }, session: {}, profile: null });
+    signInMock.mockReset().mockResolvedValue(
+      createAuthSnapshot({
+        user: createAuthUser({ email: 'rider@motoatlas.com', id: 'user-1' }),
+        session: createSession({ access_token: 'signin-token' }),
+      }),
+    );
+    signUpMock.mockReset().mockResolvedValue(
+      createAuthSnapshot({
+        user: createAuthUser({ email: 'new@motoatlas.com', id: 'user-1' }),
+        session: createSession({ access_token: 'signup-token' }),
+      }),
+    );
+    signOutMock.mockReset().mockResolvedValue(undefined);
+    refreshProfileMock.mockReset().mockResolvedValue(null);
     mockAuth();
   });
 
