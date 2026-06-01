@@ -101,10 +101,9 @@ Dirección:
 
 La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` en modo visual (sin acciones comunitarias conectadas en esta página).
 
-Inconsistencia detectada (pendiente UI):
-- en `#/comunidad`, las cards de podio en posiciones 2 y 3 no muestran aún el span de metadatos (`año · segmento · potencia`);
-- en `#/comunidad/rankings` ese metadato sí está visible en esas cards compactas;
-- pendiente: alinear ambos podios para mantener paridad visual y de información.
+Paridad resuelta:
+- en `#/comunidad`, las cards de podio en posiciones 2 y 3 ya muestran el mismo span de metadatos que `#/comunidad/rankings`.
+- metadato actual de contrato visual en ambos podios: `año · segmento · cilindrada (cc)`.
 
 ## Comunidad — Rankings
 

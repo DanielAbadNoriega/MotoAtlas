@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual:
-- Último bloque validado: guardrail UI de segmentos legacy en `BikeCard` (slug crudo → label amigable)
-- Tests: 1004 passed
+- Último bloque validado: paridad de metadatos en Podium rankings de `#/comunidad` (cards 2 y 3)
+- Tests: 1005 passed
 - Typecheck: clean
 - Último commit:
 
@@ -22,7 +22,7 @@
 - Podio NO usa filtros de la página (filtros solo afectan al listado técnico).
 - Listado técnico ya no usa `<table>`; usa cards/grid responsive con columnas alineadas en desktop.
 - Filtros afectan solo al listado técnico: segment, license, use, search.
-- El Podium rankings de `#/comunidad` replica gran parte del lenguaje visual del podio de `#/comunidad/rankings` (cards, shield y tooltip), con una inconsistencia pendiente: en `#/comunidad` las cards 2 y 3 no muestran aún el span de metadatos `año · segmento · potencia`.
+- El Podium rankings de `#/comunidad` ya está alineado con `#/comunidad/rankings` para cards compactas: las posiciones 2 y 3 muestran el mismo span de metadatos `año · segmento · cilindrada`.
 - `#/comunidad/reviews`: filtros apply-on-change en tiempo real; botón "Aplicar" cierra el panel en mobile; copy "Reviews destacadas" (antes "Destacadas del mes").
 - `#/comunidad/reviews` Garaje: `MotorcycleGarageCard` extraído a `src/components/motorcycles/MotorcycleGarageCard/`. Props planas reutilizables (title, imageSource, imageAlt, rating, reviewCount, primaryUseLabel, lastReviewDate, reviewsHref, detailHref). Presentacional sin fetch ni estado. Base para futura reutilización en `#/buscador`.
 - `#/comunidad/reviews` `Reviews destacadas`: criterio = utilidad comunitaria (`helpfulCount` desc). Desempates: rating, comentario más largo, más reciente. Kilómetros NO son criterio. Fallback si no hay útiles funciona por rating/fecha. `Últimos reportes`: cronológico puro. Deduplicación interna por `motorcycleId` en cada bloque editorial, sin deduplicación editorial↔garaje.
@@ -109,7 +109,6 @@
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
 - Backlog P2/P3: resolver deuda semántica final `trail` vs `adventure` con criterio de producto estable.
-- Backlog P1/P2 UI: alinear Podium rankings de `#/comunidad` con `#/comunidad/rankings` para que posiciones 2 y 3 muestren metadatos `año · segmento · potencia`.
 - Backlog P1/P2 UI: sustituir `FeaturedBikes`/`BikeCard` de Home por patrón de podio/card compartido; mientras exista, `BikeCard` queda en mantenimiento mínimo.
 - Backlog P3: `model_requests.segment` sigue como texto libre; evaluar contrato tipado en fase de cierre taxonómico end-to-end.
 - Backlog P2/P3: automatización avanzada del pipeline de imágenes (thumbnails, variantes responsive, validación/reportes de calidad y performance) como evolución del pipeline actual.

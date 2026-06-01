@@ -199,6 +199,17 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(within(thirdRank).queryByText('star')).not.toBeInTheDocument();
   });
 
+  it('muestra metadatos de año, segmento y cilindrada también en cards 2 y 3 del podio', async () => {
+    await renderPage();
+
+    const podium = screen.getByLabelText('Top 3 motos mejor valoradas');
+    const secondRank = await within(podium).findByRole('article', { name: /Puesto 2: BMW F 900 GS/i });
+    const thirdRank = await within(podium).findByRole('article', { name: /Puesto 3: Yamaha MT-09/i });
+
+    expect(within(secondRank).getByText('2024 · Trail · 895 cc')).toBeInTheDocument();
+    expect(within(thirdRank).getByText('2024 · Naked · 890 cc')).toBeInTheDocument();
+  });
+
   it('renderiza la nueva jerarquía de comunidad sin Top Rated ni geolocalización', async () => {
     await renderPage();
 
