@@ -51,6 +51,16 @@ npm run test
 - `src/test/fixtures/bikes.ts`: catálogo reducido de motos para buscador, ficha y comparador.
 - `src/test/fixtures/reviews.ts`: generadores de reviews aprobadas, pendientes, rechazadas y ocultas para comunidad/reviews.
 
+### Backlog P2 — fixtures de auth/perfiles/sesión
+
+Pendiente: centralizar fixtures de auth (hoy hay mocks repetidos de `useAuth` en múltiples tests de página/componente).
+
+Objetivo del backlog:
+- añadir fuente común de fixtures para user normal, admin y no-auth;
+- separar entidades `user`, `profile` y `session` para componer casos;
+- cubrir perfiles incompletos (`display_name`/avatar faltantes) sin duplicar mocks por test.
+- mantener tests 100% locales (sin Supabase real, sin claves reales) usando factories con overrides.
+
 Al crear fixtures:
 
 - Usar datos mínimos pero realistas.

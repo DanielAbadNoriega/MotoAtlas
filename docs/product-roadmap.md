@@ -255,6 +255,60 @@ Pendiente de auditoría:
 - confirmar roles `user/admin`.
 - confirmar cobertura de tests.
 
+### Fixtures de usuarios y perfiles para tests de auth
+
+Estado:
+- pendiente / backlog técnico útil.
+
+Objetivo:
+Crear fixtures y mocks locales para testear autenticación, roles, perfiles, Mi cuenta y acciones asociadas a usuario sin depender de Supabase real.
+
+Debe incluir fixtures para:
+- usuario autenticado normal;
+- usuario admin;
+- usuario sin `display_name`;
+- usuario con `avatar_url`;
+- usuario sin avatar;
+- usuario no autenticado;
+- perfil básico completo;
+- perfil incompleto;
+- sesión mock.
+
+Áreas que deben poder testearse:
+- `AuthProvider`;
+- `useAuth`;
+- Navbar con/sin sesión;
+- Login;
+- Register;
+- Mi cuenta;
+- rutas protegidas;
+- admin protegido por rol;
+- reviews asociadas a usuario;
+- futuras acciones comunitarias con permisos.
+
+Reglas:
+- no depender de Supabase real en tests;
+- no usar claves reales;
+- mantener fixtures pequeños, estables y legibles;
+- usar factories con overrides cuando sea posible;
+- separar usuario, perfil y sesión para poder componer casos;
+- evitar duplicar mocks de auth por test;
+- preparar casos para user/admin/no-auth.
+
+Relación con roadmap:
+- ayuda a cerrar auditoría de auth baseline;
+- prepara futuras pruebas de capa social;
+- reduce fragilidad en tests de cuenta/admin/reviews;
+- facilita validar roles y permisos.
+
+Criterios de aceptación futuros:
+- existe una fuente clara de fixtures de auth/perfiles/sesión;
+- tests pueden simular usuario normal, admin y no autenticado;
+- tests pueden simular perfiles incompletos;
+- `AuthProvider`/Navbar/Login/Register/Mi cuenta pueden testearse sin Supabase real;
+- `npm run typecheck` pasa;
+- `npm run test` pasa.
+
 ### Control de datos demo por entorno
 
 Estado:
@@ -537,3 +591,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta incorporada: mejora futura de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables**.
 - Tarjeta incorporada: “Mejorar generador de reviews mock realistas” clasificada como **P2 Datos demo / QA visual** para soporte de maquetación y validación visual.
 - Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.
+- Tarjeta incorporada: “Crear fixtures de usuarios y perfiles para tests de auth” clasificada como **P2 Auth baseline / Testing / Fixtures**.

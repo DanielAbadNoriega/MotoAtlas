@@ -76,3 +76,11 @@ Cada aspecto puede incluir un comentario opcional. Se muestran en la review via 
 
 - Avisos al autor cuando una review reportada cambia de estado.
 - Perfiles públicos, seguidores, notificaciones o gamificación.
+
+## Backlog técnico de testing (auth baseline)
+
+- Crear fixtures comunes de `user`/`profile`/`session` para tests de auth.
+- Cubrir explícitamente user normal, admin y no-auth.
+- Cubrir perfiles incompletos (sin `display_name`, sin avatar).
+- Evitar mocks duplicados de `useAuth` por archivo de test.
+- Mantener tests sin Supabase real y sin claves reales.

@@ -56,6 +56,7 @@
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
+- Backlog P2: crear fixtures de auth/perfiles/sesión para tests (user/admin/no-auth) y reducir mocks repetidos por archivo.
 
 ## En curso
 
@@ -77,6 +78,7 @@
 - La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
 - “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
+- Crear fixtures de usuarios/perfiles para auth queda como **P2 Auth baseline / Testing / Fixtures** para reforzar auditoría de cierre de auth.
 - ...
 
 ## No tocar sin decisión explícita
