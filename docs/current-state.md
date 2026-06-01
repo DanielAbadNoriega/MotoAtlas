@@ -63,6 +63,7 @@
 - Producción solo `source=user`.
 - Dev/pre puede incluir `seed` y `mock`.
 - Rankings usan reviewCount real y confidence.
+- La tarjeta histórica “Implementar login y cuentas de usuario” se reclasifica en roadmap como **Auth baseline** dentro de **P2 Plataforma/Admin/Productividad interna**; capa social avanzada queda para fase futura separada.
 - ...
 
 ## No tocar sin decisión explícita

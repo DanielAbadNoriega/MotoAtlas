@@ -76,7 +76,11 @@ Estado: pendiente.
   - `accountReviewFilters`
 - Resultado esperado: crecimiento sin duplicar UI por página.
 
-## 6. P2 — Admin catálogo / productividad interna
+## 6. P2 — Plataforma/Admin/Productividad interna
+
+Este bloque agrupa herramientas internas y bases de plataforma necesarias para escalar MotoAtlas sin depender de edición manual.
+
+### Admin catálogo de modelos
 
 Estado: pendiente.
 
@@ -85,27 +89,100 @@ Objetivo: evitar edición manual de JSON.
 Alcance propuesto:
 - listado de motos
 - búsqueda/filtros
+- creación/edición de modelos
 - edición de datos técnicos
-- edición de sources
+- edición de fuentes/source
 - estado de completitud
 - `image_locked` / `description_locked`
 - validaciones
 
-## 7. P2 — Admin imágenes y tareas
+### Admin imágenes de modelos
 
 Estado: pendiente.
 
 Alcance propuesto:
-- subida/gestión de fotos de modelos
+- subida/gestión de fotos
 - previsualización
 - marcar imagen como manual
 - bloquear imagen
-- lanzar tareas de mantenimiento desde admin
+- normalización/sync mediante backend o edge functions protegidas
 
-Riesgo/nota crítica:
+Reglas críticas:
 - El frontend **NO** ejecuta scripts con claves sensibles.
-- El admin debe llamar a backend/edge functions protegidas.
 - Nunca exponer `SUPABASE_SERVICE_ROLE_KEY`.
+
+### Admin tareas internas seguras
+
+Estado: pendiente.
+
+Alcance propuesto:
+- validación de datos incompletos
+- dry-run de importaciones/sync
+- ejecución de tareas de mantenimiento desde backend protegido
+- mostrar resultados en UI admin
+
+### Auth baseline y cuentas de usuario
+
+Estado: parcialmente implementado / pendiente de auditoría de cierre.
+
+Objetivo:
+Consolidar autenticación para que reviews, solicitudes de modelos y acciones comunitarias queden asociadas a usuarios reales cuando exista sesión.
+
+Base actual verificada:
+- Supabase Auth.
+- Login / registro / logout.
+- sesión persistente con `AuthProvider` / `useAuth`.
+- perfil básico (`profile`).
+- rol admin (`isAdmin`).
+- rutas `#/login` y `#/registro`.
+- admin protegido por sesión + rol.
+
+Pendiente de auditoría:
+- verificar que reviews autenticadas guardan `user_id`.
+- verificar que solicitudes de modelo pueden asociarse a usuario autenticado.
+- verificar que acciones comunitarias usan auth real.
+- revisar contrato usuario anónimo vs autenticado.
+- confirmar roles `user/admin`.
+- confirmar cobertura de tests.
+
+## 7. P3/P4 — Capa social futura
+
+Estado: futuro / no implementar dentro del auth baseline.
+
+Objetivo:
+Convertir MotoAtlas progresivamente en comunidad con identidad, reputación y actividad social.
+
+Ideas futuras:
+- perfiles públicos de usuario
+- historial público de reviews
+- garaje público o motos favoritas
+- seguidores
+- notificaciones:
+  - respuesta recibida
+  - review aprobada/rechazada
+  - review marcada como útil
+  - actividad en motos seguidas
+- gamificación:
+  - badges
+  - niveles de contribuidor
+  - reputación por votos útiles
+  - reconocimientos por reviews técnicas completas
+  - rankings de colaboradores
+
+Reglas:
+- No mezclar capa social con cierre de auth baseline.
+- No implementar seguidores/notificaciones/gamificación hasta tener estable:
+  - auth baseline
+  - reviews asociadas a usuario
+  - panel de cuenta
+  - moderación
+  - contratos de privacidad
+- Cuando llegue esta fase, hacer auditoría previa de:
+  - privacidad
+  - visibilidad de perfiles
+  - configuración de notificaciones
+  - abuso/spam
+  - RGPD/legal
 
 ## 8. P3 — Noticias / contenido editorial
 
@@ -175,6 +252,7 @@ Al cerrar funcionalidades principales:
 
 - No implementar IA real todavía.
 - No ejecutar scripts desde frontend.
+- No mezclar cierre de auth baseline con features sociales avanzadas.
 - No rehacer todos los filtros antes de cerrar insights si bloquea avance.
 - No atomizar replies ahora.
 - No automatizar noticias hasta tener datos suficientes.
@@ -186,3 +264,4 @@ Al cerrar funcionalidades principales:
 - Este documento = fuente estratégica del repositorio.
 - Cuando una idea pase a ejecución, crear tarjeta en Trello.
 - Si una idea surge en conversación pero aún no toca ejecutarla, documentarla aquí para no perder contexto.
+- Reclasificación aplicada: la tarjeta histórica “Implementar login y cuentas de usuario” queda dentro de **P2 Plataforma/Admin/Productividad interna** como **auth baseline** (parcialmente implementado, pendiente de auditoría de cierre).
