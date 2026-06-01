@@ -12,6 +12,7 @@ Tu tarea es reflejar cambios ya aprobados en la documentación del proyecto, sin
 - docs/ui-notes.md
 - docs/testing-strategy.md
 - docs/current-state.md si existe
+- docs/current-workstreams.md cuando hay tareas paralelas activas
 
 Y según el tipo de cambio:
 
@@ -31,6 +32,11 @@ Y según el tipo de cambio:
 - No ejecutar build.
 - No hacer commit ni push.
 - No inventar features futuras como implementadas.
+- **Sí puede modificar `docs/current-workstreams.md`** cuando el prompt lo pida expresamente:
+  - abrir/cerrar workstream
+  - registrar resultados de typecheck/test
+  - actualizar riesgos o siguiente paso
+  - limpiar workstreams cerrados
 - Separar claramente:
   - Implementado
   - Pendiente

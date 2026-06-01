@@ -71,7 +71,40 @@ Usarlas solo si el proyecto entra en flujos de video/animación.
 - `.agents/skills/`: fuente principal.
 - `.claude/skills/`: **mirror por symlinks** de `.agents/skills` (no catálogo separado).
 
-## 7) Pendientes recomendados
+## 8) Workstreams paralelos
+
+Documento de coordinación: `docs/current-workstreams.md`.
+
+### Reglas de trabajo en paralelo
+
+- Máximo 2 tareas activas de código a la vez.
+- Cada tarea vive en su propia rama.
+- **No lanzar en paralelo tareas que toquen las mismas zonas del repo**:
+  - comunidad/rankings/insights
+  - buscador/filtros/taxonomía
+  - admin/schema/RLS
+  - auth/cuenta/perfiles
+  - servicios compartidos de reviews
+
+### Quién lee vs quién modifica
+
+| Agente | Puede modificar `current-workstreams.md` |
+|---|---|
+| `MotoAtlas-Safe-Builder` | No |
+| `MotoAtlas-Quality-Gate` | No |
+| `MotoAtlas-Page-Auditor` | No |
+| `MotoAtlas-Docs-Sync` | Sí, solo si el prompt lo pide expresamente |
+
+### Frase estándar para prompts funcionales
+
+```
+Lee docs/current-workstreams.md como contexto de coordinación.
+No modifiques ese archivo salvo que el prompt lo pida expresamente.
+Respeta las zonas permitidas/prohibidas del workstream correspondiente.
+Si necesitas tocar una zona fuera de alcance, detente y repórtalo antes de modificar.
+```
+
+## 9) Pendientes recomendados
 
 1. Actualizar skill `vitest` (referencia 3.x) al estado real del proyecto (`Vitest 4.1.6`).
 2. Crear/documentar `MotoAtlas-Global-Auditor`.
