@@ -49,6 +49,7 @@
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Reutilización de `MotorcycleGarageCard` en `#/buscador` (pendiente, aún no aplicada).
+- Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
 
 ## En curso
 
@@ -67,6 +68,7 @@
 - La tarjeta histórica “Implementar login y cuentas de usuario” se reclasifica en roadmap como **Auth baseline** dentro de **P2 Plataforma/Admin/Productividad interna**; capa social avanzada queda para fase futura separada.
 - La tarea “Revisar y cerrar taxonomía de categorías de motos” se clasifica como dependencia estratégica previa para filtros reutilizables, admin catálogo y futuras landings SEO por segmento.
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
+- La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
 - ...
 
 ## No tocar sin decisión explícita

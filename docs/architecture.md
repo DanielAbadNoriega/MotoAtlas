@@ -444,6 +444,11 @@ Regla importante:
 - `Ver más motos` usa `#/buscador?browse=1` y NO debe añadir nada al comparador.
 - Las reviews nuevas se envían con `status = pending`; la UI solo lista reviews aprobadas.
 
+Backlog P1/P2 (documentado en roadmap):
+- evolucionar `bike-detail__quick-specs` hacia tarjetas técnicas reutilizables
+- referencia visual: `.review-modal__aspect-card` (`ReviewModal`) sin copiar CSS acoplado
+- si el patrón se consolida, extraer componente (`TechnicalSpecCard`/`SpecCard`) y soporte SCSS compartido (mixin/placeholder) sin duplicación
+
 ### ComparatorPage / ComparePage
 
 Archivo: `src/components/pages/ComparatorPage/ComparatorPage.tsx`

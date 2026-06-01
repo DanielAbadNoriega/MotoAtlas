@@ -52,6 +52,22 @@ Los filtros de segmento y carnet comparten labels/iconos con `#/comunidad/review
 
 El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante.
 
+## Ficha de moto — Quick specs (backlog)
+
+Estado: backlog estratégico / futuro cercano.
+
+La ficha `#/motos/[moto-id]` tiene `bike-detail__quick-specs` y se planifica evolucionarla con un patrón visual de tarjetas técnicas más modular, tomando como referencia visual las `.review-modal__aspect-card` de `ReviewModal`, pero **sin copiar ni acoplar CSS** del modal.
+
+Dirección de diseño:
+- usar cards técnicas más expresivas para specs clave
+- evaluar componente reutilizable (`TechnicalSpecCard` / `SpecCard`)
+- evaluar mixin/placeholder SCSS común si aporta reutilización real
+- mantener accesibilidad y evitar render de datos faltantes (`null`/`undefined`)
+
+Nota de alcance:
+- no ampliar schema/modelo `Bike` dentro de esta tarea sin decisión explícita
+- si faltan campos técnicos, queda dependiente del futuro Admin catálogo/modelos
+
 ## Comunidad landing
 
 La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` en modo visual (sin acciones comunitarias conectadas en esta página).

@@ -78,6 +78,58 @@ Estado: pendiente.
   - `accountReviewFilters`
 - Resultado esperado: crecimiento sin duplicar UI por página.
 
+### Tarea P1/P2 — Quick specs avanzadas en ficha de moto
+
+Estado: backlog estratégico / futuro cercano.
+
+Objetivo:
+Mejorar `bike-detail__quick-specs` en `#/motos/[moto-id]` para mostrar specs técnicas de forma más visual, modular y escalable.
+
+Zonas relacionadas:
+- `src/components/pages/BikeDetailPage/BikeDetailPage.tsx`
+- estilos de `BikeDetailPage`
+- `ReviewModal` como referencia visual (`.review-modal__aspect-card`)
+- posible componente compartido de specs técnicas
+- posible mixin/placeholder SCSS común
+
+Alcance visual:
+- usar tarjetas técnicas similares a las aspect cards del modal
+- evitar copiar CSS de modal directamente
+- valorar extracción de componente común:
+  - `TechnicalSpecCard`
+  - `SpecCard`
+  - u otro nombre coherente
+- valorar extracción de SCSS común si aplica
+
+Specs a contemplar:
+- cilindrada
+- potencia
+- par
+- peso
+- altura asiento
+- depósito
+- precio
+- carnet/A2
+- quickshifter
+- suspensiones
+- frenos
+- electrónica
+- neumáticos
+- equipamiento
+
+Reglas:
+- no ampliar schema/modelo `Bike` en esta tarea salvo decisión explícita
+- si faltan campos, documentar dependencia del futuro Admin catálogo/modelos
+- no renderizar `null`/`undefined`
+- no crear CSS duplicado acoplado a `ReviewModal`
+- mantener accesibilidad
+
+Relación con roadmap:
+- conecta con revisión futura UI/SCSS
+- conecta con Admin catálogo/modelos
+- conecta con datos técnicos avanzados
+- puede alimentar mejores fichas, comparador y SEO técnico
+
 ## 6. P2 — Plataforma/Admin/Productividad interna
 
 Este bloque agrupa herramientas internas y bases de plataforma necesarias para escalar MotoAtlas sin depender de edición manual.
@@ -389,3 +441,4 @@ Al cerrar funcionalidades principales:
 - Reclasificación aplicada: la tarjeta histórica “Implementar login y cuentas de usuario” queda dentro de **P2 Plataforma/Admin/Productividad interna** como **auth baseline** (parcialmente implementado, pendiente de auditoría de cierre).
 - Tarjeta incorporada: “Revisar y cerrar taxonomía de categorías de motos” queda como tarea transversal de **P2 Plataforma/Admin/Productividad interna** y dependencia de filtros/admin/SEO catálogo.
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
+- Tarjeta incorporada: mejora futura de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables**.
