@@ -50,6 +50,11 @@ La ruta `#/buscador` pagina el listado a 9 motos por página. La paginación se 
 
 Los filtros de segmento y carnet comparten labels/iconos con `#/comunidad/reviews`: segmentos principales con Material Symbols y carnet en orden `Carnet A2`, `Carnet A`, `A2 limitable`.
 
+Estrategia vigente de segmentos en UI pública:
+- se mantiene patrón compacto `primary + other` para evitar saturación en mobile;
+- `other` es bucket visual de segmentos secundarios (no segmento canónico real);
+- no se abren todavía 16 chips públicos en buscador mientras el catálogo siga con cobertura desigual por segmento.
+
 El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante.
 
 ## Ficha de moto — Quick specs (backlog)
@@ -115,6 +120,11 @@ Aspectos técnicos:
 
 **Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros.
 
+Nota de estrategia taxonómica:
+- esta vista puede exponer segmentos canónicos explícitos (`BIKE_SEGMENTS`) para análisis técnico;
+- convive con vistas públicas compactas (`primary + other`) hasta cerrar Fase 3.1 de taxonomía;
+- la diferencia está documentada y deberá unificarse con contrato cross-page.
+
 Metodología visible en página menciona datos técnicos, reviews aprobadas y aspectos agregados.
 
 Nota: el score de rankings (0–10 con icono `analytics`) es independiente del rating de reviews individuales (/5 con estrellas).
@@ -134,6 +144,10 @@ Los bloques editoriales superiores reutilizan `FeaturedReviewCard` (alias públi
 Las `FeaturedReviewCard` de reviews destacadas y últimos reportes tienen acciones comunitarias reales: Helpful, NotHelpful, Report (con formulario) y Reply (con lazy loading por review). `Útil N` se trata como **contador público**: siempre se muestra, pero solo es interactivo cuando hay permiso real (auth + review ajena + no reportada). En no-auth, review propia o review reportada se renderiza en modo pasivo/no interactivo. Si la review es propia, mantiene chip `Propia` en la zona de acciones. `No útil`, `Reportar` y `Responder` no se renderizan cuando no hay permiso real (sin handlers no-op). La mutación de reacciones se consolida con `useReviewReactions` (hook UI-agnóstico) y en esta página se usa con UX silenciosa. El bloqueo de reacciones se calcula desde `reportedReviewIds` (`getMyReviewReports`): si una review ya fue reportada, Helpful/NotHelpful quedan bloqueadas. Al reportar, la reacción previa del usuario se limpia con `clearMyReviewReaction` y la review queda bloqueada para nuevas reacciones. El flujo de reportes se consolida con `useReviewReports` (hook UI-agnóstico); en esta página se usa sin feedback visual adicional en no-auth. Fotos de usuario quedan para fases futuras.
 
 Los filtros de segmento/carnet usan las mismas constantes visuales que el buscador; `Sport` usa `speed`, `Touring` usa `explore` y el carnet se presenta como `Carnet A2`, `Carnet A`, `A2 limitable`.
+
+Nota de alcance taxonómico:
+- en comunidad/reviews se mantiene UX compacta `primary + other`;
+- no abrir 16 categorías explícitas en chips públicos hasta tener mayor cobertura de catálogo y thresholds definidos.
 
 **Contratos de comportamiento:** Ver `docs/product-behavior-contracts.md` para reglas de FeaturedReviewCard, acciones comunitarias (Helpful/NotHelpful/Report), chip `Propia`, deduplicación editorial y garaje.
 
