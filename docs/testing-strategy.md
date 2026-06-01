@@ -57,6 +57,7 @@ Al crear fixtures:
 - Hacer override por test con factories (`createXFixture`) en vez de duplicar objetos enormes.
 - Mantener ids estables y legibles.
 - Incluir casos malos cuando el producto debe ser tolerante: imagen vacía, review incompleta, fecha inválida, scores ausentes.
+- Para QA visual de comunidad/ficha/garaje, cubrir también combinaciones realistas: comentarios largos/cortos, pros/contras múltiples, ratings variados y estilos de uso diversos.
 
 ## Cómo mockear Supabase y fetch
 

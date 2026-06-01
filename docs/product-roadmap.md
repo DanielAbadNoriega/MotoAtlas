@@ -255,7 +255,64 @@ Pendiente de auditoría:
 - confirmar roles `user/admin`.
 - confirmar cobertura de tests.
 
-## 7. P3/P4 — Capa social futura
+## 7. P2 — Datos demo / QA visual
+
+### Mejorar generador de reviews mock realistas
+
+Estado:
+- pendiente / backlog técnico útil.
+
+Objetivo:
+Mejorar el generador de reviews mock para que los datos de prueba parezcan más reales y ayuden a validar maquetación, cards, rankings, garaje, fichas y bloques editoriales de comunidad.
+
+Problema actual (validación de repo):
+- el generador actual ya fuerza `pros`/`cons` como arrays y mantiene `source='mock'`, pero la riqueza de contenido todavía es limitada para QA visual exigente;
+- hay comentarios cortos o plantillas repetidas en parte del dataset;
+- no siempre aparecen combinaciones que estresen la maquetación real (contenido largo/corto, densidad variable, etc.).
+
+Mejoras previstas:
+- reducir `pros`/`cons` vacíos en datasets importados o históricos;
+- generar comentarios más naturales;
+- generar pros/contras coherentes con segmento y tipo de moto;
+- ratings variados;
+- evitar frases repetidas;
+- mantener siempre `source='mock'`;
+- permitir limpiar mocks sin tocar reviews reales;
+- generar casos variados para validar maquetación:
+  - comentarios largos;
+  - comentarios cortos;
+  - pros/contras múltiples;
+  - reviews con aspectos técnicos;
+  - variedad de usos: ciudad, viaje, offroad, deportivo, pasajero, diario.
+
+Reglas:
+- mantener `source='mock'` en todas las reviews generadas;
+- nunca mezclar mocks con `source='user'`;
+- la limpieza de mocks no debe afectar reviews reales;
+- respetar la política actual de sources por entorno;
+- en producción no deben mostrarse datos mock;
+- no tocar schema/RLS salvo decisión explícita.
+
+Relación con roadmap:
+- ayuda a validar `FeaturedReviewCard`;
+- ayuda a validar `MotorcycleGarageCard`;
+- ayuda a validar `BikeDetailPage`;
+- ayuda a validar rankings y bloques editoriales;
+- será útil antes de la revisión global UI/SCSS;
+- ayuda a detectar problemas de maquetación antes de tener datos reales suficientes.
+
+Criterios de aceptación futuros:
+- mocks siguen marcados como `source='mock'`;
+- limpieza de mocks no toca `source='user'`;
+- los pros/contras vacíos se reducen notablemente;
+- los comentarios tienen variedad suficiente;
+- los ratings no son todos iguales;
+- hay variedad de segmentos y usos;
+- los datos ayudan a probar cards de comunidad, detalle, garaje, rankings y filtros;
+- `npm run typecheck` pasa;
+- `npm run test` pasa.
+
+## 8. P3/P4 — Capa social futura
 
 Estado: futuro / no implementar dentro del auth baseline.
 
@@ -294,7 +351,7 @@ Reglas:
   - abuso/spam
   - RGPD/legal
 
-## 8. P3 — Comunidad social / temas por modelo
+## 9. P3 — Comunidad social / temas por modelo
 
 Estado: backlog estratégico / futuro.
 
@@ -358,7 +415,7 @@ No implementar ahora:
 - IA real
 - sistema completo tipo foro generalista
 
-## 9. P3 — Noticias / contenido editorial
+## 10. P3 — Noticias / contenido editorial
 
 Estado: pendiente.
 
@@ -374,7 +431,7 @@ Ejemplos de piezas:
 - “Lo que más se repite sobre la F 900 GS”.
 - “Puntos fuertes y débiles de la Tracer 9 según propietarios”.
 
-## 10. P4 — IA futura
+## 11. P4 — IA futura
 
 Estado: pendiente.
 
@@ -402,7 +459,7 @@ Arquitectura futura posible:
 - `aiModerationService`
 - Supabase Edge Function protegida
 
-## 11. P3/P4 — Revisión global UI/SCSS
+## 12. P3/P4 — Revisión global UI/SCSS
 
 Estado: pendiente.
 
@@ -413,7 +470,7 @@ Al cerrar funcionalidades principales:
 - revisar cards, chips, actions, filtros, formularios y layouts
 - convertir patrones repetidos en componentes/mixins/placeholders
 
-## 12. Riesgos y deuda conocida
+## 13. Riesgos y deuda conocida
 
 - flaky test aislado en `AdminPage`.
 - doble toggle en el mismo tick sin test explícito dedicado.
@@ -422,7 +479,7 @@ Al cerrar funcionalidades principales:
 - filtros actuales todavía no atomizados.
 - futura ejecución de scripts desde admin requiere backend seguro.
 
-## 13. Qué NO hacer todavía
+## 14. Qué NO hacer todavía
 
 - No implementar IA real todavía.
 - No ejecutar scripts desde frontend.
@@ -432,7 +489,7 @@ Al cerrar funcionalidades principales:
 - No automatizar noticias hasta tener datos suficientes.
 - No exponer `service role key` en frontend.
 
-## 14. Relación con Trello
+## 15. Relación con Trello
 
 - Trello = tablero operativo.
 - Este documento = fuente estratégica del repositorio.
@@ -442,3 +499,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta incorporada: “Revisar y cerrar taxonomía de categorías de motos” queda como tarea transversal de **P2 Plataforma/Admin/Productividad interna** y dependencia de filtros/admin/SEO catálogo.
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
 - Tarjeta incorporada: mejora futura de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables**.
+- Tarjeta incorporada: “Mejorar generador de reviews mock realistas” clasificada como **P2 Datos demo / QA visual** para soporte de maquetación y validación visual.

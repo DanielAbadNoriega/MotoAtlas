@@ -52,6 +52,25 @@ npm run mock:reviews:clear:apply
 
 Estos scripts generan/importan datos con `source = 'mock'`.
 
+## Backlog P2 — mocks más realistas para QA visual
+
+Estado: pendiente / backlog técnico útil.
+
+Objetivo:
+Subir la calidad del dataset mock para validar mejor maquetación y estados visuales antes de tener volumen real suficiente.
+
+Ya implementado (verificado):
+- `scripts/generateMockReviews.ts` fuerza `source: 'mock'`.
+- `scripts/importMockReviews.ts` mantiene `source: 'mock'` en payload.
+- `scripts/clearMockReviews.ts` borra solo `source='mock'`.
+- existe variación de ratings y estilos de uso base.
+
+Pendiente de mejora:
+- enriquecer variedad semántica de comentarios para reducir repetición.
+- aumentar casos de estrés visual (comentarios muy largos/cortos, combinaciones de pros/contras más amplias).
+- mejorar coherencia segmento/tipo de moto en pros y contras.
+- contemplar generación opcional de aspectos técnicos para pruebas visuales avanzadas.
+
 ## Riesgos y advertencias
 
 - No subir `SUPABASE_SERVICE_ROLE_KEY` a repositorios públicos.

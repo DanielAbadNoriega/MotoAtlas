@@ -68,6 +68,17 @@ Nota de alcance:
 - no ampliar schema/modelo `Bike` dentro de esta tarea sin decisión explícita
 - si faltan campos técnicos, queda dependiente del futuro Admin catálogo/modelos
 
+## Datos demo para QA visual (backlog)
+
+Estado: pendiente (P2 técnico).
+
+La validación visual de `FeaturedReviewCard`, `MotorcycleGarageCard`, bloques editoriales y layouts de comunidad depende de mocks que no parezcan texto de relleno repetitivo.
+
+Dirección:
+- mejorar realismo de comentarios mock;
+- aumentar variedad de longitud/estructura;
+- mantener `source='mock'` y limpieza segura sin tocar `source='user'`.
+
 ## Comunidad landing
 
 La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` en modo visual (sin acciones comunitarias conectadas en esta página).
