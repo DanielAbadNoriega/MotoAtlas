@@ -700,6 +700,81 @@ Relación con el foco actual:
 - conecta con artículos dinámicos data-driven;
 - conecta con rankings y comunidad.
 
+### Tendencia real basada en histórico de actividad (P2/P3)
+
+Estado:
+- backlog estratégico / futuro.
+
+Objetivo:
+Sustituir la tendencia simple actual por una señal real basada en histórico temporal y actividad reciente de la comunidad.
+
+Problema actual:
+- la tendencia actual no usa serie temporal real;
+- puede servir como aproximación visual, pero no debe interpretarse como crecimiento real;
+- para rankings, artículos dinámicos y Radar MotoAtlas hace falta una señal más sólida.
+
+Posibles señales futuras:
+- crecimiento de reviews por periodo;
+- incremento de rating medio por periodo;
+- volumen reciente de reviews aprobadas;
+- visitas recientes a ficha;
+- comparaciones recientes;
+- favoritos/guardados;
+- motos seguidas;
+- solicitudes de modelo;
+- actividad en temas/comunidad;
+- interacciones útiles en reviews;
+- cambios de posición en ranking por semana/mes.
+
+Fases recomendadas:
+1. Auditoría de datos disponibles:
+   - revisar qué eventos existen ya;
+   - revisar si hay timestamps suficientes;
+   - revisar si hay datos de visitas/comparaciones/favoritos;
+   - no inventar tendencia si no hay señal real.
+2. Señal mínima basada en reviews:
+   - reviews aprobadas recientes;
+   - crecimiento de número de reviews;
+   - variación de rating medio;
+   - ventana temporal simple: últimos 7/30/90 días.
+3. Señal avanzada de actividad:
+   - comparaciones;
+   - guardados/favoritos;
+   - visitas;
+   - motos seguidas;
+   - solicitudes;
+   - actividad comunitaria.
+4. Integración UI:
+   - mostrar etiquetas como “Tendencia al alza”, “Nueva entrada”, “Muy comentada” u “Opinión dividida” solo cuando estén justificadas por datos reales;
+   - evitar claims falsos o exagerados.
+
+Reglas:
+- no presentar tendencia como real si se basa en aproximación sin histórico;
+- no usar mocks/seed para claims públicos de producción;
+- documentar claramente la ventana temporal usada;
+- mantener separación entre rating, score, confianza y tendencia;
+- no mezclar visitas personales con métricas públicas sin privacidad clara;
+- si se usan eventos de usuario, revisar privacidad/RGPD;
+- no implementar tracking invasivo.
+
+Relación con roadmap:
+- conecta con rediseño de `Insights en vivo`;
+- conecta con `Radar MotoAtlas / Pulso de la Comunidad`;
+- conecta con rankings;
+- conecta con artículos data-driven;
+- conecta con engagement sano;
+- conecta con futuras comparativas vivas;
+- puede alimentar SEO y descubrimiento.
+
+Criterios de aceptación futuros:
+- existe una fuente clara de datos temporales;
+- la tendencia usa ventanas temporales documentadas;
+- tests cubren casos sin histórico, histórico insuficiente y crecimiento real;
+- UI no muestra tendencia falsa cuando faltan datos;
+- producción no usa mocks/seed para claims de tendencia;
+- `npm run typecheck` pasa;
+- `npm run test` pasa.
+
 ### 3. Mi garaje / motos seguidas
 
 Permitir que el usuario marque motos como:
@@ -992,3 +1067,4 @@ Al cerrar funcionalidades principales:
 - Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).
 - Idea histórica incorporada: “Engagement sano y retorno de usuario” clasificada como **P3/P4 Comunidad / Personalización / Engagement sano** (backlog estratégico, no implementación inmediata).
 - Tarea futura incorporada: “Personalizar emails de Supabase Auth” clasificada como **P2/P3 Auth / Branding / Emails transaccionales** (backlog futuro, no bloqueante para MVP).
+- Tarea futura incorporada: “Implementar tendencia real basada en histórico de actividad” clasificada como **P2/P3 Rankings / Analytics / Comunidad viva** (backlog estratégico, no implementación inmediata).
