@@ -143,14 +143,18 @@ Este bloque agrupa herramientas internas y bases de plataforma necesarias para e
 
 ### Tarea transversal: Taxonomía de segmentos de motos
 
-Estado: cierre por fases en progreso (F0/F1 cerradas; F2-F4 pendientes).
+Estado: cierre por fases en progreso (F0/F1 cerradas; F2 parcialmente aplicada; F3/F4 pendientes).
 
 Fases de cierre (estado actualizado):
 - Fase 0 — Auditoría inicial: **cerrada**.
 - Fase 1 — Guardrails/tests de contrato: **cerrada**.
-- Fase 2 — Saneo puntual de datos y clasificaciones dudosas: **pendiente**.
+- Fase 2 — Saneo puntual de datos y clasificaciones dudosas: **parcialmente aplicada**.
 - Fase 3 — Estrategia final de filtros (`primary + other` vs 16 categorías explícitas): **pendiente**.
 - Fase 4 — Preparación SEO/Admin/landings por categoría: **pendiente**.
+
+Caso aplicado en Fase 2:
+- `cfmoto-800mt-x-2025`: `segment` corregido de `naked` a `trail` por warning explícito del merge report (modelo apuntaba a `trail/adventure`).
+- La frontera semántica `trail` vs `adventure` queda como deuda de producto para Fase 3.
 
 Objetivo:
 Cerrar una taxonomía clara de segmentos para que el catálogo sea coherente y escalable.

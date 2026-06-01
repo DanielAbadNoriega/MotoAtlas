@@ -3,7 +3,7 @@
 ## Último estado estable
 
 - Rama actual:
-- Último bloque cerrado: Fase 1 taxonomía — guardrails de contrato (Workstream/branch `test/motorcycle-taxonomy-contracts`)
+- Último bloque validado: Fase 2 taxonomía — saneo puntual inicial de datos (`cfmoto-800mt-x-2025`: `naked` → `trail`)
 - Tests: 997 passed
 - Typecheck: clean
 - Último commit:
@@ -57,9 +57,12 @@
 - Scripts de normalización + sync con dry-run (`normalize:images:*`, `sync:images:*`) documentados y activos.
 - Contrato actual de imagen: sincronización de `image_url`/`image_source` y respeto de `image_locked` para no pisar curación manual.
 
-### Taxonomía de segmentos (Fase 1)
+### Taxonomía de segmentos (Fase 0-2)
 - Fase 0 (auditoría inicial): cerrada.
 - Fase 1 (guardrails/tests de contrato): cerrada.
+- Fase 2 (saneo puntual inicial de datos): aplicada parcialmente.
+- Caso saneado en Fase 2:
+  - `cfmoto-800mt-x-2025`: `segment` de `naked` a `trail`.
 - Guardrails implementados:
   - `BIKE_SEGMENTS` exacto (16 categorías esperadas).
   - alineación `BikeSegment` (`src/types/bike.ts`) ↔ `BIKE_SEGMENTS`.
@@ -86,7 +89,7 @@
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
 - Backlog P2: auditoría residual de admin/moderación (solicitudes, avisos al autor y cierre de contratos de respuestas).
-- Backlog P2: saneo puntual de clasificación de datos actuales por segmento (casos dudosos) tras auditoría.
+- Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: decisión de estrategia de filtros de segmento (`primary + other` vs exposición explícita de 16 categorías) antes de expandir UI.
 - Backlog P2: guardrail adicional para evitar render de slug crudo de segmento en componentes legacy donde aún aparezca.
 - Backlog P3: `model_requests.segment` sigue como texto libre; evaluar contrato tipado en fase de cierre taxonómico end-to-end.
@@ -99,7 +102,7 @@
 ## En curso
 
 - Cierre completo de taxonomía de segmentos de motos (tarea transversal de plataforma):
-  - Fase 2 pendiente: saneo puntual de datos actuales.
+  - Fase 2 en curso: saneo puntual (primer ajuste aplicado; quedan casos por auditar).
   - Fase 3 pendiente: estrategia final de filtros (`primary + other` vs 16 categorías explícitas).
   - Fase 4 pendiente: preparación SEO/Admin/landings por categoría.
 - ...
@@ -115,7 +118,7 @@
 - Rankings usan reviewCount real y confidence.
 - La tarjeta histórica “Implementar login y cuentas de usuario” se reclasifica en roadmap como **Auth baseline** dentro de **P2 Plataforma/Admin/Productividad interna**; capa social avanzada queda para fase futura separada.
 - La tarea “Revisar y cerrar taxonomía de categorías de motos” se clasifica como dependencia estratégica previa para filtros reutilizables, admin catálogo y futuras landings SEO por segmento.
-- Estado de taxonomía actualizado por fases: Fase 0 (auditoría) y Fase 1 (guardrails/tests de contrato) cerradas; Fase 2+ pendientes.
+- Estado de taxonomía actualizado por fases: Fase 0 (auditoría) y Fase 1 (guardrails/tests de contrato) cerradas; Fase 2 con saneo puntual inicial aplicado (CFMoto 800MT-X `naked` → `trail`); Fase 3/Fase 4 pendientes.
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
 - La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
