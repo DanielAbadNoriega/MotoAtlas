@@ -25,7 +25,7 @@ Rama:
 
 Estado:
 
-* pendiente / en curso
+* cerrado
 
 Objetivo:
 Rediseñar el bloque `Insights en vivo` de `#/comunidad/reviews` para sustituir métricas poco útiles por señales de descubrimiento comunitario más relevantes.
