@@ -20,6 +20,8 @@ export const BIKE_SEGMENTS = [
   'scooter',
 ] as const satisfies readonly BikeSegment[];
 
+const bikeSegmentSet = new Set<string>(BIKE_SEGMENTS);
+
 export const BIKE_LICENSES = ['A2', 'A'] as const satisfies readonly BikeLicense[];
 
 export const MOTORCYCLE_DATA_SOURCES = ['api', 'manual', 'estimated', 'user', 'placeholder'] as const satisfies readonly MotorcycleDataSource[];
@@ -42,6 +44,10 @@ export const segmentLabels: Record<BikeSegment, string> = {
   touring: 'Touring',
   trail: 'Trail',
 };
+
+export function isBikeSegment(value: unknown): value is BikeSegment {
+  return typeof value === 'string' && bikeSegmentSet.has(value);
+}
 
 export type BikeA2Status = 'A2' | 'A2_LIMITABLE' | 'A';
 

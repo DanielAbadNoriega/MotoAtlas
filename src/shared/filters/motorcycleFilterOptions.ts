@@ -1,16 +1,31 @@
 import type { BikeSegment } from '../../types/bike';
-import type { BikeA2Status } from '../motorcycles/motorcycleTaxonomy';
+import { BIKE_SEGMENTS, isBikeSegment, type BikeA2Status } from '../motorcycles/motorcycleTaxonomy';
 
-export type MotorcycleSegmentFilterValue =
-  | 'all'
-  | 'custom'
-  | 'naked'
-  | 'other'
-  | 'scooter'
-  | 'sport'
-  | 'sport-touring'
-  | 'touring'
-  | 'trail';
+export const motorcyclePrimarySegmentFilters = [
+  'naked',
+  'sport',
+  'sport-touring',
+  'trail',
+  'custom',
+  'scooter',
+  'touring',
+] as const satisfies readonly BikeSegment[];
+
+const motorcyclePrimarySegmentSet = new Set<string>(motorcyclePrimarySegmentFilters);
+
+export const motorcycleSecondarySegmentFilters = BIKE_SEGMENTS.filter(
+  (segment) => !motorcyclePrimarySegmentSet.has(segment),
+);
+
+export type MotorcycleVisibleSegmentFilterGroup = (typeof motorcyclePrimarySegmentFilters)[number] | 'other';
+export type MotorcycleSegmentFilterValue = 'all' | MotorcycleVisibleSegmentFilterGroup;
+
+export const motorcycleVisibleSegmentFilterGroups = [
+  ...motorcyclePrimarySegmentFilters,
+  'other',
+] as const satisfies readonly MotorcycleVisibleSegmentFilterGroup[];
+
+const motorcycleVisibleSegmentFilterGroupSet = new Set<string>(motorcycleVisibleSegmentFilterGroups);
 
 export type MotorcycleSegmentFilterOption = Readonly<{
   icon: string;
@@ -22,16 +37,6 @@ export type MotorcycleLicenseFilterOption = Readonly<{
   label: string;
   value: BikeA2Status;
 }>;
-
-export const motorcyclePrimarySegmentFilters = [
-  'naked',
-  'sport',
-  'sport-touring',
-  'trail',
-  'custom',
-  'scooter',
-  'touring',
-] as const satisfies readonly BikeSegment[];
 
 export const motorcycleSegmentFilterOptions = [
   { icon: 'apps', label: 'Todos', value: 'all' },
@@ -51,8 +56,37 @@ export const motorcycleLicenseFilterOptions = [
   { label: 'A2 limitable', value: 'A2_LIMITABLE' },
 ] satisfies readonly MotorcycleLicenseFilterOption[];
 
-export function isPrimaryMotorcycleSegment(segment: BikeSegment | null | undefined) {
-  return Boolean(segment) && motorcyclePrimarySegmentFilters.includes(segment as (typeof motorcyclePrimarySegmentFilters)[number]);
+export function isCanonicalMotorcycleSegment(value: unknown): value is BikeSegment {
+  return isBikeSegment(value);
+}
+
+export function isMotorcycleVisibleSegmentFilterGroup(value: unknown): value is MotorcycleVisibleSegmentFilterGroup {
+  return typeof value === 'string' && motorcycleVisibleSegmentFilterGroupSet.has(value);
+}
+
+export function isMotorcycleSegmentFilterValue(value: unknown): value is MotorcycleSegmentFilterValue {
+  return value === 'all' || isMotorcycleVisibleSegmentFilterGroup(value);
+}
+
+export function isPrimaryMotorcycleSegment(
+  segment: BikeSegment | null | undefined,
+): segment is (typeof motorcyclePrimarySegmentFilters)[number] {
+  return typeof segment === 'string' && motorcyclePrimarySegmentSet.has(segment);
+}
+
+export function getMotorcycleSegmentFilterGroupForCanonicalSegment(segment: BikeSegment): MotorcycleVisibleSegmentFilterGroup {
+  return isPrimaryMotorcycleSegment(segment) ? segment : 'other';
+}
+
+export function getCanonicalSegmentsForMotorcycleVisibleGroup(
+  group: MotorcycleVisibleSegmentFilterGroup,
+  availableSegments: readonly BikeSegment[],
+): BikeSegment[] {
+  if (group === 'other') {
+    return availableSegments.filter((segment) => !isPrimaryMotorcycleSegment(segment));
+  }
+
+  return availableSegments.includes(group) ? [group] : [];
 }
 
 export function matchesMotorcycleSegmentFilter(segment: BikeSegment | null | undefined, filter: MotorcycleSegmentFilterValue) {
@@ -60,43 +94,32 @@ export function matchesMotorcycleSegmentFilter(segment: BikeSegment | null | und
     return true;
   }
 
-  if (filter === 'other') {
-    return Boolean(segment) && !isPrimaryMotorcycleSegment(segment);
+  if (!segment) {
+    return false;
   }
 
-  return segment === filter;
+  return getMotorcycleSegmentFilterGroupForCanonicalSegment(segment) === filter;
 }
 
 export function getAvailableMotorcycleSegmentFilterOptions(availableSegments: readonly BikeSegment[]) {
-  const availableSegmentSet = new Set(availableSegments);
-  const hasOtherSegments = availableSegments.some((segment) => !isPrimaryMotorcycleSegment(segment));
-
   return motorcycleSegmentFilterOptions.filter((option) => {
     if (option.value === 'all') {
       return true;
     }
 
-    if (option.value === 'other') {
-      return hasOtherSegments;
-    }
-
-    return availableSegmentSet.has(option.value);
+    return getCanonicalSegmentsForMotorcycleVisibleGroup(option.value, availableSegments).length > 0;
   });
 }
 
 export function getMotorcycleSegmentFilterTargetSegments(
   filter: MotorcycleSegmentFilterValue,
   availableSegments: readonly BikeSegment[],
-) {
+): BikeSegment[] {
   if (filter === 'all') {
     return [];
   }
 
-  if (filter === 'other') {
-    return availableSegments.filter((segment) => !isPrimaryMotorcycleSegment(segment));
-  }
-
-  return [filter];
+  return getCanonicalSegmentsForMotorcycleVisibleGroup(filter, availableSegments);
 }
 
 export function getMotorcycleLicenseFilterLabel(value: BikeA2Status) {

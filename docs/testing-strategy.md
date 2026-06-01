@@ -2,6 +2,9 @@
 
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
+Estado actual de suite:
+- `1002` tests passing.
+
 ## Stack actual
 
 - Vitest como runner unitario y de integración ligera.
@@ -98,7 +101,11 @@ Cobertura implementada:
 - `src/shared/filters/motorcycleFilterOptions.test.ts`
   - protege la estrategia actual de filtros por segmento: `primary + other`;
   - documenta explícitamente que `other` es bucket de UI (no segmento real);
+  - valida mapping `segmento canónico` → `grupo visible`;
+  - valida primarios → sí mismos y secundarios → `other`;
+  - valida que los targets de grupos visibles son segmentos canónicos;
   - valida targets y visibilidad condicional de `other` según segmentos disponibles.
+  - valida ausencia de grupos vacíos en opciones disponibles (salvo `all`).
 
 Regla de contrato actual:
 - Los tests de dataset no fallan si hay segmentos esperados todavía ausentes en datos; solo fallan por segmentos inválidos.
@@ -106,8 +113,7 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-Pendiente recomendado (Fase 3.1):
-- añadir tests de mapping `segmento canónico` → `grupo visible de filtro`;
+Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:
   - vistas compactas (`Search`, `CommunityReviews`, `AccountReviews`, `Admin`);
   - vistas con exposición explícita de segmentos (`TopRated`, `CommunityRankings`).

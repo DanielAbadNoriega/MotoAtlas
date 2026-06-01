@@ -53,6 +53,7 @@ Los filtros de segmento y carnet comparten labels/iconos con `#/comunidad/review
 Estrategia vigente de segmentos en UI pública:
 - se mantiene patrón compacto `primary + other` para evitar saturación en mobile;
 - `other` es bucket visual de segmentos secundarios (no segmento canónico real);
+- el contrato canónico vs visible ya está formalizado en capa shared de filtros/taxonomía;
 - no se abren todavía 16 chips públicos en buscador mientras el catálogo siga con cobertura desigual por segmento.
 
 El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante.
@@ -122,8 +123,8 @@ Aspectos técnicos:
 
 Nota de estrategia taxonómica:
 - esta vista puede exponer segmentos canónicos explícitos (`BIKE_SEGMENTS`) para análisis técnico;
-- convive con vistas públicas compactas (`primary + other`) hasta cerrar Fase 3.1 de taxonomía;
-- la diferencia está documentada y deberá unificarse con contrato cross-page.
+- convive con vistas públicas compactas (`primary + other`) respaldadas por contrato formal canónico vs visible;
+- la diferencia está documentada y su criterio cross-page queda pendiente de armonización futura.
 
 Metodología visible en página menciona datos técnicos, reviews aprobadas y aspectos agregados.
 
@@ -147,6 +148,7 @@ Los filtros de segmento/carnet usan las mismas constantes visuales que el buscad
 
 Nota de alcance taxonómico:
 - en comunidad/reviews se mantiene UX compacta `primary + other`;
+- esta decisión queda respaldada por contrato formal (canónico 16 + visible compacto);
 - no abrir 16 categorías explícitas en chips públicos hasta tener mayor cobertura de catálogo y thresholds definidos.
 
 **Contratos de comportamiento:** Ver `docs/product-behavior-contracts.md` para reglas de FeaturedReviewCard, acciones comunitarias (Helpful/NotHelpful/Report), chip `Propia`, deduplicación editorial y garaje.
