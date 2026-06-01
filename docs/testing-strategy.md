@@ -86,6 +86,26 @@ Reglas de seguridad para auth fixtures:
 - Nunca usar Supabase real ni claves reales.
 - Mantener tests 100% locales con mocks/fixtures deterministas.
 
+## Contratos de taxonomía de segmentos (Fase 1)
+
+Cobertura implementada:
+- `src/shared/motorcycles/motorcycleTaxonomy.contract.test.ts`
+  - valida `BIKE_SEGMENTS` con lista exacta de 16 categorías esperadas;
+  - valida alineación con `BikeSegment` (`src/types/bike.ts`);
+  - valida alineación con enum `motorcycle_segment` (`supabase/schema.sql`);
+  - valida cobertura completa de `segmentLabels`;
+  - valida que `data/import/motorcycles.json` no tenga segmentos inválidos.
+- `src/shared/filters/motorcycleFilterOptions.test.ts`
+  - protege la estrategia actual de filtros por segmento: `primary + other`;
+  - documenta explícitamente que `other` es bucket de UI (no segmento real);
+  - valida targets y visibilidad condicional de `other` según segmentos disponibles.
+
+Regla de contrato actual:
+- Los tests de dataset no fallan si hay segmentos esperados todavía ausentes en datos; solo fallan por segmentos inválidos.
+
+Riesgo menor conocido:
+- Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
+
 ## Cómo mockear Supabase y fetch
 
 Servicios frontend:
