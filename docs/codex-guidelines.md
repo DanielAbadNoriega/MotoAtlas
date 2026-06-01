@@ -36,6 +36,11 @@ Breve y práctica: reglas mínimas para usar Codex/Copilot en este repo.
     - polish SCSS/UI: `MotoAtlas-Safe-Builder` + `frontend-design` / `accessibility`.
   - Referencia completa: `docs/agents-runbook.md`.
 
+- Workstreams paralelos
+  - Consultar `docs/current-workstreams.md` cuando existan varias ramas activas.
+  - No lanzar tareas en paralelo que toquen las mismas zonas (comunidad, buscador, auth, admin, reviews).
+  - Frase estándar: "Lee `docs/current-workstreams.md` como contexto de coordinación. No modifiques ese archivo salvo que el prompt lo pida expresamente."
+
 - Modelos (regla rápida)
   - `MiniMax M2.7`: bajo/medio riesgo, tareas mecánicas y docs.
   - `GPT-5.3 Codex`: implementación real, refactors, handlers y tests.
