@@ -165,6 +165,7 @@ Regla crítica: scripts usan `SUPABASE_SERVICE_ROLE_KEY` de `.env.import`, NUNCA
 - `docs/motorcycle-data-inventory.md` — inventario de campos Bike
 - `docs/motorcycle-import-workflow.md` — flujo importación
 - `docs/mock-data.md` — utilidades mock reviews
+- `docs/current-workstreams.md` — tareas activas en paralelo, ramas, alcance, riesgos, checks
 - `DESIGN.md` — sistema visual, tokens, patrones UI
 
 ## Plantilla de prompt corto
@@ -192,11 +193,11 @@ No hagas build, commit ni push.
 
 ### `MotoAtlas-Page-Auditor`
 
-Auditorías de páginas en modo plan. Debe leer AGENTS.md + DESIGN.md, no modificar archivos, devolver informe P0/P1/P2 con archivos afectados, problema, cambio recomendado y riesgo. Skills preferentes: accessibility, seo, frontend-design, react-best-practices, typescript-advanced-types, vitest. No usar hyperframes/gsap/animejs/lottie/three/typegpu/supabase-postgres-best-practices sin orden explícita.
+Auditorías de páginas en modo plan. Debe leer AGENTS.md + DESIGN.md + `docs/current-workstreams.md`, no modificar archivos, devolver informe P0/P1/P2 con archivos afectados, problema, cambio recomendado y riesgo. Skills preferentes: accessibility, seo, frontend-design, react-best-practices, typescript-advanced-types, vitest. No usar hyperframes/gsap/animejs/lottie/three/typegpu/supabase-postgres-best-practices sin orden explícita.
 
 ### `MotoAtlas-Safe-Builder`
 
-Aplica cambios pequeños aprobados. Lee AGENTS.md + DESIGN.md, respeta alcance por defecto. Ejecuta typecheck + test. No crear patrones nuevos si existe uno reutilizable.
+Aplica cambios pequeños aprobados. Lee AGENTS.md + DESIGN.md + `docs/current-workstreams.md`, respeta alcance por defecto y zonas permitidas/prohibidas del workstream. Ejecuta typecheck + test. No crear patrones nuevos si existe uno reutilizable.
 
 ### `MotoAtlas-Supabase-Guard`
 
@@ -204,7 +205,7 @@ Cambios explícitos de schema/RLS. Debe leer AGENTS.md + `supabase/schema.sql` +
 
 ### `MotoAtlas-Quality-Gate`
 
-Verificación final después de cambios ya aplicados. Debe leer AGENTS.md, leer DESIGN.md si afecta UI, ejecutar `npm run typecheck` y `npm run test`, y no modificar archivos salvo fallo de typecheck/test o bug evidente directamente relacionado con el cambio revisado.
+Verificación final después de cambios ya aplicados. Debe leer AGENTS.md, leer DESIGN.md si afecta UI, leer `docs/current-workstreams.md` como contexto de coordinación, ejecutar `npm run typecheck` y `npm run test`, y no modificar archivos salvo fallo de typecheck/test o bug evidente directamente relacionado con el cambio revisado.
 
 Debe revisar:
 - alcance del cambio
@@ -217,7 +218,7 @@ Se usa para confirmar que un bloque queda cerrado antes de seguir.
 
 ### `MotoAtlas-Docs-Sync`
 
-Sincronización documental tras cambios ya aprobados. Se usa **después** de un `MotoAtlas-Quality-Gate` aprobado para alinear docs con el estado real implementado.
+Sincronización documental tras cambios ya aprobados. Se usa **después** de un `MotoAtlas-Quality-Gate` aprobado para alinear docs con el estado real implementado. Puede actualizar `docs/current-workstreams.md` cuando el prompt lo pida expresamente (abrir/cerrar workstream, registrar resultados, actualizar riesgos o siguiente paso).
 
 Reglas de uso:
 - cuándo usarlo: cambios funcionales aprobados que afectan comportamiento, arquitectura, testing o flujos.
@@ -297,6 +298,21 @@ No hagas build, commit ni push.
 
 Sincroniza docs tras Quality Gate aprobado.
 No toques código/tests/estilos/schema.
+Si el prompt lo pide expresamente, puede actualizar docs/current-workstreams.md.
 Ejecuta typecheck y test.
 No hagas build, commit ni push.
 ```
+
+## Workstreams paralelos
+
+Cuando haya múltiples tareas activas, leer `docs/current-workstreams.md` para conocer el estado de cada rama, zonas permitidas/prohibidas, riesgos y último resultado de checks.
+
+**Regla de coordinación**: no lanzar en paralelo tareas que toquen las mismas zonas del repo:
+- comunidad/rankings/insights
+- buscador/filtros/taxonomía
+- admin/schema/RLS
+- auth/cuenta/perfiles
+- servicios compartidos de reviews
+
+**Frase estándar para prompts funcionales**:
+> "Lee `docs/current-workstreams.md` como contexto de coordinación. No modifiques ese archivo salvo que el prompt lo pida expresamente. Respeta las zonas permitidas/prohibidas del workstream correspondiente. Si necesitas tocar una zona fuera de alcance, detente y repórtalo antes de modificar."
