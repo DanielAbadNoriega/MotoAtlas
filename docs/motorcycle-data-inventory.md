@@ -60,6 +60,40 @@ Regla UX: no mostrar `PLACEHOLDER` al usuario final. Usar textos como “Precio 
 | `prosConsSource` | `pros_cons_source` | enum | Sí | estimated/manual/user | No | Sí | Sí | No | No mostrar badge grande. |
 | `reliabilitySource` | `reliability_source` | enum | Sí | estimated/user | No | Sí | Sí | Sí | Si `estimated`, nota discreta. |
 
+## Taxonomía de segmentos (estado actual)
+
+Estado: en desarrollo / pendiente de auditoría y cierre.
+
+Segmentos esperados del contrato:
+- `trail`
+- `adventure`
+- `touring`
+- `sport-touring`
+- `naked`
+- `sport`
+- `supersport`
+- `hypernaked`
+- `enduro`
+- `dual-sport`
+- `scrambler`
+- `custom`
+- `cruiser`
+- `retro`
+- `neo-retro`
+- `scooter`
+
+Fuente de verdad coordinada:
+- `supabase/schema.sql` (`motorcycle_segment`)
+- `src/types/bike.ts` (`BikeSegment`)
+- `src/shared/motorcycles/motorcycleTaxonomy.ts` (`BIKE_SEGMENTS` + labels)
+
+Validación operativa mínima:
+- evitar duplicados ambiguos
+- mantener labels/iconos coherentes
+- asegurar filtros funcionales (desktop/mobile)
+- verificar clasificación de motos existentes
+- mantener sincronización schema/TS/importador/UI
+
 ## Campos de reviews
 
 | Campo dominio | Campo Supabase | Obligatorio | Uso |

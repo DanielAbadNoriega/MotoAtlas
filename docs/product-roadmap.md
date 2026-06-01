@@ -24,6 +24,7 @@ Implementado (baseline actual):
 1. Rediseñar `Insights en vivo`.
 2. Reutilizar `MotorcycleGarageCard` en `#/buscador`.
 3. Planificar atomización de filtros reutilizables.
+4. Revisar y cerrar taxonomía de categorías/segmentos de motos como base de catálogo.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -56,6 +57,7 @@ Pendiente (con validación previa):
 
 Estado: pendiente.
 
+- Dependencia crítica previa: cierre de taxonomía de segmentos de motos (evitar filtros ambiguos o duplicados).
 - Los filtros actuales son prototipo/de prueba.
 - Objetivo: crear un sistema flexible y atomizado.
 - Componentes candidatos:
@@ -79,6 +81,62 @@ Estado: pendiente.
 ## 6. P2 — Plataforma/Admin/Productividad interna
 
 Este bloque agrupa herramientas internas y bases de plataforma necesarias para escalar MotoAtlas sin depender de edición manual.
+
+### Tarea transversal: Taxonomía de segmentos de motos
+
+Estado: en desarrollo / pendiente de auditoría y cierre.
+
+Objetivo:
+Cerrar una taxonomía clara de segmentos para que el catálogo sea coherente y escalable.
+
+Categorías esperadas:
+- trail
+- adventure
+- touring
+- sport-touring
+- naked
+- sport
+- supersport
+- hypernaked
+- enduro
+- dual-sport
+- scrambler
+- custom
+- cruiser
+- retro
+- neo-retro
+- scooter
+
+Zonas a revisar:
+- `supabase/schema.sql`
+- `src/shared/motorcycles/motorcycleTaxonomy.ts`
+- `src/types/bike.ts`
+- `src/features/import/*`
+- `scripts/importMotorcycles.ts`
+- `src/utils/motorcycleSearch.ts`
+- `data/import/motorcycles.json`
+- filtros del buscador
+- cards/ficha/comparador donde se renderiza segmento
+
+Comprobar:
+- no duplicados ambiguos
+- labels visibles claros
+- iconos coherentes
+- filtros funcionando
+- mobile sin saturación
+- motos actuales bien clasificadas
+- schema/TS/importador/UI sincronizados
+
+Resultado esperado:
+- taxonomía documentada
+- fuente de verdad clara
+- preparada para buscador, filtros, comparador, SEO, rankings y landings
+
+Relación con roadmap:
+- dependencia del sistema de filtros reutilizable
+- dependencia del futuro admin catálogo/modelos
+- base para futuras landings SEO por categoría
+- debe cerrarse antes de ampliar fuerte el catálogo
 
 ### Admin catálogo de modelos
 
@@ -184,7 +242,71 @@ Reglas:
   - abuso/spam
   - RGPD/legal
 
-## 8. P3 — Noticias / contenido editorial
+## 8. P3 — Comunidad social / temas por modelo
+
+Estado: backlog estratégico / futuro.
+
+Objetivo:
+Crear una capa de discusión abierta por modelo que complemente las reviews estructuradas.
+
+Diferencia de producto:
+- Reviews = experiencia estructurada y valorable.
+- Temas = conversación abierta, dudas y seguimiento comunitario.
+
+Rutas futuras:
+- `#/comunidad/temas` — landing global de temas.
+- `#/comunidad/[motorcycleId]` — listado de temas asociados a una moto.
+- `#/comunidad/[motorcycleId]/temas/[topicId]` — detalle de tema con respuestas.
+
+Funcionalidades previstas:
+1. Crear temas de discusión por modelo.
+2. Listar temas en `#/comunidad/[motorcycleId]`.
+3. Página detalle de tema con respuestas.
+4. Reportar temas y respuestas.
+5. Integración con admin de moderación.
+6. Landing global `#/comunidad/temas`.
+
+Categorías fijas por modelo:
+- Dudas de compra.
+- Problemas / averías.
+- Mantenimiento.
+- Accesorios.
+- Neumáticos.
+- Rutas / viajes.
+- Modificaciones.
+- General.
+
+Dependencias recomendadas antes de implementar:
+- Auth baseline cerrado.
+- Moderación estable.
+- Reportes de reviews/respuestas consolidados.
+- Admin de moderación preparado.
+- Contratos de privacidad definidos.
+- Sistema anti-spam básico.
+
+Notas de arquitectura:
+- No implementar como foro genérico sin relación con motos.
+- Los temas deben estar vinculados a `motorcycleId` cuando correspondan.
+- La landing global debe servir para descubrimiento:
+  - temas recientes
+  - temas populares
+  - temas sin responder
+  - temas por categoría
+- Reportes de temas/respuestas deben reutilizar patrones existentes de reportes/moderación si encajan.
+- En el futuro, la IA podría ayudar a:
+  - detectar temas duplicados
+  - resumir hilos largos
+  - extraer problemas comunes
+  - alimentar insights por modelo
+
+No implementar ahora:
+- seguidores
+- notificaciones
+- gamificación
+- IA real
+- sistema completo tipo foro generalista
+
+## 9. P3 — Noticias / contenido editorial
 
 Estado: pendiente.
 
@@ -200,7 +322,7 @@ Ejemplos de piezas:
 - “Lo que más se repite sobre la F 900 GS”.
 - “Puntos fuertes y débiles de la Tracer 9 según propietarios”.
 
-## 9. P4 — IA futura
+## 10. P4 — IA futura
 
 Estado: pendiente.
 
@@ -228,7 +350,7 @@ Arquitectura futura posible:
 - `aiModerationService`
 - Supabase Edge Function protegida
 
-## 10. P3/P4 — Revisión global UI/SCSS
+## 11. P3/P4 — Revisión global UI/SCSS
 
 Estado: pendiente.
 
@@ -239,7 +361,7 @@ Al cerrar funcionalidades principales:
 - revisar cards, chips, actions, filtros, formularios y layouts
 - convertir patrones repetidos en componentes/mixins/placeholders
 
-## 11. Riesgos y deuda conocida
+## 12. Riesgos y deuda conocida
 
 - flaky test aislado en `AdminPage`.
 - doble toggle en el mismo tick sin test explícito dedicado.
@@ -248,7 +370,7 @@ Al cerrar funcionalidades principales:
 - filtros actuales todavía no atomizados.
 - futura ejecución de scripts desde admin requiere backend seguro.
 
-## 12. Qué NO hacer todavía
+## 13. Qué NO hacer todavía
 
 - No implementar IA real todavía.
 - No ejecutar scripts desde frontend.
@@ -258,10 +380,12 @@ Al cerrar funcionalidades principales:
 - No automatizar noticias hasta tener datos suficientes.
 - No exponer `service role key` en frontend.
 
-## 13. Relación con Trello
+## 14. Relación con Trello
 
 - Trello = tablero operativo.
 - Este documento = fuente estratégica del repositorio.
 - Cuando una idea pase a ejecución, crear tarjeta en Trello.
 - Si una idea surge en conversación pero aún no toca ejecutarla, documentarla aquí para no perder contexto.
 - Reclasificación aplicada: la tarjeta histórica “Implementar login y cuentas de usuario” queda dentro de **P2 Plataforma/Admin/Productividad interna** como **auth baseline** (parcialmente implementado, pendiente de auditoría de cierre).
+- Tarjeta incorporada: “Revisar y cerrar taxonomía de categorías de motos” queda como tarea transversal de **P2 Plataforma/Admin/Productividad interna** y dependencia de filtros/admin/SEO catálogo.
+- Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).

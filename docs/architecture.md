@@ -205,6 +205,20 @@ La tabla principal es `public.motorcycles`.
 
 Segmentos soportados: `trail`, `adventure`, `touring`, `sport-touring`, `naked`, `sport`, `supersport`, `hypernaked`, `enduro`, `dual-sport`, `scrambler`, `custom`, `cruiser`, `retro`, `neo-retro`, `scooter`.
 
+### Taxonomía de segmentos (estado de cierre)
+
+Estado actual: en desarrollo / pendiente de auditoría y cierre final.
+
+Fuente de verdad funcional (debe permanecer sincronizada):
+- `supabase/schema.sql` (enum `motorcycle_segment`)
+- `src/types/bike.ts` (`BikeSegment`)
+- `src/shared/motorcycles/motorcycleTaxonomy.ts` (`BIKE_SEGMENTS`, labels)
+- `src/features/import/*` y `scripts/importMotorcycles.ts` (normalización/validación/import)
+- `src/utils/motorcycleSearch.ts` + filtros UI (buscador/rankings/admin/comparador/ficha)
+
+Regla de arquitectura:
+- No crecer catálogo ni abrir landings SEO por categoría sin cerrar primero la taxonomía y su sincronización end-to-end (schema, tipos, importador y UI).
+
 Campos añadidos al núcleo:
 
 - A2: `is_a2_compatible`, `is_a2_limited_version`, `limited_power_hp`, `original_power_hp`.

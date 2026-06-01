@@ -52,6 +52,7 @@
 
 ## En curso
 
+- Auditoría y cierre de taxonomía de segmentos de motos (tarea transversal de plataforma): consolidar fuente de verdad y sincronización entre schema/TS/importador/UI.
 - ...
 
 ## Siguiente paso
@@ -64,6 +65,8 @@
 - Dev/pre puede incluir `seed` y `mock`.
 - Rankings usan reviewCount real y confidence.
 - La tarjeta histórica “Implementar login y cuentas de usuario” se reclasifica en roadmap como **Auth baseline** dentro de **P2 Plataforma/Admin/Productividad interna**; capa social avanzada queda para fase futura separada.
+- La tarea “Revisar y cerrar taxonomía de categorías de motos” se clasifica como dependencia estratégica previa para filtros reutilizables, admin catálogo y futuras landings SEO por segmento.
+- La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
 - ...
 
 ## No tocar sin decisión explícita
