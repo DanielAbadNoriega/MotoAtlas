@@ -132,6 +132,7 @@ Cobertura actual relevante:
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
 - `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
+- `src/shared/reviews/reviewSourcePolicy.test.ts` valida contrato por entorno: producción solo `user`; dev/pre con demo activo incluye `seed/mock`; dev/pre con demo inactivo vuelve a solo `user`.
 - `src/shared/reviews/useReviewReactions.test.tsx` cubre el hook compartido de reacciones:
   - blocked (`unauthenticated`, `own_review`, `reported`, `pending`)
   - success/error de Helpful y NotHelpful

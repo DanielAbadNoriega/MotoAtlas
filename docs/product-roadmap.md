@@ -255,6 +255,42 @@ Pendiente de auditoría:
 - confirmar roles `user/admin`.
 - confirmar cobertura de tests.
 
+### Control de datos demo por entorno
+
+Estado:
+- source policy central: implementada/documentada.
+- toggle admin: pendiente futuro.
+
+Contrato:
+- producción solo puede mostrar `source='user'`.
+- producción nunca debe mostrar `source='seed'` ni `source='mock'`.
+- dev/pre con demo activado puede mostrar `source='user'`, `source='seed'`, `source='mock'`.
+- dev/pre con demo desactivado debe mostrar solo `source='user'`.
+
+Definiciones:
+- `source='user'`: datos reales creados por usuarios.
+- `source='seed'`: datos demo controlados insertados mediante SQL.
+- `source='mock'`: datos generados desde código/JSON mock.
+
+Reglas:
+- la lógica debe permanecer centralizada.
+- no duplicar filtros de source en componentes.
+- las vistas públicas deben seguir usando solo `status='approved'`.
+- `pending`, `hidden` y `rejected` no deben aparecer en vistas públicas.
+- cuenta/admin/moderación pueden tener reglas distintas si el contrato lo exige.
+
+Pendiente futuro:
+- crear toggle admin “Incluir datos demo”.
+- visible solo en dev/pre.
+- en producción no visible o sin efecto.
+- nunca exponer datos mock/seed en producción pública.
+
+Relación con roadmap:
+- conecta con generador de reviews mock realistas.
+- conecta con validación visual/maquetación.
+- conecta con datos demo seguros.
+- conecta con admin/productividad interna.
+
 ## 7. P2 — Datos demo / QA visual
 
 ### Mejorar generador de reviews mock realistas
@@ -500,3 +536,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
 - Tarjeta incorporada: mejora futura de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables**.
 - Tarjeta incorporada: “Mejorar generador de reviews mock realistas” clasificada como **P2 Datos demo / QA visual** para soporte de maquetación y validación visual.
+- Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.

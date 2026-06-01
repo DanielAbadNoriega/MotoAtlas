@@ -44,6 +44,8 @@
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.
 - Policy por entorno vigente: producción solo `source='user'`; dev/pre puede incluir `seed` y `mock`.
 - Backlog P2: mejorar realismo de reviews mock para QA visual (variedad de contenido, menos repetición y mejor cobertura de maquetación).
+- Source policy central aplicada en servicios públicos de reviews (`reviewSourcePolicy` + `status='approved'`).
+- Pendiente P2: toggle admin “Incluir datos demo” solo para dev/pre.
 
 ## Pendiente
 
@@ -53,6 +55,7 @@
 - Reutilización de `MotorcycleGarageCard` en `#/buscador` (pendiente, aún no aplicada).
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
+- Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 
 ## En curso
 
@@ -73,6 +76,7 @@
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
 - La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
+- “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
 - ...
 
 ## No tocar sin decisión explícita

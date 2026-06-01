@@ -26,6 +26,21 @@ getAllowedReviewSources({ isProduction: false, demoEnabled: false }) // ['user']
 
 **Regla:** Producción nunca muestra `seed` ni `mock`, aunque `demoEnabled` sea `true`.
 
+## Control por entorno en comunidad (reclasificación)
+
+Estado:
+- source policy central: implementada/documentada.
+- toggle admin “Incluir datos demo”: pendiente futuro P2.
+
+Alcance implementado:
+- la selección de sources públicos está centralizada en `reviewSourcePolicy`.
+- los servicios públicos de reviews usan esa policy y mantienen `status='approved'`.
+
+Pendiente futuro:
+- toggle admin visible solo en dev/pre.
+- en producción no visible o sin efecto.
+- nunca habilitar exposición pública de `seed/mock` en producción.
+
 ## Seed SQL
 
 El proyecto incluye:
