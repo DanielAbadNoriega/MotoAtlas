@@ -100,6 +100,18 @@ describe('MotorcycleGarageCard', () => {
     expect(cta).toHaveAttribute('href', '#/motos/bmw-f900-gs');
   });
 
+  it('renders optional footer actions when provided', () => {
+    render(
+      <MotorcycleGarageCard
+        {...defaultProps}
+        footerActions={<button type="button">Comparar</button>}
+      />,
+    );
+
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByRole('button', { name: 'Comparar' })).toBeInTheDocument();
+  });
+
   it('does not render null literal text', () => {
     const { container } = render(<MotorcycleGarageCard {...defaultProps} primaryUseLabel={null} />);
     expect(container).not.toHaveTextContent('null');

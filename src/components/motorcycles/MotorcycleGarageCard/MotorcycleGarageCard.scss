@@ -170,6 +170,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+
+  .button {
+    align-items: center;
+    display: inline-flex;
+    flex: 1 1 100%;
+    gap: 0.45rem;
+    justify-content: center;
+  }
 }
 
 .motorcycle-garage-card__action {
