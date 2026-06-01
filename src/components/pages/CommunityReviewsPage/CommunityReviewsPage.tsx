@@ -42,7 +42,7 @@ import {
   motorcycleSegmentFilterOptions,
   type MotorcycleSegmentFilterValue,
 } from '../../../shared/filters/motorcycleFilterOptions';
-import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { segmentLabels, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import {
   buildReviewAuthContext,
   isOwnReview,
@@ -50,7 +50,7 @@ import {
 } from '../../../shared/reviews/reviewCommunityActions';
 import { useReviewReports, type ReviewReportFormState } from '../../../shared/reviews/useReviewReports';
 import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
-import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import './CommunityReviewsPage.scss';
 
 type ReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -69,11 +69,17 @@ type CommunityReviewFilters = Readonly<{
 }>;
 
 type CommunityInsights = Readonly<{
-  averageRating?: number;
-  highestKilometersReview?: MotorcycleReview;
+  mostHelpfulReview?: Readonly<{
+    helpfulCount: number;
+    motorcycleName: string;
+  }>;
   mostReviewedMotorcycle?: Readonly<{
     count: number;
     name: string;
+  }>;
+  topSegment?: Readonly<{
+    count: number;
+    label: string;
   }>;
   topRidingStyle?: Readonly<{
     count: number;
@@ -269,13 +275,17 @@ function buildCommunityGarage(reviews: readonly MotorcycleReview[]): readonly Co
   });
 }
 
-function getCommunityInsights(reviews: readonly MotorcycleReview[]): CommunityInsights {
+function getCommunityInsights(
+  reviews: readonly MotorcycleReview[],
+  helpfulCountByReviewId: ReadonlyMap<string, number>,
+): CommunityInsights {
   if (reviews.length === 0) {
     return {};
   }
 
   const motorcycleCounts = new Map<string, { count: number; latestTimestamp: number; name: string }>();
   const ridingStyleCounts = new Map<MotorcycleReviewRidingStyle, number>();
+  const segmentCounts = new Map<string, { count: number; label: string }>();
 
   reviews.forEach((review) => {
     const motorcycle = getAccountReviewMotorcycleDisplay(review);
@@ -289,6 +299,15 @@ function getCommunityInsights(reviews: readonly MotorcycleReview[]): CommunityIn
     });
 
     ridingStyleCounts.set(review.ridingStyle, (ridingStyleCounts.get(review.ridingStyle) ?? 0) + 1);
+
+    const motorcycleSegment = review.motorcycle?.segment;
+    if (motorcycleSegment && Object.prototype.hasOwnProperty.call(segmentLabels, motorcycleSegment)) {
+      const currentSegment = segmentCounts.get(motorcycleSegment);
+      segmentCounts.set(motorcycleSegment, {
+        count: (currentSegment?.count ?? 0) + 1,
+        label: segmentLabels[motorcycleSegment],
+      });
+    }
   });
 
   const mostReviewedMotorcycle = [...motorcycleCounts.values()].sort((left, right) => (
@@ -300,20 +319,34 @@ function getCommunityInsights(reviews: readonly MotorcycleReview[]): CommunityIn
     right[1] - left[1] ||
     accountReviewRidingStyleLabels[left[0]].localeCompare(accountReviewRidingStyleLabels[right[0]])
   ))[0];
-  const highestKilometersReview = [...reviews]
-    .filter((review) => review.kilometers !== null)
+  const mostHelpfulReviewEntry = [...reviews]
+    .map((review) => ({
+      helpfulCount: helpfulCountByReviewId.get(review.id) ?? 0,
+      motorcycleName: getAccountReviewMotorcycleDisplay(review).name,
+      rating: review.rating,
+      timestamp: getTimestamp(review.createdAt),
+    }))
+    .filter((review) => review.helpfulCount > 0)
     .sort((left, right) => (
-      (right.kilometers ?? -1) - (left.kilometers ?? -1) ||
+      right.helpfulCount - left.helpfulCount ||
       right.rating - left.rating ||
-      getTimestamp(right.createdAt) - getTimestamp(left.createdAt)
+      right.timestamp - left.timestamp ||
+      left.motorcycleName.localeCompare(right.motorcycleName)
     ))[0];
-  const aggregate = getReviewAggregate(reviews);
+  const topSegmentEntry = [...segmentCounts.values()].sort((left, right) => (
+    right.count - left.count ||
+    left.label.localeCompare(right.label)
+  ))[0];
 
   return {
-    averageRating: aggregate.reviewCount > 0 ? aggregate.averageRating : undefined,
-    highestKilometersReview,
+    mostHelpfulReview: mostHelpfulReviewEntry
+      ? { helpfulCount: mostHelpfulReviewEntry.helpfulCount, motorcycleName: mostHelpfulReviewEntry.motorcycleName }
+      : undefined,
     mostReviewedMotorcycle: mostReviewedMotorcycle
       ? { count: mostReviewedMotorcycle.count, name: mostReviewedMotorcycle.name }
+      : undefined,
+    topSegment: topSegmentEntry
+      ? { count: topSegmentEntry.count, label: topSegmentEntry.label }
       : undefined,
     topRidingStyle: topRidingStyleEntry
       ? { count: topRidingStyleEntry[1], label: accountReviewRidingStyleLabels[topRidingStyleEntry[0]] }
@@ -611,11 +644,39 @@ function formatLastRefreshed(timestamp: number): string {
   return `Actualizado hace ${minutes}min`;
 }
 
-function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insights: CommunityInsights; lastRefreshedAt: number }>) {
-  const highestKilometersMotorcycle = insights.highestKilometersReview
-    ? getAccountReviewMotorcycleDisplay(insights.highestKilometersReview)
-    : undefined;
+function getMostReviewedInsightMeta(mostReviewedMotorcycle: CommunityInsights['mostReviewedMotorcycle']) {
+  if (!mostReviewedMotorcycle) {
+    return 'Sin datos suficientes';
+  }
 
+  return `${numberFormatter.format(mostReviewedMotorcycle.count)} reviews`;
+}
+
+function getMostHelpfulInsightMeta(mostHelpfulReview: CommunityInsights['mostHelpfulReview']) {
+  if (!mostHelpfulReview) {
+    return 'Sin votos útiles todavía';
+  }
+
+  return `${numberFormatter.format(mostHelpfulReview.helpfulCount)} votos útiles`;
+}
+
+function getTopSegmentInsightMeta(topSegment: CommunityInsights['topSegment']) {
+  if (!topSegment) {
+    return 'Sin datos suficientes';
+  }
+
+  return `${numberFormatter.format(topSegment.count)} reviews`;
+}
+
+function getTopRidingStyleInsightMeta(topRidingStyle: CommunityInsights['topRidingStyle']) {
+  if (!topRidingStyle) {
+    return 'Sin datos suficientes';
+  }
+
+  return `${numberFormatter.format(topRidingStyle.count)} reviews`;
+}
+
+function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insights: CommunityInsights; lastRefreshedAt: number }>) {
   const refreshLabel = formatLastRefreshed(lastRefreshedAt);
 
   return (
@@ -631,36 +692,30 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
       <div className="community-reviews-page__insight-list">
         <CommunityInsightItem
           icon="forum"
-          label="Modelo con más reviews"
+          label="Moto más comentada"
           value={insights.mostReviewedMotorcycle?.name}
-          meta={insights.mostReviewedMotorcycle
-            ? `${numberFormatter.format(insights.mostReviewedMotorcycle.count)} reviews`
-            : 'Sin datos suficientes'}
+          meta={getMostReviewedInsightMeta(insights.mostReviewedMotorcycle)}
+        />
+
+        <CommunityInsightItem
+          icon="thumb_up"
+          label="Review más útil"
+          value={insights.mostHelpfulReview?.motorcycleName}
+          meta={getMostHelpfulInsightMeta(insights.mostHelpfulReview)}
+        />
+
+        <CommunityInsightItem
+          icon="category"
+          label="Segmento más activo"
+          value={insights.topSegment?.label}
+          meta={getTopSegmentInsightMeta(insights.topSegment)}
         />
 
         <CommunityInsightItem
           icon="route"
-          label="Uso más repetido"
+          label="Uso más activo"
           value={insights.topRidingStyle?.label}
-          meta={insights.topRidingStyle
-            ? `${numberFormatter.format(insights.topRidingStyle.count)} reportes`
-            : 'Sin datos suficientes'}
-        />
-
-        <CommunityInsightItem
-          icon="speed"
-          label="Review con más kilómetros"
-          value={highestKilometersMotorcycle?.name}
-          meta={insights.highestKilometersReview?.kilometers !== null && insights.highestKilometersReview?.kilometers !== undefined
-            ? `${numberFormatter.format(insights.highestKilometersReview.kilometers)} km`
-            : 'Sin datos suficientes'}
-        />
-
-        <CommunityInsightItem
-          icon="star"
-          label="Rating medio global"
-          value={insights.averageRating !== undefined ? `${formatReviewRating(insights.averageRating)}/5` : undefined}
-          meta="Sobre reviews aprobadas"
+          meta={getTopRidingStyleInsightMeta(insights.topRidingStyle)}
         />
       </div>
 
@@ -1049,7 +1104,10 @@ export function CommunityReviewsPage() {
   const editorialReviewIds = useMemo(() => {
     return Array.from(new Set([...featuredReviews, ...latestReviews].map((review) => review.id)));
   }, [featuredReviews, latestReviews]);
-  const communityInsights = useMemo(() => getCommunityInsights(approvedReviews), [approvedReviews]);
+  const communityInsights = useMemo(
+    () => getCommunityInsights(approvedReviews, helpfulCountByReviewId),
+    [approvedReviews, helpfulCountByReviewId],
+  );
   const garageMotorcycles = useMemo(() => buildCommunityGarage(approvedReviews), [approvedReviews]);
   const filteredGarageMotorcycles = useMemo(
     () => sortGarageMotorcycles(filterGarageMotorcycles(garageMotorcycles, filters), filters.sort),
