@@ -38,7 +38,11 @@
 - `TopRatedMotorcyclesPage` (`#/comunidad` y `#/motos-mejor-valoradas`) reutiliza `FeaturedReviewCard` en `RecentReviews` como card visual común: reemplaza cards legacy cuando hay datos, mantiene orden cronológico (fecha desc), límite `slice(0, 3)` y empty state. En esta fase no conecta Helpful/NotHelpful/Report/Replies ni renderiza acciones falsas/no-op.
 
 ### Admin
-- ...
+- Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
+- Admin protegido por sesión + rol (`user_profiles.role = admin`).
+- Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
+- Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
+- Flujo de solicitudes admin disponible, pendiente de auditoría funcional final y contratos de producto.
 
 ### Datos demo
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.
@@ -57,6 +61,7 @@
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: crear fixtures de auth/perfiles/sesión para tests (user/admin/no-auth) y reducir mocks repetidos por archivo.
+- Backlog P2: auditoría residual de admin/moderación (solicitudes, avisos al autor y cierre de contratos de respuestas).
 
 ## En curso
 
@@ -79,6 +84,7 @@
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
 - “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
 - Crear fixtures de usuarios/perfiles para auth queda como **P2 Auth baseline / Testing / Fixtures** para reforzar auditoría de cierre de auth.
+- “Fase 2.5 moderación/admin de respuestas” queda reclasificada como base mayoritariamente implementada con pendientes residuales auditables.
 - ...
 
 ## No tocar sin decisión explícita

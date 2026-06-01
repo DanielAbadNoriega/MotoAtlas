@@ -231,6 +231,44 @@ Alcance propuesto:
 - ejecución de tareas de mantenimiento desde backend protegido
 - mostrar resultados en UI admin
 
+### Admin/moderación base
+
+Estado:
+- mayoritariamente implementado / pendiente de auditoría residual.
+
+Implementado:
+- rutas admin separadas de cuenta;
+- admin protegido por sesión + rol;
+- dashboard admin base (`#/admin`);
+- `#/admin/moderacion`;
+- reportes de reviews;
+- estados de reporte;
+- acciones sobre reviews desde reportes;
+- `#/admin/reviews`;
+- agrupación de reviews por moto;
+- `#/admin/reviews/[motorcycleId]`;
+- acciones aprobar/ocultar/rechazar;
+- tab de respuestas pendientes de moderación.
+
+Pendientes residuales:
+- completar o auditar `#/admin/solicitudes` (flujo final y contratos de producto);
+- avisos al autor;
+- administración completa de solicitudes (auditoría funcional final);
+- auditoría específica de moderación de respuestas:
+  - aprobar/ocultar/rechazar respuestas;
+  - reportes de respuestas si existen;
+  - estados de respuestas;
+  - permisos admin;
+  - cobertura de tests.
+
+Reglas:
+- no reabrir la Fase 2.5 como greenfield;
+- cualquier mejora admin debe empezar con auditoría focal;
+- no tocar RLS/schema/admin sin decisión explícita;
+- mantener separación mental y de rutas:
+  - `#/cuenta` usuario normal;
+  - `#/admin` administración.
+
 ### Auth baseline y cuentas de usuario
 
 Estado: parcialmente implementado / pendiente de auditoría de cierre.
@@ -592,3 +630,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta incorporada: “Mejorar generador de reviews mock realistas” clasificada como **P2 Datos demo / QA visual** para soporte de maquetación y validación visual.
 - Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.
 - Tarjeta incorporada: “Crear fixtures de usuarios y perfiles para tests de auth” clasificada como **P2 Auth baseline / Testing / Fixtures**.
+- Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.

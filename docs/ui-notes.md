@@ -159,6 +159,10 @@ Los botones de acciones de moderación tienen hover por intención visual (azul 
 
 Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). El tab de respuestas pendientes de moderación está implementado. Avisos al autor y administración completa de solicitudes quedan para fases futuras.
 
+Estado de fase:
+- La base de la Fase 2.5 (moderación/admin) está mayoritariamente implementada.
+- Lo pendiente es residual y debe entrar por auditoría focal (solicitudes, avisos al autor y cierre de contratos de moderación de respuestas).
+
 ## Admin — Reviews por modelo
 
 La ruta `#/admin/reviews` muestra cards agrupadas por `motorcycleId` con imagen, metadatos y CTAs. Cada card muestra:
