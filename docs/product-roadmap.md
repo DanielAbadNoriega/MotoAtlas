@@ -42,6 +42,28 @@ Pendiente (cambios propuestos):
   - uso más activo.
 - Mantener formato de lectura rápida de actividad comunitaria.
 
+### Home — Reemplazo de `FeaturedBikes` / `BikeCard` (legacy temporal)
+
+Estado: backlog UI/SCSS (futuro cercano).
+
+Objetivo:
+- sustituir la sección legacy de Home (`FeaturedBikes` + `BikeCard`) por un patrón de podio/cards alineado con `#/comunidad` y `#/comunidad/rankings`.
+
+Notas:
+- hoy `BikeCard` se usa de forma efectiva vía `FeaturedBikes` en Home;
+- el guardrail de label amigable queda vigente mientras exista el componente;
+- `BikeCard` no debería seguir evolucionándose salvo mantenimiento mínimo hasta su retirada.
+
+### Paridad visual de Podium rankings (`#/comunidad` vs `#/comunidad/rankings`)
+
+Estado: pendiente (ajuste UI puntual).
+
+Objetivo:
+- alinear contenido entre ambos podios para evitar drift visual/semántico.
+
+Pendiente concreto:
+- en `#/comunidad`, las podium cards 2 y 3 deben mostrar el mismo span de metadatos que `#/comunidad/rankings` (`año · segmento · potencia`).
+
 ### MotorcycleGarageCard en buscador
 
 Estado: **implementado / cerrado**.

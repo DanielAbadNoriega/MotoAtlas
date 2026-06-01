@@ -121,6 +121,7 @@ Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:
   - vistas compactas (`Search`, `CommunityReviews`, `AccountReviews`, `Admin`);
   - vistas con exposición explícita de segmentos (`TopRated`, `CommunityRankings`).
+- añadir test de paridad de podio entre `#/comunidad` y `#/comunidad/rankings` para proteger metadatos visibles en cards compactas (posiciones 2 y 3).
 
 ## Cómo mockear Supabase y fetch
 
