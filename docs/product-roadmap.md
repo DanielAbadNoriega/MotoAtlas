@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `980 passed`.
+- Tests de referencia: `985 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -404,12 +404,31 @@ Criterios de aceptación futuros:
 ### Fixtures de usuarios y perfiles para tests de auth
 
 Estado:
-- pendiente / backlog técnico útil.
+- implementado parcialmente / base de fixtures central implementada.
 
 Objetivo:
 Crear fixtures y mocks locales para testear autenticación, roles, perfiles, Mi cuenta y acciones asociadas a usuario sin depender de Supabase real.
 
-Debe incluir fixtures para:
+Implementado (base):
+- fuente central en `src/test/fixtures/auth.ts`;
+- factories con overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`);
+- fixtures de referencia para:
+  - usuario autenticado normal;
+  - usuario admin;
+  - usuario sin `display_name`;
+  - usuario con `avatar_url`;
+  - usuario sin avatar;
+  - usuario no autenticado;
+  - perfil básico completo;
+  - perfil incompleto;
+  - sesión mock;
+- cobertura de contrato en `src/test/fixtures/auth.test.ts`;
+- migración inicial en `src/components/pages/AuthPage/AuthPage.test.tsx`.
+
+Pendiente residual:
+- migrar de forma incremental mocks `useAuth` repetidos en otros tests (Account*, Community*, ReviewModal, StaticInfoPages, Admin*), sin refactor masivo.
+
+Debe seguir cubriendo fixtures para:
 - usuario autenticado normal;
 - usuario admin;
 - usuario sin `display_name`;
@@ -448,9 +467,10 @@ Relación con roadmap:
 - facilita validar roles y permisos.
 
 Criterios de aceptación futuros:
-- existe una fuente clara de fixtures de auth/perfiles/sesión;
+- existe y se mantiene una fuente clara de fixtures de auth/perfiles/sesión;
 - tests pueden simular usuario normal, admin y no autenticado;
 - tests pueden simular perfiles incompletos;
+- migración incremental de suites clave sin romper cobertura;
 - `AuthProvider`/Navbar/Login/Register/Mi cuenta pueden testearse sin Supabase real;
 - `npm run typecheck` pasa;
 - `npm run test` pasa.
@@ -1061,7 +1081,7 @@ Al cerrar funcionalidades principales:
 - Tarjeta incorporada: mejora futura de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables**.
 - Tarjeta incorporada: “Mejorar generador de reviews mock realistas” clasificada como **P2 Datos demo / QA visual** para soporte de maquetación y validación visual.
 - Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.
-- Tarjeta incorporada: “Crear fixtures de usuarios y perfiles para tests de auth” clasificada como **P2 Auth baseline / Testing / Fixtures**.
+- Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **parcialmente implementada** (base central + migración incremental pendiente) dentro de **P2 Auth baseline / Testing / Fixtures**.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
 - Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).

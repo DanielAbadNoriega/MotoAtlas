@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual:
-- Último bloque cerrado: Fase C (P1) — consolidación de reacciones comunitarias
-- Tests: 980 passed
+- Último bloque cerrado: Workstream B — fixtures auth/perfiles (infraestructura de testing)
+- Tests: 985 passed
 - Typecheck: clean
 - Último commit:
 
@@ -44,6 +44,13 @@
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - Flujo de solicitudes admin disponible, pendiente de auditoría funcional final y contratos de producto.
 
+### Auth / testing
+- Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
+- Fuente central con factories y overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`).
+- Cubre presets de user/admin/no-auth/perfil incompleto/avatar-display_name faltantes.
+- `src/test/fixtures/auth.test.ts` valida contrato base de fixtures.
+- `src/components/pages/AuthPage/AuthPage.test.tsx` migrado a fixtures centrales (sin Supabase real).
+
 ### Catálogo / imágenes
 - Pipeline base de imágenes operativo: assets locales por `motorcycle.id` en `public/images/motorcycles/*.webp`.
 - Scripts de normalización + sync con dry-run (`normalize:images:*`, `sync:images:*`) documentados y activos.
@@ -65,7 +72,7 @@
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
-- Backlog P2: crear fixtures de auth/perfiles/sesión para tests (user/admin/no-auth) y reducir mocks repetidos por archivo.
+- Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
 - Backlog P2: auditoría residual de admin/moderación (solicitudes, avisos al autor y cierre de contratos de respuestas).
 - Backlog P2/P3: automatización avanzada del pipeline de imágenes (thumbnails, variantes responsive, validación/reportes de calidad y performance) como evolución del pipeline actual.
 - Backlog P3/P4: noticias dinámicas y artículos evergreen generados desde datos propios (catálogo/reviews/rankings/comparativas), con fase futura IA asistida y revisión humana obligatoria.
@@ -93,7 +100,7 @@
 - La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
 - “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
-- Crear fixtures de usuarios/perfiles para auth queda como **P2 Auth baseline / Testing / Fixtures** para reforzar auditoría de cierre de auth.
+- Fixtures de usuarios/perfiles para auth quedan como **P2 Auth baseline / Testing / Fixtures** con base central implementada; pendiente residual: migración incremental de mocks repetidos.
 - “Fase 2.5 moderación/admin de respuestas” queda reclasificada como base mayoritariamente implementada con pendientes residuales auditables.
 - “Automatización avanzada de imágenes” queda clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual de imágenes.
 - “Noticias dinámicas y artículos desde datos MotoAtlas” queda clasificada como backlog estratégico **P3/P4 Contenido dinámico / SEO / IA futura**.

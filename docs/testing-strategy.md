@@ -50,24 +50,41 @@ npm run test
 
 - `src/test/fixtures/bikes.ts`: catálogo reducido de motos para buscador, ficha y comparador.
 - `src/test/fixtures/reviews.ts`: generadores de reviews aprobadas, pendientes, rechazadas y ocultas para comunidad/reviews.
+- `src/test/fixtures/auth.ts`: fuente central de auth/perfiles/sesión para tests de autenticación y permisos.
 
-### Backlog P2 — fixtures de auth/perfiles/sesión
+### Fixtures de auth/perfiles/sesión (estado actual)
 
-Pendiente: centralizar fixtures de auth (hoy hay mocks repetidos de `useAuth` en múltiples tests de página/componente).
+Implementado (base):
+- factories con overrides:
+  - `createAuthUser(overrides?)`
+  - `createUserProfile(overrides?)`
+  - `createSession(overrides?)`
+  - `createAuthSnapshot(overrides?)`
+  - `createAuthState(overrides?)`
+- fixtures predefinidos:
+  - user normal/admin/no-auth
+  - perfil básico y perfil incompleto
+  - variantes sin `display_name` y sin avatar
+  - sesión mock
+- cobertura base en `src/test/fixtures/auth.test.ts`.
+- primer uso migrado en `src/components/pages/AuthPage/AuthPage.test.tsx`.
 
-Objetivo del backlog:
-- añadir fuente común de fixtures para user normal, admin y no-auth;
-- separar entidades `user`, `profile` y `session` para componer casos;
-- cubrir perfiles incompletos (`display_name`/avatar faltantes) sin duplicar mocks por test.
-- mantener tests 100% locales (sin Supabase real, sin claves reales) usando factories con overrides.
+Pendiente residual (no bloqueante):
+- migración incremental de `mockAuth` repetidos en otros tests (Account*, Community*, ReviewModal, StaticInfoPages, Admin*).
 
 Al crear fixtures:
 
 - Usar datos mínimos pero realistas.
-- Hacer override por test con factories (`createXFixture`) en vez de duplicar objetos enormes.
+- Hacer override por test con factories en vez de duplicar objetos enormes.
 - Mantener ids estables y legibles.
+- Mantener API pequeña y componible (sin abstracciones complejas).
+- Migrar por archivo para minimizar riesgo (evitar refactor masivo de toda la suite).
 - Incluir casos malos cuando el producto debe ser tolerante: imagen vacía, review incompleta, fecha inválida, scores ausentes.
 - Para QA visual de comunidad/ficha/garaje, cubrir también combinaciones realistas: comentarios largos/cortos, pros/contras múltiples, ratings variados y estilos de uso diversos.
+
+Reglas de seguridad para auth fixtures:
+- Nunca usar Supabase real ni claves reales.
+- Mantener tests 100% locales con mocks/fixtures deterministas.
 
 ## Cómo mockear Supabase y fetch
 

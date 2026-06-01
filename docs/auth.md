@@ -80,8 +80,12 @@ Cada aspecto puede incluir un comentario opcional. Se muestran en la review via 
 
 ## Backlog técnico de testing (auth baseline)
 
-- Crear fixtures comunes de `user`/`profile`/`session` para tests de auth.
-- Cubrir explícitamente user normal, admin y no-auth.
-- Cubrir perfiles incompletos (sin `display_name`, sin avatar).
-- Evitar mocks duplicados de `useAuth` por archivo de test.
-- Mantener tests sin Supabase real y sin claves reales.
+Implementado (base):
+- Capa central de fixtures/mocks en `src/test/fixtures/auth.ts` para `user`/`profile`/`session` y estado auth.
+- Factories con overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`).
+- Cobertura base de fixtures en `src/test/fixtures/auth.test.ts`.
+- Migración inicial de consumo en `src/components/pages/AuthPage/AuthPage.test.tsx`.
+
+Pendiente residual (migración incremental):
+- Reducir `mockAuth` locales repetidos en otros tests de página/componente (Account*, Community*, ReviewModal, StaticInfoPages, Admin*).
+- Mantener estrategia incremental por archivo para no romper cobertura existente.

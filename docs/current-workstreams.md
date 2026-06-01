@@ -91,7 +91,7 @@ Rama:
 
 Estado:
 
-* pendiente / en curso
+* cerrado / pendiente de merge
 
 Objetivo:
 Crear una capa central de fixtures/mocks locales para testear autenticación, perfiles, sesión, roles y futuros permisos sin depender de Supabase real.
@@ -143,9 +143,9 @@ Resultado esperado:
 
 Último resultado:
 
-* typecheck:
-* test:
+* typecheck: OK
+* test: OK (66 files, 985 tests)
 
 Siguiente paso:
 
-* lanzar implementación acotada y Quality Gate posterior.
+* mantener como referencia cerrada y preparar merge de la rama `test/auth-fixtures`.
