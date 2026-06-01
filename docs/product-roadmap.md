@@ -347,6 +347,60 @@ Pendiente de auditoría:
 - confirmar roles `user/admin`.
 - confirmar cobertura de tests.
 
+### Personalización de emails de Supabase Auth
+
+Estado:
+- backlog futuro / no bloqueante para MVP.
+
+Objetivo:
+Personalizar los correos automáticos de Supabase Auth para que encajen con la identidad visual de MotoAtlas y ofrezcan una experiencia más cuidada desde el registro, confirmación y recuperación de cuenta.
+
+Emails a contemplar:
+- confirmación de cuenta;
+- recuperación de contraseña;
+- magic link si se usa en el futuro;
+- otros correos transaccionales de auth si Supabase los permite.
+
+Requisitos:
+- textos en castellano;
+- tono claro, premium y coherente con MotoAtlas;
+- diseño dark/premium inspirado en la marca;
+- jerarquía clara: logo/nombre, mensaje principal, CTA, texto de ayuda y aviso de seguridad;
+- compatible con clientes de email;
+- respetar las limitaciones HTML/CSS de Supabase Auth templates.
+
+Flujo recomendado:
+1. diseñar primero la propuesta visual en Google Stitch;
+2. revisar estilo, copy y jerarquía;
+3. adaptar después con Codex/OpenCode a HTML email compatible;
+4. validar limitaciones reales de Supabase Auth;
+5. probar confirmación, recuperación y enlaces en entorno seguro.
+
+Reglas:
+- no bloquear MVP por esta tarea;
+- no introducir lógica de auth nueva solo por personalizar emails;
+- no incluir datos sensibles innecesarios en el email;
+- no depender de CSS complejo no soportado por clientes de correo;
+- no usar assets externos inestables;
+- mantener fallback legible si el cliente de correo bloquea estilos o imágenes.
+
+Relación con roadmap:
+- conecta con Auth baseline;
+- conecta con identidad visual premium de MotoAtlas;
+- conecta con futura capa social/comunidad;
+- mejora confianza del usuario en registro, recuperación y acceso.
+
+Criterios de aceptación futuros:
+- email de confirmación personalizado y probado;
+- email de recuperación personalizado y probado;
+- textos en castellano revisados;
+- HTML compatible con Supabase Auth;
+- enlaces de auth funcionando correctamente;
+- diseño legible en clientes de correo comunes;
+- no se rompe el flujo de login/registro/recuperación;
+- `npm run typecheck` pasa;
+- `npm run test` pasa si hay cambios en repo.
+
 ### Fixtures de usuarios y perfiles para tests de auth
 
 Estado:
@@ -597,7 +651,239 @@ No implementar ahora:
 - IA real
 - sistema completo tipo foro generalista
 
-## 10. P3 — Noticias / contenido editorial
+## 10. P3/P4 — Engagement sano y retorno de usuario
+
+Estado:
+- backlog estratégico / futuro.
+
+Principio de producto:
+No se busca crear adicción ni un feed infinito. Se busca crear bucles sanos de retorno basados en utilidad real, reconocimiento de aportaciones, cambios relevantes y comunidad motera viva.
+
+Idea central:
+El usuario debe sentir que MotoAtlas cambia con su actividad y con la actividad de otros usuarios.
+
+Líneas futuras:
+
+### 1. Desde tu última visita
+
+Mostrar al usuario cambios relevantes desde su última sesión:
+- tu review fue aprobada;
+- tu review recibió votos útiles;
+- una moto de tu garaje recibió nuevas reviews;
+- una moto que sigues subió o bajó en rankings;
+- una comparativa guardada cambió;
+- nuevas reviews publicadas en modelos que sigues;
+- tu solicitud de modelo fue revisada.
+
+Dependencias:
+- auth baseline cerrado;
+- reviews asociadas a usuario;
+- cuenta estable;
+- sistema de actividad/eventos;
+- contratos de privacidad.
+
+### 2. Radar MotoAtlas / Pulso de la Comunidad
+
+Evolución futura de los insights y actividad comunitaria:
+- reviews recientes;
+- motos que están subiendo;
+- modelos más comentados;
+- comparativas calientes;
+- solicitudes populares;
+- opiniones destacadas;
+- segmentos más activos;
+- usos más activos;
+- “La Semana MotoAtlas”.
+
+Relación con el foco actual:
+- conecta con rediseño de `Insights en vivo`;
+- conecta con artículos dinámicos data-driven;
+- conecta con rankings y comunidad.
+
+### Tendencia real basada en histórico de actividad (P2/P3)
+
+Estado:
+- backlog estratégico / futuro.
+
+Objetivo:
+Sustituir la tendencia simple actual por una señal real basada en histórico temporal y actividad reciente de la comunidad.
+
+Problema actual:
+- la tendencia actual no usa serie temporal real;
+- puede servir como aproximación visual, pero no debe interpretarse como crecimiento real;
+- para rankings, artículos dinámicos y Radar MotoAtlas hace falta una señal más sólida.
+
+Posibles señales futuras:
+- crecimiento de reviews por periodo;
+- incremento de rating medio por periodo;
+- volumen reciente de reviews aprobadas;
+- visitas recientes a ficha;
+- comparaciones recientes;
+- favoritos/guardados;
+- motos seguidas;
+- solicitudes de modelo;
+- actividad en temas/comunidad;
+- interacciones útiles en reviews;
+- cambios de posición en ranking por semana/mes.
+
+Fases recomendadas:
+1. Auditoría de datos disponibles:
+   - revisar qué eventos existen ya;
+   - revisar si hay timestamps suficientes;
+   - revisar si hay datos de visitas/comparaciones/favoritos;
+   - no inventar tendencia si no hay señal real.
+2. Señal mínima basada en reviews:
+   - reviews aprobadas recientes;
+   - crecimiento de número de reviews;
+   - variación de rating medio;
+   - ventana temporal simple: últimos 7/30/90 días.
+3. Señal avanzada de actividad:
+   - comparaciones;
+   - guardados/favoritos;
+   - visitas;
+   - motos seguidas;
+   - solicitudes;
+   - actividad comunitaria.
+4. Integración UI:
+   - mostrar etiquetas como “Tendencia al alza”, “Nueva entrada”, “Muy comentada” u “Opinión dividida” solo cuando estén justificadas por datos reales;
+   - evitar claims falsos o exagerados.
+
+Reglas:
+- no presentar tendencia como real si se basa en aproximación sin histórico;
+- no usar mocks/seed para claims públicos de producción;
+- documentar claramente la ventana temporal usada;
+- mantener separación entre rating, score, confianza y tendencia;
+- no mezclar visitas personales con métricas públicas sin privacidad clara;
+- si se usan eventos de usuario, revisar privacidad/RGPD;
+- no implementar tracking invasivo.
+
+Relación con roadmap:
+- conecta con rediseño de `Insights en vivo`;
+- conecta con `Radar MotoAtlas / Pulso de la Comunidad`;
+- conecta con rankings;
+- conecta con artículos data-driven;
+- conecta con engagement sano;
+- conecta con futuras comparativas vivas;
+- puede alimentar SEO y descubrimiento.
+
+Criterios de aceptación futuros:
+- existe una fuente clara de datos temporales;
+- la tendencia usa ventanas temporales documentadas;
+- tests cubren casos sin histórico, histórico insuficiente y crecimiento real;
+- UI no muestra tendencia falsa cuando faltan datos;
+- producción no usa mocks/seed para claims de tendencia;
+- `npm run typecheck` pasa;
+- `npm run test` pasa.
+
+### 3. Mi garaje / motos seguidas
+
+Permitir que el usuario marque motos como:
+- la tengo;
+- la he tenido;
+- la quiero;
+- la estoy comparando;
+- la probé;
+- la sigo.
+
+Uso futuro:
+- personalización;
+- notificaciones suaves;
+- “Desde tu última visita”;
+- artículos relevantes;
+- rankings personalizados;
+- actividad de modelos seguidos.
+
+Dependencias:
+- auth baseline;
+- perfiles/cuenta;
+- privacidad;
+- modelo de datos para garaje/saved motorcycles/followed motorcycles.
+
+### 4. Comparativas vivas
+
+Crear comparativas con lectura comunitaria:
+- “BMW F900GS vs Aprilia Tuareg 660: la comunidad opina”.
+- “MT-09 vs Street Triple: cuál gusta más a propietarios”.
+- “CFMoto 800MT-X vs Ténéré 700: datos, precio y percepción”.
+
+Pueden basarse en:
+- specs técnicas;
+- reviews agregadas;
+- rankings;
+- votos/comparaciones populares;
+- opiniones de propietarios.
+
+Relación:
+- conecta con comparador;
+- conecta con artículos dinámicos;
+- conecta con IA futura;
+- conecta con SEO.
+
+### 5. Notificaciones suaves
+
+Notificaciones controladas por el usuario:
+- review aprobada;
+- alguien marcó tu review como útil;
+- solicitud revisada;
+- nuevas reviews de una moto seguida;
+- nueva actividad en tu garaje;
+- nuevo artículo sobre una moto seguida.
+
+Reglas:
+- sin spam;
+- preferencias configurables;
+- no enviar notificaciones sin consentimiento;
+- respetar privacidad/RGPD.
+
+### 6. Reputación técnica
+
+Gamificación sana basada en prestigio útil:
+- reviewer fiable;
+- experto en trail;
+- experto en naked;
+- propietario verificado;
+- colaborador técnico;
+- veterano MotoAtlas.
+
+Debe basarse en:
+- reviews aprobadas;
+- votos útiles;
+- aportaciones aceptadas;
+- datos corregidos;
+- experiencia de largo plazo;
+- especialización por segmento.
+
+Reglas:
+- no puntos vacíos;
+- no recompensas engañosas;
+- no fomentar spam de reviews;
+- reputación ligada a calidad y utilidad.
+
+Dependencias generales:
+- auth baseline cerrado;
+- cuenta y reviews propias estables;
+- moderación sólida;
+- sistema anti-spam;
+- privacidad y preferencias;
+- suficientes datos reales de comunidad.
+
+No implementar ahora:
+- feed infinito;
+- notificaciones reales;
+- reputación pública;
+- seguidores;
+- automatismos agresivos;
+- rankings de usuarios sin reglas de calidad.
+
+Relación con roadmap:
+- conecta con capa social futura;
+- conecta con noticias/artículos data-driven;
+- conecta con IA futura;
+- conecta con rankings;
+- conecta con reviews, solicitudes y comparador;
+- refuerza la idea de MotoAtlas como comunidad viva.
+
+## 11. P3 — Noticias / contenido editorial
 
 Estado: pendiente.
 
@@ -705,7 +991,7 @@ Relación con roadmap:
 - conecta con reviews y comparador;
 - puede convertirse en una fuente importante de tráfico orgánico.
 
-## 11. P4 — IA futura
+## 12. P4 — IA futura
 
 Estado: pendiente.
 
@@ -733,7 +1019,7 @@ Arquitectura futura posible:
 - `aiModerationService`
 - Supabase Edge Function protegida
 
-## 12. P3/P4 — Revisión global UI/SCSS
+## 13. P3/P4 — Revisión global UI/SCSS
 
 Estado: pendiente.
 
@@ -744,7 +1030,7 @@ Al cerrar funcionalidades principales:
 - revisar cards, chips, actions, filtros, formularios y layouts
 - convertir patrones repetidos en componentes/mixins/placeholders
 
-## 13. Riesgos y deuda conocida
+## 14. Riesgos y deuda conocida
 
 - flaky test aislado en `AdminPage`.
 - doble toggle en el mismo tick sin test explícito dedicado.
@@ -753,7 +1039,7 @@ Al cerrar funcionalidades principales:
 - filtros actuales todavía no atomizados.
 - futura ejecución de scripts desde admin requiere backend seguro.
 
-## 14. Qué NO hacer todavía
+## 15. Qué NO hacer todavía
 
 - No implementar IA real todavía.
 - No ejecutar scripts desde frontend.
@@ -763,7 +1049,7 @@ Al cerrar funcionalidades principales:
 - No automatizar noticias hasta tener datos suficientes.
 - No exponer `service role key` en frontend.
 
-## 15. Relación con Trello
+## 16. Relación con Trello
 
 - Trello = tablero operativo.
 - Este documento = fuente estratégica del repositorio.
@@ -779,3 +1065,6 @@ Al cerrar funcionalidades principales:
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
 - Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).
+- Idea histórica incorporada: “Engagement sano y retorno de usuario” clasificada como **P3/P4 Comunidad / Personalización / Engagement sano** (backlog estratégico, no implementación inmediata).
+- Tarea futura incorporada: “Personalizar emails de Supabase Auth” clasificada como **P2/P3 Auth / Branding / Emails transaccionales** (backlog futuro, no bloqueante para MVP).
+- Tarea futura incorporada: “Implementar tendencia real basada en histórico de actividad” clasificada como **P2/P3 Rankings / Analytics / Comunidad viva** (backlog estratégico, no implementación inmediata).
