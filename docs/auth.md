@@ -76,6 +76,7 @@ Cada aspecto puede incluir un comentario opcional. Se muestran en la review via 
 
 - Avisos al autor cuando una review reportada cambia de estado.
 - Perfiles públicos, seguidores, notificaciones o gamificación.
+- Personalización de templates de emails de Supabase Auth (confirmación/recuperación) con branding MotoAtlas; backlog futuro no bloqueante para MVP.
 
 ## Backlog técnico de testing (auth baseline)
 

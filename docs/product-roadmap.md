@@ -347,6 +347,60 @@ Pendiente de auditoría:
 - confirmar roles `user/admin`.
 - confirmar cobertura de tests.
 
+### Personalización de emails de Supabase Auth
+
+Estado:
+- backlog futuro / no bloqueante para MVP.
+
+Objetivo:
+Personalizar los correos automáticos de Supabase Auth para que encajen con la identidad visual de MotoAtlas y ofrezcan una experiencia más cuidada desde el registro, confirmación y recuperación de cuenta.
+
+Emails a contemplar:
+- confirmación de cuenta;
+- recuperación de contraseña;
+- magic link si se usa en el futuro;
+- otros correos transaccionales de auth si Supabase los permite.
+
+Requisitos:
+- textos en castellano;
+- tono claro, premium y coherente con MotoAtlas;
+- diseño dark/premium inspirado en la marca;
+- jerarquía clara: logo/nombre, mensaje principal, CTA, texto de ayuda y aviso de seguridad;
+- compatible con clientes de email;
+- respetar las limitaciones HTML/CSS de Supabase Auth templates.
+
+Flujo recomendado:
+1. diseñar primero la propuesta visual en Google Stitch;
+2. revisar estilo, copy y jerarquía;
+3. adaptar después con Codex/OpenCode a HTML email compatible;
+4. validar limitaciones reales de Supabase Auth;
+5. probar confirmación, recuperación y enlaces en entorno seguro.
+
+Reglas:
+- no bloquear MVP por esta tarea;
+- no introducir lógica de auth nueva solo por personalizar emails;
+- no incluir datos sensibles innecesarios en el email;
+- no depender de CSS complejo no soportado por clientes de correo;
+- no usar assets externos inestables;
+- mantener fallback legible si el cliente de correo bloquea estilos o imágenes.
+
+Relación con roadmap:
+- conecta con Auth baseline;
+- conecta con identidad visual premium de MotoAtlas;
+- conecta con futura capa social/comunidad;
+- mejora confianza del usuario en registro, recuperación y acceso.
+
+Criterios de aceptación futuros:
+- email de confirmación personalizado y probado;
+- email de recuperación personalizado y probado;
+- textos en castellano revisados;
+- HTML compatible con Supabase Auth;
+- enlaces de auth funcionando correctamente;
+- diseño legible en clientes de correo comunes;
+- no se rompe el flujo de login/registro/recuperación;
+- `npm run typecheck` pasa;
+- `npm run test` pasa si hay cambios en repo.
+
 ### Fixtures de usuarios y perfiles para tests de auth
 
 Estado:
@@ -937,3 +991,4 @@ Al cerrar funcionalidades principales:
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
 - Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).
 - Idea histórica incorporada: “Engagement sano y retorno de usuario” clasificada como **P3/P4 Comunidad / Personalización / Engagement sano** (backlog estratégico, no implementación inmediata).
+- Tarea futura incorporada: “Personalizar emails de Supabase Auth” clasificada como **P2/P3 Auth / Branding / Emails transaccionales** (backlog futuro, no bloqueante para MVP).

@@ -70,6 +70,7 @@
 - Backlog P2/P3: automatización avanzada del pipeline de imágenes (thumbnails, variantes responsive, validación/reportes de calidad y performance) como evolución del pipeline actual.
 - Backlog P3/P4: noticias dinámicas y artículos evergreen generados desde datos propios (catálogo/reviews/rankings/comparativas), con fase futura IA asistida y revisión humana obligatoria.
 - Backlog P3/P4: engagement sano y retorno de usuario (actividad desde última visita, radar comunitario, motos seguidas, comparativas vivas y reputación técnica útil sin patrones adictivos).
+- Backlog P2/P3: personalización de emails de Supabase Auth (auth transaccional con branding MotoAtlas), no bloqueante para MVP.
 
 ## En curso
 
@@ -96,6 +97,7 @@
 - “Automatización avanzada de imágenes” queda clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual de imágenes.
 - “Noticias dinámicas y artículos desde datos MotoAtlas” queda clasificada como backlog estratégico **P3/P4 Contenido dinámico / SEO / IA futura**.
 - “Engagement sano y retorno de usuario” queda clasificada como backlog estratégico **P3/P4 Comunidad / Personalización** con enfoque explícito anti-spam y anti-feed-infinito.
+- “Personalización de emails de Supabase Auth” queda clasificada como backlog **P2/P3 Auth / Branding / Emails transaccionales**, sin bloquear cierre de MVP.
 - ...
 
 ## No tocar sin decisión explícita
