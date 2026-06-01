@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual:
-- Último bloque cerrado: Workstream B — fixtures auth/perfiles (infraestructura de testing)
-- Tests: 985 passed
+- Último bloque cerrado: Reutilización de `MotorcycleGarageCard` en `#/buscador` (Workstream — search-garage-card)
+- Tests: 987 passed
 - Typecheck: clean
 - Último commit:
 
@@ -26,6 +26,7 @@
 - `#/comunidad/reviews`: filtros apply-on-change en tiempo real; botón "Aplicar" cierra el panel en mobile; copy "Reviews destacadas" (antes "Destacadas del mes").
 - `#/comunidad/reviews` Garaje: `MotorcycleGarageCard` extraído a `src/components/motorcycles/MotorcycleGarageCard/`. Props planas reutilizables (title, imageSource, imageAlt, rating, reviewCount, primaryUseLabel, lastReviewDate, reviewsHref, detailHref). Presentacional sin fetch ni estado. Base para futura reutilización en `#/buscador`.
 - `#/comunidad/reviews` `Reviews destacadas`: criterio = utilidad comunitaria (`helpfulCount` desc). Desempates: rating, comentario más largo, más reciente. Kilómetros NO son criterio. Fallback si no hay útiles funciona por rating/fecha. `Últimos reportes`: cronológico puro. Deduplicación interna por `motorcycleId` en cada bloque editorial, sin deduplicación editorial↔garaje.
+- `MotorcycleGarageCard` reutilizada en `#/buscador` con `footerActions` para botón de comparar/seleccionada; mantiene presentacionalidad y usa `aria-label="Ver ficha técnica"` en enlace a ficha.
 - `#/comunidad/reviews` `FeaturedReviewCard` (reviews destacadas y últimos reportes): acciones comunitarias reales conectadas — HelpfulReviewAction, NotHelpfulReviewAction, ReportReviewAction con ReviewReportForm, y ReviewReplySection con lazy loading. `Útil N` es contador público y se muestra siempre: en auth+review ajena+no reportada es interactivo; en no-auth, review propia o reportada queda pasivo/no interactivo. Chip `Propia` visible en zona de acciones para reviews propias. `No útil`, `Reportar` y `Responder` no se renderizan cuando no hay permiso real (sin no-op silencioso). El botón `Responder` aparece como action chip en `.featured-review-card__actions`; ReviewReplySection usa `inline=true` para que el trigger sea hijo directo de actions y el contenido expandido quede en `.motorcycle-community__replies`. `MotorcycleCommunityPage` mantiene comportamiento original sin `inline`. `isBlocked` deriva de `reportedReviewIds` (hidratado con `getMyReviewReports`), y al reportar se limpia reacción previa con `clearMyReviewReaction`; tras reportar, esa review queda bloqueada para nuevas reacciones.
 - Fase A de consolidación P1: utilidades compartidas en `src/shared/reviews/reviewCommunityActions.ts` (`buildReviewAuthContext`, `isOwnReview`, `isDuplicateReviewReportError`, `markReportsByReviewId`, `upsertReactionSummaryInList`, `upsertReactionSummaryById`) reutilizadas por `CommunityReviewsPage` y `MotorcycleCommunityPage` sin introducir hooks.
 - `reviewCommunityActions.ts` es capa de helpers puros: no hace fetch, no lee auth directamente y no llama servicios. Mantiene shapes separados de reaction summaries (list para `CommunityReviewsPage`, map para `MotorcycleCommunityPage`).
@@ -68,7 +69,6 @@
 - Rediseño mobile avanzado de rankings/listado técnico (cards responsive más refinadas).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
-- Reutilización de `MotorcycleGarageCard` en `#/buscador` (pendiente, aún no aplicada).
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
@@ -123,6 +123,7 @@
 - El branch de duplicado en reportes depende del literal `"Ya has reportado esta review."`; si cambia el mensaje backend, hay que ajustar la detección.
 - En fallo de hidratación de reportes (`getMyReviewReports`), `useReviewReports` absorbe el error de forma silenciosa; en `MotorcycleCommunityPage` puede perderse el notice específico de ese edge case.
 - Posible flaky test aislado en Admin (`no muestra paginación cuando hay 6 reportes o menos`), sin evidencia de relación con Fase C.
+- En buscador, `rating` y `reviewCount` son proxies derivados de `fiabilidad`/`reportCount`, no señal comunitaria real. Riesgo de confusión semántica si se renormalizan sin contrato de producto claro.
 - `useReviewReactions` no tiene test explícito para doble toggle en el mismo tick exacto; hay cobertura de pending en request y guard por ref interno.
 
 ## Referencias de contratos

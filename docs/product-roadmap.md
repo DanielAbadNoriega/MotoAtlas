@@ -21,10 +21,9 @@ Implementado (baseline actual):
 
 ## 3. Foco inmediato recomendado
 
-1. Rediseñar `Insights en vivo`.
-2. Reutilizar `MotorcycleGarageCard` en `#/buscador`.
-3. Planificar atomización de filtros reutilizables.
-4. Revisar y cerrar taxonomía de categorías/segmentos de motos como base de catálogo.
+1. Rediseñar `Updates en vivo`.
+2. Planificar atomización de filtros reutilizables.
+3. Revisar y cerrar taxonomía de categorías/segmentos de motos como base de catálogo.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -45,13 +44,21 @@ Pendiente (cambios propuestos):
 
 ### MotorcycleGarageCard en buscador
 
-Pendiente (con validación previa):
-- Auditar props antes de reemplazar.
-- Posibles CTAs:
-  - Ver ficha.
-  - Comparar.
-  - Añadir al comparador.
-- No hacer reemplazo bruto sin revisar impacto en UX y datos.
+Estado: **implementado / cerrado**.
+
+Implementado:
+- `SearchPage` reutiliza `MotorcycleGarageCard` con adaptador local.
+- `MotorcycleGarageCard` flexibilizada con `footerActions?: ReactNode`.
+- Botón `Comparar/Seleccionada` inyectado desde `SearchPage` dentro de `.motorcycle-garage-card__actions`.
+- `MotorcycleGarageCard` sigue presentacional.
+- Enlaces `Reviews` y `Ficha` operativos; `Ficha` mantiene `aria-label="Ver ficha técnica"`.
+- Acciones compactas con patrón glass local `%motorcycle-garage-card-glass-action`.
+
+Nota residual (señal comunitaria real):
+- En buscador, `rating` y `reviewCount` derivan de `fiabilidad`/`reportCount`, no de señal comunitaria real.
+- Este dato proviene de specs estáticas del importador, no de reviews aprobadas.
+- Si en el futuro se renormalizan estos campos sin contrato de producto, podría generar confusión semántica.
+- Queda pendiente como riesgo/no-bloqueante documentado.
 
 ## 5. P1/P2 — Sistema de filtros reutilizable
 
