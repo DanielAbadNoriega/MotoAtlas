@@ -100,13 +100,12 @@ describe('SearchPage', () => {
     expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
   });
 
-  it('filters by real A2 compatibility and shows A2 limitable badges', async () => {
+  it('filters by real A2 compatibility', async () => {
     const user = userEvent.setup();
     renderSearchPage();
 
     await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
 
-    expect(screen.getAllByText('A2 LIMITABLE').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: /Tuareg 660/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /F 900 GS/i })).not.toBeInTheDocument();
   });
@@ -117,11 +116,8 @@ describe('SearchPage', () => {
 
     await user.selectOptions(screen.getByLabelText(/Ordenar por/i), 'price-desc');
 
-    const resultHeadings = screen
-      .getAllByRole('heading', { level: 3 })
-      .map((heading) => heading.textContent)
-      .filter((text) => ['F 900 GS', 'Tuareg 660', 'MT-09', 'NT1100'].includes(text ?? ''));
-    expect(resultHeadings[0]).toBe('NT1100');
+    const resultHeadings = screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent ?? '');
+    expect(resultHeadings[0]).toMatch(/NT1100/i);
   });
 
   it('sorts by power', async () => {
@@ -130,11 +126,8 @@ describe('SearchPage', () => {
 
     await user.selectOptions(screen.getByLabelText(/Ordenar por/i), 'power-desc');
 
-    const resultHeadings = screen
-      .getAllByRole('heading', { level: 3 })
-      .map((heading) => heading.textContent)
-      .filter((text) => ['F 900 GS', 'Tuareg 660', 'MT-09', 'NT1100'].includes(text ?? ''));
-    expect(resultHeadings[0]).toBe('MT-09');
+    const resultHeadings = screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent ?? '');
+    expect(resultHeadings[0]).toMatch(/MT-09/i);
   });
 
   it('shows an empty state when no results match', async () => {
@@ -267,7 +260,6 @@ describe('SearchPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Carnet A2' }));
 
-    expect(screen.getAllByText('A2 LIMITABLE').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: /Ténéré 700/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /R 1300 GS/i })).not.toBeInTheDocument();
   });
@@ -329,14 +321,16 @@ describe('SearchPage', () => {
 });
 
 describe('BikeResultCard', () => {
-  it('renders motorcycle data and toggles compare selection', async () => {
+  it('renders motorcycle data, keeps navigation links and toggles compare selection', async () => {
     const user = userEvent.setup();
     const onToggleCompare = vi.fn();
 
     render(<BikeResultCard bike={bikeFixtures[0]} isSelected={false} onToggleCompare={onToggleCompare} />);
 
     expect(screen.getByRole('heading', { name: /F 900 GS/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+    expect(screen.getByRole('link', { name: /Ver ficha técnica/i })).toHaveAttribute('href', '#/motos/test-bmw-f-900-gs');
+    expect(screen.getByRole('link', { name: /Ver ficha técnica/i })).toHaveTextContent('Ficha');
+    expect(screen.getByRole('link', { name: /Reviews/i })).toHaveAttribute('href', '#/comunidad/test-bmw-f-900-gs');
 
     await user.click(screen.getByRole('button', { name: /Comparar/i }));
 
@@ -350,46 +344,55 @@ describe('BikeResultCard', () => {
   });
 
   it('uses the real motorcycle image when imageUrl is valid', () => {
-    render(<BikeResultCard bike={bikeFixtures[0]} isSelected={false} onToggleCompare={vi.fn()} />);
+    const { container } = render(<BikeResultCard bike={bikeFixtures[0]} isSelected={false} onToggleCompare={vi.fn()} />);
+    const image = container.querySelector('.motorcycle-garage-card img');
 
-    expect(screen.getByRole('img', { name: /Trail media con electrónica completa/i })).toHaveAttribute(
-      'src',
-      'https://example.com/bmw.jpg',
-    );
+    expect(image).toHaveAttribute('src', 'https://example.com/bmw.jpg');
     expect(screen.queryByText('TECHNICAL IMAGE PENDING')).not.toBeInTheDocument();
   });
 
   it('uses the fallback image and overlay when imageUrl is missing', () => {
     const bikeWithoutImage = { ...bikeFixtures[0], imageUrl: undefined } as unknown as Bike;
+    const { container } = render(<BikeResultCard bike={bikeWithoutImage} isSelected={false} onToggleCompare={vi.fn()} />);
+    const image = container.querySelector('.motorcycle-garage-card img');
 
-    render(<BikeResultCard bike={bikeWithoutImage} isSelected={false} onToggleCompare={vi.fn()} />);
-
-    expect(screen.getByRole('img', { name: /Imagen técnica pendiente de BMW F 900 GS/i })).toHaveAttribute(
-      'src',
-      MOTORCYCLE_IMAGE_FALLBACK_URL,
-    );
+    expect(image).toHaveAttribute('src', MOTORCYCLE_IMAGE_FALLBACK_URL);
     expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
   });
 
   it('uses the fallback image and overlay when imageUrl is empty', () => {
     const bikeWithEmptyImage = { ...bikeFixtures[0], imageUrl: '' } as Bike;
+    const { container } = render(<BikeResultCard bike={bikeWithEmptyImage} isSelected={false} onToggleCompare={vi.fn()} />);
+    const image = container.querySelector('.motorcycle-garage-card img');
 
-    render(<BikeResultCard bike={bikeWithEmptyImage} isSelected={false} onToggleCompare={vi.fn()} />);
-
-    expect(screen.getByRole('img', { name: /Imagen técnica pendiente de BMW F 900 GS/i })).toHaveAttribute(
-      'src',
-      MOTORCYCLE_IMAGE_FALLBACK_URL,
-    );
+    expect(image).toHaveAttribute('src', MOTORCYCLE_IMAGE_FALLBACK_URL);
     expect(screen.getByText('TECHNICAL IMAGE PENDING')).toBeInTheDocument();
   });
 
-  it('shows a friendly pending price label instead of placeholder debug text', () => {
-    const bikeWithPendingPrice = { ...bikeFixtures[0], priceEur: 0, priceSource: 'placeholder' } as Bike;
+  it('renders compare action inside motorcycle garage card footer and removes legacy meta wrapper', () => {
+    const { container } = render(<BikeResultCard bike={bikeFixtures[0]} isSelected={false} onToggleCompare={vi.fn()} />);
+    const compareButton = screen.getByRole('button', { name: /^Comparar$/i });
+    const actionsFooter = container.querySelector('.motorcycle-garage-card__actions');
 
-    render(<BikeResultCard bike={bikeWithPendingPrice} isSelected={false} onToggleCompare={vi.fn()} />);
+    expect(actionsFooter).not.toBeNull();
+    expect(actionsFooter?.contains(compareButton)).toBe(true);
+    expect(container.querySelector('.search-result-card__meta')).toBeNull();
+  });
 
-    expect(screen.getByText('Precio pendiente de confirmar')).toBeInTheDocument();
-    expect(screen.queryByText(/placeholder/i)).not.toBeInTheDocument();
+  it('does not render null or undefined literals in the card', () => {
+    const bikeWithSparseData = {
+      ...bikeFixtures[0],
+      reliabilityReports: {
+        ...bikeFixtures[0].reliabilityReports,
+        reportCount: Number.NaN,
+        reliabilityScore: Number.NaN,
+      },
+    } as Bike;
+
+    const { container } = render(<BikeResultCard bike={bikeWithSparseData} isSelected={false} onToggleCompare={vi.fn()} />);
+
+    expect(container).not.toHaveTextContent('null');
+    expect(container).not.toHaveTextContent('undefined');
   });
 });
 

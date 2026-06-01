@@ -94,10 +94,23 @@ describe('MotorcycleGarageCard', () => {
     expect(cta).toHaveAttribute('href', '#/comunidad/bmw-f900-gs');
   });
 
-  it('renders Ficha técnica CTA with correct href', () => {
+  it('renders compact Ficha CTA with technical aria label and correct href', () => {
     render(<MotorcycleGarageCard {...defaultProps} />);
-    const cta = screen.getByRole('link', { name: /Ficha técnica/i });
+    const cta = screen.getByRole('link', { name: /Ver ficha técnica/i });
     expect(cta).toHaveAttribute('href', '#/motos/bmw-f900-gs');
+    expect(cta).toHaveTextContent('Ficha');
+  });
+
+  it('renders optional footer actions when provided', () => {
+    render(
+      <MotorcycleGarageCard
+        {...defaultProps}
+        footerActions={<button type="button">Comparar</button>}
+      />,
+    );
+
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByRole('button', { name: 'Comparar' })).toBeInTheDocument();
   });
 
   it('does not render null literal text', () => {

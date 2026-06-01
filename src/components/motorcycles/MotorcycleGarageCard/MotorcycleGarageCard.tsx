@@ -1,3 +1,4 @@
+import type { ElementType, ReactNode } from 'react';
 import type { MotorcycleImageSource } from '../../../shared/images/getMotorcycleImage';
 import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
 import { formatReviewRating } from '../../../shared/reviews/reviewUtils';
@@ -5,6 +6,8 @@ import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './MotorcycleGarageCard.scss';
 
 export interface MotorcycleGarageCardProps {
+  readonly as?: ElementType;
+  readonly footerActions?: ReactNode;
   readonly title: string;
   readonly imageSource: MotorcycleImageSource | null;
   readonly imageAlt: string;
@@ -34,6 +37,8 @@ function formatDateShort(value: string | Date | null | undefined): string {
 }
 
 export function MotorcycleGarageCard({
+  as = 'article',
+  footerActions,
   title,
   imageSource,
   imageAlt,
@@ -44,6 +49,7 @@ export function MotorcycleGarageCard({
   reviewsHref,
   detailHref,
 }: MotorcycleGarageCardProps) {
+  const RootTag = as;
   const confidence = getRankingConfidence(reviewCount);
   const confidenceLabel = CONFIDENCE_LABELS[confidence];
   const reviewLabel = reviewCount === 1 ? '1 review' : `${reviewCount} reviews`;
@@ -51,7 +57,7 @@ export function MotorcycleGarageCard({
   const usageLabel = primaryUseLabel ?? 'Uso mixto';
 
   return (
-    <article className="motorcycle-garage-card" data-testid="motorcycle-garage-card" aria-label={`${title}: ${reviewLabel}`}>
+    <RootTag className="motorcycle-garage-card" data-testid="motorcycle-garage-card" aria-label={`${title}: ${reviewLabel}`}>
       <MotorcycleImage
         alt={imageAlt}
         className="motorcycle-garage-card__image"
@@ -101,12 +107,17 @@ export function MotorcycleGarageCard({
             <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
             <span>Reviews</span>
           </a>
-          <a className="motorcycle-garage-card__action motorcycle-garage-card__action--secondary" href={detailHref}>
+          <a
+            className="motorcycle-garage-card__action motorcycle-garage-card__action--secondary"
+            href={detailHref}
+            aria-label="Ver ficha técnica"
+          >
             <span className="material-symbols-outlined" aria-hidden="true">list_alt</span>
-            <span>Ficha técnica</span>
+            <span>Ficha</span>
           </a>
+          {footerActions}
         </footer>
       </div>
-    </article>
+    </RootTag>
   );
 }

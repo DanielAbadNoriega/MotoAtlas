@@ -21,7 +21,6 @@ import {
 import { Button } from '../../ui/Button';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import {
-  getBikeA2Badge,
   MOTORCYCLE_DATA_SOURCES,
   segmentLabels,
   type BikeA2Status,
@@ -32,8 +31,9 @@ import {
   getMotorcycleSegmentFilterTargetSegments,
   motorcycleLicenseFilterOptions,
 } from '../../../shared/filters/motorcycleFilterOptions';
-import { getComparatorHashFromBikes, getSearchTextFromRoute } from '../../../shared/routing/routeUtils';
-import { getDataQualityLabel, isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
+import { getComparatorHashFromBikes, getCommunityCanonicalPath, getSearchTextFromRoute } from '../../../shared/routing/routeUtils';
+import { getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
+import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import './SearchPage.scss';
 
@@ -51,12 +51,6 @@ const sortLabels: Record<SortOption, string> = {
 const sortOptions = Object.entries(sortLabels) as [SortOption, string][];
 const numberFormatter = new Intl.NumberFormat('es-ES');
 const SEARCH_RESULTS_PER_PAGE = 9;
-const currencyFormatter = new Intl.NumberFormat('es-ES', {
-  currency: 'EUR',
-  maximumFractionDigits: 0,
-  style: 'currency',
-});
-
 const featureLabels: Record<keyof BikeFeatures, string> = {
   absCornering: 'ABS curva',
   cruiseControl: 'Control crucero',
@@ -116,17 +110,32 @@ const mobileRangePresets: Record<RangeField, readonly RangePreset[]> = {
 
 function getBestUseScore(bike: Bike) {
   const [key, value] = Object.entries(bike.useScores).sort((a, b) => b[1] - a[1])[0];
-  const labels: Record<string, string> = {
-    beginner: 'Beginner',
-    city: 'Ciudad',
-    funFactor: 'Diversión',
-    offroad: 'Offroad',
-    passenger: 'Pasajero',
-    sport: 'Sport',
-    touring: 'Touring',
-  };
 
-  return { label: labels[key] ?? key, value };
+  return { label: useLabels[key as keyof BikeUseScores] ?? 'Uso mixto', value };
+}
+
+function getCommunityHash(bike: Pick<Bike, 'id'>) {
+  return `#${getCommunityCanonicalPath(bike)}`;
+}
+
+function getGarageRating(bike: Bike) {
+  const normalizedRating = bike.reliabilityReports.reliabilityScore / 2;
+
+  if (!Number.isFinite(normalizedRating)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(5, Number(normalizedRating.toFixed(1))));
+}
+
+function getGarageReviewCount(bike: Bike) {
+  const reviewCount = Math.round(bike.reliabilityReports.reportCount);
+
+  if (!Number.isFinite(reviewCount)) {
+    return 0;
+  }
+
+  return Math.max(0, reviewCount);
 }
 
 function SearchField({ filters, onChange }: { filters: SearchFilters; onChange: (next: Partial<SearchFilters>) => void }) {
@@ -566,76 +575,38 @@ export function BikeResultCard({
   onToggleCompare: (bike: Bike) => void;
 }) {
   const bestUse = getBestUseScore(bike);
-  const a2Badge = getBikeA2Badge(bike);
-  const hasPendingPrice = isPendingPrice(bike.priceEur, bike.priceSource);
+  const displayName = getBikeDisplayName(bike);
+  const detailHref = getBikeDetailHash(bike);
+  const communityHref = getCommunityHash(bike);
+  const rating = getGarageRating(bike);
+  const reviewCount = getGarageReviewCount(bike);
 
   return (
     <article className={isSelected ? 'search-result-card search-result-card--selected' : 'search-result-card'} data-testid="search-result-card">
-      <div className="search-result-card__media">
-        <MotorcycleImage motorcycle={bike} loading="lazy" />
-        <div className="search-result-card__badges">
-          <span>{segmentLabels[bike.segment]}</span>
-          <span>{a2Badge.label}</span>
-        </div>
-        <strong className={hasPendingPrice ? 'search-result-card__price search-result-card__price--pending' : 'search-result-card__price'}>
-          {hasPendingPrice ? pendingPriceLabel : currencyFormatter.format(bike.priceEur)}
-        </strong>
-      </div>
-
-      <div className="search-result-card__body">
-        <div className="search-result-card__title-row">
-          <div>
-            <span>
-              {bike.year} · {bike.brand}
-            </span>
-            <h3>{bike.model}</h3>
-          </div>
-          <p>{bike.reliabilityReports.reliabilityScore.toFixed(1)}</p>
-        </div>
-
-        <div className="search-result-card__specs">
-          <div>
-            <span>Cilindrada</span>
-            <strong>{numberFormatter.format(bike.displacementCc)} cc</strong>
-          </div>
-          <div>
-            <span>Potencia</span>
-            <strong>{numberFormatter.format(bike.powerHp)} CV</strong>
-          </div>
-          <div>
-            <span>Peso</span>
-            <strong>{numberFormatter.format(bike.wetWeightKg)} kg</strong>
-          </div>
-          <div>
-            <span>Asiento</span>
-            <strong>{numberFormatter.format(bike.seatHeightMm)} mm</strong>
-          </div>
-          <div>
-            <span>Depósito</span>
-            <strong>{numberFormatter.format(bike.fuelTankLiters)} L</strong>
-          </div>
-          <div>
-            <span>Uso real</span>
-            <strong>
-              {bestUse.label} {bestUse.value}/10
-            </strong>
-          </div>
-        </div>
-
-        <p className="search-result-card__description">{bike.description}</p>
-
-        <div className="search-result-card__actions">
-          <a className="button button--ghost" href={getBikeDetailHash(bike)}>
-            Ver ficha
-          </a>
-          <Button variant={isSelected ? 'secondary' : 'primary'} onClick={() => onToggleCompare(bike)}>
+      <MotorcycleGarageCard
+        as="div"
+        detailHref={detailHref}
+        footerActions={(
+          <Button
+            className="motorcycle-garage-card__action motorcycle-garage-card__compare-action"
+            variant={isSelected ? 'secondary' : 'primary'}
+            onClick={() => onToggleCompare(bike)}
+          >
             <span className="material-symbols-outlined" aria-hidden="true">
               {isSelected ? 'check_circle' : 'compare_arrows'}
             </span>
             {isSelected ? 'Seleccionada' : 'Comparar'}
           </Button>
-        </div>
-      </div>
+        )}
+        imageAlt={displayName}
+        imageSource={bike}
+        lastReviewDate={null}
+        primaryUseLabel={`${bestUse.label} ${bestUse.value}/10`}
+        rating={rating}
+        reviewCount={reviewCount}
+        reviewsHref={communityHref}
+        title={displayName}
+      />
     </article>
   );
 }
