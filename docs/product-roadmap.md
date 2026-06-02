@@ -194,15 +194,15 @@ Estado por fase:
    - Componente `CompareTab` local en BikeDetailPage.tsx.
    - Related bikes (mismo segmento, excluye actual, max 3) dentro del tab Comparar.
    - Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
-   - Usa `MotorcycleGarageCard` temporalmente (pendiente variante optimizada).
+   - Cards temporales/locales (no reutilizan `MotorcycleGarageCard` aún; reemplazo pendiente).
 9. **Fase 5.2 — Acciones reales de comparador en CompareTab**: **implementada**.
    - Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
    - Infraestructura de compare queue reutilizada: `loadCompareQueue`, `saveCompareQueue`, `compareQueueMaxSize`, `getNextCompareSelection`.
    - `saveCompareQueue` dispensa el evento de sync automáticamente; no se añade evento custom en BikeDetailPage.
    - Sin botones fake/no-op.
    - Sin ids duplicados en cola; máximo 3 respetado.
-10. **Pendiente Fase 5 (post 5.2)**:
-    - Reemplazar `MotorcycleGarageCard` temporal en CompareTab por variante optimizada.
+10. **Pendiente post 5.2**:
+    - Reemplazar cards temporales de CompareTab por `MotorcycleGarageCard` o variante optimizada.
 
 Reglas transversales:
 - no ampliar schema/modelo `Bike` salvo decisión explícita.
@@ -210,7 +210,7 @@ Reglas transversales:
 - no copiar CSS de `ReviewModal`.
 - `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes, acciones seguras (no fake/no-op).
 - `FeaturedReviewCardCommunityActions`: componente reutilizable para acciones de comunidad en FeaturedReviewCard.
-- `MotorcycleGarageCard` sigue presentacional si se reutiliza en Comparar.
+- `MotorcycleGarageCard` sigue presentacional cuando se use en Comparar (pendiente post-5.2).
 - Mobile: responsive funcional, refinados premium pospuestos a fase mobile-first.
 
 Riesgos documentados:

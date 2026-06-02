@@ -104,10 +104,7 @@
    - `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto (Fases 4.3B/4.3C).
    - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
 - Fase 5.1 — CompareTab local con related bikes: **implementada**.
-   - Componente `CompareTab` local en BikeDetailPage.tsx.
-   - Related bikes (mismo segmento, excluye actual, max 3) dentro del tab Comparar.
-   - Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
-   - Usa `MotorcycleGarageCard` para cada related bike (pendiente de reemplazar por variante optimizada).
+   - Componente `CompareTab` local en BikeDetailPage.tsx con cards locales/temporales de related bikes (no reutiliza `MotorcycleGarageCard` aún). Reemplazo pendiente.
 - Fase 5.2 — Acciones reales de comparador en CompareTab: **implementada**.
    - Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
    - Infraestructura de compare queue reutilizada: `loadCompareQueue`, `saveCompareQueue`, `compareQueueMaxSize`, `getNextCompareSelection`.
@@ -199,7 +196,7 @@
    - Sección residual `bike-detail__specs` eliminada; specs detalladas dentro de Especificaciones tab.
    - Sección residual `bike-detail__related` integrada en CompareTab.
    - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
-   - Reemplazar `MotorcycleGarageCard` temporal en CompareTab por variante optimizada (pendiente).
+   - Reemplazar las cards locales/temporales de CompareTab por `MotorcycleGarageCard` o una variante optimizada.
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
