@@ -4,6 +4,7 @@ import { getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../.
 import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
 import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { getMotorcycleTechnicalIcon, type MotorcycleTechnicalIconKey } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
 import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { ReviewModal } from '../../reviews/ReviewModal';
@@ -127,21 +128,6 @@ function getReliabilityLevel(score: number) {
   return 'A vigilar';
 }
 
-const specIconMap = {
-  engine: 'settings_input_component',
-  power: 'bolt',
-  torque: 'speed',
-  weight: 'monitor_weight',
-  seatHeight: 'straighten',
-  fuel: 'local_gas_station',
-  license: 'badge',
-  price: 'payments',
-  electronics: 'memory',
-  a2: 'verified',
-} as const;
-
-type SpecIconKey = keyof typeof specIconMap;
-
 function SpecCard({
   icon,
   label,
@@ -149,7 +135,7 @@ function SpecCard({
   unit,
   variant,
 }: {
-  icon: SpecIconKey;
+  icon: MotorcycleTechnicalIconKey;
   label: string;
   value: string;
   unit?: string;
@@ -159,7 +145,7 @@ function SpecCard({
     <article className={variant === 'accent' ? 'bike-detail__spec-card bike-detail__spec-card--accent' : 'bike-detail__spec-card'}>
       <div className="bike-detail__spec-card-header">
         <span className="material-symbols-outlined" aria-hidden="true">
-          {specIconMap[icon]}
+          {getMotorcycleTechnicalIcon(icon)}
         </span>
       </div>
       <p className="bike-detail__spec-label">{label}</p>
@@ -189,7 +175,7 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
         <SpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
         <SpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
         <SpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
-        <SpecCard icon="fuel" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
+        <SpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
         <SpecCard icon="license" label="CARNET" value={a2Badge.label} />
         <SpecCard
           icon="price"
@@ -203,7 +189,7 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
           <article className="bike-detail__spec-card bike-detail__spec-card--electronics">
             <div className="bike-detail__spec-card-header">
               <span className="material-symbols-outlined" aria-hidden="true">
-                {specIconMap.electronics}
+                {getMotorcycleTechnicalIcon('electronics')}
               </span>
             </div>
             <p className="bike-detail__spec-label">ELECTRÓNICA</p>
@@ -221,7 +207,7 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
           <article className="bike-detail__spec-card bike-detail__spec-card--a2">
             <div className="bike-detail__spec-card-header">
               <span className="material-symbols-outlined" aria-hidden="true">
-                {specIconMap.a2}
+                {getMotorcycleTechnicalIcon('license')}
               </span>
             </div>
             <p className="bike-detail__spec-label">COMPATIBILIDAD A2</p>
