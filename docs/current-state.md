@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `fix/bike-detail-tabs`
-- Último bloque validado: `BikeDetailPage` tabs Fase 3B (ReviewModal usa iconos técnicos compartidos)
-- Tests: 1035 passed
+- Rama actual: `feature/bike-detail-community-tab`
+- Último bloque validado: `BikeDetailPage` tabs Fase 4.3C (Comunidad con summary, fiabilidad, reviews y acciones seguras)
+- Tests: 1042 passed
 - Typecheck: clean
 - Último commit:
 
@@ -60,7 +60,7 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
-### BikeDetailPage — Reorganización por tabs (Fases 1, 2, 3A y 3B implementadas)
+### BikeDetailPage — Reorganización por tabs (Fases 1, 2, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B y 4.3C implementadas)
 - tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
 - Sin tab Metodología (ya existe `#/metodologia`).
 - Tab Resumen activa por defecto.
@@ -89,20 +89,22 @@
   - A2: bloque condicional con icono de `license`.
 - Campos no existentes en modelo: suspensiones, frenos, neumáticos, electrónica avanzada. No se muestran.
 - Secciones residuales pendientes:
-  - `bike-detail__quick-specs` → absorbida parcialmente por SpecificationsTab.
-  - `bike-detail__features` → parcialmente absorbida por card de electrónica.
-  - `bike-detail__specs` → old section (fuera de tabs, no migrada aún).
-  - `bike-detail__reliability` → Fase 4 (Comunidad).
-  - `bike-detail__reviews` → Fase 4 (Comunidad).
-  - `bike-detail__related` → Fase 5 (Comparar).
+   - `bike-detail__specs` → old section (fuera de tabs, no migrada aún).
+   - `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
+   - `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto (Fases 4.3B/4.3C).
+   - `bike-detail__related` → Fase 5 (Comparar).
 - Plan por fases actualizado:
-  - Fase 1: estructura tabs + Resumen — **implementada**.
-  - Fase 2: tab Especificaciones — **implementada**.
-  - Fase 3A: iconos técnicos compartidos — **implementada**.
-  - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
-  - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas).
-  - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
-- Tests: 1035 passed (69 files). 27 tests BikeDetailPage + 9 tests motorcycleTechnicalIcons + resto de suite.
+   - Fase 1: estructura tabs + Resumen — **implementada**.
+   - Fase 2: tab Especificaciones — **implementada**.
+   - Fase 3A: iconos técnicos compartidos — **implementada**.
+   - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
+   - Fase 4.1: tab Comunidad local con mini comunidad summary — **implementada**.
+   - Fase 4.2: fiabilidad dentro de CommunityTab — **implementada**.
+   - Fase 4.3A: FeaturedReviewCard compact variant — **implementada**.
+   - Fase 4.3B: reviews dentro de CommunityTab con FeaturedReviewCard — **implementada**.
+   - Fase 4.3C: acciones seguras de comunidad con FeaturedReviewCardCommunityActions — **implementada**.
+   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
+- Tests: 1042 passed (69 files).
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
@@ -156,14 +158,18 @@
 
 - Rediseño mobile avanzado de rankings/listado técnico — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch. Mantener responsive usable y sin pantallas rotas.
 - BikeDetailPage — reorganización por tabs:
-  - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
-  - Fase 2: tab Especificaciones (`SpecificationsTab` con bento grid, SpecCard, electronics, A2 condicional, fallbacks de precio) — **implementada**.
-  - Fase 3A: iconos técnicos compartidos (`motorcycleTechnicalIcons.ts`, 18 keys, `a2` no es key, A2 usa `license`) — **implementada**.
-  - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
-  - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas con FeaturedReviewCard sin imagen).
-  - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
-  - Secciones residuales: `bike-detail__specs` old, `bike-detail__reliability`, `bike-detail__reviews`, `bike-detail__related` pending de fases 4/5.
-  - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
+   - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
+   - Fase 2: tab Especificaciones (`SpecificationsTab` con bento grid, SpecCard, electronics, A2 condicional, fallbacks de precio) — **implementada**.
+   - Fase 3A: iconos técnicos compartidos (`motorcycleTechnicalIcons.ts`, 18 keys, `a2` no es key, A2 usa `license`) — **implementada**.
+   - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
+   - Fase 4.1: tab Comunidad local con mini comunidad summary (rating medio, count, confidence shield, empty state) — **implementada**.
+   - Fase 4.2: `bike-detail__reliability` dentro de CommunityTab, copy conservadora, common issues solo si `reportCount > 0`, empty state seguro — **implementada**.
+   - Fase 4.3A: FeaturedReviewCard compact variant (`hideImage`, `hideLinks`) — **implementada**.
+   - Fase 4.3B: `bike-detail__reviews` dentro de CommunityTab con FeaturedReviewCard (`hideImage`, `hideLinks`), sin "Más reviews" / "Ver ficha", MotorcycleReviewCard eliminada — **implementada**.
+   - Fase 4.3C: FeaturedReviewCardCommunityActions para acciones seguras, `Útil N` público, no fake/no-op, no-auth sin interacción, own review pasivo, reported bloquea, Reportar solo con handler real, Responder no existe en BikeDetailPage — **implementada**.
+   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
+   - Secciones residuales: `bike-detail__specs` old, `bike-detail__reliability` (movido), `bike-detail__reviews` (movido), `bike-detail__related` pending de Fase 5.
+   - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).

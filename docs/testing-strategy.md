@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1035` tests passing.
+- `1042` tests passing.
 
 ## Stack actual
 
@@ -122,7 +122,7 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fases 1, 2, 3A y 3B)
+## BikeDetailPage tabs (Fases 1, 2, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B y 4.3C)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
@@ -152,9 +152,41 @@ Fase 3B — Cobertura implementada:
 - `consumption` → `local_gas_station` vía `getMotorcycleTechnicalIcon('consumption')`.
 - `ReviewAspectSummary` queda pendiente de coordinación futura si aplica.
 
+Fase 4.1 — Cobertura implementada:
+- CommunityTab: tab local creada en BikeDetailPage.
+- Mini comunidad summary: average rating, review count, confidence shield.
+- Empty state seguro cuando no hay datos.
+
+Fase 4.2 — Cobertura implementada:
+- `bike-detail__reliability` dentro de CommunityTab.
+- Copy conservadora, common issues solo si `reportCount > 0`.
+- Empty state seguro: "Sin reportes de fiabilidad todavía." cuando no hay datos.
+
+Fase 4.3A — Cobertura implementada:
+- FeaturedReviewCard compact variant: props `hideImage` y `hideLinks`.
+- Defaults preservan comportamiento existente en otras páginas.
+
+Fase 4.3B — Cobertura implementada:
+- `bike-detail__reviews` dentro de CommunityTab.
+- Usa FeaturedReviewCard con `hideImage` + `hideLinks`.
+- Sin "Más reviews" / "Ver ficha" en BikeDetailPage Community tab.
+- MotorcycleReviewCard eliminada de BikeDetailPage.
+- "Escribir review" abre ReviewModal.
+
+Fase 4.3C — Cobertura implementada:
+- FeaturedReviewCardCommunityActions: acciones seguras en BikeDetailPage.
+- `Útil N` visible como contador público siempre.
+- No-auth: `Útil N` pasivo, sin "No útil" ni "Reportar" ni "Responder".
+- Own review: `Útil N` pasivo + chip "Propia".
+- Reported review: reacciones bloqueadas.
+- `Reportar` no renderiza sin handler real.
+- `Responder` no existe en BikeDetailPage.
+- Sin handlers no-op.
+
 Pendiente de cobertura (fases siguientes):
-- Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
 - Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
+- Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
+- RecentReviews en TopRatedMotorcyclesPage (sin cambios en Fase 4).
 
 Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:
