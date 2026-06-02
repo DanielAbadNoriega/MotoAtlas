@@ -1,0 +1,318 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.featured-machines {
+  @include container;
+  @include section-spacing;
+
+  .featured-machines__header {
+    margin-bottom: $space-gutter * 1.5;
+  }
+
+  .featured-machines__kicker {
+    display: flex;
+    align-items: center;
+    gap: $space-gutter * 0.5;
+    margin-bottom: $space-base;
+  }
+
+  .featured-machines__kicker-line {
+    display: block;
+    width: 48px;
+    height: 2px;
+    background: $color-accent-container;
+  }
+
+  .featured-machines__kicker-text {
+    @include label-caps;
+
+    color: $color-accent-container;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+  }
+
+  .featured-machines__title {
+    @include headline-xl;
+
+    font-style: italic;
+    text-transform: uppercase;
+    color: $color-on-surface;
+    text-shadow: 0 0 40px rgba($color-accent, 0.15);
+  }
+}
+
+.featured-machines__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $space-gutter;
+}
+
+.featured-machines__primary {
+  grid-column: 1;
+}
+
+.featured-machines__secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-gutter;
+}
+
+.featured-machine-card {
+  max-height: 500px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: $radius-xl;
+  border: 1px solid rgba($color-outline-variant, 0.2);
+  box-shadow: $shadow-card;
+
+  &:hover {
+    border-color: rgba($color-on-surface, 0.5);
+  }
+
+  &__media {
+    inset: 0;
+    overflow: hidden;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 700ms ease;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba($color-surface-lowest, 1) 0%,
+        rgba($color-surface-lowest, 0.7) 35%,
+        rgba($color-surface-lowest, 0.25) 65%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    flex-grow: 1;
+    padding: 1.5rem;
+  }
+
+  &__badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    z-index: 3;
+  }
+
+  &__badge-number {
+    font-family: $font-mono;
+    font-weight: 900;
+    font-style: italic;
+    color: $color-accent-container;
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba($color-accent, 0.4);
+  }
+
+  &__badge-line {
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: rgba($color-accent-container, 0.5);
+  }
+
+  &__title {
+    margin: 0 0 1rem;
+    font-family: $font-headline;
+    font-weight: 700;
+    line-height: 1.15;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9), 0 0 30px rgba($color-accent, 0.3);
+  }
+
+  &__title-brand {
+    color: white;
+    display: block;
+  }
+
+  &__title-model {
+    color: $color-accent-container;
+    display: block;
+  }
+
+  &__specs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 0.85rem 0;
+    margin: 0 0 1rem;
+    border-top: 1px solid rgba($color-outline-variant, 0.3);
+    border-bottom: 1px solid rgba($color-outline-variant, 0.3);
+  }
+
+  &__spec {
+    dt {
+      @include label-caps;
+
+      color: rgba($color-on-surface-variant, 0.7);
+      font-size: 0.625rem;
+      margin-bottom: 0.3rem;
+    }
+
+    dd {
+      @include label-caps;
+
+      color: $color-primary;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+
+  &__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+
+    .button {
+      align-items: center;
+      display: inline-flex;
+      justify-content: center;
+      padding-inline: 1rem;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+.featured-machine-card--hero {
+  .featured-machine-card__media {
+    aspect-ratio: 16 / 9;
+    min-height: 340px;
+  }
+
+  .featured-machine-card__badge-number {
+    font-size: 2.5rem;
+  }
+
+  .featured-machine-card__content {
+    position: absolute;
+    inset: 0;
+    padding: 2rem;
+    justify-content: flex-end;
+  }
+
+  .featured-machine-card__title {
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .featured-machine-card__specs {
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+
+  .featured-machine-card__actions {
+    margin-top: 0.25rem;
+  }
+
+  &:hover .featured-machine-card__media img {
+    transform: scale(1.03);
+  }
+}
+
+.featured-machine-card--compact {
+  .featured-machine-card__media {
+    aspect-ratio: 4 / 5;
+    min-height: 280px;
+  }
+
+  .featured-machine-card__badge-number {
+    font-size: 2rem;
+  }
+
+  .featured-machine-card__content {
+    position: absolute;
+    inset: 0;
+    padding: 1.25rem;
+    justify-content: flex-end;
+  }
+
+  .featured-machine-card__title {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+  }
+
+  .featured-machine-card__specs {
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+  }
+
+  .featured-machine-card__spec {
+    dd {
+      font-size: 0.75rem;
+    }
+  }
+
+  &:hover .featured-machine-card__media img {
+    transform: scale(1.03);
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .featured-machines__secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .featured-machines {
+    .featured-machines__title {
+      font-size: clamp(1.75rem, 8vw, 2.5rem);
+    }
+  }
+
+  .featured-machines__secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-machine-card--hero {
+    .featured-machine-card__media {
+      aspect-ratio: 4 / 3;
+    }
+
+    .featured-machine-card__badge-number {
+      font-size: 2rem;
+    }
+
+    .featured-machine-card__content {
+      padding: 1.25rem;
+    }
+  }
+
+  .featured-machine-card--compact {
+    .featured-machine-card__media {
+      aspect-ratio: 16 / 9;
+      min-height: auto;
+    }
+
+    .featured-machine-card__content {
+      min-height: 200px;
+    }
+
+    .featured-machine-card__specs {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}

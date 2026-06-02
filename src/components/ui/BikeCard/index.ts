@@ -1,1 +1,0 @@
-export { BikeCard } from './BikeCard';

@@ -23,7 +23,7 @@ import {
   TermsPage,
 } from './components/pages/StaticInfoPages';
 import { TopRatedMotorcyclesPage } from './components/pages/TopRatedMotorcyclesPage';
-import { FeaturedBikes } from './components/sections/FeaturedBikes';
+import { FeaturedMachines } from './components/sections/FeaturedMachines';
 import { Hero } from './components/sections/Hero';
 import { LatestNews } from './components/sections/LatestNews';
 import { MachineDuel } from './components/sections/MachineDuel';
@@ -87,7 +87,7 @@ function HomePage() {
   return (
     <main>
       <Hero />
-      <FeaturedBikes />
+      <FeaturedMachines />
       <MachineDuel />
       <LatestNews />
       <ReliabilityReports />

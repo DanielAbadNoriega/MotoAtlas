@@ -86,9 +86,9 @@ describe('App navigation with mocked motorcycleService', () => {
 
   it('has home card links toward search compare flow', async () => {
     await renderApp();
-    const compareLinks = screen.getAllByRole('link', { name: 'Comparar' });
+    const verFichaLinks = screen.getAllByRole('link', { name: 'Ver ficha' });
 
-    expect(compareLinks.some((link) => link.getAttribute('href')?.includes('#/buscador?compare='))).toBe(true);
+    expect(verFichaLinks.some((link) => link.getAttribute('href')?.includes('#/motos/'))).toBe(true);
   });
 
   it('navigates from the home duel button to the detailed comparison', async () => {
