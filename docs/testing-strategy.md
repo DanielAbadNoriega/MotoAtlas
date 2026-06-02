@@ -194,8 +194,7 @@ Fase 4.3C — Cobertura implementada:
 - Sin handlers no-op.
 
 Pendiente de cobertura (fases siguientes):
-- Fase 5.1/5.2: compare action button states (Comparar / Ya en comparador / Comparador lleno) con queue llena y queue no llena. Tests cubiertos en BikeDetailPage.test.tsx existente.
-- Reemplazar `MotorcycleGarageCard` temporal en CompareTab por variante optimizada (pendiente).
+- Fase 5.1/5.2: acciones de comparador en CompareTab validadas por Quality Gate con implementación real de botones (Comparar / Ya en comparador / Comparador lleno). Tests enfocados en estados de botón pendientes porque las cards de related bikes son temporales (locales en BikeDetailPage.tsx, sin reutilizar MotorcycleGarageCard aún). Reemplazar cards temporales por `MotorcycleGarageCard` o variante optimizada — pendiente.
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
 - RecentReviews en TopRatedMotorcyclesPage ahora con acciones seguras (Fase 4.4): Helpful/NotHelpful real en auth, `Útil N` pasivo en no-auth, Report/Reply no cableados.
 
