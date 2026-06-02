@@ -105,7 +105,7 @@ Responsive:
 
 ## Ficha de moto — BikeDetailPage con tabs
 
-Estado: **Fases 1, 2 y 3A implementadas**.
+Estado: **Fases 1, 2, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B y 4.3C implementadas**.
 
 La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
@@ -113,7 +113,7 @@ La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasi
 |-----|-----------|--------|
 | Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
 | Especificaciones | specs técnicas con bento grid de SpecCard | Implementada (Fase 2) |
-| Comunidad | mini resumen + reliability + reviews | Pendiente (Fase 4) |
+| Comunidad | mini resumen + reliability + reviews con FeaturedReviewCard compacto | Implementada (Fases 4.1–4.3C) |
 | Comparar | related + MotorcycleGarageCard | Pendiente (Fase 5) |
 
 Tab Especificaciones — detalles de implementación:
@@ -131,11 +131,16 @@ Tab Especificaciones — detalles de implementación:
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
 - Tab Resumen activa por defecto.
-- `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards).
+- `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards), acciones seguras (no fake/no-op, `Útil N` público, Reportar solo con handler real, Responder no existe en BikeDetailPage).
 - Precio: fallback textual cuando no hay dato fiable.
-- Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes.
+- Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes; dentro de CommunityTab con copy conservadora.
 - Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
 - No duplicar CTA a reviews si ya está en hero de la ficha.
+
+Pendiente:
+- Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
+- TopRatedMotorcyclesPage RecentReviews sin cambios en esta fase.
+- Fase 5 Comparar.
 
 Reglas:
 - no renderizar `null`/`undefined`; fallbacks controlados.
@@ -145,8 +150,8 @@ Reglas:
 
 Secciones residuales:
 - `bike-detail__specs` old: fuera de tabs, pendiente de decisión.
-- `bike-detail__reliability` → Fase 4 (Comunidad).
-- `bike-detail__reviews` → Fase 4 (Comunidad).
+- `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
+- `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto `hideImage`/`hideLinks` (Fases 4.3B/4.3C).
 - `bike-detail__related` → Fase 5 (Comparar).
 - `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab.
 

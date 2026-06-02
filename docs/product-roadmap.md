@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1035 passed`.
+- Tests de referencia: `1042 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -123,7 +123,7 @@ Estado: pendiente.
 
 ### BikeDetailPage — Reorganización por tabs
 
-Estado: **Fases 1, 2, 3A y 3B implementadas**.
+Estado: **Fases 1, 2, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B y 4.3C implementadas**.
 
 Decisión de producto:
 - La `BikeDetailPage` actual se mantiene como base.
@@ -161,14 +161,33 @@ Estado por fase:
    - Tests dedicados en `src/shared/motorcycles/motorcycleTechnicalIcons.test.ts`.
    - `specIconMap` local eliminado de BikeDetailPage.tsx.
 4. **Fase 3B — Migración de iconos en ReviewModal/review form**: implementada. `technicalAspects` ahora usa `getMotorcycleTechnicalIcon(category)` del módulo compartido. Sin iconos hardcodeados. `consumption` → `local_gas_station`. `ReviewAspectSummary` pendiente de coordinación futura si aplica.
-5. **Fase 4 — Tab Comunidad**: pendiente. Mini bloque: rating medio con stars, número de reviews, confianza con shield. Sin duplicar CTA a reviews si ya está en hero. Incluir `bike-detail__reliability` (decidir contrato de fiabilidad antes). Incluir `bike-detail__reviews` migrando a `FeaturedReviewCard` sin imagen (ya estamos en la ficha). Sin CTAs "Más reviews" ni "Ver ficha" dentro de las cards.
+5. **Fase 4 — Tab Comunidad** (implementada en sub-fases):
+
+   - **4.1 — Tab Comunidad local**: tab local creada en BikeDetailPage, placeholder eliminado, mini comunidad summary con average rating, review count, confidence shield y empty state seguro.
+   - **4.2 — Fiabilidad dentro de la pestaña**: `bike-detail__reliability` movido a CommunityTab, copy conservadora, common issues solo si `reportCount > 0`, empty state seguro ("Sin reportes de fiabilidad todavía.").
+   - **4.3A — Compact variant de FeaturedReviewCard**: soporte de props `hideImage` y `hideLinks`, defaults preservan comportamiento existente.
+   - **4.3B — Reviews dentro de la pestaña**: `bike-detail__reviews` movido a CommunityTab, usa FeaturedReviewCard con `hideImage` + `hideLinks`, sin "Más reviews" / "Ver ficha", "Escribir review" abre ReviewModal, MotorcycleReviewCard eliminada de BikeDetailPage.
+   - **4.3C — Acciones de comunidad seguras en BikeDetailPage**: `FeaturedReviewCardCommunityActions` extraída, `Útil N` visible como contador público, sin acciones falsas/no-op, no-auth: `Útil N` pasivo sin "No útil" ni "Reportar" ni "Responder", own review: `Útil N` pasivo + chip "Propia", reported bloquea reacciones, `Reportar` no renderiza sin handler real, `Responder` no existe en BikeDetailPage.
+
+   Pendiente de Fase 4:
+   - Cableado completo de Report/Reply en BikeDetailPage (si se desea en el futuro).
+   - RecentReviews en `#/motos-mejor-valoradas` (TopRatedMotorcyclesPage) sin cambios en esta fase.
+
+   Reglas de Fase 4:
+   - Sin acciones fake/no-op en la ficha de moto.
+   - `Útil N` es contador público siempre visible.
+   - No-auth: interacción nula con reacciones.
+   - Reported review bloquea reacciones del usuario.
+   - `Reportar` solo renderiza si existe handler real.
+   - `Responder` no renderiza en BikeDetailPage hasta tener flujo completo.
 6. **Fase 5 — Tab Comparar**: pendiente. Usar `bike-detail__related` como base. Orientar a comparar esta moto con modelos relacionados. Reutilizar `MotorcycleGarageCard` si encaja. Permitir añadir motos relacionadas al comparador con cuidado. Mantener CTA a ficha solo si aporta valor. No romper el comparador global.
 
 Reglas transversales:
 - no ampliar schema/modelo `Bike` salvo decisión explícita.
 - no renderizar `null`/`undefined`; usar fallbacks controlados.
 - no copiar CSS de `ReviewModal`.
-- `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes.
+- `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes, acciones seguras (no fake/no-op).
+- `FeaturedReviewCardCommunityActions`: componente reutilizable para acciones de comunidad en FeaturedReviewCard.
 - `MotorcycleGarageCard` sigue presentacional si se reutiliza en Comparar.
 - Mobile: responsive funcional, refinados premium pospuestos a fase mobile-first.
 
@@ -187,10 +206,10 @@ Relación con roadmap:
 
 Secciones residuales pendientes:
 - `bike-detail__specs` old (fuera de tabs, no migrada aún) — pendiente de decisión.
-- `bike-detail__reliability` → Fase 4 (Comunidad).
-- `bike-detail__reviews` → Fase 4 (Comunidad).
+- `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
+- `bike-detail__reviews` → movido a CommunityTab (Fases 4.3B/4.3C).
 - `bike-detail__related` → Fase 5 (Comparar).
-- `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab.
+- `bike-detail__quick-specs` y `bike-detail__features` → parcialmente absorbidas por SpecificationsTab.
 
 ## 6. P2 — Plataforma/Admin/Productividad interna
 
