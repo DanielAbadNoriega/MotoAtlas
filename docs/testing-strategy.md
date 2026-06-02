@@ -186,7 +186,7 @@ Fase 4.3C — Cobertura implementada:
 Pendiente de cobertura (fases siguientes):
 - Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
-- RecentReviews en TopRatedMotorcyclesPage (sin cambios en Fase 4).
+- RecentReviews en TopRatedMotorcyclesPage ahora con acciones seguras (Fase 4.4): Helpful/NotHelpful real en auth, `Útil N` pasivo en no-auth, Report/Reply no cableados.
 
 Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:
