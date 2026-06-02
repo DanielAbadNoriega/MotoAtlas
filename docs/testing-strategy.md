@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1026` tests passing.
+- `1035` tests passing.
 
 ## Stack actual
 
@@ -122,7 +122,7 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fases 1 y 2)
+## BikeDetailPage tabs (Fases 1, 2 y 3A)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
@@ -140,7 +140,15 @@ Fase 2 — Cobertura de SpecificationsTab:
 - A2 condicional: bloque COMPARABILIDAD A2 con "Limitada a 47.6 CV (orig. 80 CV)" para fixture A2; no aparece para moto no A2.
 - precio pendiente: texto "Precio pendiente de confirmar" cuando `priceEur = 0` y `priceSource = placeholder`; nunca `0 €`.
 
+Fase 3A — Cobertura de motorcycleTechnicalIcons:
+- mapa con 18 keys: 8 de specs (engine, power, torque, weight, seatHeight, fuelTank, license, price) + 10 de aspectos de reviews (ergonomics, consumption, braking, suspension, electronics, aerodynamics, passenger, maintenance, design).
+- `a2` NO es key del mapa (A2 es variante dentro de `license`).
+- `getMotorcycleTechnicalIcon` devuelve icono correcto para cada key validada.
+- test explícito de ausencia de `a2` en el mapa.
+- type prevents invalid keys at compile time.
+
 Pendiente de cobertura (fases siguientes):
+- Fase 3B: migración de iconos en ReviewModal/review form (ReviewAspectSummary no migrada aún).
 - Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
 - Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
 

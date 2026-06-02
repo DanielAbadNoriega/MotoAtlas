@@ -45,6 +45,8 @@ Y según el tipo de cambio:
 - Evitar reescribir documentos enteros si basta con actualizar secciones concretas.
 - Si un documento contradice el estado actual aprobado, corregir la contradicción.
 - Si falta `docs/current-state.md`, crearlo.
+- Mantener el idioma existente de cada documento. En MotoAtlas, la documentación está mayoritariamente en castellano: redactar nuevas secciones y frases en castellano, salvo nombres técnicos, nombres de archivos, rutas, comandos, APIs, componentes, tipos TypeScript, funciones, estados backend o términos técnicos ya usados en inglés.
+- No mezclar idiomas dentro de una misma frase salvo que sea necesario por nombres técnicos.
 
 ## Flujo
 

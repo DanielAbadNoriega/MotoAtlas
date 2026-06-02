@@ -105,7 +105,7 @@ Responsive:
 
 ## Ficha de moto — BikeDetailPage con tabs
 
-Estado: **Fases 1 y 2 implementadas**.
+Estado: **Fases 1, 2 y 3A implementadas**.
 
 La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
@@ -120,9 +120,10 @@ Tab Especificaciones — detalles de implementación:
 - `SpecificationsTab`: componente con bento grid de `SpecCard`.
 - 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
 - Card electrónica/features: solo features activas filtradas con `filter(([, isEnabled]) => isEnabled)`. No renderiza `false`.
-- Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`. Muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`.
+- Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`. Muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`. Usa icono `getMotorcycleTechnicalIcon('license')` — `a2` no es key independiente.
 - Precio: `isPendingPrice` → `pendingPriceLabel` ("Precio pendiente de confirmar") si `priceEur <= 0` o `source = placeholder`. Nunca `0 €`.
-- `specIconMap`: mapping local de iconos Material Symbols preparado para extracción en Fase 3.
+- Módulo compartido de iconos técnicos: `src/shared/motorcycles/motorcycleTechnicalIcons.ts` exporta `motorcycleTechnicalIconMap` (18 keys), `MotorcycleTechnicalIconKey`, `getMotorcycleTechnicalIcon`.
+- Iconos: `fuelTank → oil_barrel`, `consumption → local_gas_station`, `license → workspace_premium`, etc.
 - Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
 - Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
 - No se muestran suspensiones, frenos ni neumáticos (no existen en modelo Bike).
