@@ -21,6 +21,8 @@ export type FeaturedReviewCardProps = Readonly<{
   reportContentSlot?: React.ReactNode;
   isOwnReview?: boolean;
   onExpandedChange?: (isExpanded: boolean) => void;
+  hideImage?: boolean;
+  hideLinks?: boolean;
 }>;
 
 function formatCommunityAlias(userName: string) {
@@ -67,7 +69,7 @@ function ReviewMetadata({ review }: Readonly<{ review: MotorcycleReview }>) {
   );
 }
 
-export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot, footerContentSlot, reportContentSlot, isOwnReview, onExpandedChange }: FeaturedReviewCardProps) {
+export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsSlot, footerContentSlot, reportContentSlot, isOwnReview, onExpandedChange, hideImage, hideLinks }: FeaturedReviewCardProps) {
   const Heading = `h${headingLevel}` as const;
   const motorcycle = getAccountReviewMotorcycleDisplay(review);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -94,10 +96,12 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
 
   return (
     <article className="featured-review-card" data-testid="featured-review-card">
-      <div className="featured-review-card__media">
-        <MotorcycleImage alt={motorcycle.name} className="featured-review-card__image" motorcycle={motorcycle.imageSource} />
-        <div className="featured-review-card__gradient" aria-hidden="true" />
-      </div>
+      {!hideImage && (
+        <div className="featured-review-card__media">
+          <MotorcycleImage alt={motorcycle.name} className="featured-review-card__image" motorcycle={motorcycle.imageSource} />
+          <div className="featured-review-card__gradient" aria-hidden="true" />
+        </div>
+      )}
 
       <div className="featured-review-card__content">
         <button
@@ -177,10 +181,12 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
               </div>
             ) : null}
 
-            <nav className="featured-review-card__links">
-              <a href={motorcycle.communityHref}>Más reviews</a>
-              <a href={motorcycle.detailHref}>Ver ficha</a>
-            </nav>
+            {!hideLinks && (
+              <nav className="featured-review-card__links">
+                <a href={motorcycle.communityHref}>Más reviews</a>
+                <a href={motorcycle.detailHref}>Ver ficha</a>
+              </nav>
+            )}
           </div>
         </footer>
       </div>

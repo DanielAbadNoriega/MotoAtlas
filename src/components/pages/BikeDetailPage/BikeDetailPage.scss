@@ -159,10 +159,12 @@
   &__tabs {
     @include container;
 
-    border-bottom: 1px solid rgba($color-outline-variant, 0.28);
-    display: flex;
-    gap: 0;
     padding-top: 2rem;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.28);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    justify-content: center;
+    gap: 0;
   }
 
   &__tab {
@@ -202,6 +204,134 @@
     p {
       color: $color-on-surface-variant;
       font-style: italic;
+    }
+  }
+
+  &__community-tab {
+    @include container;
+
+    display: grid;
+    gap: 2rem;
+    padding-block: 2rem 4rem;
+  }
+
+  &__community-summary {
+    background: $color-surface-dim;
+    border: 1px solid rgba($color-outline-variant, 0.15);
+    border-radius: $radius-lg;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.875rem 1.25rem;
+  }
+
+  &__community-rating {
+    align-items: baseline;
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+
+    strong {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    span:first-child {
+      color: $color-accent;
+      font-size: 1.1rem;
+    }
+
+    span:not(:first-child) {
+      color: $color-on-surface-variant;
+      font-size: 0.875rem;
+    }
+  }
+
+  &__community-meta {
+    align-items: center;
+    display: flex;
+    gap: 0.875rem;
+    flex-wrap: wrap;
+
+    span {
+      color: $color-on-surface-variant;
+      font-size: 0.8rem;
+    }
+  }
+
+  &__confidence-shield {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.7rem;
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+
+    &--high {
+      background: rgba($color-primary, 0.15);
+      color: $color-primary;
+    }
+
+    &--medium {
+      background: rgba($color-on-surface-variant, 0.12);
+      color: $color-on-surface-variant;
+    }
+
+    &--low {
+      background: rgba($color-outline, 0.12);
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &__reliability-empty {
+    color: $color-on-surface-variant;
+    font-size: 0.875rem;
+    font-style: italic;
+    margin-top: 0.5rem;
+  }
+
+  &__reviews-empty {
+    color: $color-on-surface-variant;
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+
+  &__reviews-header {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .featured-review-card {
+      display: block;
+    }
+  }
+
+  &__reviews-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba($color-outline-variant, 0.15);
+
+    .button {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.4rem;
     }
   }
 
@@ -416,7 +546,7 @@
     display: grid;
     gap: 4rem;
     grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.5fr);
-    padding: clamp(4rem, 8vw, 6rem) max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
+    padding: clamp(4rem, 8vw, 6rem);
   }
 
   &__score-card {
@@ -704,8 +834,6 @@
   }
 
   &__reviews {
-    background: $color-surface;
-
     h2 {
       @include headline-lg;
 
@@ -813,93 +941,73 @@
     }
   }
 
-  &__related-list {
-    @include container;
+  .bike-detail__compare-tab {
+  @include container;
 
+  padding-block: 2rem 4rem;
+
+  .bike-detail__compare-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      @include headline-md;
+
+      margin: 0 0 0.5rem;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      margin: 0;
+    }
+  }
+
+  .bike-detail__related-list {
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
 
-    article {
-      @include dashboard-card;
-
-      padding: 1.25rem;
-    }
-
-    img,
-    .motorcycle-image {
-      aspect-ratio: 16 / 10;
-      border-radius: $radius-lg;
-      transition: filter $transition-base;
-      width: 100%;
-      height: auto;
-    }
-
-    img {
-      filter: grayscale(1);
-      object-fit: cover;
-    }
-
-    article:hover img {
-      filter: grayscale(0);
-    }
-
-    span {
-      @include label-caps;
-
-      color: $color-accent;
-      display: block;
-      margin-top: 1rem;
-    }
-
-    h3 {
-      @include headline-md;
-
-      margin: 0.45rem 0 1rem;
-    }
-
-    dl {
-      display: grid;
-      gap: 0.75rem;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin: 0 0 1.25rem;
-    }
-
-    dl div {
-      background: $color-surface-container;
-      padding: 0.8rem;
-    }
-
-    dt {
-      @include label-caps;
-
-      color: $color-outline;
-      font-size: 0.62rem;
-    }
-
-    dd {
-      @include label-caps;
-
-      margin: 0.35rem 0 0;
-    }
-
-    a {
-      @include label-caps;
-
-      border: 1px solid $color-accent;
-      border-radius: $radius-md;
-      color: $color-accent;
-      display: block;
-      padding: 0.9rem 1rem;
-      text-align: center;
-
-      &:hover,
-      &:focus-visible {
-        background: $color-accent;
-        color: white;
+    .motorcycle-garage-card {
+      .motorcycle-garage-card__header {
+        h3 {
+          font-size: clamp(0.9rem, 1.2vw, 1.25rem);
+        }
       }
     }
   }
+}
+
+.bike-detail__compare-empty {
+  @include container;
+
+  color: $color-on-surface-variant;
+  font-style: italic;
+  padding-block: 4rem;
+  text-align: center;
+}
+
+&__compare-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .bike-detail {
+    &__compare-tab .bike-detail__related-list {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .bike-detail {
+    &__compare-tab .bike-detail__related-list {
+      grid-template-columns: 1fr;
+    }
+  }
+}
 
   &__not-found {
     @include container;

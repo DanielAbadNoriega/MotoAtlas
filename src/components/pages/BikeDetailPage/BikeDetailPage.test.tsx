@@ -56,13 +56,22 @@ describe('BikeDetailPage', () => {
     expect(within(mainSpecs).getByText(/895/)).toBeInTheDocument();
   });
 
-  it('shows pros, cons and common reliability issues', () => {
+  it('shows pros and cons in Resumen tab', () => {
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
     expect(screen.getByText('Motor elástico')).toBeInTheDocument();
     expect(screen.getByText('Buen equilibrio')).toBeInTheDocument();
     expect(screen.getByText('Precio alto')).toBeInTheDocument();
-    expect(screen.getByText('Calor en ciudad')).toBeInTheDocument();
+  });
+
+  it('shows common reliability issues inside Comunidad tab', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    const communityTab = document.querySelector('.bike-detail__community-tab') as HTMLElement;
+    expect(within(communityTab).getByText('Calor en ciudad')).toBeInTheDocument();
   });
 
   it('has a working add-to-comparator link without calling Supabase', () => {
@@ -81,8 +90,11 @@ describe('BikeDetailPage', () => {
     expect(screen.getByRole('link', { name: /Ver más motos/i })).toHaveAttribute('href', '#/buscador?browse=1');
   });
 
-  it('renders related motorcycles from local fixtures', () => {
+  it('renders related motorcycles from local fixtures inside Comparar tab', async () => {
+    const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
 
     expect(screen.getByRole('heading', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
   });
@@ -116,7 +128,7 @@ describe('BikeDetailPage', () => {
     expect(container.querySelector(`img[src="${MOTORCYCLE_IMAGE_FALLBACK_URL}"]`)).toBeInTheDocument();
   });
 
-  it('renders approved reviews and aggregate rating', async () => {
+  it('renders approved reviews inside Comunidad tab with FeaturedReviewCard', async () => {
     getApprovedReviewsMock.mockResolvedValue([
       {
         id: 'review-1',
@@ -152,19 +164,39 @@ describe('BikeDetailPage', () => {
       },
     ]);
 
-    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
-
-    expect(await screen.findByText('4.5/5 · 2 reviews')).toBeInTheDocument();
-    expect(screen.getByText('Muy equilibrada para viajar.')).toBeInTheDocument();
-  });
-
-  it('opens the review modal from the write review button', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
-    await user.click(screen.getByRole('button', { name: /Escribir review/i }));
+    const tabs = await screen.findAllByRole('tab');
+    const comunidadTab = tabs.find(tab => tab.textContent?.includes('Comunidad'));
+    if (!comunidadTab) {
+      throw new Error('Comunidad tab not found');
+    }
+    await user.click(comunidadTab);
 
-    expect(screen.getByRole('dialog', { name: /Valoración técnica/i })).toBeInTheDocument();
+    const reviewCards = await screen.findAllByTestId('featured-review-card');
+    expect(reviewCards).toHaveLength(2);
+    expect(within(reviewCards[0]).getByText('@Laura')).toBeInTheDocument();
+  });
+
+  it('opens the review modal from the Comunidad tab', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const tabs = await screen.findAllByRole('tab');
+    const comunidadTab = tabs.find(tab => tab.textContent?.includes('Comunidad'));
+    if (!comunidadTab) {
+      throw new Error('Comunidad tab not found');
+    }
+    await user.click(comunidadTab);
+
+    const communitySection = document.querySelector('.bike-detail__community-tab') as HTMLElement | null;
+    if (!communitySection) {
+      throw new Error('Community tab content not rendered');
+    }
+    const writeReviewButtons = within(communitySection).getAllByRole('button', { name: /Escribir review/i });
+    expect(writeReviewButtons.length).toBeGreaterThan(0);
+    await user.click(writeReviewButtons[0]);
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 
@@ -327,22 +359,183 @@ describe('BikeDetailPage', () => {
     expect(specsTab?.innerHTML).not.toContain('0 €');
   });
 
-  it('al hacer click en Comunidad muestra placeholder', async () => {
+  it('Especificaciones tab muestra heading Especificaciones ampliadas', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
-    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
 
-    expect(screen.getByText('Comunidad próximamente')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Especificaciones ampliadas' })).toBeInTheDocument();
   });
 
-  it('al hacer click en Comparar muestra placeholder', async () => {
+  it('Especificaciones tab muestra copy de sección extendida', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.getByText('Detalles técnicos y equipamiento específico del modelo.')).toBeInTheDocument();
+  });
+
+  it('Especificaciones tab muestra grupos de specs detalladas', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    const specsTab = document.querySelector('.bike-detail__specs-tab') as HTMLElement;
+    const withinSpecs = within(specsTab);
+
+    expect(withinSpecs.getByRole('heading', { name: 'Motor & transmisión' })).toBeInTheDocument();
+    expect(withinSpecs.getByRole('heading', { name: 'Chasis & ergonomía' })).toBeInTheDocument();
+    expect(withinSpecs.getByRole('heading', { name: 'Mercado & registro' })).toBeInTheDocument();
+  });
+
+  it('Specs detalladas no visibles antes de abrir Especificaciones tab', async () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.queryByRole('heading', { name: 'Especificaciones ampliadas' })).not.toBeInTheDocument();
+  });
+
+  it('La vieja seccion bike-detail__specs ya no existe en el flujo principal', async () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const main = screen.getByRole('main');
+    expect(main.querySelector('section.bike-detail__specs')).not.toBeInTheDocument();
+  });
+
+  it('al hacer click en Comparar muestra MotorcycleGarageCard para related bikes', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
     await user.click(screen.getByRole('tab', { name: /Comparar/i }));
 
-    expect(screen.getByText('Comparador próximamente')).toBeInTheDocument();
+    const garageCards = screen.getAllByTestId('motorcycle-garage-card');
+    expect(garageCards.length).toBeGreaterThan(0);
+  });
+
+  it('Comparar tab muestra related bikes solo al abrir el tab', async () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.queryByTestId('motorcycle-garage-card')).not.toBeInTheDocument();
+  });
+
+  it('Comparar tab tiene enlace Ver ficha para related bikes', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const garageCards = screen.getAllByTestId('motorcycle-garage-card');
+    const firstCard = garageCards[0];
+    expect(within(firstCard).getByRole('link', { name: /Ficha/i })).toBeInTheDocument();
+  });
+
+  it('Comparar tab bike no en cola muestra boton Comparar', async () => {
+    localStorage.removeItem('motoatlas.compareQueue');
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    expect(screen.getByRole('button', { name: /Comparar/i })).toBeInTheDocument();
+  });
+
+  it('Comparar tab al hacer click en Comparar persiste el bike id en cola', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', '[]');
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const compareButton = screen.getByRole('button', { name: /Comparar/i });
+    await user.click(compareButton);
+
+    const stored = localStorage.getItem('motoatlas.compareQueue.v1');
+    expect(stored).not.toBeNull();
+    const parsed = JSON.parse(stored as string) as string[];
+    expect(parsed).toContain(bikeFixtures[1].id);
+  });
+
+  it('Comparar tab bike ya en cola muestra Ya en comparador y esta disabled', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', JSON.stringify([bikeFixtures[1].id]));
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const addedButton = screen.getByRole('button', { name: /Ya en comparador/i });
+    expect(addedButton).toBeDisabled();
+  });
+
+  it('Comparar tab al hacer click en Comparar dos veces no duplica el bike id', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', '[]');
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const compareButton = screen.getByRole('button', { name: /Comparar/i });
+    await user.click(compareButton);
+
+    const stored = JSON.parse(localStorage.getItem('motoatlas.compareQueue.v1') as string) as string[];
+    const countBefore = stored.filter((id) => id === bikeFixtures[1].id).length;
+    expect(countBefore).toBe(1);
+  });
+
+  it('Comparar tab cola llena muestra Comparador lleno y disabled', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', JSON.stringify(['other-id-1', 'other-id-2', 'other-id-3']));
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const fullButton = screen.getByRole('button', { name: /Comparador lleno/i });
+    expect(fullButton).toBeDisabled();
+  });
+
+  it('al hacer click en Comunidad muestra mini resumen comunitario', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    const communityTab = document.querySelector('.bike-detail__community-tab');
+    expect(communityTab).toBeInTheDocument();
+  });
+
+  it('Comunidad tab bottom CTA Escribir review es un boton real', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    expect(screen.getByRole('button', { name: /Escribir review/i })).toBeInTheDocument();
+  });
+
+  it('Comunidad tab bottom CTA Ver reviews linking to comunidad route', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    const communitySection = document.querySelector('.bike-detail__reviews') as HTMLElement;
+    expect(communitySection).toBeInTheDocument();
+    const withinReviews = within(communitySection);
+    expect(withinReviews.getByRole('link', { name: /Ver reviews/i })).toHaveAttribute(
+      'href',
+      `#/comunidad/${bikeFixtures[0].id}`,
+    );
+  });
+
+  it('al hacer click en Comparar muestra related bikes', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    expect(screen.queryByText('Comparador próximamente')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Rivales del mismo segmento/i })).toBeInTheDocument();
   });
 
   it('no aparece null ni undefined en tabs', () => {
