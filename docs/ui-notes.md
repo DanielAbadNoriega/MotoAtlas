@@ -48,7 +48,7 @@ Bloque `Reviews recientes` en esta página:
 - muestra máximo 3 reviews recientes (`slice(0, 3)`) ordenadas por fecha descendente.
 - mantiene empty state cuando no hay reviews.
 - mantiene CTA de sección `Ver todas las reviews` (`#/comunidad/reviews`) y CTAs de card `Más reviews` / `Ver ficha`.
-- en esta fase NO integra acciones comunitarias (Helpful/NotHelpful/Report/Replies) ni handlers no-op.
+- Fase 4.4: integra acciones comunitarias seguras con FeaturedReviewCardCommunityActions. Helpful/NotHelpful son reales cuando hay auth + review ajena + no reportada. En no-auth, Útil N queda como contador pasivo. Report/Reply no se renderizan porque no están cableados con flujo real en esta fase.
 
 ## Buscador
 
@@ -105,27 +105,44 @@ Responsive:
 
 ## Ficha de moto — BikeDetailPage con tabs
 
-Estado: **Fase 1 implementada**.
+Estado: **Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3 implementadas**.
 
 La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
 | Tab | Contenido | Estado |
 |-----|-----------|--------|
 | Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
-| Especificaciones | specs técnicas premium (Stitch) | Placeholder — Fase 2 |
-| Comunidad | mini resumen + reliability + reviews | Placeholder — Fase 4 |
-| Comparar | related + MotorcycleGarageCard | Placeholder — Fase 5 |
+| Especificaciones | bento grid de SpecCards + specs detalladas (heading `Especificaciones ampliadas`) | Implementada (Fases 2 y 2C) |
+| Comunidad | mini resumen + reliability + reviews con FeaturedReviewCard compacto | Implementada (Fases 4.1–4.3C) |
+| Comparar | related bikes con MotorcycleGarageCard + acciones reales de comparador via footerActions | Implementada (Fases 5.1, 5.2 y 5.3) |
+
+Tab Especificaciones — detalles de implementación:
+- `SpecificationsTab`: componente con bento grid de `SpecCard`.
+- 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
+- Card electrónica/features: solo features activas filtradas con `filter(([, isEnabled]) => isEnabled)`. No renderiza `false`.
+- Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`. Muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`. Usa icono `getMotorcycleTechnicalIcon('license')` — `a2` no es key independiente.
+- Precio: `isPendingPrice` → `pendingPriceLabel` ("Precio pendiente de confirmar") si `priceEur <= 0` o `source = placeholder`. Nunca `0 €`.
+- Módulo compartido de iconos técnicos: `src/shared/motorcycles/motorcycleTechnicalIcons.ts` exporta `motorcycleTechnicalIconMap` (18 keys), `MotorcycleTechnicalIconKey`, `getMotorcycleTechnicalIcon`.
+- Iconos: `fuelTank → oil_barrel`, `consumption → local_gas_station`, `license → workspace_premium`, etc.
+- Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
+- Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
+- No se muestran suspensiones, frenos ni neumáticos (no existen en modelo Bike).
+- Sección extendida debajo del bento grid: heading `Especificaciones ampliadas` con copy `Detalles técnicos y equipamiento específico del modelo.` y grupos detallados (Motor & transmisión, Chasis & ergonomía, Mercado & registro).
 
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
 - Tab Resumen activa por defecto.
-- Especificaciones, Comunidad y Comparar son placeholders temporales.
-- `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards).
-- Precio: fallback `Precio pendiente` si no hay dato fiable; no vender como comercial cerrado.
-- Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes.
+- `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards), acciones seguras (no fake/no-op, `Útil N` público, Reportar solo con handler real, Responder no existe en BikeDetailPage).
+- Community tab — layout cleanup (Fase 5.3): `bike-detail__community-summary` reducido a strip compacto (flex-row, bg surface-dim, padding reducido). Muestra rating medio o "Sin rating", review count o "Sin reviews", y confidence shield si hay datos. Reviews limitados a 3 con `reviews.slice(0, 3)`. CTAs "Escribir review" y "Ver reviews" movidos al footer de la sección reviews (link a `#/comunidad/[bike.id]`). Header duplicado eliminado. FeaturedReviewCard mantiene `hideImage`, `hideLinks` y acciones seguras sin cambios.
+- Precio: fallback textual cuando no hay dato fiable.
+- Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes; dentro de CommunityTab con copy conservadora.
 - Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
 - No duplicar CTA a reviews si ya está en hero de la ficha.
-- Decidir si número de reviews aparece en tab Comunidad o solo en resumen superior.
+
+Pendiente:
+- Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
+- TopRatedMotorcyclesPage RecentReviews sin cambios en esta fase.
+- Refinado visual/global de layout pospuesto a fase futura (después de cerrar funcionalidad core).
 
 Reglas:
 - no renderizar `null`/`undefined`; fallbacks controlados.
@@ -133,13 +150,12 @@ Reglas:
 - `MotorcycleGarageCard` sigue presentacional.
 - no ampliar schema `Bike` salvo decisión explícita.
 
-Secciones residuales pendientes de migración:
-- `bike-detail__quick-specs` → Especificaciones
-- `bike-detail__features` → Especificaciones
-- `bike-detail__reliability` → Comunidad
-- `bike-detail__specs` → Especificaciones
-- `bike-detail__reviews` → Comunidad
-- `bike-detail__related` → Comparar
+Secciones residuales cerradas:
+- `bike-detail__specs` old → eliminada del flujo principal; specs detalladas dentro de Especificaciones tab (Fase 2C).
+- `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
+- `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto `hideImage`/`hideLinks` (Fases 4.3B/4.3C).
+- `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
+- `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab.
 
 ## Datos demo para QA visual (backlog)
 
@@ -154,7 +170,7 @@ Dirección:
 
 ## Comunidad landing
 
-La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` en modo visual (sin acciones comunitarias conectadas en esta página).
+La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` con acciones comunitarias seguras (Fase 4.4): Helpful/NotHelpful reales en auth, Útil N pasivo en no-auth, Report/Reply no cableados.
 
 Paridad resuelta:
 - en `#/comunidad`, las cards de podio en posiciones 2 y 3 ya muestran el mismo span de metadatos que `#/comunidad/rankings`.

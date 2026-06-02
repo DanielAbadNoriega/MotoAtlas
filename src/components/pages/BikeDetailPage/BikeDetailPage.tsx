@@ -1,14 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
-import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
+import { compareQueueMaxSize, getBrowseSearchHash, getCompareSearchHash, loadCompareQueue, saveCompareQueue } from '../../../utils/compareQueue';
+import { getNextCompareSelection } from '../../../utils/motorcycleSearch';
 import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { getMotorcycleTechnicalIcon, type MotorcycleTechnicalIconKey } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
 import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
-import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { formatReviewAggregate, formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
+import { buildReviewAuthContext, isOwnReview } from '../../../shared/reviews/reviewCommunityActions';
+import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
+import { useReviewReports } from '../../../shared/reviews/useReviewReports';
+import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
+import { useAuth } from '../../../features/auth';
+import { Button } from '../../ui/Button';
 import { ReviewModal } from '../../reviews/ReviewModal';
-import { MotorcycleReviewCard } from '../../reviews/MotorcycleReviewCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
+import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
+import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
 import './BikeDetailPage.scss';
 
 type BikeDetailPageProps = {
@@ -127,6 +138,347 @@ function getReliabilityLevel(score: number) {
   return 'A vigilar';
 }
 
+function SpecCard({
+  icon,
+  label,
+  value,
+  unit,
+  variant,
+}: {
+  icon: MotorcycleTechnicalIconKey;
+  label: string;
+  value: string;
+  unit?: string;
+  variant?: 'accent';
+}) {
+  return (
+    <article className={variant === 'accent' ? 'bike-detail__spec-card bike-detail__spec-card--accent' : 'bike-detail__spec-card'}>
+      <div className="bike-detail__spec-card-header">
+        <span className="material-symbols-outlined" aria-hidden="true">
+          {getMotorcycleTechnicalIcon(icon)}
+        </span>
+      </div>
+      <p className="bike-detail__spec-label">{label}</p>
+      <div className="bike-detail__spec-value-row">
+        <span className="bike-detail__spec-value">{value}</span>
+        {unit && <span className="bike-detail__spec-unit">{unit}</span>}
+      </div>
+    </article>
+  );
+}
+
+function SpecificationsTab({ bike }: { bike: Bike }) {
+  const priceLabel = isPendingPrice(bike.priceEur, bike.priceSource)
+    ? pendingPriceLabel
+    : currencyFormatter.format(bike.priceEur);
+
+  const enabledFeatures = getFeatureEntries(bike).filter(([, isEnabled]) => isEnabled);
+
+  const a2Badge = getBikeA2Badge(bike);
+  const hasA2Data = bike.isA2Compatible || bike.isA2LimitedVersion;
+
+  return (
+    <div className="bike-detail__specs-tab">
+      <div className="bike-detail__specs-bento">
+        <SpecCard icon="engine" label="MOTOR" value={String(bike.displacementCc)} unit="CC" />
+        <SpecCard icon="power" label="POTENCIA" value={String(bike.powerHp)} unit="HP" />
+        <SpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
+        <SpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
+        <SpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
+        <SpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
+        <SpecCard icon="license" label="CARNET" value={a2Badge.label} />
+        <SpecCard
+          icon="price"
+          label="PRECIO BASE"
+          value={isPendingPrice(bike.priceEur, bike.priceSource) ? priceLabel : numberFormatter.format(bike.priceEur)}
+          unit={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : '€'}
+          variant={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : 'accent'}
+        />
+
+        {enabledFeatures.length > 0 && (
+          <article className="bike-detail__spec-card bike-detail__spec-card--electronics">
+            <div className="bike-detail__spec-card-header">
+              <span className="material-symbols-outlined" aria-hidden="true">
+                {getMotorcycleTechnicalIcon('electronics')}
+              </span>
+            </div>
+            <p className="bike-detail__spec-label">ELECTRÓNICA</p>
+            <div className="bike-detail__electronics-chips">
+              {enabledFeatures.map(([key]) => (
+                <span key={key} className="bike-detail__electronics-chip">
+                  {featureLabels[key]}
+                </span>
+              ))}
+            </div>
+          </article>
+        )}
+
+        {hasA2Data && (
+          <article className="bike-detail__spec-card bike-detail__spec-card--a2">
+            <div className="bike-detail__spec-card-header">
+              <span className="material-symbols-outlined" aria-hidden="true">
+                {getMotorcycleTechnicalIcon('license')}
+              </span>
+            </div>
+            <p className="bike-detail__spec-label">COMPATIBILIDAD A2</p>
+            <div className="bike-detail__a2-info">
+              <span className="bike-detail__a2-badge">{a2Badge.label}</span>
+              {bike.isA2LimitedVersion && bike.limitedPowerHp !== null && (
+                <span className="bike-detail__a2-limited">
+                  Limitada a {bike.limitedPowerHp} CV
+                  {bike.originalPowerHp !== null && ` (orig. ${bike.originalPowerHp} CV)`}
+                </span>
+              )}
+            </div>
+          </article>
+        )}
+      </div>
+
+      <section className="bike-detail__specs-extended" aria-labelledby="bike-detail-specs-title">
+        <h2 id="bike-detail-specs-title">Especificaciones ampliadas</h2>
+        <p className="bike-detail__specs-extended-desc">Detalles técnicos y equipamiento específico del modelo.</p>
+        <div className="bike-detail__spec-groups">
+          {getSpecGroups(bike).map((group) => (
+            <article key={group.title}>
+              <h3>{group.title}</h3>
+              <dl>
+                {group.items.map((item) => (
+                  <div key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
+  const [compareQueue, setCompareQueue] = useState<readonly Bike['id'][]>(() => loadCompareQueue());
+
+  const handleToggleCompare = (bikeId: Bike['id']) => {
+    const next = getNextCompareSelection(compareQueue, bikeId);
+    const newQueue = next.selectedIds;
+    setCompareQueue(newQueue);
+    saveCompareQueue(newQueue);
+  };
+
+  const getButtonState = (bikeId: Bike['id']): 'add' | 'added' | 'full' => {
+    if (compareQueue.includes(bikeId)) {
+      return 'added';
+    }
+    if (compareQueue.length >= compareQueueMaxSize) {
+      return 'full';
+    }
+    return 'add';
+  };
+
+  if (relatedBikes.length === 0) {
+    return (
+      <div className="bike-detail__compare-tab">
+        <p className="bike-detail__compare-empty">Sin modelos relacionados del mismo segmento por ahora.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bike-detail__compare-tab">
+      <div className="bike-detail__compare-header">
+        <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
+        <p>Para comparar con criterio: mismo uso, distinta ejecución.</p>
+      </div>
+      <div className="bike-detail__related-list">
+        {relatedBikes.map((relatedBike) => {
+          const state = getButtonState(relatedBike.id);
+          const displayName = getBikeDisplayName(relatedBike);
+          const detailHref = getBikeDetailHash(relatedBike);
+          const reviewsHref = `#/comunidad/${relatedBike.id}`;
+          const normalizedRating = relatedBike.reliabilityReports.reliabilityScore / 2;
+          const rating = Number.isFinite(normalizedRating) ? Math.max(0, Math.min(5, Number(normalizedRating.toFixed(1)))) : 0;
+          const reviewCount = Math.max(0, Math.round(relatedBike.reliabilityReports.reportCount));
+          const usageLabel = segmentLabels[relatedBike.segment];
+
+          return (
+            <MotorcycleGarageCard
+              as="article"
+              key={relatedBike.id}
+              detailHref={detailHref}
+              footerActions={
+                <Button
+                  className="motorcycle-garage-card__action motorcycle-garage-card__compare-action"
+                  variant={state === 'added' ? 'secondary' : 'primary'}
+                  disabled={state === 'added' || state === 'full'}
+                  onClick={() => handleToggleCompare(relatedBike.id)}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    {state === 'added' ? 'check_circle' : state === 'full' ? 'block' : 'compare_arrows'}
+                  </span>
+                  {state === 'added' ? 'Ya en comparador' : state === 'full' ? 'Comparador lleno' : 'Comparar'}
+                </Button>
+              }
+              imageAlt={displayName}
+              imageSource={relatedBike}
+              lastReviewDate={null}
+              primaryUseLabel={usageLabel}
+              rating={rating}
+              reviewCount={reviewCount}
+              reviewsHref={reviewsHref}
+              title={displayName}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CommunityTab({
+  bike,
+  reviews,
+  onWriteReview,
+  reactionSummaries,
+  reactionPendingIds,
+  reportedReviewIds,
+  session,
+  onToggleHelpful,
+  onToggleNotHelpful,
+}: {
+  bike: Bike;
+  reviews: readonly MotorcycleReview[];
+  onWriteReview: () => void;
+  reactionSummaries: readonly ReviewReactionSummary[];
+  reactionPendingIds: readonly string[];
+  reportedReviewIds: Readonly<Record<string, boolean>>;
+  session: { user?: { id?: string } } | null;
+  onToggleHelpful: (review: MotorcycleReview) => void;
+  onToggleNotHelpful: (review: MotorcycleReview) => void;
+}) {
+  const userId = session?.user?.id ?? null;
+  const aggregate = getReviewAggregate(reviews);
+  const confidence = getRankingConfidence(aggregate.reviewCount);
+  const confidenceLabel =
+    confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Media confianza' : 'Baja confianza';
+
+  const hasReports = bike.reliabilityReports.reportCount > 0;
+  const hasIssues = bike.reliabilityReports.commonIssues.length > 0;
+
+  const reviewsToShow = reviews.slice(0, 3);
+  const communityHref = `#/comunidad/${bike.id}`;
+
+  return (
+    <div className="bike-detail__community-tab">
+      <div className="bike-detail__community-summary">
+        <div className="bike-detail__community-rating">
+          {aggregate.reviewCount > 0 && aggregate.averageRating > 0 ? (
+            <>
+              <span className="bike-detail__community-stars" aria-hidden="true">
+                ★
+              </span>
+              <strong>{formatReviewRating(aggregate.averageRating)}</strong>
+              <span>/5</span>
+            </>
+          ) : (
+            <span>Sin rating</span>
+          )}
+        </div>
+        <div className="bike-detail__community-meta">
+          <span>{aggregate.reviewCount > 0 ? `${aggregate.reviewCount} reviews` : 'Sin reviews'}</span>
+          {aggregate.reviewCount > 0 && (
+            <span
+              className={`bike-detail__confidence-shield bike-detail__confidence-shield--${confidence}`}
+              aria-label={confidenceLabel}
+            >
+              <span aria-hidden="true">{confidence === 'high' ? '●' : confidence === 'medium' ? '◐' : '○'}</span>
+              <span>{confidenceLabel}</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
+        <div>
+          <h2 id="bike-detail-reliability-title">Fiabilidad comunidad</h2>
+          <p>Datos agregados de reportes técnicos de usuarios.</p>
+          <div className="bike-detail__reliability-index">
+            <strong>{Math.round(bike.reliabilityReports.reliabilityScore * 10)}</strong>
+            <span>
+              Fiabilidad · {getReliabilityLevel(bike.reliabilityReports.reliabilityScore)} ·{' '}
+              {numberFormatter.format(bike.reliabilityReports.reportCount)} reportes
+            </span>
+          </div>
+        </div>
+
+        {hasReports && hasIssues ? (
+          <div className="bike-detail__issues">
+            {bike.reliabilityReports.commonIssues.map((issue, index) => (
+              <article key={issue}>
+                <span>{index === 0 ? 'A vigilar' : 'Reporte frecuente'}</span>
+                <p>{issue}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="bike-detail__reliability-empty">Sin reportes de fiabilidad todavía.</p>
+        )}
+      </section>
+
+      <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
+        <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
+        <div className="bike-detail__reviews-list" aria-live="polite">
+          {reviews.length > 0 ? (
+            reviewsToShow.map((review) => {
+              const isOwn = isOwnReview(review, userId);
+              const hasReported = Boolean(reportedReviewIds[review.id]);
+              const isPending = reactionPendingIds.includes(review.id);
+              const summary = reactionSummaries.find((s) => s.reviewId === review.id) ?? null;
+              const hasReactionAuth = Boolean(session);
+              const canInteractHelpful = hasReactionAuth && !isOwn && !hasReported;
+
+              return (
+                <FeaturedReviewCard
+                  key={review.id}
+                  review={review}
+                  hideImage
+                  hideLinks
+                  isOwnReview={isOwn}
+                  actionsSlot={
+                    <FeaturedReviewCardCommunityActions
+                      review={review}
+                      isOwn={isOwn}
+                      hasReported={hasReported}
+                      isPending={isPending}
+                      summary={summary}
+                      canInteract={canInteractHelpful}
+                      onToggleHelpful={onToggleHelpful}
+                      onToggleNotHelpful={onToggleNotHelpful}
+                    />
+                  }
+                />
+              );
+            })
+          ) : (
+            <p className="bike-detail__reviews-empty">Sin reviews aprobadas todavía.</p>
+          )}
+        </div>
+        <div className="bike-detail__reviews-cta">
+          <button className="button button--primary" type="button" onClick={onWriteReview}>
+            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+            Escribir review
+          </button>
+          <a className="button button--secondary" href={communityHref}>
+            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+            Ver reviews
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function getSpecGroups(bike: Bike): readonly DetailSpecGroup[] {
   const a2Badge = getBikeA2Badge(bike);
 
@@ -182,9 +534,34 @@ function NotFoundDetail() {
 export type BikeDetailTab = 'resumen' | 'especificaciones' | 'comunidad' | 'comparar';
 
 export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
+  const { session } = useAuth();
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
+  const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<BikeDetailTab>('resumen');
+  const [reportedReviewIds, setReportedReviewIds] = useState<Readonly<Record<string, boolean>>>({});
+
+  const reactionAuthContext = buildReviewAuthContext({
+    accessToken: session?.access_token,
+    isAuthenticated: Boolean(session),
+    userId: session?.user?.id,
+  });
+
+  const {
+    reactionPendingIds,
+    toggleHelpful: toggleHelpfulReaction,
+    toggleNotHelpful: toggleNotHelpfulReaction,
+  } = useReviewReactions({
+    authContext: reactionAuthContext,
+    isReported: (reviewId) => Boolean(reportedReviewIds[reviewId]),
+    userId: session?.user?.id,
+  });
+
+  const { hasReported } = useReviewReports({
+    authContext: reactionAuthContext,
+    reviewIds: reviews.map((r) => r.id),
+    userId: session?.user?.id,
+  });
 
   useEffect(() => {
     if (!bike) {
@@ -197,6 +574,16 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
         if (isMounted) {
           setReviews(approvedReviews);
         }
+        return approvedReviews;
+      })
+      .then((approvedReviews) => {
+        if (approvedReviews.length === 0) return;
+        return getReviewReactionSummary(approvedReviews.map((r) => r.id));
+      })
+      .then((summaries) => {
+        if (isMounted && summaries) {
+          setReactionSummaries(summaries ?? []);
+        }
       })
       .catch(() => {
         if (isMounted) {
@@ -208,6 +595,41 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
       isMounted = false;
     };
   }, [bike?.id]);
+
+  const getSummaryForReview = useCallback(
+    (reviewId: string): ReviewReactionSummary | null => {
+      return reactionSummaries.find((s) => s.reviewId === reviewId) ?? null;
+    },
+    [reactionSummaries],
+  );
+
+  const handleToggleHelpful = useCallback(
+    async (review: MotorcycleReview) => {
+      const outcome = await toggleHelpfulReaction(review);
+      if (outcome.outcome === 'success') {
+        setReactionSummaries((current) =>
+          current.map((s) => (s.reviewId === outcome.summary.reviewId ? outcome.summary : s)),
+        );
+      }
+    },
+    [toggleHelpfulReaction],
+  );
+
+  const handleToggleNotHelpful = useCallback(
+    async (review: MotorcycleReview) => {
+      const outcome = await toggleNotHelpfulReaction(review);
+      if (outcome.outcome === 'success') {
+        setReactionSummaries((current) =>
+          current.map((s) => (s.reviewId === outcome.summary.reviewId ? outcome.summary : s)),
+        );
+      }
+    },
+    [toggleNotHelpfulReaction],
+  );
+
+  const handleOpenReport = useCallback((_review: MotorcycleReview) => {
+    // Report form not wired in this phase - placeholder for future
+  }, []);
 
   if (!bike) {
     return <NotFoundDetail />;
@@ -415,117 +837,24 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
             </section>
           </>
         )}
-        {activeTab === 'especificaciones' && (
-          <div className="bike-detail__tab-placeholder">
-            <p>Especificaciones técnicas próximas</p>
-          </div>
-        )}
+        {activeTab === 'especificaciones' && <SpecificationsTab bike={bike} />}
         {activeTab === 'comunidad' && (
-          <div className="bike-detail__tab-placeholder">
-            <p>Comunidad próximamente</p>
-          </div>
+          <CommunityTab
+            bike={bike}
+            reviews={reviews}
+            onWriteReview={() => setIsReviewModalOpen(true)}
+            reactionSummaries={reactionSummaries}
+            reactionPendingIds={reactionPendingIds}
+            reportedReviewIds={reportedReviewIds}
+            session={session}
+            onToggleHelpful={handleToggleHelpful}
+            onToggleNotHelpful={handleToggleNotHelpful}
+          />
         )}
         {activeTab === 'comparar' && (
-          <div className="bike-detail__tab-placeholder">
-            <p>Comparador próximamente</p>
-          </div>
+          <CompareTab relatedBikes={relatedBikes} />
         )}
       </div>
-
-      <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
-        <div>
-          <h2 id="bike-detail-reliability-title">Lo que los catálogos no te cuentan</h2>
-          <p>Reportes de comunidad técnica para detectar patrones de uso y mantenimiento.</p>
-          <div className="bike-detail__reliability-index">
-            <strong>{Math.round(bike.reliabilityReports.reliabilityScore * 10)}</strong>
-            <span>
-              Reliability index · {getReliabilityLevel(bike.reliabilityReports.reliabilityScore)} ·{' '}
-              {numberFormatter.format(bike.reliabilityReports.reportCount)} reportes
-            </span>
-          </div>
-        </div>
-
-        <div className="bike-detail__issues">
-          {bike.reliabilityReports.commonIssues.map((issue, index) => (
-            <article key={issue}>
-              <span>{index === 0 ? 'A vigilar' : 'Reporte frecuente'}</span>
-              <p>{issue}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="bike-detail__specs" aria-labelledby="bike-detail-specs-title">
-        <h2 id="bike-detail-specs-title">Especificaciones detalladas</h2>
-        <div className="bike-detail__spec-groups">
-          {getSpecGroups(bike).map((group) => (
-            <article key={group.title}>
-              <h3>{group.title}</h3>
-              <dl>
-                {group.items.map((item) => (
-                  <div key={item.label}>
-                    <dt>{item.label}</dt>
-                    <dd>{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
-        <div className="bike-detail__reviews-summary">
-          <span>Opiniones verificadas</span>
-          <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
-          <strong>{formatReviewAggregate(reviewAggregate)}</strong>
-          <div className="bike-detail__review-actions">
-            <button className="button button--primary" type="button" onClick={() => setIsReviewModalOpen(true)}>
-              Escribir review
-            </button>
-          </div>
-        </div>
-
-        <div className="bike-detail__approved-reviews" aria-live="polite">
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <MotorcycleReviewCard key={review.id} review={review} variant="compact" />
-            ))
-          ) : (
-            <p>Sin reviews aprobadas todavía.</p>
-          )}
-        </div>
-      </section>
-
-      <ReviewModal isOpen={isReviewModalOpen} motorcycle={bike} onClose={() => setIsReviewModalOpen(false)} />
-
-      <section className="bike-detail__related" aria-labelledby="bike-detail-related-title">
-        <div>
-          <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
-          <p>Para comparar con criterio: mismo uso, distinta ejecución.</p>
-        </div>
-
-        <div className="bike-detail__related-list">
-          {relatedBikes.map((relatedBike) => (
-            <article key={relatedBike.id}>
-              <MotorcycleImage motorcycle={relatedBike} loading="lazy" />
-              <span>{segmentLabels[relatedBike.segment]}</span>
-              <h3>{getBikeDisplayName(relatedBike)}</h3>
-              <dl>
-                <div>
-                  <dt>Potencia</dt>
-                  <dd>{numberFormatter.format(relatedBike.powerHp)} CV</dd>
-                </div>
-                <div>
-                  <dt>Peso</dt>
-                  <dd>{numberFormatter.format(relatedBike.wetWeightKg)} kg</dd>
-                </div>
-              </dl>
-              <a href={getBikeDetailHash(relatedBike)}>Ver ficha</a>
-            </article>
-          ))}
-        </div>
-      </section>
     </main>
   );
 }

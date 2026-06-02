@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1020` tests passing.
+- `1057` tests passing.
 
 ## Stack actual
 
@@ -122,21 +122,104 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fase 1)
+## BikeDetailPage tabs (Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
 - 4 tabs renders: Resumen, Especificaciones, Comunidad, Comparar.
 - Tab Resumen activa por defecto.
 - Contenido de Resumen: `section.bike-detail__riding` + `section.bike-detail__fit`.
-- Placeholders en Especificaciones, Comunidad y Comparar.
 - Sin `null`/`undefined` en contenido de tabs.
 - Sin tab Metodología.
 
+Fase 2 — Cobertura de SpecificationsTab:
+- labels técnicos: MOTOR, POTENCIA, TORQUE, PESO, ALTURA ASIENTO, DEPÓSITO, CARNET, PRECIO BASE.
+- valores correctos para cilindrada (895 cc), potencia (105 HP), torque (93 NM), peso (219 KG).
+- ausencia de campos inexistentes: no se muestran suspensiones, frenos ni neumáticos.
+- features activas: ABS en curva, Quickshifter renderizadas; Puños calefactables no renderizada (false).
+- A2 condicional: bloque COMPARABILIDAD A2 con "Limitada a 47.6 CV (orig. 80 CV)" para fixture A2; no aparece para moto no A2.
+- precio pendiente: texto "Precio pendiente de confirmar" cuando `priceEur = 0` y `priceSource = placeholder`; nunca `0 €`.
+
+Fase 2C — Cobertura de specs detalladas dentro de Especificaciones tab:
+- heading `Especificaciones ampliadas` visible al abrir el tab.
+- copy `Detalles técnicos y equipamiento específico del modelo.` visible.
+- grupos detallados: `Motor & transmisión`, `Chasis & ergonomía`, `Mercado & registro` dentro del tab.
+- specs detalladas NO visibles antes de abrir Especificaciones tab (tab inactivo).
+- sección residual `bike-detail__specs` eliminada del flujo principal de `<main>`.
+
+Fase 2C-B — Cobertura de tests añadidos:
+- 5 tests nuevos cubren heading, copy, grupos, invisibilidad antes de abrir tab y ausencia de sección residual.
+
+Fase 3A — Cobertura de motorcycleTechnicalIcons:
+- mapa con 18 keys: 8 de specs (engine, power, torque, weight, seatHeight, fuelTank, license, price) + 10 de aspectos de reviews (ergonomics, consumption, braking, suspension, electronics, aerodynamics, passenger, maintenance, design).
+- `a2` NO es key del mapa (A2 es variante dentro de `license`).
+- `getMotorcycleTechnicalIcon` devuelve icono correcto para cada key validada.
+- test explícito de ausencia de `a2` en el mapa.
+- type prevents invalid keys at compile time.
+
+Fase 3B — Cobertura implementada:
+- ReviewModal usa `getMotorcycleTechnicalIcon` en `technicalAspects` para todos los iconos técnicos; sin iconos hardcodeados en el array.
+- `consumption` → `local_gas_station` vía `getMotorcycleTechnicalIcon('consumption')`.
+- `ReviewAspectSummary` queda pendiente de coordinación futura si aplica.
+
+Fase 4.1 — Cobertura implementada:
+- CommunityTab: tab local creada en BikeDetailPage.
+- Mini comunidad summary: average rating, review count, confidence shield.
+- Empty state seguro cuando no hay datos.
+
+Fase 4.2 — Cobertura implementada:
+- `bike-detail__reliability` dentro de CommunityTab.
+- Copy conservadora, common issues solo si `reportCount > 0`.
+- Empty state seguro: "Sin reportes de fiabilidad todavía." cuando no hay datos.
+
+Fase 4.3A — Cobertura implementada:
+- FeaturedReviewCard compact variant: props `hideImage` y `hideLinks`.
+- Defaults preservan comportamiento existente en otras páginas.
+
+Fase 4.3B — Cobertura implementada:
+- `bike-detail__reviews` dentro de CommunityTab.
+- Usa FeaturedReviewCard con `hideImage` + `hideLinks`.
+- Sin "Más reviews" / "Ver ficha" en BikeDetailPage Community tab.
+- MotorcycleReviewCard eliminada de BikeDetailPage.
+- "Escribir review" abre ReviewModal.
+
+Fase 4.3C — Cobertura implementada:
+- FeaturedReviewCardCommunityActions: acciones seguras en BikeDetailPage.
+- `Útil N` visible como contador público siempre.
+- No-auth: `Útil N` pasivo, sin "No útil" ni "Reportar" ni "Responder".
+- Own review: `Útil N` pasivo + chip "Propia".
+- Reported review: reacciones bloqueadas.
+- `Reportar` no renderiza sin handler real.
+- `Responder` no existe en BikeDetailPage.
+- Sin handlers no-op.
+
+Fase 5.1 — Cobertura implementada:
+- CompareTab visible al abrir tab Comparar.
+- Related bikes (mismo segmento, excluye actual, max 3) dentro del tab.
+- Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
+
+Fase 5.2 — Cobertura implementada:
+- Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
+- Infraestructura de compare queue reutilizada (loadCompareQueue, saveCompareQueue, compareQueueMaxSize, getNextCompareSelection).
+- Sin botones fake/no-op.
+- Sin ids duplicados en cola; máximo 3 respetado.
+
+Fase 5.3 — Cobertura implementada:
+- CompareTab usa `MotorcycleGarageCard` directamente para cada related bike.
+- `MotorcycleGarageCard` renderiza sin cambios en props ni SCSS.
+- Acciones de comparador inyectadas via `footerActions` (botón Comparar/Ya en comparador/Comparador lleno).
+- Related bikes solo visibles tras abrir tab Comparar.
+- Enlace `Ver ficha` operativo en cada card.
+- Click en `Comparar` persiste bike id en cola.
+- Doble click no duplica id en cola.
+- `Ya en comparador`: botón deshabilitado cuando la moto ya está en cola.
+- `Comparador lleno`: botón deshabilitado cuando la cola alcanza máximo (3).
+- Rating y reviewCount usan proxy pattern (reliabilityScore / 2 y reportCount) — no son señal comunitaria real.
+- Layout cleanup Comunidad: summary reducido a strip compacto, reviews limitados a 3, CTAs movidos al footer de la sección reviews. Gaps de cobertura aceptados para max 3/hideLinks si no están tests explícitos.
+
 Pendiente de cobertura (fases siguientes):
-- Tab Especificaciones: specs renderizadas, grid técnico, ausencia de null/undefined.
-- Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
-- Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
+- Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
+- RecentReviews en TopRatedMotorcyclesPage ahora con acciones seguras (Fase 4.4): Helpful/NotHelpful real en auth, `Útil N` pasivo en no-auth, Report/Reply no cableados.
 
 Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:

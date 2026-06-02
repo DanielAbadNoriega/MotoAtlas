@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../features/auth';
 import { createReviewWithAspects, type MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
 import type { Bike } from '../../../types/bike';
+import { getMotorcycleTechnicalIcon } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
 import './ReviewModal.scss';
 
 export type ReviewModalStatus = 'idle' | 'validation-error' | 'submitting' | 'success' | 'service-error';
@@ -39,18 +40,18 @@ const ridingStyleOptions = [
 ] as const satisfies readonly { label: string; value: MotorcycleReviewRidingStyle }[];
 
 const technicalAspects = [
-  { id: 'motor', name: 'Motor', icon: 'settings_input_component', category: 'engine' },
-  { id: 'ergo', name: 'Ergonomía', icon: 'bike_lane', category: 'ergonomics' },
-  { id: 'consumo', name: 'Consumo', icon: 'oil_barrel', category: 'consumption' },
-  { id: 'frenada', name: 'Frenada', icon: 'adjust', category: 'braking' },
-  { id: 'suspension', name: 'Suspensión', icon: 'vibration', category: 'suspension' },
-  { id: 'electronica', name: 'Electrónica', icon: 'memory', category: 'electronics' },
-  { id: 'aero', name: 'Aerodinámica', icon: 'air', category: 'aerodynamics' },
-  { id: 'pasajero', name: 'Pasajero', icon: 'group', category: 'passenger' },
-  { id: 'mantenimiento', name: 'Mantenimiento', icon: 'build', category: 'maintenance' },
-  { id: 'precio', name: 'Precio', icon: 'payments', category: 'price' },
-  { id: 'peso', name: 'Peso', icon: 'weight', category: 'weight' },
-  { id: 'diseno', name: 'Diseño', icon: 'palette', category: 'design' },
+  { id: 'motor', name: 'Motor', icon: getMotorcycleTechnicalIcon('engine'), category: 'engine' },
+  { id: 'ergo', name: 'Ergonomía', icon: getMotorcycleTechnicalIcon('ergonomics'), category: 'ergonomics' },
+  { id: 'consumo', name: 'Consumo', icon: getMotorcycleTechnicalIcon('consumption'), category: 'consumption' },
+  { id: 'frenada', name: 'Frenada', icon: getMotorcycleTechnicalIcon('braking'), category: 'braking' },
+  { id: 'suspension', name: 'Suspensión', icon: getMotorcycleTechnicalIcon('suspension'), category: 'suspension' },
+  { id: 'electronica', name: 'Electrónica', icon: getMotorcycleTechnicalIcon('electronics'), category: 'electronics' },
+  { id: 'aero', name: 'Aerodinámica', icon: getMotorcycleTechnicalIcon('aerodynamics'), category: 'aerodynamics' },
+  { id: 'pasajero', name: 'Pasajero', icon: getMotorcycleTechnicalIcon('passenger'), category: 'passenger' },
+  { id: 'mantenimiento', name: 'Mantenimiento', icon: getMotorcycleTechnicalIcon('maintenance'), category: 'maintenance' },
+  { id: 'precio', name: 'Precio', icon: getMotorcycleTechnicalIcon('price'), category: 'price' },
+  { id: 'peso', name: 'Peso', icon: getMotorcycleTechnicalIcon('weight'), category: 'weight' },
+  { id: 'diseno', name: 'Diseño', icon: getMotorcycleTechnicalIcon('design'), category: 'design' },
 ] as const;
 
 type AspectValue = 'positive' | 'negative' | null;
