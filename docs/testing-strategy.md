@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1020` tests passing.
+- `1026` tests passing.
 
 ## Stack actual
 
@@ -122,19 +122,25 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fase 1)
+## BikeDetailPage tabs (Fases 1 y 2)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
 - 4 tabs renders: Resumen, Especificaciones, Comunidad, Comparar.
 - Tab Resumen activa por defecto.
 - Contenido de Resumen: `section.bike-detail__riding` + `section.bike-detail__fit`.
-- Placeholders en Especificaciones, Comunidad y Comparar.
 - Sin `null`/`undefined` en contenido de tabs.
 - Sin tab Metodología.
 
+Fase 2 — Cobertura de SpecificationsTab:
+- labels técnicos: MOTOR, POTENCIA, TORQUE, PESO, ALTURA ASIENTO, DEPÓSITO, CARNET, PRECIO BASE.
+- valores correctos para cilindrada (895 cc), potencia (105 HP), torque (93 NM), peso (219 KG).
+- ausencia de campos inexistentes: no se muestran suspensiones, frenos ni neumáticos.
+- features activas: ABS en curva, Quickshifter renderizadas; Puños calefactables no renderizada (false).
+- A2 condicional: bloque COMPARABILIDAD A2 con "Limitada a 47.6 CV (orig. 80 CV)" para fixture A2; no aparece para moto no A2.
+- precio pendiente: texto "Precio pendiente de confirmar" cuando `priceEur = 0` y `priceSource = placeholder`; nunca `0 €`.
+
 Pendiente de cobertura (fases siguientes):
-- Tab Especificaciones: specs renderizadas, grid técnico, ausencia de null/undefined.
 - Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
 - Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
 

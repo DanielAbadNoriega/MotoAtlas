@@ -105,27 +105,36 @@ Responsive:
 
 ## Ficha de moto — BikeDetailPage con tabs
 
-Estado: **Fase 1 implementada**.
+Estado: **Fases 1 y 2 implementadas**.
 
 La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
 | Tab | Contenido | Estado |
 |-----|-----------|--------|
 | Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
-| Especificaciones | specs técnicas premium (Stitch) | Placeholder — Fase 2 |
-| Comunidad | mini resumen + reliability + reviews | Placeholder — Fase 4 |
-| Comparar | related + MotorcycleGarageCard | Placeholder — Fase 5 |
+| Especificaciones | specs técnicas con bento grid de SpecCard | Implementada (Fase 2) |
+| Comunidad | mini resumen + reliability + reviews | Pendiente (Fase 4) |
+| Comparar | related + MotorcycleGarageCard | Pendiente (Fase 5) |
+
+Tab Especificaciones — detalles de implementación:
+- `SpecificationsTab`: componente con bento grid de `SpecCard`.
+- 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
+- Card electrónica/features: solo features activas filtradas con `filter(([, isEnabled]) => isEnabled)`. No renderiza `false`.
+- Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`. Muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`.
+- Precio: `isPendingPrice` → `pendingPriceLabel` ("Precio pendiente de confirmar") si `priceEur <= 0` o `source = placeholder`. Nunca `0 €`.
+- `specIconMap`: mapping local de iconos Material Symbols preparado para extracción en Fase 3.
+- Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
+- Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
+- No se muestran suspensiones, frenos ni neumáticos (no existen en modelo Bike).
 
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
 - Tab Resumen activa por defecto.
-- Especificaciones, Comunidad y Comparar son placeholders temporales.
 - `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards).
-- Precio: fallback `Precio pendiente` si no hay dato fiable; no vender como comercial cerrado.
+- Precio: fallback textual cuando no hay dato fiable.
 - Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes.
 - Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
 - No duplicar CTA a reviews si ya está en hero de la ficha.
-- Decidir si número de reviews aparece en tab Comunidad o solo en resumen superior.
 
 Reglas:
 - no renderizar `null`/`undefined`; fallbacks controlados.
@@ -133,13 +142,12 @@ Reglas:
 - `MotorcycleGarageCard` sigue presentacional.
 - no ampliar schema `Bike` salvo decisión explícita.
 
-Secciones residuales pendientes de migración:
-- `bike-detail__quick-specs` → Especificaciones
-- `bike-detail__features` → Especificaciones
-- `bike-detail__reliability` → Comunidad
-- `bike-detail__specs` → Especificaciones
-- `bike-detail__reviews` → Comunidad
-- `bike-detail__related` → Comparar
+Secciones residuales:
+- `bike-detail__specs` old: fuera de tabs, pendiente de decisión.
+- `bike-detail__reliability` → Fase 4 (Comunidad).
+- `bike-detail__reviews` → Fase 4 (Comunidad).
+- `bike-detail__related` → Fase 5 (Comparar).
+- `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab.
 
 ## Datos demo para QA visual (backlog)
 
