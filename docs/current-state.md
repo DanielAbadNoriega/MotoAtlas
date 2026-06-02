@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual:
-- Último bloque validado: paridad de metadatos en Podium rankings de `#/comunidad` (cards 2 y 3)
-- Tests: 1005 passed
+- Rama actual: `fix/featured-machines-layout`
+- Último bloque validado: `FeaturedMachines` en Home (sustitución de `FeaturedBikes`/`BikeCard`)
+- Tests: 1012 passed
 - Typecheck: clean
 - Último commit:
 
@@ -44,6 +44,21 @@
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - Flujo de solicitudes admin disponible, pendiente de auditoría funcional final y contratos de producto.
+
+### Home — FeaturedMachines (sustitución de FeaturedBikes / BikeCard)
+- Implementado: nueva sección `FeaturedMachines` en Home.
+- `FeaturedBikes` y `BikeCard` fueron eliminados.
+- Contrato visual actual:
+  - 3 cards: card 1 hero horizontal (16:9), cards 2 y 3 compactas full-background (4:5).
+  - Las 3 cards usan imagen full-background con overlay/degradado y contenido superpuesto.
+  - Badge numérico `01` / `02` / `03` con text-shadow, separado del título (z-index 3 vs contenido z-index 1).
+  - Marca en blanco, modelo en rojo/acento (`$color-accent-container`), text-shadow en título.
+  - Features únicas: `Engine` (cc), `Power` (hp), `Torque` (nm).
+  - CTAs: `Ver ficha` → `#/motos/[id]`, `Reviews` → `#/comunidad/[id]`.
+  - No se muestran km/h, peso, PS, segmento, ADV READY, TC+ EVO, View Configurator.
+  - Hover: scale solo en imagen (no en card), sin saltos de layout.
+  - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
+- Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
@@ -109,7 +124,7 @@
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
 - Backlog P2/P3: resolver deuda semántica final `trail` vs `adventure` con criterio de producto estable.
-- Backlog P1/P2 UI: sustituir `FeaturedBikes`/`BikeCard` de Home por patrón de podio/card compartido; mientras exista, `BikeCard` queda en mantenimiento mínimo.
+- Backlog P1/P2 UI: _(cerrado)_ `FeaturedBikes`/`BikeCard` eliminados; `FeaturedMachines` es la sección actual de Home.
 - Backlog P3: `model_requests.segment` sigue como texto libre; evaluar contrato tipado en fase de cierre taxonómico end-to-end.
 - Backlog P2/P3: automatización avanzada del pipeline de imágenes (thumbnails, variantes responsive, validación/reportes de calidad y performance) como evolución del pipeline actual.
 - Backlog P3/P4: noticias dinámicas y artículos evergreen generados desde datos propios (catálogo/reviews/rankings/comparativas), con fase futura IA asistida y revisión humana obligatoria.

@@ -44,15 +44,25 @@ Pendiente (cambios propuestos):
 
 ### Home — Reemplazo de `FeaturedBikes` / `BikeCard` (legacy temporal)
 
-Estado: backlog UI/SCSS (futuro cercano).
+Estado: **implementado / cerrado**.
 
 Objetivo:
-- sustituir la sección legacy de Home (`FeaturedBikes` + `BikeCard`) por un patrón de podio/cards alineado con `#/comunidad` y `#/comunidad/rankings`.
+- sustituir la sección legacy de Home (`FeaturedBikes` + `BikeCard`) por `FeaturedMachines`.
 
-Notas:
-- hoy `BikeCard` se usa de forma efectiva vía `FeaturedBikes` en Home;
-- el guardrail de label amigable queda vigente mientras exista el componente;
-- `BikeCard` no debería seguir evolucionándose salvo mantenimiento mínimo hasta su retirada.
+Implementado:
+- `FeaturedMachines` es la nueva sección de Home.
+- `FeaturedBikes` y `BikeCard` fueron eliminados.
+- Contrato visual:
+  - 3 cards: card 1 hero (16:9), cards 2 y 3 compactas full-background (4:5).
+  - Imagen full-background con overlay/degradado en las 3 cards.
+  - Badge `01`/`02`/`03` con text-shadow, sin solape con título.
+  - Marca en blanco, modelo en rojo/acento.
+  - Features: `Engine` (cc), `Power` (hp), `Torque` (nm).
+  - CTAs: `Ver ficha` → `#/motos/[id]`, `Reviews` → `#/comunidad/[id]`.
+  - Sin km/h, peso, PS, segmento, ADV READY, TC+ EVO, View Configurator.
+  - Hover: scale en imagen, no en card.
+
+Tests de referencia: `1012 passed`.
 
 ### Paridad visual de Podium rankings (`#/comunidad` vs `#/comunidad/rankings`)
 

@@ -58,7 +58,6 @@
 }
 
 .featured-machine-card {
-  max-height: 500px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -72,6 +71,7 @@
   }
 
   &__media {
+    position: absolute;
     inset: 0;
     overflow: hidden;
 
