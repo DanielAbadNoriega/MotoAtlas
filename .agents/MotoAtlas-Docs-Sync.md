@@ -41,6 +41,7 @@ Y según el tipo de cambio:
   - Implementado
   - Pendiente
   - Riesgos / notas futuras
+- Al finalizar cualquier sincronización documental, realizar una comprobación de residuos antes de responder. Buscar referencias obsoletas relacionadas con el cambio aplicado: fase anterior, rama anterior, contador de tests anterior, estados "pendiente" ya implementados, secciones movidas, nombres antiguos de componentes o textos que el prompt haya indicado como reemplazados. Si aparece un residuo, corregirlo antes de devolver el resumen.
 - Mantener documentación breve, útil y accionable.
 - Evitar reescribir documentos enteros si basta con actualizar secciones concretas.
 - Si un documento contradice el estado actual aprobado, corregir la contradicción.
@@ -66,3 +67,4 @@ Y según el tipo de cambio:
 - Qué queda pendiente
 - Resultado de typecheck/test
 - Zonas no tocadas
+- Comprobación de residuos realizada
