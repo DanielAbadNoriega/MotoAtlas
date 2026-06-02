@@ -285,6 +285,35 @@
     margin-top: 0.5rem;
   }
 
+  &__reviews-empty {
+    color: $color-on-surface-variant;
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+
+  &__reviews-header {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .featured-review-card {
+      display: block
+    }
+  }
+
   &__specs-tab {
     @include container;
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
@@ -8,9 +8,15 @@ import { getMotorcycleTechnicalIcon, type MotorcycleTechnicalIconKey } from '../
 import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { formatReviewAggregate, formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
+import { buildReviewAuthContext, isOwnReview } from '../../../shared/reviews/reviewCommunityActions';
+import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
+import { useReviewReports } from '../../../shared/reviews/useReviewReports';
+import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
+import { useAuth } from '../../../features/auth';
 import { ReviewModal } from '../../reviews/ReviewModal';
-import { MotorcycleReviewCard } from '../../reviews/MotorcycleReviewCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
+import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
 import './BikeDetailPage.scss';
 
 type BikeDetailPageProps = {
@@ -228,7 +234,28 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
   );
 }
 
-function CommunityTab({ bike, reviews }: { bike: Bike; reviews: readonly MotorcycleReview[] }) {
+function CommunityTab({
+  bike,
+  reviews,
+  onWriteReview,
+  reactionSummaries,
+  reactionPendingIds,
+  reportedReviewIds,
+  session,
+  onToggleHelpful,
+  onToggleNotHelpful,
+}: {
+  bike: Bike;
+  reviews: readonly MotorcycleReview[];
+  onWriteReview: () => void;
+  reactionSummaries: readonly ReviewReactionSummary[];
+  reactionPendingIds: readonly string[];
+  reportedReviewIds: Readonly<Record<string, boolean>>;
+  session: { user?: { id?: string } } | null;
+  onToggleHelpful: (review: MotorcycleReview) => void;
+  onToggleNotHelpful: (review: MotorcycleReview) => void;
+}) {
+  const userId = session?.user?.id ?? null;
   const aggregate = getReviewAggregate(reviews);
   const confidence = getRankingConfidence(aggregate.reviewCount);
   const confidenceLabel =
@@ -293,6 +320,51 @@ function CommunityTab({ bike, reviews }: { bike: Bike; reviews: readonly Motorcy
           <p className="bike-detail__reliability-empty">Sin reportes de fiabilidad todavía.</p>
         )}
       </section>
+
+      <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
+        <div className="bike-detail__reviews-header">
+          <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
+          <button className="button button--primary" type="button" onClick={onWriteReview}>
+            Escribir review
+          </button>
+        </div>
+        <div className="bike-detail__reviews-list" aria-live="polite">
+          {reviews.length > 0 ? (
+            reviews.map((review) => {
+              const isOwn = isOwnReview(review, userId);
+              const hasReported = Boolean(reportedReviewIds[review.id]);
+              const isPending = reactionPendingIds.includes(review.id);
+              const summary = reactionSummaries.find((s) => s.reviewId === review.id) ?? null;
+              const hasReactionAuth = Boolean(session);
+              const canInteractHelpful = hasReactionAuth && !isOwn && !hasReported;
+
+              return (
+                <FeaturedReviewCard
+                  key={review.id}
+                  review={review}
+                  hideImage
+                  hideLinks
+                  isOwnReview={isOwn}
+                  actionsSlot={
+                    <FeaturedReviewCardCommunityActions
+                      review={review}
+                      isOwn={isOwn}
+                      hasReported={hasReported}
+                      isPending={isPending}
+                      summary={summary}
+                      canInteract={canInteractHelpful}
+                      onToggleHelpful={onToggleHelpful}
+                      onToggleNotHelpful={onToggleNotHelpful}
+                    />
+                  }
+                />
+              );
+            })
+          ) : (
+            <p className="bike-detail__reviews-empty">Sin reviews aprobadas todavía.</p>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -352,9 +424,34 @@ function NotFoundDetail() {
 export type BikeDetailTab = 'resumen' | 'especificaciones' | 'comunidad' | 'comparar';
 
 export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
+  const { session } = useAuth();
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
+  const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<BikeDetailTab>('resumen');
+  const [reportedReviewIds, setReportedReviewIds] = useState<Readonly<Record<string, boolean>>>({});
+
+  const reactionAuthContext = buildReviewAuthContext({
+    accessToken: session?.access_token,
+    isAuthenticated: Boolean(session),
+    userId: session?.user?.id,
+  });
+
+  const {
+    reactionPendingIds,
+    toggleHelpful: toggleHelpfulReaction,
+    toggleNotHelpful: toggleNotHelpfulReaction,
+  } = useReviewReactions({
+    authContext: reactionAuthContext,
+    isReported: (reviewId) => Boolean(reportedReviewIds[reviewId]),
+    userId: session?.user?.id,
+  });
+
+  const { hasReported } = useReviewReports({
+    authContext: reactionAuthContext,
+    reviewIds: reviews.map((r) => r.id),
+    userId: session?.user?.id,
+  });
 
   useEffect(() => {
     if (!bike) {
@@ -367,6 +464,16 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
         if (isMounted) {
           setReviews(approvedReviews);
         }
+        return approvedReviews;
+      })
+      .then((approvedReviews) => {
+        if (approvedReviews.length === 0) return;
+        return getReviewReactionSummary(approvedReviews.map((r) => r.id));
+      })
+      .then((summaries) => {
+        if (isMounted && summaries) {
+          setReactionSummaries(summaries ?? []);
+        }
       })
       .catch(() => {
         if (isMounted) {
@@ -378,6 +485,41 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
       isMounted = false;
     };
   }, [bike?.id]);
+
+  const getSummaryForReview = useCallback(
+    (reviewId: string): ReviewReactionSummary | null => {
+      return reactionSummaries.find((s) => s.reviewId === reviewId) ?? null;
+    },
+    [reactionSummaries],
+  );
+
+  const handleToggleHelpful = useCallback(
+    async (review: MotorcycleReview) => {
+      const outcome = await toggleHelpfulReaction(review);
+      if (outcome.outcome === 'success') {
+        setReactionSummaries((current) =>
+          current.map((s) => (s.reviewId === outcome.summary.reviewId ? outcome.summary : s)),
+        );
+      }
+    },
+    [toggleHelpfulReaction],
+  );
+
+  const handleToggleNotHelpful = useCallback(
+    async (review: MotorcycleReview) => {
+      const outcome = await toggleNotHelpfulReaction(review);
+      if (outcome.outcome === 'success') {
+        setReactionSummaries((current) =>
+          current.map((s) => (s.reviewId === outcome.summary.reviewId ? outcome.summary : s)),
+        );
+      }
+    },
+    [toggleNotHelpfulReaction],
+  );
+
+  const handleOpenReport = useCallback((_review: MotorcycleReview) => {
+    // Report form not wired in this phase - placeholder for future
+  }, []);
 
   if (!bike) {
     return <NotFoundDetail />;
@@ -586,7 +728,19 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           </>
         )}
         {activeTab === 'especificaciones' && <SpecificationsTab bike={bike} />}
-        {activeTab === 'comunidad' && <CommunityTab bike={bike} reviews={reviews} />}
+        {activeTab === 'comunidad' && (
+          <CommunityTab
+            bike={bike}
+            reviews={reviews}
+            onWriteReview={() => setIsReviewModalOpen(true)}
+            reactionSummaries={reactionSummaries}
+            reactionPendingIds={reactionPendingIds}
+            reportedReviewIds={reportedReviewIds}
+            session={session}
+            onToggleHelpful={handleToggleHelpful}
+            onToggleNotHelpful={handleToggleNotHelpful}
+          />
+        )}
         {activeTab === 'comparar' && (
           <div className="bike-detail__tab-placeholder">
             <p>Comparador próximamente</p>
@@ -612,31 +766,6 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           ))}
         </div>
       </section>
-
-      <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
-        <div className="bike-detail__reviews-summary">
-          <span>Opiniones verificadas</span>
-          <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
-          <strong>{formatReviewAggregate(reviewAggregate)}</strong>
-          <div className="bike-detail__review-actions">
-            <button className="button button--primary" type="button" onClick={() => setIsReviewModalOpen(true)}>
-              Escribir review
-            </button>
-          </div>
-        </div>
-
-        <div className="bike-detail__approved-reviews" aria-live="polite">
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <MotorcycleReviewCard key={review.id} review={review} variant="compact" />
-            ))
-          ) : (
-            <p>Sin reviews aprobadas todavía.</p>
-          )}
-        </div>
-      </section>
-
-      <ReviewModal isOpen={isReviewModalOpen} motorcycle={bike} onClose={() => setIsReviewModalOpen(false)} />
 
       <section className="bike-detail__related" aria-labelledby="bike-detail-related-title">
         <div>
