@@ -122,7 +122,7 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fases 1, 2 y 3A)
+## BikeDetailPage tabs (Fases 1, 2, 3A y 3B)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
@@ -147,8 +147,12 @@ Fase 3A — Cobertura de motorcycleTechnicalIcons:
 - test explícito de ausencia de `a2` en el mapa.
 - type prevents invalid keys at compile time.
 
+Fase 3B — Cobertura implementada:
+- ReviewModal usa `getMotorcycleTechnicalIcon` en `technicalAspects` para todos los iconos técnicos; sin iconos hardcodeados en el array.
+- `consumption` → `local_gas_station` vía `getMotorcycleTechnicalIcon('consumption')`.
+- `ReviewAspectSummary` queda pendiente de coordinación futura si aplica.
+
 Pendiente de cobertura (fases siguientes):
-- Fase 3B: migración de iconos en ReviewModal/review form (ReviewAspectSummary no migrada aún).
 - Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
 - Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
 

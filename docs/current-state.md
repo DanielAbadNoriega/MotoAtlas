@@ -3,7 +3,7 @@
 ## Último estado estable
 
 - Rama actual: `fix/bike-detail-tabs`
-- Último bloque validado: `BikeDetailPage` tabs Fase 3A (iconos técnicos compartidos `motorcycleTechnicalIcons.ts`)
+- Último bloque validado: `BikeDetailPage` tabs Fase 3B (ReviewModal usa iconos técnicos compartidos)
 - Tests: 1035 passed
 - Typecheck: clean
 - Último commit:
@@ -60,7 +60,7 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
-### BikeDetailPage — Reorganización por tabs (Fases 1, 2 y 3A implementadas)
+### BikeDetailPage — Reorganización por tabs (Fases 1, 2, 3A y 3B implementadas)
 - tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
 - Sin tab Metodología (ya existe `#/metodologia`).
 - Tab Resumen activa por defecto.
@@ -82,7 +82,7 @@
   - Iconos Material Symbols: `fuelTank → oil_barrel`, `consumption → local_gas_station`, `license → workspace_premium`, etc.
   - Tests dedicados en `src/shared/motorcycles/motorcycleTechnicalIcons.test.ts`.
   - `specIconMap` local eliminado de BikeDetailPage.tsx.
-- Fase 3B — Migración de iconos en ReviewModal/review form: **pendiente**. ReviewModal, review form y ReviewAspectSummary no fueron migrados en esta fase.
+- Fase 3B — Iconos técnicos compartidos en ReviewModal: **implementada**. ReviewModal `technicalAspects` ahora usa `getMotorcycleTechnicalIcon(category)` del módulo compartido. Sin iconos hardcodeados, sin duplicación. `consumption` → `local_gas_station`. `ReviewAspectSummary` no fue migrada (pendiente coordinación futura si aplica).
 - Fallbacks documentados:
   - Precio: fallback textual cuando `priceEur <= 0` o `source = placeholder`.
   - Features: solo booleanas `true` se renderizan.
@@ -99,7 +99,7 @@
   - Fase 1: estructura tabs + Resumen — **implementada**.
   - Fase 2: tab Especificaciones — **implementada**.
   - Fase 3A: iconos técnicos compartidos — **implementada**.
-  - Fase 3B: migración de iconos en ReviewModal/review form — **pendiente**.
+  - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
   - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas).
   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
 - Tests: 1035 passed (69 files). 27 tests BikeDetailPage + 9 tests motorcycleTechnicalIcons + resto de suite.
@@ -159,7 +159,7 @@
   - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
   - Fase 2: tab Especificaciones (`SpecificationsTab` con bento grid, SpecCard, electronics, A2 condicional, fallbacks de precio) — **implementada**.
   - Fase 3A: iconos técnicos compartidos (`motorcycleTechnicalIcons.ts`, 18 keys, `a2` no es key, A2 usa `license`) — **implementada**.
-  - Fase 3B: migración de iconos en ReviewModal/review form — **pendiente**.
+  - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
   - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas con FeaturedReviewCard sin imagen).
   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
   - Secciones residuales: `bike-detail__specs` old, `bike-detail__reliability`, `bike-detail__reviews`, `bike-detail__related` pending de fases 4/5.
