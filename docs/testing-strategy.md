@@ -148,7 +148,7 @@ Fase 3A — Cobertura de motorcycleTechnicalIcons:
 - type prevents invalid keys at compile time.
 
 Pendiente de cobertura (fases siguientes):
-- Fase 3B: migración de iconos en ReviewModal/review form (ReviewAspectSummary no migrada aún).
+- Fase 3B: migración de iconos en ReviewModal/review form — implementada. `technicalAspects` usa `getMotorcycleTechnicalIcon`. `ReviewAspectSummary` pendiente de coordinación futura si aplica.
 - Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
 - Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
 
