@@ -168,10 +168,11 @@ Estado por fase:
    - **4.3A — Compact variant de FeaturedReviewCard**: soporte de props `hideImage` y `hideLinks`, defaults preservan comportamiento existente.
    - **4.3B — Reviews dentro de la pestaña**: `bike-detail__reviews` movido a CommunityTab, usa FeaturedReviewCard con `hideImage` + `hideLinks`, sin "Más reviews" / "Ver ficha", "Escribir review" abre ReviewModal, MotorcycleReviewCard eliminada de BikeDetailPage.
    - **4.3C — Acciones de comunidad seguras en BikeDetailPage**: `FeaturedReviewCardCommunityActions` extraída, `Útil N` visible como contador público, sin acciones falsas/no-op, no-auth: `Útil N` pasivo sin "No útil" ni "Reportar" ni "Responder", own review: `Útil N` pasivo + chip "Propia", reported bloquea reacciones, `Reportar` no renderiza sin handler real, `Responder` no existe en BikeDetailPage.
+   - **4.4 — Acciones seguras en RecentReviews de `#/comunidad`**: TopRatedMotorcyclesPage conecta `FeaturedReviewCardCommunityActions` con Helpful/NotHelpful real, `Útil N` público pasivo en no-auth, chip "Propia" en own review, reported bloquea. Report/Reply no cableados en esta fase. `getReviewReactionSummary` mocked en tests.
 
    Pendiente de Fase 4:
    - Cableado completo de Report/Reply en BikeDetailPage (si se desea en el futuro).
-   - RecentReviews en `#/motos-mejor-valoradas` (TopRatedMotorcyclesPage) sin cambios en esta fase.
+   - Cableado completo de Report/Reply en TopRatedMotorcyclesPage RecentReviews (si se desea en el futuro).
 
    Reglas de Fase 4:
    - Sin acciones fake/no-op en la ficha de moto.

@@ -48,7 +48,7 @@ Bloque `Reviews recientes` en esta página:
 - muestra máximo 3 reviews recientes (`slice(0, 3)`) ordenadas por fecha descendente.
 - mantiene empty state cuando no hay reviews.
 - mantiene CTA de sección `Ver todas las reviews` (`#/comunidad/reviews`) y CTAs de card `Más reviews` / `Ver ficha`.
-- en esta fase NO integra acciones comunitarias (Helpful/NotHelpful/Report/Replies) ni handlers no-op.
+- Fase 4.4: integra acciones comunitarias seguras con FeaturedReviewCardCommunityActions. Helpful/NotHelpful son reales cuando hay auth + review ajena + no reportada. En no-auth, Útil N queda como contador pasivo. Report/Reply no se renderizan porque no están cableados con flujo real en esta fase.
 
 ## Buscador
 
@@ -168,7 +168,7 @@ Dirección:
 
 ## Comunidad landing
 
-La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` en modo visual (sin acciones comunitarias conectadas en esta página).
+La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` con acciones comunitarias seguras (Fase 4.4): Helpful/NotHelpful reales en auth, Útil N pasivo en no-auth, Report/Reply no cableados.
 
 Paridad resuelta:
 - en `#/comunidad`, las cards de podio en posiciones 2 y 3 ya muestran el mismo span de metadatos que `#/comunidad/rankings`.
