@@ -169,7 +169,7 @@ Elementos principales:
 - Grid de 8 categorías (global, daily, travel, sport, a2, power-weight, reliability, passenger).
 - Listado técnico con filtros por segmento, carnet y uso. **No usa `<table>`; usa cards/grid responsive.**
 
-**Pendiente:** rediseño mobile avanzado del listado técnico (cards responsive más refinadas).
+**Pendiente:** rediseño mobile avanzado del listado técnico (cards responsive más refinadas) — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch.
 
 Datos:
 - `reviewCount`: conteo real de reviews `approved` por moto.

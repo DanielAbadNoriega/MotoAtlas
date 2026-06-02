@@ -105,10 +105,8 @@
   - `other` es UI-only (no segmento canónico);
   - secundarios mapean a `other`;
   - targets de grupos visibles devuelven solo segmentos canónicos válidos.
-- Guardrail UI legacy cerrado:
-  - `BikeCard` ya no renderiza `bike.segment` crudo;
-  - usa `segmentLabels[bike.segment]` con fallback controlado `Segmento desconocido`.
-  - `BikeCard` queda como legacy temporal (hoy se usa vía `FeaturedBikes` en Home) y candidato a retirada cuando Home migre al patrón de podio/cards compartido.
+- `BikeCard` fue eliminada junto con `FeaturedBikes` tras la migración de Home a `FeaturedMachines`.
+- El guardrail de label amigable para segmento ya no aplica a este componente (retirado de la base de código).
 - Guardrails implementados:
   - `BIKE_SEGMENTS` exacto (16 categorías esperadas).
   - alineación `BikeSegment` (`src/types/bike.ts`) ↔ `BIKE_SEGMENTS`.
