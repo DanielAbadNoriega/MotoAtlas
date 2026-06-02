@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1042` tests passing.
+- `1047` tests passing.
 
 ## Stack actual
 
@@ -122,7 +122,7 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fases 1, 2, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B y 4.3C)
+## BikeDetailPage tabs (Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1 y 5.2)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
@@ -139,6 +139,16 @@ Fase 2 — Cobertura de SpecificationsTab:
 - features activas: ABS en curva, Quickshifter renderizadas; Puños calefactables no renderizada (false).
 - A2 condicional: bloque COMPARABILIDAD A2 con "Limitada a 47.6 CV (orig. 80 CV)" para fixture A2; no aparece para moto no A2.
 - precio pendiente: texto "Precio pendiente de confirmar" cuando `priceEur = 0` y `priceSource = placeholder`; nunca `0 €`.
+
+Fase 2C — Cobertura de specs detalladas dentro de Especificaciones tab:
+- heading `Especificaciones ampliadas` visible al abrir el tab.
+- copy `Detalles técnicos y equipamiento específico del modelo.` visible.
+- grupos detallados: `Motor & transmisión`, `Chasis & ergonomía`, `Mercado & registro` dentro del tab.
+- specs detalladas NO visibles antes de abrir Especificaciones tab (tab inactivo).
+- sección residual `bike-detail__specs` eliminada del flujo principal de `<main>`.
+
+Fase 2C-B — Cobertura de tests añadidos:
+- 5 tests nuevos cubren heading, copy, grupos, invisibilidad antes de abrir tab y ausencia de sección residual.
 
 Fase 3A — Cobertura de motorcycleTechnicalIcons:
 - mapa con 18 keys: 8 de specs (engine, power, torque, weight, seatHeight, fuelTank, license, price) + 10 de aspectos de reviews (ergonomics, consumption, braking, suspension, electronics, aerodynamics, passenger, maintenance, design).
@@ -184,7 +194,8 @@ Fase 4.3C — Cobertura implementada:
 - Sin handlers no-op.
 
 Pendiente de cobertura (fases siguientes):
-- Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
+- Fase 5.1/5.2: compare action button states (Comparar / Ya en comparador / Comparador lleno) con queue llena y queue no llena. Tests cubiertos en BikeDetailPage.test.tsx existente.
+- Reemplazar `MotorcycleGarageCard` temporal en CompareTab por variante optimizada (pendiente).
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
 - RecentReviews en TopRatedMotorcyclesPage ahora con acciones seguras (Fase 4.4): Helpful/NotHelpful real en auth, `Útil N` pasivo en no-auth, Report/Reply no cableados.
 

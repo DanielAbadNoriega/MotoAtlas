@@ -359,6 +359,51 @@ describe('BikeDetailPage', () => {
     expect(specsTab?.innerHTML).not.toContain('0 €');
   });
 
+  it('Especificaciones tab muestra heading Especificaciones ampliadas', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.getByRole('heading', { name: 'Especificaciones ampliadas' })).toBeInTheDocument();
+  });
+
+  it('Especificaciones tab muestra copy de sección extendida', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.getByText('Detalles técnicos y equipamiento específico del modelo.')).toBeInTheDocument();
+  });
+
+  it('Especificaciones tab muestra grupos de specs detalladas', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    const specsTab = document.querySelector('.bike-detail__specs-tab') as HTMLElement;
+    const withinSpecs = within(specsTab);
+
+    expect(withinSpecs.getByRole('heading', { name: 'Motor & transmisión' })).toBeInTheDocument();
+    expect(withinSpecs.getByRole('heading', { name: 'Chasis & ergonomía' })).toBeInTheDocument();
+    expect(withinSpecs.getByRole('heading', { name: 'Mercado & registro' })).toBeInTheDocument();
+  });
+
+  it('Specs detalladas no visibles antes de abrir Especificaciones tab', async () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.queryByRole('heading', { name: 'Especificaciones ampliadas' })).not.toBeInTheDocument();
+  });
+
+  it('La vieja seccion bike-detail__specs ya no existe en el flujo principal', async () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const main = screen.getByRole('main');
+    expect(main.querySelector('section.bike-detail__specs')).not.toBeInTheDocument();
+  });
+
   it('al hacer click en Comunidad muestra mini resumen comunitario', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
-import { getBrowseSearchHash, getCompareSearchHash } from '../../../utils/compareQueue';
+import { compareQueueMaxSize, getBrowseSearchHash, getCompareSearchHash, loadCompareQueue, saveCompareQueue } from '../../../utils/compareQueue';
+import { getNextCompareSelection } from '../../../utils/motorcycleSearch';
 import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getMotorcycleTechnicalIcon, type MotorcycleTechnicalIconKey } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
@@ -13,6 +14,7 @@ import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
 import { useReviewReports } from '../../../shared/reviews/useReviewReports';
 import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
 import { useAuth } from '../../../features/auth';
+import { Button } from '../../ui/Button';
 import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
@@ -230,11 +232,50 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
           </article>
         )}
       </div>
+
+      <section className="bike-detail__specs-extended" aria-labelledby="bike-detail-specs-title">
+        <h2 id="bike-detail-specs-title">Especificaciones ampliadas</h2>
+        <p className="bike-detail__specs-extended-desc">Detalles técnicos y equipamiento específico del modelo.</p>
+        <div className="bike-detail__spec-groups">
+          {getSpecGroups(bike).map((group) => (
+            <article key={group.title}>
+              <h3>{group.title}</h3>
+              <dl>
+                {group.items.map((item) => (
+                  <div key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
 
 function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
+  const [compareQueue, setCompareQueue] = useState<readonly Bike['id'][]>(() => loadCompareQueue());
+
+  const handleToggleCompare = (bikeId: Bike['id']) => {
+    const next = getNextCompareSelection(compareQueue, bikeId);
+    const newQueue = next.selectedIds;
+    setCompareQueue(newQueue);
+    saveCompareQueue(newQueue);
+  };
+
+  const getButtonState = (bikeId: Bike['id']): 'add' | 'added' | 'full' => {
+    if (compareQueue.includes(bikeId)) {
+      return 'added';
+    }
+    if (compareQueue.length >= compareQueueMaxSize) {
+      return 'full';
+    }
+    return 'add';
+  };
+
   if (relatedBikes.length === 0) {
     return (
       <div className="bike-detail__compare-tab">
@@ -250,24 +291,49 @@ function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
         <p>Para comparar con criterio: mismo uso, distinta ejecución.</p>
       </div>
       <div className="bike-detail__related-list">
-        {relatedBikes.map((relatedBike) => (
-          <article key={relatedBike.id}>
-            <MotorcycleImage motorcycle={relatedBike} loading="lazy" />
-            <span>{segmentLabels[relatedBike.segment]}</span>
-            <h3>{getBikeDisplayName(relatedBike)}</h3>
-            <dl>
-              <div>
-                <dt>Potencia</dt>
-                <dd>{numberFormatter.format(relatedBike.powerHp)} CV</dd>
+        {relatedBikes.map((relatedBike) => {
+          const state = getButtonState(relatedBike.id);
+          return (
+            <article key={relatedBike.id}>
+              <MotorcycleImage motorcycle={relatedBike} loading="lazy" />
+              <span>{segmentLabels[relatedBike.segment]}</span>
+              <h3>{getBikeDisplayName(relatedBike)}</h3>
+              <dl>
+                <div>
+                  <dt>Potencia</dt>
+                  <dd>{numberFormatter.format(relatedBike.powerHp)} CV</dd>
+                </div>
+                <div>
+                  <dt>Peso</dt>
+                  <dd>{numberFormatter.format(relatedBike.wetWeightKg)} kg</dd>
+                </div>
+              </dl>
+              <div className="bike-detail__compare-actions">
+                {state === 'add' && (
+                  <Button variant="primary" onClick={() => handleToggleCompare(relatedBike.id)}>
+                    <span className="material-symbols-outlined" aria-hidden="true">compare_arrows</span>
+                    Comparar
+                  </Button>
+                )}
+                {state === 'added' && (
+                  <Button variant="secondary" disabled>
+                    <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    Ya en comparador
+                  </Button>
+                )}
+                {state === 'full' && (
+                  <Button variant="secondary" disabled>
+                    <span className="material-symbols-outlined" aria-hidden="true">block</span>
+                    Comparador lleno
+                  </Button>
+                )}
+                <a className="button button--ghost" href={getBikeDetailHash(relatedBike)}>
+                  Ver ficha
+                </a>
               </div>
-              <div>
-                <dt>Peso</dt>
-                <dd>{numberFormatter.format(relatedBike.wetWeightKg)} kg</dd>
-              </div>
-            </dl>
-            <a href={getBikeDetailHash(relatedBike)}>Ver ficha</a>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </div>
   );
@@ -784,25 +850,6 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           <CompareTab relatedBikes={relatedBikes} />
         )}
       </div>
-
-      <section className="bike-detail__specs" aria-labelledby="bike-detail-specs-title">
-        <h2 id="bike-detail-specs-title">Especificaciones detalladas</h2>
-        <div className="bike-detail__spec-groups">
-          {getSpecGroups(bike).map((group) => (
-            <article key={group.title}>
-              <h3>{group.title}</h3>
-              <dl>
-                {group.items.map((item) => (
-                  <div key={item.label}>
-                    <dt>{item.label}</dt>
-                    <dd>{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </article>
-          ))}
-        </div>
-      </section>
     </main>
   );
 }
