@@ -202,4 +202,74 @@ describe('BikeDetailPage', () => {
     expect(officialLink).toHaveAttribute('target', '_blank');
     expect(officialLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
+
+  it('renderiza cuatro tabs: Resumen, Especificaciones, Comunidad, Comparar', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const tablist = screen.getByRole('tablist', { name: /Secciones de la ficha/i });
+    expect(within(tablist).getAllByRole('tab')).toHaveLength(4);
+    expect(within(tablist).getByText('Resumen')).toBeInTheDocument();
+    expect(within(tablist).getByText('Especificaciones')).toBeInTheDocument();
+    expect(within(tablist).getByText('Comunidad')).toBeInTheDocument();
+    expect(within(tablist).getByText('Comparar')).toBeInTheDocument();
+  });
+
+  it('no existe tab Metodología', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.queryByRole('tab', { name: /Metodología/i })).not.toBeInTheDocument();
+  });
+
+  it('Resumen activo por defecto', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const resumenTab = screen.getByRole('tab', { name: /Resumen/i });
+    expect(resumenTab).toHaveAttribute('aria-selected', 'true');
+    expect(resumenTab).toHaveClass('bike-detail__tab--active');
+  });
+
+  it('al hacer click en Resumen aparecen contenidos de riding y fit', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Resumen/i }));
+
+    expect(screen.getByRole('heading', { name: /Perfil dinámico/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /¿Es esta moto para ti?/i })).toBeInTheDocument();
+  });
+
+  it('al hacer click en Especificaciones muestra placeholder', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.getByText('Especificaciones técnicas próximas')).toBeInTheDocument();
+  });
+
+  it('al hacer click en Comunidad muestra placeholder', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    expect(screen.getByText('Comunidad próximamente')).toBeInTheDocument();
+  });
+
+  it('al hacer click en Comparar muestra placeholder', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    expect(screen.getByText('Comparador próximamente')).toBeInTheDocument();
+  });
+
+  it('no aparece null ni undefined en tabs', () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const html = screen.getByRole('main').innerHTML;
+    expect(html).not.toContain('null');
+    expect(html).not.toContain('undefined');
+  });
 });

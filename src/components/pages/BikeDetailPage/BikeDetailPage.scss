@@ -156,6 +156,55 @@
     }
   }
 
+  &__tabs {
+    @include container;
+
+    border-bottom: 1px solid rgba($color-outline-variant, 0.28);
+    display: flex;
+    gap: 0;
+    padding-top: 2rem;
+  }
+
+  &__tab {
+    @include label-caps;
+
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    padding: 0.75rem 1.5rem;
+    transition: border-color $transition-base, color $transition-base;
+
+    &:hover,
+    &:focus-visible {
+      color: $color-on-surface;
+    }
+
+    &--active {
+      border-bottom-color: $color-accent;
+      color: $color-accent;
+    }
+  }
+
+  &__tab-content {
+    @include container;
+
+    padding-top: 3rem;
+  }
+
+  &__tab-placeholder {
+    @include container;
+
+    padding-block: 4rem;
+    text-align: center;
+
+    p {
+      color: $color-on-surface-variant;
+      font-style: italic;
+    }
+  }
+
   &__quick-specs,
   &__features,
   &__fit,

@@ -121,57 +121,53 @@ Estado: pendiente.
   - `accountReviewFilters`
 - Resultado esperado: crecimiento sin duplicar UI por página.
 
-### Tarea P1/P2 — Quick specs avanzadas en ficha de moto
+### BikeDetailPage — Reorganización por tabs
 
-Estado: backlog estratégico / futuro cercano.
+Estado: plan documentado / no iniciado.
 
-Objetivo:
-Mejorar `bike-detail__quick-specs` en `#/motos/[moto-id]` para mostrar specs técnicas de forma más visual, modular y escalable.
+Decisión de producto:
+- La `BikeDetailPage` actual se mantiene como base.
+- El objetivo no es rediseñar toda la landing, sino reorganizar secciones existentes en tabs.
+- Solo la pestaña `Especificaciones` usará diseño nuevo de Stitch tipo "Ficha Técnica Rápida".
+- El resto de tabs reutilizarán secciones existentes con ajustes progresivos.
+- Se trabaja por fases para evitar megatarea.
 
-Zonas relacionadas:
-- `src/components/pages/BikeDetailPage/BikeDetailPage.tsx`
-- estilos de `BikeDetailPage`
-- `ReviewModal` como referencia visual (`.review-modal__aspect-card`)
-- posible componente compartido de specs técnicas
-- posible mixin/placeholder SCSS común
+Ruta afectada: `#/motos/[moto-id]`
 
-Alcance visual:
-- usar tarjetas técnicas similares a las aspect cards del modal
-- evitar copiar CSS de modal directamente
-- valorar extracción de componente común:
-  - `TechnicalSpecCard`
-  - `SpecCard`
-  - u otro nombre coherente
-- valorar extracción de SCSS común si aplica
+Tabs previstas:
+1. `Resumen` — secciones riding + fit (existentes).
+2. `Especificaciones` — diseño técnico premium desde Stitch (nuevo).
+3. `Comunidad` — mini resumen + reliability + reviews.
+4. `Comparar` — related + MotorcycleGarageCard.
+5. Sin tab `Metodología` (existe `#/metodologia`).
 
-Specs a contemplar:
-- cilindrada
-- potencia
-- par
-- peso
-- altura asiento
-- depósito
-- precio
-- carnet/A2
-- quickshifter
-- suspensiones
-- frenos
-- electrónica
-- neumáticos
-- equipamiento
+Orden de fases:
+1. Fase 1 — Estructura de tabs + tab Resumen (riding + fit).
+2. Fase 2 — Tab Especificaciones con diseño técnico premium.
+3. Fase 3 — Iconos técnicos compartidos.
+4. Fase 4 — Tab Comunidad (mini resumen + reliability + reviews adaptadas).
+5. Fase 5 — Tab Comparar (related + MotorcycleGarageCard + acciones comparador).
 
-Reglas:
-- no ampliar schema/modelo `Bike` en esta tarea salvo decisión explícita
-- si faltan campos, documentar dependencia del futuro Admin catálogo/modelos
-- no renderizar `null`/`undefined`
-- no crear CSS duplicado acoplado a `ReviewModal`
-- mantener accesibilidad
+Reglas transversales:
+- no ampliar schema/modelo `Bike` salvo decisión explícita.
+- no renderizar `null`/`undefined`; usar fallbacks controlados.
+- no copiar CSS de `ReviewModal`.
+- `FeaturedReviewCard` adaptada: sin imagen, sin CTAs redundantes dentro de la ficha.
+- `MotorcycleGarageCard` sigue presentacional si se reutiliza en Comparar.
+- Mobile: responsive funcional, refinados premium pospuestos a fase mobile-first.
+
+Riesgos documentados:
+- Precio delicado por promociones/variantes; fallback `Precio pendiente` si no hay dato fiable.
+- Fiabilidad/problemas frecuentes requiere contrato de datos claro antes de claims fuertes.
+- `FeaturedReviewCard` debe adaptarse sin acciones falsas.
+- Fase 5 comparador no debe duplicar lógica existente de compare queue.
 
 Relación con roadmap:
-- conecta con revisión futura UI/SCSS
-- conecta con Admin catálogo/modelos
-- conecta con datos técnicos avanzados
-- puede alimentar mejores fichas, comparador y SEO técnico
+- conecta con revisión global UI/SCSS (fase 13 P3/P4).
+- conecta con sistema de filtros reutilizable.
+- conecta con Admin catálogo/modelos (faltas de datos).
+- puede alimentar mejor comparador y SEO técnico.
+- fase mobile-first independiente posterior.
 
 ## 6. P2 — Plataforma/Admin/Productividad interna
 

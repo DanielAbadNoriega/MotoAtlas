@@ -103,21 +103,31 @@ Responsive:
 - Tablet: 2 columnas en secondary.
 - Mobile: stack vertical, aspect-ratio 16:9 para compactas.
 
-## Ficha de moto — Quick specs (backlog)
+## Ficha de moto — BikeDetailPage con tabs (futuro)
 
-Estado: backlog estratégico / futuro cercano.
+Estado: plan documentado en `docs/product-roadmap.md`; no iniciado.
 
-La ficha `#/motos/[moto-id]` tiene `bike-detail__quick-specs` y se planifica evolucionarla con un patrón visual de tarjetas técnicas más modular, tomando como referencia visual las `.review-modal__aspect-card` de `ReviewModal`, pero **sin copiar ni acoplar CSS** del modal.
+La ficha `#/motos/[moto-id]` se reorganizará por tabs:
 
-Dirección de diseño:
-- usar cards técnicas más expresivas para specs clave
-- evaluar componente reutilizable (`TechnicalSpecCard` / `SpecCard`)
-- evaluar mixin/placeholder SCSS común si aporta reutilización real
-- mantener accesibilidad y evitar render de datos faltantes (`null`/`undefined`)
+| Tab | Contenido | Notas |
+|-----|-----------|-------|
+| Resumen | riding + fit | secciones existentes, sin rediseño en esta fase |
+| Especificaciones | specs técnicas premium | diseño nuevo desde Stitch; no tabla larga |
+| Comunidad | mini resumen + reliability + reviews | FeaturedReviewCard adaptada |
+| Comparar | related + MotorcycleGarageCard | acciones de comparador |
 
-Nota de alcance:
-- no ampliar schema/modelo `Bike` dentro de esta tarea sin decisión explícita
-- si faltan campos técnicos, queda dependiente del futuro Admin catálogo/modelos
+Decisiones:
+- Sin tab Metodología (existe `#/metodologia`).
+- `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes.
+- Precio: fallback `Precio pendiente` si no hay dato fiable; no vender como comercial cerrado.
+- Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes.
+- Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
+
+Reglas:
+- no renderizar `null`/`undefined`; fallbacks controlados.
+- no copiar CSS de `ReviewModal`.
+- `MotorcycleGarageCard` sigue presentacional.
+- no ampliar schema `Bike` salvo decisión explícita.
 
 ## Datos demo para QA visual (backlog)
 

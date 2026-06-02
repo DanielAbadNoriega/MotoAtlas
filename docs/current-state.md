@@ -113,6 +113,12 @@
 ## Pendiente
 
 - Rediseño mobile avanzado de rankings/listado técnico — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch. Mantener responsive usable y sin pantallas rotas.
+- BikeDetailPage — reorganización por tabs (plan documentado en `docs/product-roadmap.md`):
+  - Fase 1: estructura de tabs + tab Resumen (riding + fit).
+  - Fase 2: tab Especificaciones con diseño técnico premium (Stitch).
+  - Fase 3: iconos técnicos compartidos.
+  - Fase 4: tab Comunidad (mini resumen + reliability + reviews).
+  - Fase 5: tab Comparar (related + MotorcycleGarageCard).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
