@@ -1138,6 +1138,32 @@ Al cerrar funcionalidades principales:
 - revisar cards, chips, actions, filtros, formularios y layouts
 - convertir patrones repetidos en componentes/mixins/placeholders
 
+## 13b. P3/P4 — Fase mobile-first (futura)
+
+Estado: pospuesto / no inmediato.
+
+Decisión de producto:
+- El mobile debe ser usable y responsive correcto en todas las tareas actuales.
+- No se invertirá en refinado mobile premium hasta una fase posterior.
+- Esa fase abordará rediseño de landings desde Stitch con enfoque mobile-first, no simplemente adaptar desktop.
+
+Objetivo:
+- Rediseño mobile de landings: Home, buscador, comunidad, rankings, reviews, ficha y cuenta.
+- Criterio: experiencia mobile específica, ligera y cuidada, no reducción literal de desktop.
+- Diseño previo en Stitch antes de implementar.
+
+Alcance previsto:
+- Revisar layouts desktop→mobile con perspectiva mobile-first.
+- Identificar páginas que resultan pesadas o con jerarquía poco clara en móvil.
+- Posibles mejoras de navegación, jerarquía, cards y contenido para móvil.
+- No es solo adaptar breakpoints, es repensar la experiencia móvil.
+
+Reglas actuales para mobile:
+- Mantener responsive funcional y correcto en todas las tareas.
+- No dejar pantallas rotas en móvil.
+- No invertir en micro-ajustes mobile complejos salvo bugs claros.
+- Reservar fase global con diseño específico para mobile premium.
+
 ## 14. Riesgos y deuda conocida
 
 - flaky test aislado en `AdminPage`.

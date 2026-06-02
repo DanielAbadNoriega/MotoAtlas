@@ -1,5 +1,11 @@
 # Notas UI de MotoAtlas
 
+## Nota sobre estrategia mobile
+
+El mobile es una prioridad de uso para MotoAtlas. El responsive actual debe mantenerse funcional y correcto en todas las tareas, sin pantallas rotas en móvil.
+
+**Decisión de producto:** el refinado mobile premium se pospone a una fase futura con diseño específico desde Stitch y enfoque mobile-first. No se invertirá en micro-ajustes mobile complejos salvo bugs claros. Esa fase revisará Home, buscador, comunidad, rankings, reviews, ficha y cuenta como landings independientes, no como adaptación literal de desktop.
+
 ## Footer
 
 El footer vive en `src/components/layout/Footer/` y toma su contenido de `src/data/site.ts`.
