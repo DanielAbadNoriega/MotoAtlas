@@ -404,6 +404,96 @@ describe('BikeDetailPage', () => {
     expect(main.querySelector('section.bike-detail__specs')).not.toBeInTheDocument();
   });
 
+  it('al hacer click en Comparar muestra MotorcycleGarageCard para related bikes', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const garageCards = screen.getAllByTestId('motorcycle-garage-card');
+    expect(garageCards.length).toBeGreaterThan(0);
+  });
+
+  it('Comparar tab muestra related bikes solo al abrir el tab', async () => {
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    expect(screen.queryByTestId('motorcycle-garage-card')).not.toBeInTheDocument();
+  });
+
+  it('Comparar tab tiene enlace Ver ficha para related bikes', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const garageCards = screen.getAllByTestId('motorcycle-garage-card');
+    const firstCard = garageCards[0];
+    expect(within(firstCard).getByRole('link', { name: /Ficha/i })).toBeInTheDocument();
+  });
+
+  it('Comparar tab bike no en cola muestra boton Comparar', async () => {
+    localStorage.removeItem('motoatlas.compareQueue');
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    expect(screen.getByRole('button', { name: /Comparar/i })).toBeInTheDocument();
+  });
+
+  it('Comparar tab al hacer click en Comparar persiste el bike id en cola', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', '[]');
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const compareButton = screen.getByRole('button', { name: /Comparar/i });
+    await user.click(compareButton);
+
+    const stored = localStorage.getItem('motoatlas.compareQueue.v1');
+    expect(stored).not.toBeNull();
+    const parsed = JSON.parse(stored as string) as string[];
+    expect(parsed).toContain(bikeFixtures[1].id);
+  });
+
+  it('Comparar tab bike ya en cola muestra Ya en comparador y esta disabled', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', JSON.stringify([bikeFixtures[1].id]));
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const addedButton = screen.getByRole('button', { name: /Ya en comparador/i });
+    expect(addedButton).toBeDisabled();
+  });
+
+  it('Comparar tab al hacer click en Comparar dos veces no duplica el bike id', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', '[]');
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const compareButton = screen.getByRole('button', { name: /Comparar/i });
+    await user.click(compareButton);
+
+    const stored = JSON.parse(localStorage.getItem('motoatlas.compareQueue.v1') as string) as string[];
+    const countBefore = stored.filter((id) => id === bikeFixtures[1].id).length;
+    expect(countBefore).toBe(1);
+  });
+
+  it('Comparar tab cola llena muestra Comparador lleno y disabled', async () => {
+    localStorage.setItem('motoatlas.compareQueue.v1', JSON.stringify(['other-id-1', 'other-id-2', 'other-id-3']));
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
+
+    const fullButton = screen.getByRole('button', { name: /Comparador lleno/i });
+    expect(fullButton).toBeDisabled();
+  });
+
   it('al hacer click en Comunidad muestra mini resumen comunitario', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
