@@ -380,4 +380,62 @@ describe('FeaturedReviewCard', () => {
 
     expect(screen.getByRole('button', { name: 'Acción custom' })).toBeInTheDocument();
   });
+
+  it('hideImage={true} oculta la imagen', async () => {
+    const review = createReview({
+      motorcycle: { id: 'moto-no-img', brand: 'Yamaha', model: 'MT-09', year: 2024, imageUrl: '/yamaha-mt09.webp', segment: 'naked', license: 'A' },
+    });
+    render(<FeaturedReviewCard review={review} hideImage={true} />);
+
+    expect(screen.queryByAltText('Yamaha MT-09 2024')).not.toBeInTheDocument();
+  });
+
+  it('hideImage={false} muestra la imagen', async () => {
+    const review = createReview({
+      motorcycle: { id: 'moto-with-img', brand: 'Yamaha', model: 'MT-09', year: 2024, imageUrl: '/yamaha-mt09.webp', segment: 'naked', license: 'A' },
+    });
+    render(<FeaturedReviewCard review={review} hideImage={false} />);
+
+    expect(screen.getByAltText('Yamaha MT-09 2024')).toBeInTheDocument();
+  });
+
+  it('hideLinks={true} oculta los enlaces Más reviews y Ver ficha', async () => {
+    const review = createReview();
+    render(<FeaturedReviewCard review={review} hideLinks={true} />);
+
+    expect(screen.queryByRole('link', { name: 'Ver ficha' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Más reviews' })).not.toBeInTheDocument();
+  });
+
+  it('hideLinks={false} muestra los enlaces', async () => {
+    const review = createReview();
+    render(<FeaturedReviewCard review={review} hideLinks={false} />);
+
+    expect(screen.getByRole('link', { name: 'Ver ficha' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Más reviews' })).toBeInTheDocument();
+  });
+
+  it('sin hideLinks ni hideImage se comporta como antes (imagen + links visibles)', async () => {
+    const review = createReview({
+      motorcycle: { id: 'moto-default', brand: 'Honda', model: 'CBR650R', year: 2024, imageUrl: '/honda.webp', segment: 'naked', license: 'A' },
+    });
+    render(<FeaturedReviewCard review={review} />);
+
+    expect(screen.getByAltText('Honda CBR650R 2024')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ver ficha' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Más reviews' })).toBeInTheDocument();
+  });
+
+  it('hideImage={true} hideLinks={true} sin otros cambios en header/body/footer', async () => {
+    const review = createReview({ id: 'combined-hide-1', pros: ['Test pro'], cons: [] });
+    render(<FeaturedReviewCard review={review} hideImage={true} hideLinks={true} />);
+
+    expect(screen.queryByRole('img', { hidden: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Ver ficha' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Más reviews' })).not.toBeInTheDocument();
+
+    const header = screen.getByRole('button');
+    await user.click(header);
+    expect(screen.getByText('"Review de prueba con mucho texto."')).toBeInTheDocument();
+  });
 });
