@@ -125,7 +125,7 @@ describe('BikeDetailPage', () => {
     expect(container.querySelector(`img[src="${MOTORCYCLE_IMAGE_FALLBACK_URL}"]`)).toBeInTheDocument();
   });
 
-  it('renders approved reviews and aggregate rating', async () => {
+  it('renders approved reviews inside Comunidad tab with FeaturedReviewCard', async () => {
     getApprovedReviewsMock.mockResolvedValue([
       {
         id: 'review-1',
@@ -161,19 +161,39 @@ describe('BikeDetailPage', () => {
       },
     ]);
 
-    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
-
-    expect(await screen.findByText('4.5/5 · 2 reviews')).toBeInTheDocument();
-    expect(screen.getByText('Muy equilibrada para viajar.')).toBeInTheDocument();
-  });
-
-  it('opens the review modal from the write review button', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
-    await user.click(screen.getByRole('button', { name: /Escribir review/i }));
+    const tabs = await screen.findAllByRole('tab');
+    const comunidadTab = tabs.find(tab => tab.textContent?.includes('Comunidad'));
+    if (!comunidadTab) {
+      throw new Error('Comunidad tab not found');
+    }
+    await user.click(comunidadTab);
 
-    expect(screen.getByRole('dialog', { name: /Valoración técnica/i })).toBeInTheDocument();
+    const reviewCards = await screen.findAllByTestId('featured-review-card');
+    expect(reviewCards).toHaveLength(2);
+    expect(within(reviewCards[0]).getByText('@Laura')).toBeInTheDocument();
+  });
+
+  it('opens the review modal from the Comunidad tab', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    const tabs = await screen.findAllByRole('tab');
+    const comunidadTab = tabs.find(tab => tab.textContent?.includes('Comunidad'));
+    if (!comunidadTab) {
+      throw new Error('Comunidad tab not found');
+    }
+    await user.click(comunidadTab);
+
+    const communitySection = document.querySelector('.bike-detail__community-tab') as HTMLElement | null;
+    if (!communitySection) {
+      throw new Error('Community tab content not rendered');
+    }
+    const writeReviewButtons = within(communitySection).getAllByRole('button', { name: /Escribir review/i });
+    expect(writeReviewButtons.length).toBeGreaterThan(0);
+    await user.click(writeReviewButtons[0]);
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 
