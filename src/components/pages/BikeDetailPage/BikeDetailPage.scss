@@ -815,8 +815,6 @@
   }
 
   &__reviews {
-    background: $color-surface;
-
     h2 {
       @include headline-lg;
 
@@ -924,93 +922,73 @@
     }
   }
 
-  &__related-list {
-    @include container;
+  .bike-detail__compare-tab {
+  @include container;
 
+  padding-block: 2rem 4rem;
+
+  .bike-detail__compare-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      @include headline-md;
+
+      margin: 0 0 0.5rem;
+    }
+
+    p {
+      color: $color-on-surface-variant;
+      margin: 0;
+    }
+  }
+
+  .bike-detail__related-list {
     display: grid;
     gap: 1.5rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
 
-    article {
-      @include dashboard-card;
-
-      padding: 1.25rem;
-    }
-
-    img,
-    .motorcycle-image {
-      aspect-ratio: 16 / 10;
-      border-radius: $radius-lg;
-      transition: filter $transition-base;
-      width: 100%;
-      height: auto;
-    }
-
-    img {
-      filter: grayscale(1);
-      object-fit: cover;
-    }
-
-    article:hover img {
-      filter: grayscale(0);
-    }
-
-    span {
-      @include label-caps;
-
-      color: $color-accent;
-      display: block;
-      margin-top: 1rem;
-    }
-
-    h3 {
-      @include headline-md;
-
-      margin: 0.45rem 0 1rem;
-    }
-
-    dl {
-      display: grid;
-      gap: 0.75rem;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin: 0 0 1.25rem;
-    }
-
-    dl div {
-      background: $color-surface-container;
-      padding: 0.8rem;
-    }
-
-    dt {
-      @include label-caps;
-
-      color: $color-outline;
-      font-size: 0.62rem;
-    }
-
-    dd {
-      @include label-caps;
-
-      margin: 0.35rem 0 0;
-    }
-
-    a {
-      @include label-caps;
-
-      border: 1px solid $color-accent;
-      border-radius: $radius-md;
-      color: $color-accent;
-      display: block;
-      padding: 0.9rem 1rem;
-      text-align: center;
-
-      &:hover,
-      &:focus-visible {
-        background: $color-accent;
-        color: white;
+    .motorcycle-garage-card {
+      .motorcycle-garage-card__header {
+        h3 {
+          font-size: clamp(0.9rem, 1.2vw, 1.25rem);
+        }
       }
     }
   }
+}
+
+.bike-detail__compare-empty {
+  @include container;
+
+  color: $color-on-surface-variant;
+  font-style: italic;
+  padding-block: 4rem;
+  text-align: center;
+}
+
+&__compare-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .bike-detail {
+    &__compare-tab .bike-detail__related-list {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .bike-detail {
+    &__compare-tab .bike-detail__related-list {
+      grid-template-columns: 1fr;
+    }
+  }
+}
 
   &__not-found {
     @include container;

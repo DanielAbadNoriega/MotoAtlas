@@ -19,6 +19,7 @@ import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
+import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
 import './BikeDetailPage.scss';
 
 type BikeDetailPageProps = {
@@ -293,45 +294,41 @@ function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
       <div className="bike-detail__related-list">
         {relatedBikes.map((relatedBike) => {
           const state = getButtonState(relatedBike.id);
+          const displayName = getBikeDisplayName(relatedBike);
+          const detailHref = getBikeDetailHash(relatedBike);
+          const reviewsHref = `#/comunidad/${relatedBike.id}`;
+          const normalizedRating = relatedBike.reliabilityReports.reliabilityScore / 2;
+          const rating = Number.isFinite(normalizedRating) ? Math.max(0, Math.min(5, Number(normalizedRating.toFixed(1)))) : 0;
+          const reviewCount = Math.max(0, Math.round(relatedBike.reliabilityReports.reportCount));
+          const usageLabel = segmentLabels[relatedBike.segment];
+
           return (
-            <article key={relatedBike.id}>
-              <MotorcycleImage motorcycle={relatedBike} loading="lazy" />
-              <span>{segmentLabels[relatedBike.segment]}</span>
-              <h3>{getBikeDisplayName(relatedBike)}</h3>
-              <dl>
-                <div>
-                  <dt>Potencia</dt>
-                  <dd>{numberFormatter.format(relatedBike.powerHp)} CV</dd>
-                </div>
-                <div>
-                  <dt>Peso</dt>
-                  <dd>{numberFormatter.format(relatedBike.wetWeightKg)} kg</dd>
-                </div>
-              </dl>
-              <div className="bike-detail__compare-actions">
-                {state === 'add' && (
-                  <Button variant="primary" onClick={() => handleToggleCompare(relatedBike.id)}>
-                    <span className="material-symbols-outlined" aria-hidden="true">compare_arrows</span>
-                    Comparar
-                  </Button>
-                )}
-                {state === 'added' && (
-                  <Button variant="secondary" disabled>
-                    <span className="material-symbols-outlined" aria-hidden="true">check_circle</span>
-                    Ya en comparador
-                  </Button>
-                )}
-                {state === 'full' && (
-                  <Button variant="secondary" disabled>
-                    <span className="material-symbols-outlined" aria-hidden="true">block</span>
-                    Comparador lleno
-                  </Button>
-                )}
-                <a className="button button--ghost" href={getBikeDetailHash(relatedBike)}>
-                  Ver ficha
-                </a>
-              </div>
-            </article>
+            <MotorcycleGarageCard
+              as="article"
+              key={relatedBike.id}
+              detailHref={detailHref}
+              footerActions={
+                <Button
+                  className="motorcycle-garage-card__action motorcycle-garage-card__compare-action"
+                  variant={state === 'added' ? 'secondary' : 'primary'}
+                  disabled={state === 'added' || state === 'full'}
+                  onClick={() => handleToggleCompare(relatedBike.id)}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    {state === 'added' ? 'check_circle' : state === 'full' ? 'block' : 'compare_arrows'}
+                  </span>
+                  {state === 'added' ? 'Ya en comparador' : state === 'full' ? 'Comparador lleno' : 'Comparar'}
+                </Button>
+              }
+              imageAlt={displayName}
+              imageSource={relatedBike}
+              lastReviewDate={null}
+              primaryUseLabel={usageLabel}
+              rating={rating}
+              reviewCount={reviewCount}
+              reviewsHref={reviewsHref}
+              title={displayName}
+            />
           );
         })}
       </div>
