@@ -278,6 +278,13 @@
     }
   }
 
+  &__reliability-empty {
+    color: $color-on-surface-variant;
+    font-size: 0.875rem;
+    font-style: italic;
+    margin-top: 0.5rem;
+  }
+
   &__specs-tab {
     @include container;
 

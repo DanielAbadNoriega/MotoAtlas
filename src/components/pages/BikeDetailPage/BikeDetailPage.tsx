@@ -234,6 +234,9 @@ function CommunityTab({ bike, reviews }: { bike: Bike; reviews: readonly Motorcy
   const confidenceLabel =
     confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Media confianza' : 'Baja confianza';
 
+  const hasReports = bike.reliabilityReports.reportCount > 0;
+  const hasIssues = bike.reliabilityReports.commonIssues.length > 0;
+
   return (
     <div className="bike-detail__community-tab">
       <div className="bike-detail__community-summary">
@@ -263,6 +266,33 @@ function CommunityTab({ bike, reviews }: { bike: Bike; reviews: readonly Motorcy
           )}
         </div>
       </div>
+
+      <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
+        <div>
+          <h2 id="bike-detail-reliability-title">Fiabilidad comunidad</h2>
+          <p>Datos agregados de reportes técnicos de usuarios.</p>
+          <div className="bike-detail__reliability-index">
+            <strong>{Math.round(bike.reliabilityReports.reliabilityScore * 10)}</strong>
+            <span>
+              Fiabilidad · {getReliabilityLevel(bike.reliabilityReports.reliabilityScore)} ·{' '}
+              {numberFormatter.format(bike.reliabilityReports.reportCount)} reportes
+            </span>
+          </div>
+        </div>
+
+        {hasReports && hasIssues ? (
+          <div className="bike-detail__issues">
+            {bike.reliabilityReports.commonIssues.map((issue, index) => (
+              <article key={issue}>
+                <span>{index === 0 ? 'A vigilar' : 'Reporte frecuente'}</span>
+                <p>{issue}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="bike-detail__reliability-empty">Sin reportes de fiabilidad todavía.</p>
+        )}
+      </section>
     </div>
   );
 }
@@ -563,29 +593,6 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           </div>
         )}
       </div>
-
-      <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
-        <div>
-          <h2 id="bike-detail-reliability-title">Lo que los catálogos no te cuentan</h2>
-          <p>Reportes de comunidad técnica para detectar patrones de uso y mantenimiento.</p>
-          <div className="bike-detail__reliability-index">
-            <strong>{Math.round(bike.reliabilityReports.reliabilityScore * 10)}</strong>
-            <span>
-              Reliability index · {getReliabilityLevel(bike.reliabilityReports.reliabilityScore)} ·{' '}
-              {numberFormatter.format(bike.reliabilityReports.reportCount)} reportes
-            </span>
-          </div>
-        </div>
-
-        <div className="bike-detail__issues">
-          {bike.reliabilityReports.commonIssues.map((issue, index) => (
-            <article key={issue}>
-              <span>{index === 0 ? 'A vigilar' : 'Reporte frecuente'}</span>
-              <p>{issue}</p>
-            </article>
-          ))}
-        </div>
-      </section>
 
       <section className="bike-detail__specs" aria-labelledby="bike-detail-specs-title">
         <h2 id="bike-detail-specs-title">Especificaciones detalladas</h2>

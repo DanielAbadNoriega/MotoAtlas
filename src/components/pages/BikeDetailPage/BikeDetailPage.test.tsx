@@ -56,13 +56,22 @@ describe('BikeDetailPage', () => {
     expect(within(mainSpecs).getByText(/895/)).toBeInTheDocument();
   });
 
-  it('shows pros, cons and common reliability issues', () => {
+  it('shows pros and cons in Resumen tab', () => {
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
     expect(screen.getByText('Motor elástico')).toBeInTheDocument();
     expect(screen.getByText('Buen equilibrio')).toBeInTheDocument();
     expect(screen.getByText('Precio alto')).toBeInTheDocument();
-    expect(screen.getByText('Calor en ciudad')).toBeInTheDocument();
+  });
+
+  it('shows common reliability issues inside Comunidad tab', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    const communityTab = document.querySelector('.bike-detail__community-tab') as HTMLElement;
+    expect(within(communityTab).getByText('Calor en ciudad')).toBeInTheDocument();
   });
 
   it('has a working add-to-comparator link without calling Supabase', () => {
