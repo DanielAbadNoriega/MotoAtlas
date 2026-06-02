@@ -160,7 +160,7 @@ Estado por fase:
    - `a2` NO es una key; A2 es variante/estado dentro de `license`. El bloque A2 usa `getMotorcycleTechnicalIcon('license')`.
    - Tests dedicados en `src/shared/motorcycles/motorcycleTechnicalIcons.test.ts`.
    - `specIconMap` local eliminado de BikeDetailPage.tsx.
-4. **Fase 3B — Migración de iconos en ReviewModal/review form**: pendiente. ReviewModal, review form y ReviewAspectSummary no fueron migrados en esta fase. Queda pendiente coordinar ReviewAspectSummary con el mapa compartido si aplica.
+4. **Fase 3B — Migración de iconos en ReviewModal/review form**: implementada. `technicalAspects` ahora usa `getMotorcycleTechnicalIcon(category)` del módulo compartido. Sin iconos hardcodeados. `consumption` → `local_gas_station`. `ReviewAspectSummary` pendiente de coordinación futura si aplica.
 5. **Fase 4 — Tab Comunidad**: pendiente. Mini bloque: rating medio con stars, número de reviews, confianza con shield. Sin duplicar CTA a reviews si ya está en hero. Incluir `bike-detail__reliability` (decidir contrato de fiabilidad antes). Incluir `bike-detail__reviews` migrando a `FeaturedReviewCard` sin imagen (ya estamos en la ficha). Sin CTAs "Más reviews" ni "Ver ficha" dentro de las cards.
 6. **Fase 5 — Tab Comparar**: pendiente. Usar `bike-detail__related` como base. Orientar a comparar esta moto con modelos relacionados. Reutilizar `MotorcycleGarageCard` si encaja. Permitir añadir motos relacionadas al comparador con cuidado. Mantener CTA a ficha solo si aporta valor. No romper el comparador global.
 
