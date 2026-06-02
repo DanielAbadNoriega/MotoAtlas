@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1012` tests passing.
+- `1020` tests passing.
 
 ## Stack actual
 
@@ -121,6 +121,22 @@ Regla de contrato actual:
 
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
+
+## BikeDetailPage tabs (Fase 1)
+
+Cobertura implementada:
+- roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
+- 4 tabs renders: Resumen, Especificaciones, Comunidad, Comparar.
+- Tab Resumen activa por defecto.
+- Contenido de Resumen: `section.bike-detail__riding` + `section.bike-detail__fit`.
+- Placeholders en Especificaciones, Comunidad y Comparar.
+- Sin `null`/`undefined` en contenido de tabs.
+- Sin tab Metodología.
+
+Pendiente de cobertura (fases siguientes):
+- Tab Especificaciones: specs renderizadas, grid técnico, ausencia de null/undefined.
+- Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
+- Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
 
 Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:

@@ -123,7 +123,7 @@ Estado: pendiente.
 
 ### BikeDetailPage — Reorganización por tabs
 
-Estado: plan documentado / no iniciado.
+Estado: **Fase 1 implementada**.
 
 Decisión de producto:
 - La `BikeDetailPage` actual se mantiene como base.
@@ -131,28 +131,28 @@ Decisión de producto:
 - Solo la pestaña `Especificaciones` usará diseño nuevo de Stitch tipo "Ficha Técnica Rápida".
 - El resto de tabs reutilizarán secciones existentes con ajustes progresivos.
 - Se trabaja por fases para evitar megatarea.
+- Sin tab `Metodología` (existe `#/metodologia`).
 
 Ruta afectada: `#/motos/[moto-id]`
 
-Tabs previstas:
+Tabs definitivas:
 1. `Resumen` — secciones riding + fit (existentes).
 2. `Especificaciones` — diseño técnico premium desde Stitch (nuevo).
-3. `Comunidad` — mini resumen + reliability + reviews.
-4. `Comparar` — related + MotorcycleGarageCard.
-5. Sin tab `Metodología` (existe `#/metodologia`).
+3. `Comunidad` — mini resumen + reliability + reviews adaptadas.
+4. `Comparar` — related + MotorcycleGarageCard + acciones comparador.
 
-Orden de fases:
-1. Fase 1 — Estructura de tabs + tab Resumen (riding + fit).
-2. Fase 2 — Tab Especificaciones con diseño técnico premium.
-3. Fase 3 — Iconos técnicos compartidos.
-4. Fase 4 — Tab Comunidad (mini resumen + reliability + reviews adaptadas).
-5. Fase 5 — Tab Comparar (related + MotorcycleGarageCard + acciones comparador).
+Estado por fase:
+1. **Fase 1 — Estructura de tabs + tab Resumen**: implementada. tabs accesibles (4), Resumen activo por defecto, riding + fit movidos a Resumen. Placeholders en Especificaciones/Comunidad/Comparar.
+2. **Fase 2 — Tab Especificaciones**: pendiente. Grid de specs técnicas (motor/cilindrada, potencia, par, peso, altura asiento, depósito, carnet, precio base/orientativo si aplica, quickshifter, suspensiones, frenos, electrónica, neumáticos/equipamiento). Diseño de Stitch "Ficha Técnica Rápida". No renderizar null/undefined. No ampliar modelo de datos sin decisión explícita.
+3. **Fase 3 — Iconos técnicos compartidos**: pendiente. Unificar iconos técnicos en fuente compartida reutilizable.
+4. **Fase 4 — Tab Comunidad**: pendiente. Mini bloque en Stitch: rating medio con stars, número de reviews, confianza con shield. Sin duplicar CTA a reviews si ya está en hero. Incluir `bike-detail__reliability` (decidir contrato de fiabilidad antes). Incluir `bike-detail__reviews` migrando a `FeaturedReviewCard` sin imagen (ya estamos en la ficha). Sin CTAs "Más reviews" ni "Ver ficha" dentro de las cards. Decidir si número de reviews aparece aquí o solo en resumen superior de Comunidad. Eliminar nota redundante de reviews.
+5. **Fase 5 — Tab Comparar**: pendiente. Usar `bike-detail__related` como base. Orientar a comparar esta moto con modelos relacionados. Reutilizar `MotorcycleGarageCard` si encaja. Permitir añadir motos relacionadas al comparador con cuidado. Mantener CTA a ficha solo si aporta valor. No romper el comparador global.
 
 Reglas transversales:
 - no ampliar schema/modelo `Bike` salvo decisión explícita.
 - no renderizar `null`/`undefined`; usar fallbacks controlados.
 - no copiar CSS de `ReviewModal`.
-- `FeaturedReviewCard` adaptada: sin imagen, sin CTAs redundantes dentro de la ficha.
+- `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes.
 - `MotorcycleGarageCard` sigue presentacional si se reutiliza en Comparar.
 - Mobile: responsive funcional, refinados premium pospuestos a fase mobile-first.
 
@@ -168,6 +168,14 @@ Relación con roadmap:
 - conecta con Admin catálogo/modelos (faltas de datos).
 - puede alimentar mejor comparador y SEO técnico.
 - fase mobile-first independiente posterior.
+
+Secciones residuales pendientes de migración:
+- `bike-detail__quick-specs`
+- `bike-detail__features`
+- `bike-detail__reliability`
+- `bike-detail__specs`
+- `bike-detail__reviews`
+- `bike-detail__related`
 
 ## 6. P2 — Plataforma/Admin/Productividad interna
 

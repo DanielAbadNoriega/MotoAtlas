@@ -103,31 +103,43 @@ Responsive:
 - Tablet: 2 columnas en secondary.
 - Mobile: stack vertical, aspect-ratio 16:9 para compactas.
 
-## Ficha de moto — BikeDetailPage con tabs (futuro)
+## Ficha de moto — BikeDetailPage con tabs
 
-Estado: plan documentado en `docs/product-roadmap.md`; no iniciado.
+Estado: **Fase 1 implementada**.
 
-La ficha `#/motos/[moto-id]` se reorganizará por tabs:
+La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
-| Tab | Contenido | Notas |
-|-----|-----------|-------|
-| Resumen | riding + fit | secciones existentes, sin rediseño en esta fase |
-| Especificaciones | specs técnicas premium | diseño nuevo desde Stitch; no tabla larga |
-| Comunidad | mini resumen + reliability + reviews | FeaturedReviewCard adaptada |
-| Comparar | related + MotorcycleGarageCard | acciones de comparador |
+| Tab | Contenido | Estado |
+|-----|-----------|--------|
+| Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
+| Especificaciones | specs técnicas premium (Stitch) | Placeholder — Fase 2 |
+| Comunidad | mini resumen + reliability + reviews | Placeholder — Fase 4 |
+| Comparar | related + MotorcycleGarageCard | Placeholder — Fase 5 |
 
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
-- `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes.
+- Tab Resumen activa por defecto.
+- Especificaciones, Comunidad y Comparar son placeholders temporales.
+- `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards).
 - Precio: fallback `Precio pendiente` si no hay dato fiable; no vender como comercial cerrado.
 - Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes.
 - Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
+- No duplicar CTA a reviews si ya está en hero de la ficha.
+- Decidir si número de reviews aparece en tab Comunidad o solo en resumen superior.
 
 Reglas:
 - no renderizar `null`/`undefined`; fallbacks controlados.
 - no copiar CSS de `ReviewModal`.
 - `MotorcycleGarageCard` sigue presentacional.
 - no ampliar schema `Bike` salvo decisión explícita.
+
+Secciones residuales pendientes de migración:
+- `bike-detail__quick-specs` → Especificaciones
+- `bike-detail__features` → Especificaciones
+- `bike-detail__reliability` → Comunidad
+- `bike-detail__specs` → Especificaciones
+- `bike-detail__reviews` → Comunidad
+- `bike-detail__related` → Comparar
 
 ## Datos demo para QA visual (backlog)
 
