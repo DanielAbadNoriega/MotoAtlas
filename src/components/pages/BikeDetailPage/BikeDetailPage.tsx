@@ -6,7 +6,8 @@ import type { Bike } from '../../../types/bike';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { getMotorcycleTechnicalIcon, type MotorcycleTechnicalIconKey } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
 import { isPendingPrice, pendingPriceLabel } from '../../../shared/dataQuality/dataQualityLabels';
-import { formatReviewAggregate, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { formatReviewAggregate, formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
 import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleReviewCard } from '../../reviews/MotorcycleReviewCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
@@ -222,6 +223,45 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
             </div>
           </article>
         )}
+      </div>
+    </div>
+  );
+}
+
+function CommunityTab({ bike, reviews }: { bike: Bike; reviews: readonly MotorcycleReview[] }) {
+  const aggregate = getReviewAggregate(reviews);
+  const confidence = getRankingConfidence(aggregate.reviewCount);
+  const confidenceLabel =
+    confidence === 'high' ? 'Alta confianza' : confidence === 'medium' ? 'Media confianza' : 'Baja confianza';
+
+  return (
+    <div className="bike-detail__community-tab">
+      <div className="bike-detail__community-summary">
+        <div className="bike-detail__community-rating">
+          {aggregate.reviewCount > 0 && aggregate.averageRating > 0 ? (
+            <>
+              <span className="bike-detail__community-stars" aria-hidden="true">
+                ★
+              </span>
+              <strong>{formatReviewRating(aggregate.averageRating)}</strong>
+              <span>/5</span>
+            </>
+          ) : (
+            <span>Sin rating</span>
+          )}
+        </div>
+        <div className="bike-detail__community-meta">
+          <span>{aggregate.reviewCount > 0 ? `${aggregate.reviewCount} reviews` : 'Sin reviews'}</span>
+          {aggregate.reviewCount > 0 && (
+            <span
+              className={`bike-detail__confidence-shield bike-detail__confidence-shield--${confidence}`}
+              aria-label={confidenceLabel}
+            >
+              <span aria-hidden="true">{confidence === 'high' ? '●' : confidence === 'medium' ? '◐' : '○'}</span>
+              <span>{confidenceLabel}</span>
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -516,11 +556,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           </>
         )}
         {activeTab === 'especificaciones' && <SpecificationsTab bike={bike} />}
-        {activeTab === 'comunidad' && (
-          <div className="bike-detail__tab-placeholder">
-            <p>Comunidad próximamente</p>
-          </div>
-        )}
+        {activeTab === 'comunidad' && <CommunityTab bike={bike} reviews={reviews} />}
         {activeTab === 'comparar' && (
           <div className="bike-detail__tab-placeholder">
             <p>Comparador próximamente</p>

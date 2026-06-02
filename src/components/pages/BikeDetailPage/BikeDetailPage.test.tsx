@@ -327,13 +327,14 @@ describe('BikeDetailPage', () => {
     expect(specsTab?.innerHTML).not.toContain('0 €');
   });
 
-  it('al hacer click en Comunidad muestra placeholder', async () => {
+  it('al hacer click en Comunidad muestra mini resumen comunitario', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
     await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
 
-    expect(screen.getByText('Comunidad próximamente')).toBeInTheDocument();
+    const communityTab = document.querySelector('.bike-detail__community-tab');
+    expect(communityTab).toBeInTheDocument();
   });
 
   it('al hacer click en Comparar muestra placeholder', async () => {
