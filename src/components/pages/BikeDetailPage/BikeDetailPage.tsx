@@ -234,6 +234,45 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
   );
 }
 
+function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
+  if (relatedBikes.length === 0) {
+    return (
+      <div className="bike-detail__compare-tab">
+        <p className="bike-detail__compare-empty">Sin modelos relacionados del mismo segmento por ahora.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bike-detail__compare-tab">
+      <div className="bike-detail__compare-header">
+        <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
+        <p>Para comparar con criterio: mismo uso, distinta ejecución.</p>
+      </div>
+      <div className="bike-detail__related-list">
+        {relatedBikes.map((relatedBike) => (
+          <article key={relatedBike.id}>
+            <MotorcycleImage motorcycle={relatedBike} loading="lazy" />
+            <span>{segmentLabels[relatedBike.segment]}</span>
+            <h3>{getBikeDisplayName(relatedBike)}</h3>
+            <dl>
+              <div>
+                <dt>Potencia</dt>
+                <dd>{numberFormatter.format(relatedBike.powerHp)} CV</dd>
+              </div>
+              <div>
+                <dt>Peso</dt>
+                <dd>{numberFormatter.format(relatedBike.wetWeightKg)} kg</dd>
+              </div>
+            </dl>
+            <a href={getBikeDetailHash(relatedBike)}>Ver ficha</a>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CommunityTab({
   bike,
   reviews,
@@ -742,9 +781,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
           />
         )}
         {activeTab === 'comparar' && (
-          <div className="bike-detail__tab-placeholder">
-            <p>Comparador próximamente</p>
-          </div>
+          <CompareTab relatedBikes={relatedBikes} />
         )}
       </div>
 
@@ -762,34 +799,6 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
                   </div>
                 ))}
               </dl>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="bike-detail__related" aria-labelledby="bike-detail-related-title">
-        <div>
-          <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
-          <p>Para comparar con criterio: mismo uso, distinta ejecución.</p>
-        </div>
-
-        <div className="bike-detail__related-list">
-          {relatedBikes.map((relatedBike) => (
-            <article key={relatedBike.id}>
-              <MotorcycleImage motorcycle={relatedBike} loading="lazy" />
-              <span>{segmentLabels[relatedBike.segment]}</span>
-              <h3>{getBikeDisplayName(relatedBike)}</h3>
-              <dl>
-                <div>
-                  <dt>Potencia</dt>
-                  <dd>{numberFormatter.format(relatedBike.powerHp)} CV</dd>
-                </div>
-                <div>
-                  <dt>Peso</dt>
-                  <dd>{numberFormatter.format(relatedBike.wetWeightKg)} kg</dd>
-                </div>
-              </dl>
-              <a href={getBikeDetailHash(relatedBike)}>Ver ficha</a>
             </article>
           ))}
         </div>

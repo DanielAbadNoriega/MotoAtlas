@@ -90,8 +90,11 @@ describe('BikeDetailPage', () => {
     expect(screen.getByRole('link', { name: /Ver más motos/i })).toHaveAttribute('href', '#/buscador?browse=1');
   });
 
-  it('renders related motorcycles from local fixtures', () => {
+  it('renders related motorcycles from local fixtures inside Comparar tab', async () => {
+    const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comparar/i }));
 
     expect(screen.getByRole('heading', { name: /Aprilia Tuareg 660/i })).toBeInTheDocument();
   });
@@ -366,13 +369,14 @@ describe('BikeDetailPage', () => {
     expect(communityTab).toBeInTheDocument();
   });
 
-  it('al hacer click en Comparar muestra placeholder', async () => {
+  it('al hacer click en Comparar muestra related bikes', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
     await user.click(screen.getByRole('tab', { name: /Comparar/i }));
 
-    expect(screen.getByText('Comparador próximamente')).toBeInTheDocument();
+    expect(screen.queryByText('Comparador próximamente')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Rivales del mismo segmento/i })).toBeInTheDocument();
   });
 
   it('no aparece null ni undefined en tabs', () => {
