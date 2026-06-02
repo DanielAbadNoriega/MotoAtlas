@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1047 passed`.
+- Tests de referencia: `1057 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -123,7 +123,7 @@ Estado: pendiente.
 
 ### BikeDetailPage — Reorganización por tabs
 
-Estado: **Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1 y 5.2 implementadas**.
+Estado: **Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3 implementadas**.
 
 Decisión de producto:
 - La `BikeDetailPage` actual se mantiene como base.
@@ -191,18 +191,21 @@ Estado por fase:
    - `Reportar` solo renderiza si existe handler real.
    - `Responder` no renderiza en BikeDetailPage hasta tener flujo completo.
 8. **Fase 5.1 — CompareTab local con related bikes**: **implementada**.
-   - Componente `CompareTab` local en BikeDetailPage.tsx.
-   - Related bikes (mismo segmento, excluye actual, max 3) dentro del tab Comparar.
-   - Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
-   - Cards temporales/locales (no reutilizan `MotorcycleGarageCard` aún; reemplazo pendiente).
+    - Componente `CompareTab` local en BikeDetailPage.tsx.
+    - Related bikes (mismo segmento, excluye actual, max 3) dentro del tab Comparar.
+    - Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
 9. **Fase 5.2 — Acciones reales de comparador en CompareTab**: **implementada**.
-   - Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
-   - Infraestructura de compare queue reutilizada: `loadCompareQueue`, `saveCompareQueue`, `compareQueueMaxSize`, `getNextCompareSelection`.
-   - `saveCompareQueue` dispensa el evento de sync automáticamente; no se añade evento custom en BikeDetailPage.
-   - Sin botones fake/no-op.
-   - Sin ids duplicados en cola; máximo 3 respetado.
-10. **Pendiente post 5.2**:
-    - Reemplazar cards temporales de CompareTab por `MotorcycleGarageCard` o variante optimizada.
+    - Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
+    - Infraestructura de compare queue reutilizada: `loadCompareQueue`, `saveCompareQueue`, `compareQueueMaxSize`, `getNextCompareSelection`.
+    - `saveCompareQueue` dispensa el evento de sync automáticamente; no se añade evento custom en BikeDetailPage.
+    - Sin botones fake/no-op.
+    - Sin ids duplicados en cola; máximo 3 respetado.
+10. **Fase 5.3 — CompareTab con MotorcycleGarageCard**: **implementada**.
+    - CompareTab ahora usa `MotorcycleGarageCard` directamente para cada related bike.
+    - Sin cambios en `MotorcycleGarageCard`; no se añadieron props nuevas.
+    - Acciones de comparador inyectadas via `footerActions` (botón Comparar/Ya en comparador/Comparador lleno).
+    - Rating y reviewCount usan proxy pattern (reliabilityScore / 2 y reportCount) — no son señal comunitaria real.
+    - 8 tests nuevos cubriendo render de MotorcycleGarageCard, estados de botón, persistencia en cola y link Ver ficha.
 
 Reglas transversales:
 - no ampliar schema/modelo `Bike` salvo decisión explícita.
@@ -210,7 +213,7 @@ Reglas transversales:
 - no copiar CSS de `ReviewModal`.
 - `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes, acciones seguras (no fake/no-op).
 - `FeaturedReviewCardCommunityActions`: componente reutilizable para acciones de comunidad en FeaturedReviewCard.
-- `MotorcycleGarageCard` sigue presentacional cuando se use en Comparar (pendiente post-5.2).
+- `MotorcycleGarageCard` sigue presentacional en Comparar: las acciones se inyectan mediante footerActions y la lógica de compare queue permanece en BikeDetailPage.
 - Mobile: responsive funcional, refinados premium pospuestos a fase mobile-first.
 
 Riesgos documentados:

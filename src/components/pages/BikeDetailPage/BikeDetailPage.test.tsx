@@ -504,6 +504,30 @@ describe('BikeDetailPage', () => {
     expect(communityTab).toBeInTheDocument();
   });
 
+  it('Comunidad tab bottom CTA Escribir review es un boton real', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    expect(screen.getByRole('button', { name: /Escribir review/i })).toBeInTheDocument();
+  });
+
+  it('Comunidad tab bottom CTA Ver reviews linking to comunidad route', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
+
+    const communitySection = document.querySelector('.bike-detail__reviews') as HTMLElement;
+    expect(communitySection).toBeInTheDocument();
+    const withinReviews = within(communitySection);
+    expect(withinReviews.getByRole('link', { name: /Ver reviews/i })).toHaveAttribute(
+      'href',
+      `#/comunidad/${bikeFixtures[0].id}`,
+    );
+  });
+
   it('al hacer click en Comparar muestra related bikes', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
