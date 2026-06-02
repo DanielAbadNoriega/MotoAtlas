@@ -205,6 +205,132 @@
     }
   }
 
+  &__specs-tab {
+    @include container;
+
+    padding-block: 2rem 4rem;
+  }
+
+  &__specs-bento {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  &__spec-card {
+    min-height: 150px;
+    padding: 1.25rem;
+    position: relative;
+    background: $color-surface-dim;
+    border: 1px solid rgba($color-outline-variant, 0.15);
+    transition: background-color $transition-base;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.25rem;
+
+    &:hover {
+      background: $color-surface-container;
+    }
+
+    &--accent {
+      background: rgba($color-accent-soft, 0.15);
+      border-color: rgba($color-accent, 0.3);
+    }
+
+    &--electronics {
+      grid-column: span 2;
+    }
+
+    &--a2 {
+      grid-column: span 2;
+    }
+  }
+
+  &__spec-card-header {
+    display: flex;
+    justify-content: flex-end;
+    position: absolute;
+    right: 1rem;
+    bottom: 1.25rem;
+
+    .material-symbols-outlined {
+      color: rgba($color-on-surface, 0.3);
+      font-size: 4rem;
+    }
+  }
+
+  &__spec-label {
+    @include label-caps;
+
+    color: $color-on-surface-variant;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    margin: 0 0 0.5rem;
+  }
+
+  &__spec-value-row {
+    max-width: 70%;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  &__spec-value {
+    font-family: $font-headline;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__spec-unit {
+    @include label-caps;
+
+    color: $color-accent;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  &__electronics-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  &__electronics-chip {
+    @include label-caps;
+
+    background: $color-surface-lowest;
+    border: 1px solid rgba($color-outline-variant, 0.3);
+    border-radius: $radius-sm;
+    color: $color-on-surface;
+    font-size: 0.6rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  &__a2-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  &__a2-badge {
+    @include label-caps;
+
+    color: $color-on-surface;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  &__a2-limited {
+    @include label-caps;
+
+    color: $color-on-surface-variant;
+    font-size: 0.65rem;
+  }
+
   &__quick-specs,
   &__features,
   &__fit,
@@ -818,6 +944,15 @@
 
 @media (max-width: $breakpoint-tablet) {
   .bike-detail {
+    &__specs-bento {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &__spec-card--electronics,
+    &__spec-card--a2 {
+      grid-column: span 1;
+    }
+
     &__features,
     &__riding,
     &__reliability {
@@ -836,6 +971,10 @@
 
 @media (max-width: $breakpoint-mobile) {
   .bike-detail {
+    &__specs-bento {
+      grid-template-columns: 1fr;
+    }
+
     &__hero,
     &__hero-content {
       min-height: calc(100vh - 64px);
