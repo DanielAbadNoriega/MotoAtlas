@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual: `feature/bike-detail-compare-tab`
-- Último bloque validado: BikeDetailPage Phase 5.2 (CompareTab con acciones reales de comparador)
-- Tests: 1047 passed
+- Último bloque validado: BikeDetailPage Phase 5.3 (CompareTab con MotorcycleGarageCard + layout cleanup Comunidad)
+- Tests: 1057 passed
 - Typecheck: clean
 - Último commit:
 
@@ -60,7 +60,7 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
-### BikeDetailPage — Reorganización por tabs (Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1 y 5.2 implementadas)
+### BikeDetailPage — Reorganización por tabs (Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3 implementadas)
 - tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
 - Sin tab Metodología (ya existe `#/metodologia`).
 - Tab Resumen activa por defecto.
@@ -104,14 +104,27 @@
    - `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto (Fases 4.3B/4.3C).
    - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
 - Fase 5.1 — CompareTab local con related bikes: **implementada**.
-   - Componente `CompareTab` local en BikeDetailPage.tsx con cards locales/temporales de related bikes (no reutiliza `MotorcycleGarageCard` aún). Reemplazo pendiente.
+   - Componente `CompareTab` local en BikeDetailPage.tsx con related bikes (mismo segmento, excluye actual, max 3).
+   - Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
 - Fase 5.2 — Acciones reales de comparador en CompareTab: **implementada**.
    - Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
    - Infraestructura de compare queue reutilizada: `loadCompareQueue`, `saveCompareQueue`, `compareQueueMaxSize`, `getNextCompareSelection`.
    - `saveCompareQueue` dispensa el evento de sync automáticamente; no se añade evento custom en BikeDetailPage.
    - Sin botones fake/no-op.
-   - Sin ids duplicados en cola.
-   - Máximo 3 motos en cola respetado.
+   - Sin ids duplicados en cola; máximo 3 respetado.
+- Fase 5.3 — CompareTab con MotorcycleGarageCard: **implementada**.
+   - CompareTab ahora usa `MotorcycleGarageCard` directamente para cada related bike.
+   - Sin cambios en `MotorcycleGarageCard`; no se añadieron props nuevas.
+   - Acciones de comparador inyectadas via `footerActions` (botón Comparar/Ya en comparador/Comparador lleno).
+   - Rating y reviewCount usan proxy pattern (reliabilityScore / 2 y reportCount) — no son señal comunitaria real.
+   - 8 tests nuevos cubriendo render de MotorcycleGarageCard, estados de botón, persistencia en cola y link Ver ficha.
+- Fase 5.3 — Layout cleanup Comunidad: **implementada**.
+   - `bike-detail__community-summary` reducido a strip compacto (flex-row, bg surface-dim, padding reducido).
+   - Summary muestra: rating medio o "Sin rating", review count o "Sin reviews", confidence shield si hay datos.
+   - Reviews limitados a 3 con `reviews.slice(0, 3)`.
+   - CTAs movidos al footer de la sección reviews: "Escribir review" + "Ver reviews" → `#/comunidad/[bike.id]`.
+   - Header duplicado eliminado.
+   - FeaturedReviewCard mantiene `hideImage`, `hideLinks`, acciones seguras sin cambios.
 - Plan por fases actualizado:
    - Fase 1: estructura tabs + Resumen — **implementada**.
    - Fase 2: tab Especificaciones — **implementada**.
@@ -126,7 +139,8 @@
    - Fase 4.3C: acciones seguras de comunidad con FeaturedReviewCardCommunityActions — **implementada**.
    - Fase 5.1: CompareTab con related bikes — **implementada**.
    - Fase 5.2: acciones reales de comparador en CompareTab — **implementada**.
-- Tests: 1047 passed (69 files).
+   - Fase 5.3: CompareTab con MotorcycleGarageCard + layout cleanup Comunidad — **implementada**.
+- Tests: 1057 passed (69 files).
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
@@ -193,10 +207,12 @@
    - Fase 4.3C: FeaturedReviewCardCommunityActions para acciones seguras, `Útil N` público, no fake/no-op, no-auth sin interacción, own review pasivo, reported bloquea, Reportar solo con handler real, Responder no existe en BikeDetailPage — **implementada**.
    - Fase 5.1: CompareTab local con related bikes (mismo segmento, max 3) — **implementada**.
    - Fase 5.2: acciones reales de comparador en CompareTab (loadCompareQueue, saveCompareQueue, getNextCompareSelection) — **implementada**.
+   - Fase 5.3: CompareTab con MotorcycleGarageCard + layout cleanup Comunidad — **implementada**.
    - Sección residual `bike-detail__specs` eliminada; specs detalladas dentro de Especificaciones tab.
    - Sección residual `bike-detail__related` integrada en CompareTab.
    - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
-   - Reemplazar las cards locales/temporales de CompareTab por `MotorcycleGarageCard` o una variante optimizada.
+   - Layout cleanup Comunidad: summary compacto, reviews limitados a 3, CTAs en footer.
+   - Refinado visual/global de layout pospuesto a fase futura (después de cerrar funcionalidad core).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).

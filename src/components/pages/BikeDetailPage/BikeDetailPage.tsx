@@ -366,6 +366,9 @@ function CommunityTab({
   const hasReports = bike.reliabilityReports.reportCount > 0;
   const hasIssues = bike.reliabilityReports.commonIssues.length > 0;
 
+  const reviewsToShow = reviews.slice(0, 3);
+  const communityHref = `#/comunidad/${bike.id}`;
+
   return (
     <div className="bike-detail__community-tab">
       <div className="bike-detail__community-summary">
@@ -424,15 +427,10 @@ function CommunityTab({
       </section>
 
       <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
-        <div className="bike-detail__reviews-header">
-          <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
-          <button className="button button--primary" type="button" onClick={onWriteReview}>
-            Escribir review
-          </button>
-        </div>
+        <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
         <div className="bike-detail__reviews-list" aria-live="polite">
           {reviews.length > 0 ? (
-            reviews.map((review) => {
+            reviewsToShow.map((review) => {
               const isOwn = isOwnReview(review, userId);
               const hasReported = Boolean(reportedReviewIds[review.id]);
               const isPending = reactionPendingIds.includes(review.id);
@@ -465,6 +463,16 @@ function CommunityTab({
           ) : (
             <p className="bike-detail__reviews-empty">Sin reviews aprobadas todavía.</p>
           )}
+        </div>
+        <div className="bike-detail__reviews-cta">
+          <button className="button button--primary" type="button" onClick={onWriteReview}>
+            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+            Escribir review
+          </button>
+          <a className="button button--secondary" href={communityHref}>
+            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+            Ver reviews
+          </a>
         </div>
       </section>
     </div>

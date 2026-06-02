@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1047` tests passing.
+- `1057` tests passing.
 
 ## Stack actual
 
@@ -122,7 +122,7 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1 y 5.2)
+## BikeDetailPage tabs (Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
@@ -193,8 +193,31 @@ Fase 4.3C — Cobertura implementada:
 - `Responder` no existe en BikeDetailPage.
 - Sin handlers no-op.
 
+Fase 5.1 — Cobertura implementada:
+- CompareTab visible al abrir tab Comparar.
+- Related bikes (mismo segmento, excluye actual, max 3) dentro del tab.
+- Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
+
+Fase 5.2 — Cobertura implementada:
+- Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
+- Infraestructura de compare queue reutilizada (loadCompareQueue, saveCompareQueue, compareQueueMaxSize, getNextCompareSelection).
+- Sin botones fake/no-op.
+- Sin ids duplicados en cola; máximo 3 respetado.
+
+Fase 5.3 — Cobertura implementada:
+- CompareTab usa `MotorcycleGarageCard` directamente para cada related bike.
+- `MotorcycleGarageCard` renderiza sin cambios en props ni SCSS.
+- Acciones de comparador inyectadas via `footerActions` (botón Comparar/Ya en comparador/Comparador lleno).
+- Related bikes solo visibles tras abrir tab Comparar.
+- Enlace `Ver ficha` operativo en cada card.
+- Click en `Comparar` persiste bike id en cola.
+- Doble click no duplica id en cola.
+- `Ya en comparador`: botón deshabilitado cuando la moto ya está en cola.
+- `Comparador lleno`: botón deshabilitado cuando la cola alcanza máximo (3).
+- Rating y reviewCount usan proxy pattern (reliabilityScore / 2 y reportCount) — no son señal comunitaria real.
+- Layout cleanup Comunidad: summary reducido a strip compacto, reviews limitados a 3, CTAs movidos al footer de la sección reviews. Gaps de cobertura aceptados para max 3/hideLinks si no están tests explícitos.
+
 Pendiente de cobertura (fases siguientes):
-- Fase 5.1/5.2: acciones de comparador en CompareTab validadas por Quality Gate con implementación real de botones (Comparar / Ya en comparador / Comparador lleno). Tests enfocados en estados de botón pendientes porque las cards de related bikes son temporales (locales en BikeDetailPage.tsx, sin reutilizar MotorcycleGarageCard aún). Reemplazar cards temporales por `MotorcycleGarageCard` o variante optimizada — pendiente.
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
 - RecentReviews en TopRatedMotorcyclesPage ahora con acciones seguras (Fase 4.4): Helpful/NotHelpful real en auth, `Útil N` pasivo en no-auth, Report/Reply no cableados.
 

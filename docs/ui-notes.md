@@ -105,7 +105,7 @@ Responsive:
 
 ## Ficha de moto — BikeDetailPage con tabs
 
-Estado: **Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1 y 5.2 implementadas**.
+Estado: **Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3 implementadas**.
 
 La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
@@ -114,7 +114,7 @@ La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasi
 | Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
 | Especificaciones | bento grid de SpecCards + specs detalladas (heading `Especificaciones ampliadas`) | Implementada (Fases 2 y 2C) |
 | Comunidad | mini resumen + reliability + reviews con FeaturedReviewCard compacto | Implementada (Fases 4.1–4.3C) |
-| Comparar | related bikes + acciones reales de comparador | Implementada (Fases 5.1 y 5.2) |
+| Comparar | related bikes con MotorcycleGarageCard + acciones reales de comparador via footerActions | Implementada (Fases 5.1, 5.2 y 5.3) |
 
 Tab Especificaciones — detalles de implementación:
 - `SpecificationsTab`: componente con bento grid de `SpecCard`.
@@ -133,15 +133,16 @@ Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
 - Tab Resumen activa por defecto.
 - `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards), acciones seguras (no fake/no-op, `Útil N` público, Reportar solo con handler real, Responder no existe en BikeDetailPage).
+- Community tab — layout cleanup (Fase 5.3): `bike-detail__community-summary` reducido a strip compacto (flex-row, bg surface-dim, padding reducido). Muestra rating medio o "Sin rating", review count o "Sin reviews", y confidence shield si hay datos. Reviews limitados a 3 con `reviews.slice(0, 3)`. CTAs "Escribir review" y "Ver reviews" movidos al footer de la sección reviews (link a `#/comunidad/[bike.id]`). Header duplicado eliminado. FeaturedReviewCard mantiene `hideImage`, `hideLinks` y acciones seguras sin cambios.
 - Precio: fallback textual cuando no hay dato fiable.
 - Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes; dentro de CommunityTab con copy conservadora.
 - Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
 - No duplicar CTA a reviews si ya está en hero de la ficha.
 
 Pendiente:
-- Reemplazar `MotorcycleGarageCard` temporal en CompareTab por variante optimizada (pendiente).
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
 - TopRatedMotorcyclesPage RecentReviews sin cambios en esta fase.
+- Refinado visual/global de layout pospuesto a fase futura (después de cerrar funcionalidad core).
 
 Reglas:
 - no renderizar `null`/`undefined`; fallbacks controlados.
