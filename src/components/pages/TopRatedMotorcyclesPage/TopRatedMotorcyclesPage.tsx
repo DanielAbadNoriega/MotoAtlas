@@ -6,6 +6,7 @@ import {
   getApprovedReviewsByMotorcycleId,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
+import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
 import { BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { formatReviewRating } from '../../../shared/reviews/reviewUtils';
 import {
@@ -17,11 +18,16 @@ import {
   type TopRatedMotorcycle,
   type TopRatedSort,
 } from '../../../shared/reviews/topRatedMotorcycles';
+import { buildReviewAuthContext, isOwnReview } from '../../../shared/reviews/reviewCommunityActions';
+import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
+import { useReviewReports } from '../../../shared/reviews/useReviewReports';
 import { getRankingConfidence } from '../../../shared/reviews/communityRankings';
 import type { Bike, BikeSegment } from '../../../types/bike';
+import { useAuth } from '../../../features/auth';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
+import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
 import './TopRatedMotorcyclesPage.scss';
 
 type TopRatedMotorcyclesPageProps = Readonly<{
@@ -31,6 +37,7 @@ type TopRatedMotorcyclesPageProps = Readonly<{
 type RecentReviewItem = Readonly<{
   bike: Bike;
   review: MotorcycleReview;
+  summary: ReviewReactionSummary | null;
 }>;
 
 const numberFormatter = new Intl.NumberFormat('es-ES');
@@ -258,7 +265,16 @@ function ActiveCommunities({ ranking }: { ranking: readonly TopRatedMotorcycle[]
   );
 }
 
-function RecentReviews({ isLoading, recentReviews }: { isLoading: boolean; recentReviews: readonly RecentReviewItem[] }) {
+function RecentReviews({ isLoading, recentReviews, session, reactionPendingIds, reportedReviewIds, onToggleHelpful, onToggleNotHelpful }: {
+  isLoading: boolean;
+  recentReviews: readonly RecentReviewItem[];
+  session: { user?: { id?: string } } | null;
+  reactionPendingIds: readonly string[];
+  reportedReviewIds: Readonly<Record<string, boolean>>;
+  onToggleHelpful: (review: MotorcycleReview) => void;
+  onToggleNotHelpful: (review: MotorcycleReview) => void;
+}) {
+  const userId = session?.user?.id ?? null;
   return (
     <section className="top-rated__recent-reviews" aria-labelledby="top-rated-recent-title">
       <div className="top-rated__recent-header">
@@ -269,25 +285,44 @@ function RecentReviews({ isLoading, recentReviews }: { isLoading: boolean; recen
         <a href="#/comunidad/reviews">Ver todas las reviews</a>
       </div>
       <div className="top-rated__recent-list">
-        {recentReviews.length > 0 ? recentReviews.slice(0, 3).map(({ bike, review }) => (
-          <FeaturedReviewCard
-            key={review.id}
-            headingLevel={3}
-            review={{
-              ...review,
-              motorcycle: {
-                id: bike.id,
-                brand: bike.brand,
-                model: bike.model,
-                year: bike.year,
-                imageUrl: bike.imageUrl,
-                license: bike.license,
-                segment: bike.segment,
-              },
-            }}
-            aspects={null}
-          />
-        )) : (
+        {recentReviews.length > 0 ? recentReviews.slice(0, 3).map(({ bike, review, summary }) => {
+          const isOwn = isOwnReview(review, userId);
+          const hasReported = Boolean(reportedReviewIds[review.id]);
+          const isPending = reactionPendingIds.includes(review.id);
+          const canInteractHelpful = Boolean(session?.user?.id) && !isOwn && !hasReported && !isPending;
+          return (
+            <FeaturedReviewCard
+              key={review.id}
+              headingLevel={3}
+              review={{
+                ...review,
+                motorcycle: {
+                  id: bike.id,
+                  brand: bike.brand,
+                  model: bike.model,
+                  year: bike.year,
+                  imageUrl: bike.imageUrl,
+                  license: bike.license,
+                  segment: bike.segment,
+                },
+              }}
+              aspects={null}
+              isOwnReview={isOwn}
+              actionsSlot={
+                <FeaturedReviewCardCommunityActions
+                  review={review}
+                  isOwn={isOwn}
+                  hasReported={hasReported}
+                  isPending={isPending}
+                  summary={summary}
+                  canInteract={canInteractHelpful}
+                  onToggleHelpful={onToggleHelpful}
+                  onToggleNotHelpful={onToggleNotHelpful}
+                />
+              }
+            />
+          );
+        }) : (
           <article className="top-rated__recent-empty">
             <div>
               <span>{isLoading ? 'Calibrando' : 'Sin reviews recientes'}</span>
@@ -329,17 +364,35 @@ function CommunityFeatureSections({
   isLoading,
   ranking,
   recentReviews,
+  session,
+  reactionPendingIds,
+  reportedReviewIds,
+  onToggleHelpful,
+  onToggleNotHelpful,
 }: {
   isLoading: boolean;
   ranking: readonly TopRatedMotorcycle[];
   recentReviews: readonly RecentReviewItem[];
+  session: { user?: { id?: string } } | null;
+  reactionPendingIds: readonly string[];
+  reportedReviewIds: Readonly<Record<string, boolean>>;
+  onToggleHelpful: (review: MotorcycleReview) => void;
+  onToggleNotHelpful: (review: MotorcycleReview) => void;
 }) {
   return (
     <>
       <CommunityRadar isLoading={isLoading} ranking={ranking} />
       <section className="top-rated__community-columns" aria-label="Actividad reciente de comunidad">
         <ActiveCommunities ranking={ranking} />
-        <RecentReviews isLoading={isLoading} recentReviews={recentReviews} />
+        <RecentReviews
+          isLoading={isLoading}
+          recentReviews={recentReviews}
+          session={session}
+          reactionPendingIds={reactionPendingIds}
+          reportedReviewIds={reportedReviewIds}
+          onToggleHelpful={onToggleHelpful}
+          onToggleNotHelpful={onToggleNotHelpful}
+        />
       </section>
       <ParticipationCtas />
     </>
@@ -347,10 +400,35 @@ function CommunityFeatureSections({
 }
 
 export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPageProps) {
+  const { session } = useAuth();
   const [reviewsByMotorcycleId, setReviewsByMotorcycleId] = useState<ReviewsByMotorcycleId>({});
   const [filters, setFilters] = useState<TopRatedFilters>(defaultTopRatedFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [hasReviewLoadError, setHasReviewLoadError] = useState(false);
+  const [reactionSummaries, setReactionSummaries] = useState<readonly ReviewReactionSummary[]>([]);
+  const [reportedReviewIds, setReportedReviewIds] = useState<Readonly<Record<string, boolean>>>({});
+
+  const reactionAuthContext = buildReviewAuthContext({
+    accessToken: session?.access_token,
+    isAuthenticated: Boolean(session),
+    userId: session?.user?.id,
+  });
+
+  const { hasReported } = useReviewReports({
+    authContext: reactionAuthContext,
+    reviewIds: Object.values(reviewsByMotorcycleId).flatMap((r) => r.map((review) => review.id)),
+    userId: session?.user?.id,
+  });
+
+  const {
+    reactionPendingIds,
+    toggleHelpful: toggleHelpfulReaction,
+    toggleNotHelpful: toggleNotHelpfulReaction,
+  } = useReviewReactions({
+    authContext: reactionAuthContext,
+    isReported: (reviewId) => hasReported(reviewId),
+    userId: session?.user?.id,
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -374,6 +452,17 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
 
         setReviewsByMotorcycleId(Object.fromEntries(results.map((result) => [result.bikeId, result.reviews])));
         setHasReviewLoadError(results.some((result) => result.hasError));
+        return results;
+      })
+      .then((results) => {
+        if (!results || !isMounted) return;
+        const allReviews = results.flatMap((r) => r.reviews);
+        if (allReviews.length === 0) return;
+        return getReviewReactionSummary(allReviews.map((r) => r.id));
+      })
+      .then((summaries) => {
+        if (!isMounted || !summaries) return;
+        setReactionSummaries(summaries ?? []);
       })
       .finally(() => {
         if (isMounted) {
@@ -403,10 +492,23 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
     filters.minReviews !== defaultTopRatedFilters.minReviews ||
     filters.sort !== defaultTopRatedFilters.sort;
 
-  const recentReviews = useMemo<readonly RecentReviewItem[]>(() => motorcycles
-    .flatMap((bike) => (reviewsByMotorcycleId[bike.id] ?? []).map((review) => ({ bike, review })))
-    .sort((a, b) => new Date(b.review.createdAt).getTime() - new Date(a.review.createdAt).getTime()),
-  [motorcycles, reviewsByMotorcycleId]);
+  const recentReviews = useMemo<readonly RecentReviewItem[]>(() => {
+    const allReviews = motorcycles
+      .flatMap((bike) => (reviewsByMotorcycleId[bike.id] ?? []).map((review) => ({ bike, review })))
+      .sort((a, b) => new Date(b.review.createdAt).getTime() - new Date(a.review.createdAt).getTime());
+    return allReviews.map((item) => {
+      const summary = reactionSummaries.find((s) => s.reviewId === item.review.id) ?? null;
+      return { ...item, summary };
+    });
+  }, [motorcycles, reviewsByMotorcycleId, reactionSummaries]);
+
+  const handleToggleHelpful = (review: MotorcycleReview) => {
+    toggleHelpfulReaction(review);
+  };
+
+  const handleToggleNotHelpful = (review: MotorcycleReview) => {
+    toggleNotHelpfulReaction(review);
+  };
 
   const resetFilters = () => setFilters(defaultTopRatedFilters);
   const scrollToPodium = () => {
@@ -523,7 +625,16 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
         )}
 
         {!isLoading ? (
-          <CommunityFeatureSections isLoading={isLoading} ranking={communityRanking} recentReviews={recentReviews} />
+          <CommunityFeatureSections
+            isLoading={isLoading}
+            ranking={communityRanking}
+            recentReviews={recentReviews}
+            session={session}
+            reactionPendingIds={reactionPendingIds}
+            reportedReviewIds={reportedReviewIds}
+            onToggleHelpful={handleToggleHelpful}
+            onToggleNotHelpful={handleToggleNotHelpful}
+          />
         ) : null}
       </section>
     </main>

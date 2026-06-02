@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getApprovedReviewsByMotorcycleId } from '../../../services/motorcycleReviewService';
+import { getReviewReactionSummary } from '../../../services/reviewReactionService';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import {
   createApprovedReviewFixture,
@@ -13,6 +14,10 @@ import { TopRatedMotorcyclesPage } from './TopRatedMotorcyclesPage';
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getApprovedReviewsByMotorcycleId: vi.fn(),
+}));
+
+vi.mock('../../../services/reviewReactionService', () => ({
+  getReviewReactionSummary: vi.fn().mockResolvedValue([]),
 }));
 
 const getApprovedReviewsMock = vi.mocked(getApprovedReviewsByMotorcycleId);
