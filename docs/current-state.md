@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `fix/featured-machines-layout`
-- Último bloque validado: `FeaturedMachines` en Home (sustitución de `FeaturedBikes`/`BikeCard`)
-- Tests: 1012 passed
+- Rama actual: `fix/bike-detail-tabs`
+- Último bloque validado: `BikeDetailPage` tabs Fase 1 (estructura de tabs + Resumen con riding + fit)
+- Tests: 1020 passed
 - Typecheck: clean
 - Último commit:
 
@@ -60,6 +60,21 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
+### BikeDetailPage — Reorganización por tabs (Fase 1 implementada)
+- tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
+- Sin tab Metodología (ya existe `#/metodologia`).
+- Tab Resumen activa por defecto.
+- Contenido en Resumen: `section.bike-detail__riding` + `section.bike-detail__fit`.
+- Especificaciones, Comunidad y Comparar: placeholders temporales.
+- Secciones pendientes de migración: `bike-detail__quick-specs`, `bike-detail__features`, `bike-detail__reliability`, `bike-detail__specs`, `bike-detail__reviews`, `bike-detail__related`.
+- Plan por fases:
+  - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
+  - Fase 2: tab Especificaciones con diseño técnico premium (Stitch).
+  - Fase 3: iconos técnicos compartidos.
+  - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas con FeaturedReviewCard sin imagen).
+  - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
+- Tests actualizados.
+
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
 - Fuente central con factories y overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`).
@@ -90,10 +105,8 @@
   - `other` es UI-only (no segmento canónico);
   - secundarios mapean a `other`;
   - targets de grupos visibles devuelven solo segmentos canónicos válidos.
-- Guardrail UI legacy cerrado:
-  - `BikeCard` ya no renderiza `bike.segment` crudo;
-  - usa `segmentLabels[bike.segment]` con fallback controlado `Segmento desconocido`.
-  - `BikeCard` queda como legacy temporal (hoy se usa vía `FeaturedBikes` en Home) y candidato a retirada cuando Home migre al patrón de podio/cards compartido.
+- `BikeCard` fue eliminada junto con `FeaturedBikes` tras la migración de Home a `FeaturedMachines`.
+- El guardrail de label amigable para segmento ya no aplica a este componente (retirado de la base de código).
 - Guardrails implementados:
   - `BIKE_SEGMENTS` exacto (16 categorías esperadas).
   - alineación `BikeSegment` (`src/types/bike.ts`) ↔ `BIKE_SEGMENTS`.
@@ -113,6 +126,13 @@
 ## Pendiente
 
 - Rediseño mobile avanzado de rankings/listado técnico — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch. Mantener responsive usable y sin pantallas rotas.
+- BikeDetailPage — reorganización por tabs (plan documentado en `docs/product-roadmap.md`):
+  - Fase 1: estructura de tabs + tab Resumen (riding + fit) — **implementada**.
+  - Fase 2: tab Especificaciones con diseño técnico premium (Stitch).
+  - Fase 3: iconos técnicos compartidos.
+  - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas con FeaturedReviewCard sin imagen).
+  - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
+  - Secciones pendientes de migración: `bike-detail__quick-specs`, `bike-detail__features`, `bike-detail__reliability`, `bike-detail__specs`, `bike-detail__reviews`, `bike-detail__related`.
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).

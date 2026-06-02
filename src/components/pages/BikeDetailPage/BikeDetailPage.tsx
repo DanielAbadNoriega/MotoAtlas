@@ -179,9 +179,12 @@ function NotFoundDetail() {
   );
 }
 
+export type BikeDetailTab = 'resumen' | 'especificaciones' | 'comunidad' | 'comparar';
+
 export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<BikeDetailTab>('resumen');
 
   useEffect(() => {
     if (!bike) {
@@ -288,118 +291,146 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
         </div>
       </header>
 
-      <section className="bike-detail__quick-specs" aria-label="Ficha rápida">
-        <article>
-          <span>Arquitectura</span>
-          <strong>{engineTypeLabels[bike.engineType]}</strong>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            settings_input_component
-          </span>
-        </article>
-        <article>
-          <span>Par máximo</span>
-          <strong>{numberFormatter.format(bike.torqueNm)} Nm</strong>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            bolt
-          </span>
-        </article>
-        <article>
-          <span>Altura asiento</span>
-          <strong>{numberFormatter.format(bike.seatHeightMm)} mm</strong>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            height
-          </span>
-        </article>
-        <article>
-          <span>Depósito</span>
-          <strong>{numberFormatter.format(bike.fuelTankLiters)} L</strong>
-          <span className="material-symbols-outlined" aria-hidden="true">
-            local_gas_station
-          </span>
-        </article>
-      </section>
+      <nav className="bike-detail__tabs" role="tablist" aria-label="Secciones de la ficha">
+        <button
+          role="tab"
+          aria-selected={activeTab === 'resumen'}
+          aria-controls="tabpanel-resumen"
+          id="tab-resumen"
+          className={activeTab === 'resumen' ? 'bike-detail__tab bike-detail__tab--active' : 'bike-detail__tab'}
+          onClick={() => setActiveTab('resumen')}
+          type="button"
+        >
+          Resumen
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'especificaciones'}
+          aria-controls="tabpanel-especificaciones"
+          id="tab-especificaciones"
+          className={activeTab === 'especificaciones' ? 'bike-detail__tab bike-detail__tab--active' : 'bike-detail__tab'}
+          onClick={() => setActiveTab('especificaciones')}
+          type="button"
+        >
+          Especificaciones
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'comunidad'}
+          aria-controls="tabpanel-comunidad"
+          id="tab-comunidad"
+          className={activeTab === 'comunidad' ? 'bike-detail__tab bike-detail__tab--active' : 'bike-detail__tab'}
+          onClick={() => setActiveTab('comunidad')}
+          type="button"
+        >
+          Comunidad
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'comparar'}
+          aria-controls="tabpanel-comparar"
+          id="tab-comparar"
+          className={activeTab === 'comparar' ? 'bike-detail__tab bike-detail__tab--active' : 'bike-detail__tab'}
+          onClick={() => setActiveTab('comparar')}
+          type="button"
+        >
+          Comparar
+        </button>
+      </nav>
 
-      <section className="bike-detail__features" aria-labelledby="bike-detail-features-title">
-        <div>
-          <span>Electronics suite</span>
-          <h2 id="bike-detail-features-title">Equipamiento destacado</h2>
-        </div>
-        <div className="bike-detail__feature-list">
-          {enabledFeatures.length > 0 ? (
-            enabledFeatures.map(([feature]) => <span key={feature}>{featureLabels[feature]}</span>)
-          ) : (
-            <span>Equipamiento electrónico básico</span>
-          )}
-        </div>
-      </section>
-
-      <section className="bike-detail__riding" aria-labelledby="bike-detail-riding-title">
-        <div className="bike-detail__score-card">
-          <span>Riding profile</span>
-          <h2 id="bike-detail-riding-title">Perfil dinámico</h2>
-          <p>Nuestra lectura técnica basada en uso real, ergonomía y enfoque de segmento.</p>
-          <strong>{overallScore.toFixed(1)}</strong>
-          <small>Overall performance</small>
-        </div>
-
-        <div className="bike-detail__score-list">
-          {getUseScoreEntries(bike).map(([key, value]) => (
-            <div className="bike-detail__score-row" key={key}>
-              <div>
-                <span>{useScoreLabels[key]}</span>
-                <strong>{value.toFixed(1)}</strong>
+      <div
+        role="tabpanel"
+        id="tabpanel-resumen"
+        aria-labelledby="tab-resumen"
+        className="bike-detail__tab-content"
+      >
+        {activeTab === 'resumen' && (
+          <>
+            <section className="bike-detail__riding" aria-labelledby="bike-detail-riding-title">
+              <div className="bike-detail__score-card">
+                <span>Riding profile</span>
+                <h2 id="bike-detail-riding-title">Perfil dinámico</h2>
+                <p>Nuestra lectura técnica basada en uso real, ergonomía y enfoque de segmento.</p>
+                <strong>{overallScore.toFixed(1)}</strong>
+                <small>Overall performance</small>
               </div>
-              <div aria-hidden="true">
-                <span style={{ width: scorePercent(value) }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      <section className="bike-detail__fit" aria-labelledby="bike-detail-fit-title">
-        <h2 id="bike-detail-fit-title">¿Es esta moto para ti?</h2>
-        <div className="bike-detail__fit-grid">
-          <article>
-            <span className="material-symbols-outlined" aria-hidden="true">
-              person_pin
-            </span>
-            <h3>El perfil</h3>
-            <p>{segmentProfile[bike.segment]}</p>
-          </article>
-          <article>
-            <span className="material-symbols-outlined" aria-hidden="true">
-              explore
-            </span>
-            <h3>Mejor uso</h3>
-            <p>
-              Destaca en <strong>{bestUse.label}</strong> con {bestUse.value.toFixed(1)}/10 dentro del catálogo.
-            </p>
-          </article>
-          <article>
-            <span className="material-symbols-outlined" aria-hidden="true">
-              add_circle
-            </span>
-            <h3>Fortalezas</h3>
-            <ul>
-              {bike.pros.map((pro) => (
-                <li key={pro}>{pro}</li>
-              ))}
-            </ul>
-          </article>
-          <article>
-            <span className="material-symbols-outlined" aria-hidden="true">
-              do_not_disturb_on
-            </span>
-            <h3>Limitaciones</h3>
-            <ul>
-              {bike.cons.map((con) => (
-                <li key={con}>{con}</li>
-              ))}
-            </ul>
-          </article>
-        </div>
-      </section>
+              <div className="bike-detail__score-list">
+                {getUseScoreEntries(bike).map(([key, value]) => (
+                  <div className="bike-detail__score-row" key={key}>
+                    <div>
+                      <span>{useScoreLabels[key]}</span>
+                      <strong>{value.toFixed(1)}</strong>
+                    </div>
+                    <div aria-hidden="true">
+                      <span style={{ width: scorePercent(value) }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="bike-detail__fit" aria-labelledby="bike-detail-fit-title">
+              <h2 id="bike-detail-fit-title">¿Es esta moto para ti?</h2>
+              <div className="bike-detail__fit-grid">
+                <article>
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    person_pin
+                  </span>
+                  <h3>El perfil</h3>
+                  <p>{segmentProfile[bike.segment]}</p>
+                </article>
+                <article>
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    explore
+                  </span>
+                  <h3>Mejor uso</h3>
+                  <p>
+                    Destaca en <strong>{bestUse.label}</strong> con {bestUse.value.toFixed(1)}/10 dentro del catálogo.
+                  </p>
+                </article>
+                <article>
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    add_circle
+                  </span>
+                  <h3>Fortalezas</h3>
+                  <ul>
+                    {bike.pros.map((pro) => (
+                      <li key={pro}>{pro}</li>
+                    ))}
+                  </ul>
+                </article>
+                <article>
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    do_not_disturb_on
+                  </span>
+                  <h3>Limitaciones</h3>
+                  <ul>
+                    {bike.cons.map((con) => (
+                      <li key={con}>{con}</li>
+                    ))}
+                  </ul>
+                </article>
+              </div>
+            </section>
+          </>
+        )}
+        {activeTab === 'especificaciones' && (
+          <div className="bike-detail__tab-placeholder">
+            <p>Especificaciones técnicas próximas</p>
+          </div>
+        )}
+        {activeTab === 'comunidad' && (
+          <div className="bike-detail__tab-placeholder">
+            <p>Comunidad próximamente</p>
+          </div>
+        )}
+        {activeTab === 'comparar' && (
+          <div className="bike-detail__tab-placeholder">
+            <p>Comparador próximamente</p>
+          </div>
+        )}
+      </div>
 
       <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
         <div>

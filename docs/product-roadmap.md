@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1005 passed`.
+- Tests de referencia: `1020 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -121,57 +121,61 @@ Estado: pendiente.
   - `accountReviewFilters`
 - Resultado esperado: crecimiento sin duplicar UI por página.
 
-### Tarea P1/P2 — Quick specs avanzadas en ficha de moto
+### BikeDetailPage — Reorganización por tabs
 
-Estado: backlog estratégico / futuro cercano.
+Estado: **Fase 1 implementada**.
 
-Objetivo:
-Mejorar `bike-detail__quick-specs` en `#/motos/[moto-id]` para mostrar specs técnicas de forma más visual, modular y escalable.
+Decisión de producto:
+- La `BikeDetailPage` actual se mantiene como base.
+- El objetivo no es rediseñar toda la landing, sino reorganizar secciones existentes en tabs.
+- Solo la pestaña `Especificaciones` usará diseño nuevo de Stitch tipo "Ficha Técnica Rápida".
+- El resto de tabs reutilizarán secciones existentes con ajustes progresivos.
+- Se trabaja por fases para evitar megatarea.
+- Sin tab `Metodología` (existe `#/metodologia`).
 
-Zonas relacionadas:
-- `src/components/pages/BikeDetailPage/BikeDetailPage.tsx`
-- estilos de `BikeDetailPage`
-- `ReviewModal` como referencia visual (`.review-modal__aspect-card`)
-- posible componente compartido de specs técnicas
-- posible mixin/placeholder SCSS común
+Ruta afectada: `#/motos/[moto-id]`
 
-Alcance visual:
-- usar tarjetas técnicas similares a las aspect cards del modal
-- evitar copiar CSS de modal directamente
-- valorar extracción de componente común:
-  - `TechnicalSpecCard`
-  - `SpecCard`
-  - u otro nombre coherente
-- valorar extracción de SCSS común si aplica
+Tabs definitivas:
+1. `Resumen` — secciones riding + fit (existentes).
+2. `Especificaciones` — diseño técnico premium desde Stitch (nuevo).
+3. `Comunidad` — mini resumen + reliability + reviews adaptadas.
+4. `Comparar` — related + MotorcycleGarageCard + acciones comparador.
 
-Specs a contemplar:
-- cilindrada
-- potencia
-- par
-- peso
-- altura asiento
-- depósito
-- precio
-- carnet/A2
-- quickshifter
-- suspensiones
-- frenos
-- electrónica
-- neumáticos
-- equipamiento
+Estado por fase:
+1. **Fase 1 — Estructura de tabs + tab Resumen**: implementada. tabs accesibles (4), Resumen activo por defecto, riding + fit movidos a Resumen. Placeholders en Especificaciones/Comunidad/Comparar.
+2. **Fase 2 — Tab Especificaciones**: pendiente. Grid de specs técnicas (motor/cilindrada, potencia, par, peso, altura asiento, depósito, carnet, precio base/orientativo si aplica, quickshifter, suspensiones, frenos, electrónica, neumáticos/equipamiento). Diseño de Stitch "Ficha Técnica Rápida". No renderizar null/undefined. No ampliar modelo de datos sin decisión explícita.
+3. **Fase 3 — Iconos técnicos compartidos**: pendiente. Unificar iconos técnicos en fuente compartida reutilizable.
+4. **Fase 4 — Tab Comunidad**: pendiente. Mini bloque en Stitch: rating medio con stars, número de reviews, confianza con shield. Sin duplicar CTA a reviews si ya está en hero. Incluir `bike-detail__reliability` (decidir contrato de fiabilidad antes). Incluir `bike-detail__reviews` migrando a `FeaturedReviewCard` sin imagen (ya estamos en la ficha). Sin CTAs "Más reviews" ni "Ver ficha" dentro de las cards. Decidir si número de reviews aparece aquí o solo en resumen superior de Comunidad. Eliminar nota redundante de reviews.
+5. **Fase 5 — Tab Comparar**: pendiente. Usar `bike-detail__related` como base. Orientar a comparar esta moto con modelos relacionados. Reutilizar `MotorcycleGarageCard` si encaja. Permitir añadir motos relacionadas al comparador con cuidado. Mantener CTA a ficha solo si aporta valor. No romper el comparador global.
 
-Reglas:
-- no ampliar schema/modelo `Bike` en esta tarea salvo decisión explícita
-- si faltan campos, documentar dependencia del futuro Admin catálogo/modelos
-- no renderizar `null`/`undefined`
-- no crear CSS duplicado acoplado a `ReviewModal`
-- mantener accesibilidad
+Reglas transversales:
+- no ampliar schema/modelo `Bike` salvo decisión explícita.
+- no renderizar `null`/`undefined`; usar fallbacks controlados.
+- no copiar CSS de `ReviewModal`.
+- `FeaturedReviewCard` en Comunidad: sin imagen, sin CTAs redundantes.
+- `MotorcycleGarageCard` sigue presentacional si se reutiliza en Comparar.
+- Mobile: responsive funcional, refinados premium pospuestos a fase mobile-first.
+
+Riesgos documentados:
+- Precio delicado por promociones/variantes; fallback `Precio pendiente` si no hay dato fiable.
+- Fiabilidad/problemas frecuentes requiere contrato de datos claro antes de claims fuertes.
+- `FeaturedReviewCard` debe adaptarse sin acciones falsas.
+- Fase 5 comparador no debe duplicar lógica existente de compare queue.
 
 Relación con roadmap:
-- conecta con revisión futura UI/SCSS
-- conecta con Admin catálogo/modelos
-- conecta con datos técnicos avanzados
-- puede alimentar mejores fichas, comparador y SEO técnico
+- conecta con revisión global UI/SCSS (fase 13 P3/P4).
+- conecta con sistema de filtros reutilizable.
+- conecta con Admin catálogo/modelos (faltas de datos).
+- puede alimentar mejor comparador y SEO técnico.
+- fase mobile-first independiente posterior.
+
+Secciones residuales pendientes de migración:
+- `bike-detail__quick-specs`
+- `bike-detail__features`
+- `bike-detail__reliability`
+- `bike-detail__specs`
+- `bike-detail__reviews`
+- `bike-detail__related`
 
 ## 6. P2 — Plataforma/Admin/Productividad interna
 

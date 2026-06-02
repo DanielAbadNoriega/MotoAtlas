@@ -103,21 +103,43 @@ Responsive:
 - Tablet: 2 columnas en secondary.
 - Mobile: stack vertical, aspect-ratio 16:9 para compactas.
 
-## Ficha de moto — Quick specs (backlog)
+## Ficha de moto — BikeDetailPage con tabs
 
-Estado: backlog estratégico / futuro cercano.
+Estado: **Fase 1 implementada**.
 
-La ficha `#/motos/[moto-id]` tiene `bike-detail__quick-specs` y se planifica evolucionarla con un patrón visual de tarjetas técnicas más modular, tomando como referencia visual las `.review-modal__aspect-card` de `ReviewModal`, pero **sin copiar ni acoplar CSS** del modal.
+La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
-Dirección de diseño:
-- usar cards técnicas más expresivas para specs clave
-- evaluar componente reutilizable (`TechnicalSpecCard` / `SpecCard`)
-- evaluar mixin/placeholder SCSS común si aporta reutilización real
-- mantener accesibilidad y evitar render de datos faltantes (`null`/`undefined`)
+| Tab | Contenido | Estado |
+|-----|-----------|--------|
+| Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
+| Especificaciones | specs técnicas premium (Stitch) | Placeholder — Fase 2 |
+| Comunidad | mini resumen + reliability + reviews | Placeholder — Fase 4 |
+| Comparar | related + MotorcycleGarageCard | Placeholder — Fase 5 |
 
-Nota de alcance:
-- no ampliar schema/modelo `Bike` dentro de esta tarea sin decisión explícita
-- si faltan campos técnicos, queda dependiente del futuro Admin catálogo/modelos
+Decisiones:
+- Sin tab Metodología (existe `#/metodologia`).
+- Tab Resumen activa por defecto.
+- Especificaciones, Comunidad y Comparar son placeholders temporales.
+- `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards).
+- Precio: fallback `Precio pendiente` si no hay dato fiable; no vender como comercial cerrado.
+- Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes.
+- Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
+- No duplicar CTA a reviews si ya está en hero de la ficha.
+- Decidir si número de reviews aparece en tab Comunidad o solo en resumen superior.
+
+Reglas:
+- no renderizar `null`/`undefined`; fallbacks controlados.
+- no copiar CSS de `ReviewModal`.
+- `MotorcycleGarageCard` sigue presentacional.
+- no ampliar schema `Bike` salvo decisión explícita.
+
+Secciones residuales pendientes de migración:
+- `bike-detail__quick-specs` → Especificaciones
+- `bike-detail__features` → Especificaciones
+- `bike-detail__reliability` → Comunidad
+- `bike-detail__specs` → Especificaciones
+- `bike-detail__reviews` → Comunidad
+- `bike-detail__related` → Comparar
 
 ## Datos demo para QA visual (backlog)
 
@@ -147,7 +169,7 @@ Elementos principales:
 - Grid de 8 categorías (global, daily, travel, sport, a2, power-weight, reliability, passenger).
 - Listado técnico con filtros por segmento, carnet y uso. **No usa `<table>`; usa cards/grid responsive.**
 
-**Pendiente:** rediseño mobile avanzado del listado técnico (cards responsive más refinadas).
+**Pendiente:** rediseño mobile avanzado del listado técnico (cards responsive más refinadas) — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch.
 
 Datos:
 - `reviewCount`: conteo real de reviews `approved` por moto.
