@@ -60,15 +60,42 @@ El compare tray del buscador muestra mini-slots de motos seleccionadas y skeleto
 
 ## Cards legacy — `BikeCard`
 
-Guardrail UI aplicado:
-- `BikeCard` no muestra slugs técnicos de segmento (`sport-touring`, `neo-retro`, etc.).
-- El segmento visible se renderiza con label amigable desde `segmentLabels`.
-- Si faltara label, usa fallback controlado `Segmento desconocido` (sin `undefined` visible).
+Estado: **retirado**.
 
-Estado de ciclo de vida:
-- `BikeCard` se considera legacy temporal porque su uso actual está acotado a `FeaturedBikes` en Home.
-- Está prevista su sustitución cuando Home migre al patrón de podio/cards compartido con comunidad/rankings.
-- Mientras exista, solo mantenimiento mínimo (sin expandir alcance de diseño).
+- `BikeCard` fue eliminado tras la migración de Home a `FeaturedMachines`.
+- `FeaturedBikes` también fue eliminado.
+- El guardrail de label amigable para segmento ya no aplica a este componente (retirado).
+
+## Home — FeaturedMachines
+
+La sección `FeaturedMachines` vive en `src/components/sections/FeaturedMachines/`.
+
+Estructura visual:
+- Card 1: hero horizontal, imagen full-background (16:9), contenido superpuesto abajo.
+- Cards 2 y 3: compactas full-background (4:5), imagen ocupando toda la card, contenido superpuesto abajo.
+- Las 3 cards comparten gradiente/degradado para legibilidad del texto sobre la imagen.
+
+Elementos por card:
+- Badge numérico `01`/`02`/`03` en esquina superior izquierda con text-shadow.
+- Título: marca en blanco, modelo en rojo/acento (`$color-accent-container`), text-shadow.
+- Specs: `Engine` (cc), `Power` (hp), `Torque` (nm).
+- CTAs: `Ver ficha` → `#/motos/[id]`, `Reviews` → `#/comunidad/[id]`.
+
+Features NO permitidas en esta sección:
+- km/h, peso, PS, segmento, ADV READY, TC+ EVO, View Configurator.
+- Cualquier feature que no sean Engine, Power, Torque.
+
+Contrato visual:
+- Imagen: `object-fit: cover` con `position: absolute; inset: 0` (full-background).
+- Overlay: gradiente `rgba($color-surface-lowest, 1)` → transparente (de abajo hacia arriba).
+- Contenido: `position: absolute; inset: 0` con `z-index` superior al media.
+- Badge: `position: absolute; z-index: 3`, no se solapa con título.
+- Hover: `transform: scale(1.03)` solo en `<img>`, no en la card.
+
+Responsive:
+- Desktop: grid 1 columna (hero) + 2 columnas (compactas).
+- Tablet: 2 columnas en secondary.
+- Mobile: stack vertical, aspect-ratio 16:9 para compactas.
 
 ## Ficha de moto — Quick specs (backlog)
 

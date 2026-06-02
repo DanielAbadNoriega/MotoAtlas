@@ -1,1 +1,0 @@
-export { FeaturedBikes } from './FeaturedBikes';

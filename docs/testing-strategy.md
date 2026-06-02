@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1005` tests passing.
+- `1012` tests passing.
 
 ## Stack actual
 
@@ -106,10 +106,15 @@ Cobertura implementada:
   - valida que los targets de grupos visibles son segmentos canónicos;
   - valida targets y visibilidad condicional de `other` según segmentos disponibles.
   - valida ausencia de grupos vacíos en opciones disponibles (salvo `all`).
-- `src/components/ui/BikeCard/BikeCard.test.tsx`
-  - valida render de label amigable desde `segmentLabels` para segmentos con guion;
-  - valida que no se renderiza slug crudo (`sport-touring`);
-  - valida que no se renderiza `undefined`.
+- `src/components/sections/FeaturedMachines/FeaturedMachines.test.tsx`
+  - valida render de `Featured Machines` (título de sección con aria-labelledby).
+  - valida render del slogan `Built for riders, ranked by character`.
+  - valida 3 cards con badges `01`/`02`/`03`.
+  - valida specs `Engine`, `Power`, `Torque` en las 3 cards.
+  - valida CTAs `Ver ficha` → `#/motos/[id]` y `Reviews` → `#/comunidad/[id]`.
+  - valida ausencia de km/h, kg, PS, segmento en cada card.
+  - valida ausencia de `null`/`undefined` en specs.
+  - valida datos reales (primera moto BMW F 900 GS).
 
 Regla de contrato actual:
 - Los tests de dataset no fallan si hay segmentos esperados todavía ausentes en datos; solo fallan por segmentos inválidos.
