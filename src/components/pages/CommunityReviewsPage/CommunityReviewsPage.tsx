@@ -721,7 +721,7 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
 
       {refreshLabel ? (
         <footer className="community-reviews-page__insights-refresh">
-          <span>{refreshLabel}</span>
+          <span>Datos aproximados · {refreshLabel}</span>
         </footer>
       ) : null}
     </aside>
