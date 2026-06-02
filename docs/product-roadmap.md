@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1020 passed`.
+- Tests de referencia: `1035 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -123,7 +123,7 @@ Estado: pendiente.
 
 ### BikeDetailPage — Reorganización por tabs
 
-Estado: **Fase 1 implementada**.
+Estado: **Fases 1, 2 y 3A implementadas**.
 
 Decisión de producto:
 - La `BikeDetailPage` actual se mantiene como base.
@@ -142,11 +142,27 @@ Tabs definitivas:
 4. `Comparar` — related + MotorcycleGarageCard + acciones comparador.
 
 Estado por fase:
-1. **Fase 1 — Estructura de tabs + tab Resumen**: implementada. tabs accesibles (4), Resumen activo por defecto, riding + fit movidos a Resumen. Placeholders en Especificaciones/Comunidad/Comparar.
-2. **Fase 2 — Tab Especificaciones**: pendiente. Grid de specs técnicas (motor/cilindrada, potencia, par, peso, altura asiento, depósito, carnet, precio base/orientativo si aplica, quickshifter, suspensiones, frenos, electrónica, neumáticos/equipamiento). Diseño de Stitch "Ficha Técnica Rápida". No renderizar null/undefined. No ampliar modelo de datos sin decisión explícita.
-3. **Fase 3 — Iconos técnicos compartidos**: pendiente. Unificar iconos técnicos en fuente compartida reutilizable.
-4. **Fase 4 — Tab Comunidad**: pendiente. Mini bloque en Stitch: rating medio con stars, número de reviews, confianza con shield. Sin duplicar CTA a reviews si ya está en hero. Incluir `bike-detail__reliability` (decidir contrato de fiabilidad antes). Incluir `bike-detail__reviews` migrando a `FeaturedReviewCard` sin imagen (ya estamos en la ficha). Sin CTAs "Más reviews" ni "Ver ficha" dentro de las cards. Decidir si número de reviews aparece aquí o solo en resumen superior de Comunidad. Eliminar nota redundante de reviews.
-5. **Fase 5 — Tab Comparar**: pendiente. Usar `bike-detail__related` como base. Orientar a comparar esta moto con modelos relacionados. Reutilizar `MotorcycleGarageCard` si encaja. Permitir añadir motos relacionadas al comparador con cuidado. Mantener CTA a ficha solo si aporta valor. No romper el comparador global.
+1. **Fase 1 — Estructura de tabs + tab Resumen**: implementada. tabs accesibles (4), Resumen activo por defecto, riding + fit movidos a Resumen.
+2. **Fase 2 — Tab Especificaciones**: **implementada**.
+   - Componente `SpecificationsTab` con bento grid de `SpecCard`.
+   - 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
+   - Card electrónica: solo features activas filtradas con `filter(([, isEnabled]) => isEnabled)`, no renderiza `false`.
+   - Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`; muestra badge y versión limitada. Usa icono `license` (no `a2` como key independiente).
+   - Precio: `isPendingPrice` → `pendingPriceLabel` si `priceEur <= 0` o `source = placeholder`. Nunca `0 €`.
+   - Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
+   - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
+   - Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
+3. **Fase 3A — Iconos técnicos compartidos**: **implementada**.
+   - Módulo compartido: `src/shared/motorcycles/motorcycleTechnicalIcons.ts`.
+   - Exporta: `motorcycleTechnicalIconMap` (18 keys), `MotorcycleTechnicalIconKey`, `getMotorcycleTechnicalIcon(key)`.
+   - Keys de specs: engine, power, torque, weight, seatHeight, fuelTank, license, price.
+   - Keys de aspectos de reviews: ergonomics, consumption, braking, suspension, electronics, aerodynamics, passenger, maintenance, design.
+   - `a2` NO es una key; A2 es variante/estado dentro de `license`. El bloque A2 usa `getMotorcycleTechnicalIcon('license')`.
+   - Tests dedicados en `src/shared/motorcycles/motorcycleTechnicalIcons.test.ts`.
+   - `specIconMap` local eliminado de BikeDetailPage.tsx.
+4. **Fase 3B — Migración de iconos en ReviewModal/review form**: pendiente. ReviewModal, review form y ReviewAspectSummary no fueron migrados en esta fase. Queda pendiente coordinar ReviewAspectSummary con el mapa compartido si aplica.
+5. **Fase 4 — Tab Comunidad**: pendiente. Mini bloque: rating medio con stars, número de reviews, confianza con shield. Sin duplicar CTA a reviews si ya está en hero. Incluir `bike-detail__reliability` (decidir contrato de fiabilidad antes). Incluir `bike-detail__reviews` migrando a `FeaturedReviewCard` sin imagen (ya estamos en la ficha). Sin CTAs "Más reviews" ni "Ver ficha" dentro de las cards.
+6. **Fase 5 — Tab Comparar**: pendiente. Usar `bike-detail__related` como base. Orientar a comparar esta moto con modelos relacionados. Reutilizar `MotorcycleGarageCard` si encaja. Permitir añadir motos relacionadas al comparador con cuidado. Mantener CTA a ficha solo si aporta valor. No romper el comparador global.
 
 Reglas transversales:
 - no ampliar schema/modelo `Bike` salvo decisión explícita.
@@ -169,13 +185,12 @@ Relación con roadmap:
 - puede alimentar mejor comparador y SEO técnico.
 - fase mobile-first independiente posterior.
 
-Secciones residuales pendientes de migración:
-- `bike-detail__quick-specs`
-- `bike-detail__features`
-- `bike-detail__reliability`
-- `bike-detail__specs`
-- `bike-detail__reviews`
-- `bike-detail__related`
+Secciones residuales pendientes:
+- `bike-detail__specs` old (fuera de tabs, no migrada aún) — pendiente de decisión.
+- `bike-detail__reliability` → Fase 4 (Comunidad).
+- `bike-detail__reviews` → Fase 4 (Comunidad).
+- `bike-detail__related` → Fase 5 (Comparar).
+- `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab.
 
 ## 6. P2 — Plataforma/Admin/Productividad interna
 

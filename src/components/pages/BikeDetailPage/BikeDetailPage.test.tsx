@@ -238,13 +238,93 @@ describe('BikeDetailPage', () => {
     expect(screen.getByRole('heading', { name: /¿Es esta moto para ti?/i })).toBeInTheDocument();
   });
 
-  it('al hacer click en Especificaciones muestra placeholder', async () => {
+  it('al hacer click en Especificaciones muestra cards técnicas de specs', async () => {
     const user = userEvent.setup();
     render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
 
     await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
 
-    expect(screen.getByText('Especificaciones técnicas próximas')).toBeInTheDocument();
+    expect(screen.getByText('MOTOR')).toBeInTheDocument();
+    expect(screen.getByText('POTENCIA')).toBeInTheDocument();
+    expect(screen.getByText('TORQUE')).toBeInTheDocument();
+    expect(screen.getByText('PESO')).toBeInTheDocument();
+    expect(screen.getByText('ALTURA ASIENTO')).toBeInTheDocument();
+    expect(screen.getByText('DEPÓSITO')).toBeInTheDocument();
+    expect(screen.getByText('CARNET')).toBeInTheDocument();
+    expect(screen.getByText('PRECIO BASE')).toBeInTheDocument();
+  });
+
+  it('Especificaciones muestra cilindrada, potencia, par y peso con valores correctos', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    const specsTab = document.querySelector('.bike-detail__specs-tab') as HTMLElement;
+    expect(specsTab).toBeInTheDocument();
+    const withinSpecs = within(specsTab);
+    expect(withinSpecs.getByText('895')).toBeInTheDocument();
+    expect(withinSpecs.getByText('105')).toBeInTheDocument();
+    expect(withinSpecs.getByText('93')).toBeInTheDocument();
+    expect(withinSpecs.getByText('219')).toBeInTheDocument();
+  });
+
+  it('Especificaciones no renderiza suspensiones, frenos ni neumáticos porque no existen en el modelo', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.queryByText(/Suspensión/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Frenos/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Neumático/i)).not.toBeInTheDocument();
+  });
+
+  it('Especificaciones muestra features activas como chips, no las inactivas', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.getByText('ABS en curva')).toBeInTheDocument();
+    expect(screen.getByText('Quickshifter')).toBeInTheDocument();
+    expect(screen.queryByText('Puños calefactables')).not.toBeInTheDocument();
+  });
+
+  it('Especificaciones muestra A2 badge y versión limitada si aplica', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[1]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.getByText('COMPATIBILIDAD A2')).toBeInTheDocument();
+    expect(screen.getByText('Limitada a 47.6 CV (orig. 80 CV)')).toBeInTheDocument();
+  });
+
+  it('Especificaciones no muestra bloque A2 para moto no A2 compatible', async () => {
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeFixtures[0]} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    expect(screen.queryByText('COMPATIBILIDAD A2')).not.toBeInTheDocument();
+  });
+
+  it('Precio pendiente no muestra 0 ni valor falso', async () => {
+    const bikeWithPendingPrice = {
+      ...bikeFixtures[0],
+      priceEur: 0,
+      priceSource: 'placeholder' as const,
+    } satisfies Bike;
+
+    const user = userEvent.setup();
+    render(<BikeDetailPage bike={bikeWithPendingPrice} motorcycles={bikeFixtures} />);
+
+    await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
+
+    const specsTab = document.querySelector('.bike-detail__specs-tab') as HTMLElement;
+    expect(specsTab?.innerHTML).toContain('Precio pendiente');
+    expect(specsTab?.innerHTML).not.toContain('0 €');
   });
 
   it('al hacer click en Comunidad muestra placeholder', async () => {

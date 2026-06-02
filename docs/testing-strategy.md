@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1020` tests passing.
+- `1035` tests passing.
 
 ## Stack actual
 
@@ -122,19 +122,33 @@ Regla de contrato actual:
 Riesgo menor conocido:
 - Parte del contrato parsea `src/types/bike.ts` y `supabase/schema.sql` con regex/texto. Si cambia mucho el formato, el test puede requerir ajuste, pero el fallo es visible y explícito.
 
-## BikeDetailPage tabs (Fase 1)
+## BikeDetailPage tabs (Fases 1, 2 y 3A)
 
 Cobertura implementada:
 - roles ARIA correctos (`tablist`, `tab`, `tabpanel`).
 - 4 tabs renders: Resumen, Especificaciones, Comunidad, Comparar.
 - Tab Resumen activa por defecto.
 - Contenido de Resumen: `section.bike-detail__riding` + `section.bike-detail__fit`.
-- Placeholders en Especificaciones, Comunidad y Comparar.
 - Sin `null`/`undefined` en contenido de tabs.
 - Sin tab Metodología.
 
+Fase 2 — Cobertura de SpecificationsTab:
+- labels técnicos: MOTOR, POTENCIA, TORQUE, PESO, ALTURA ASIENTO, DEPÓSITO, CARNET, PRECIO BASE.
+- valores correctos para cilindrada (895 cc), potencia (105 HP), torque (93 NM), peso (219 KG).
+- ausencia de campos inexistentes: no se muestran suspensiones, frenos ni neumáticos.
+- features activas: ABS en curva, Quickshifter renderizadas; Puños calefactables no renderizada (false).
+- A2 condicional: bloque COMPARABILIDAD A2 con "Limitada a 47.6 CV (orig. 80 CV)" para fixture A2; no aparece para moto no A2.
+- precio pendiente: texto "Precio pendiente de confirmar" cuando `priceEur = 0` y `priceSource = placeholder`; nunca `0 €`.
+
+Fase 3A — Cobertura de motorcycleTechnicalIcons:
+- mapa con 18 keys: 8 de specs (engine, power, torque, weight, seatHeight, fuelTank, license, price) + 10 de aspectos de reviews (ergonomics, consumption, braking, suspension, electronics, aerodynamics, passenger, maintenance, design).
+- `a2` NO es key del mapa (A2 es variante dentro de `license`).
+- `getMotorcycleTechnicalIcon` devuelve icono correcto para cada key validada.
+- test explícito de ausencia de `a2` en el mapa.
+- type prevents invalid keys at compile time.
+
 Pendiente de cobertura (fases siguientes):
-- Tab Especificaciones: specs renderizadas, grid técnico, ausencia de null/undefined.
+- Fase 3B: migración de iconos en ReviewModal/review form (ReviewAspectSummary no migrada aún).
 - Tab Comunidad: rating medio con stars, número de reviews, shield de confianza, FeaturedReviewCard sin imagen, ausencia de CTAs redundantes.
 - Tab Comparar: MotorcycleGarageCard, acciones de comparador, related bikes.
 
