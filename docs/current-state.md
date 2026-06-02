@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual: `fix/bike-detail-tabs`
-- Último bloque validado: `BikeDetailPage` tabs Fase 1 (estructura de tabs + Resumen con riding + fit)
-- Tests: 1020 passed
+- Último bloque validado: `BikeDetailPage` tabs Fase 2 (Especificaciones implementada con SpecificationsTab)
+- Tests: 1026 passed
 - Typecheck: clean
 - Último commit:
 
@@ -60,20 +60,40 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
-### BikeDetailPage — Reorganización por tabs (Fase 1 implementada)
+### BikeDetailPage — Reorganización por tabs (Fases 1 y 2 implementadas)
 - tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
 - Sin tab Metodología (ya existe `#/metodologia`).
 - Tab Resumen activa por defecto.
 - Contenido en Resumen: `section.bike-detail__riding` + `section.bike-detail__fit`.
-- Especificaciones, Comunidad y Comparar: placeholders temporales.
-- Secciones pendientes de migración: `bike-detail__quick-specs`, `bike-detail__features`, `bike-detail__reliability`, `bike-detail__specs`, `bike-detail__reviews`, `bike-detail__related`.
-- Plan por fases:
-  - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
-  - Fase 2: tab Especificaciones con diseño técnico premium (Stitch).
-  - Fase 3: iconos técnicos compartidos.
-  - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas con FeaturedReviewCard sin imagen).
+- Fase 1 — estructura tabs + Resumen: **implementada**.
+- Fase 2 — `SpecificationsTab`: **implementada**.
+  - Componente `SpecificationsTab` con bento grid de `SpecCard`.
+  - 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
+  - Card electrónica/features: solo features activas (`filter(([, isEnabled]) => isEnabled)`), no renderiza `false`.
+  - Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`; muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`.
+  - Precio: `isPendingPrice` → `pendingPriceLabel` ("Precio pendiente de confirmar") si `priceEur <= 0` o `source = placeholder`. Nunca `0 €`.
+  - `specIconMap` local preparado para extracción en Fase 3 (iconos técnicos compartidos).
+  - Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
+  - Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
+- Fallbacks documentados:
+  - Precio: fallback textual cuando `priceEur <= 0` o `source = placeholder`.
+  - Features: solo booleanas `true` se renderizan.
+  - A2: bloque condicional.
+- Campos no existentes en modelo: suspensiones, frenos, neumáticos, electrónica avanzada. No se muestran.
+- Secciones residuales pendientes:
+  - `bike-detail__quick-specs` → absorbida parcialmente por SpecificationsTab.
+  - `bike-detail__features` → parcialmente absorbida por card de electrónica.
+  - `bike-detail__specs` → old section (fuera de tabs, no migrada aún).
+  - `bike-detail__reliability` → Fase 4 (Comunidad).
+  - `bike-detail__reviews` → Fase 4 (Comunidad).
+  - `bike-detail__related` → Fase 5 (Comparar).
+- Plan por fases actualizado:
+  - Fase 1: estructura tabs + Resumen — **implementada**.
+  - Fase 2: tab Especificaciones — **implementada**.
+  - Fase 3: iconos técnicos compartidos — **pendiente** (siguiente paso recomendado).
+  - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas).
   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
-- Tests actualizados.
+- Tests: 1026 passed (27 tests BikeDetailPage, 6 nuevos para SpecificationsTab).
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
@@ -126,13 +146,15 @@
 ## Pendiente
 
 - Rediseño mobile avanzado de rankings/listado técnico — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch. Mantener responsive usable y sin pantallas rotas.
-- BikeDetailPage — reorganización por tabs (plan documentado en `docs/product-roadmap.md`):
-  - Fase 1: estructura de tabs + tab Resumen (riding + fit) — **implementada**.
-  - Fase 2: tab Especificaciones con diseño técnico premium (Stitch).
-  - Fase 3: iconos técnicos compartidos.
+- BikeDetailPage — reorganización por tabs:
+  - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
+  - Fase 2: tab Especificaciones (`SpecificationsTab` con bento grid, SpecCard, electronics, A2 condicional, fallbacks de precio) — **implementada**.
+  - Fase 3: iconos técnicos compartidos — **pendiente** (siguiente paso recomendado).
   - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas con FeaturedReviewCard sin imagen).
   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
-  - Secciones pendientes de migración: `bike-detail__quick-specs`, `bike-detail__features`, `bike-detail__reliability`, `bike-detail__specs`, `bike-detail__reviews`, `bike-detail__related`.
+  - Secciones residuales: `bike-detail__specs` old, `bike-detail__reliability`, `bike-detail__reviews`, `bike-detail__related` pending de fases 4/5.
+  - `specIconMap` local preparado para extracción en Fase 3.
+  - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
