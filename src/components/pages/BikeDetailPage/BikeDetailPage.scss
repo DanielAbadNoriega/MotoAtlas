@@ -159,10 +159,12 @@
   &__tabs {
     @include container;
 
-    border-bottom: 1px solid rgba($color-outline-variant, 0.28);
-    display: flex;
-    gap: 0;
     padding-top: 2rem;
+    border-bottom: 1px solid rgba($color-outline-variant, 0.28);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    justify-content: center;
+    gap: 0;
   }
 
   &__tab {

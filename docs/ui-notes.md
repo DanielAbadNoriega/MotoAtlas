@@ -105,16 +105,16 @@ Responsive:
 
 ## Ficha de moto — BikeDetailPage con tabs
 
-Estado: **Fases 1, 2, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B y 4.3C implementadas**.
+Estado: **Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1 y 5.2 implementadas**.
 
 La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
 | Tab | Contenido | Estado |
 |-----|-----------|--------|
 | Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
-| Especificaciones | specs técnicas con bento grid de SpecCard | Implementada (Fase 2) |
+| Especificaciones | bento grid de SpecCards + specs detalladas (heading `Especificaciones ampliadas`) | Implementada (Fases 2 y 2C) |
 | Comunidad | mini resumen + reliability + reviews con FeaturedReviewCard compacto | Implementada (Fases 4.1–4.3C) |
-| Comparar | related + MotorcycleGarageCard | Pendiente (Fase 5) |
+| Comparar | related bikes + acciones reales de comparador | Implementada (Fases 5.1 y 5.2) |
 
 Tab Especificaciones — detalles de implementación:
 - `SpecificationsTab`: componente con bento grid de `SpecCard`.
@@ -127,6 +127,7 @@ Tab Especificaciones — detalles de implementación:
 - Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
 - Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
 - No se muestran suspensiones, frenos ni neumáticos (no existen en modelo Bike).
+- Sección extendida debajo del bento grid: heading `Especificaciones ampliadas` con copy `Detalles técnicos y equipamiento específico del modelo.` y grupos detallados (Motor & transmisión, Chasis & ergonomía, Mercado & registro).
 
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
@@ -138,9 +139,9 @@ Decisiones:
 - No duplicar CTA a reviews si ya está en hero de la ficha.
 
 Pendiente:
+- Reemplazar `MotorcycleGarageCard` temporal en CompareTab por variante optimizada (pendiente).
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
 - TopRatedMotorcyclesPage RecentReviews sin cambios en esta fase.
-- Fase 5 Comparar.
 
 Reglas:
 - no renderizar `null`/`undefined`; fallbacks controlados.
@@ -148,11 +149,11 @@ Reglas:
 - `MotorcycleGarageCard` sigue presentacional.
 - no ampliar schema `Bike` salvo decisión explícita.
 
-Secciones residuales:
-- `bike-detail__specs` old: fuera de tabs, pendiente de decisión.
+Secciones residuales cerradas:
+- `bike-detail__specs` old → eliminada del flujo principal; specs detalladas dentro de Especificaciones tab (Fase 2C).
 - `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
 - `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto `hideImage`/`hideLinks` (Fases 4.3B/4.3C).
-- `bike-detail__related` → Fase 5 (Comparar).
+- `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
 - `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab.
 
 ## Datos demo para QA visual (backlog)
