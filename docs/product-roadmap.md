@@ -123,7 +123,7 @@ Estado: pendiente.
 
 ### BikeDetailPage — Reorganización por tabs
 
-Estado: **Fases 1, 2 y 3A implementadas**.
+Estado: **Fases 1, 2, 3A y 3B implementadas**.
 
 Decisión de producto:
 - La `BikeDetailPage` actual se mantiene como base.

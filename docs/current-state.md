@@ -3,7 +3,7 @@
 ## Último estado estable
 
 - Rama actual: `fix/bike-detail-tabs`
-- Último bloque validado: `BikeDetailPage` tabs Fase 3A (iconos técnicos compartidos `motorcycleTechnicalIcons.ts`)
+- Último bloque validado: `BikeDetailPage` tabs Fase 3B (ReviewModal usa iconos técnicos compartidos)
 - Tests: 1035 passed
 - Typecheck: clean
 - Último commit:
@@ -60,7 +60,7 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
-### BikeDetailPage — Reorganización por tabs (Fases 1, 2 y 3A implementadas)
+### BikeDetailPage — Reorganización por tabs (Fases 1, 2, 3A y 3B implementadas)
 - tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
 - Sin tab Metodología (ya existe `#/metodologia`).
 - Tab Resumen activa por defecto.
