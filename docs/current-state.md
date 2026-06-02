@@ -3,8 +3,8 @@
 ## Último estado estable
 
 - Rama actual: `fix/bike-detail-tabs`
-- Último bloque validado: `BikeDetailPage` tabs Fase 2 (Especificaciones implementada con SpecificationsTab)
-- Tests: 1026 passed
+- Último bloque validado: `BikeDetailPage` tabs Fase 3A (iconos técnicos compartidos `motorcycleTechnicalIcons.ts`)
+- Tests: 1035 passed
 - Typecheck: clean
 - Último commit:
 
@@ -60,7 +60,7 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
-### BikeDetailPage — Reorganización por tabs (Fases 1 y 2 implementadas)
+### BikeDetailPage — Reorganización por tabs (Fases 1, 2 y 3A implementadas)
 - tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
 - Sin tab Metodología (ya existe `#/metodologia`).
 - Tab Resumen activa por defecto.
@@ -70,15 +70,23 @@
   - Componente `SpecificationsTab` con bento grid de `SpecCard`.
   - 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
   - Card electrónica/features: solo features activas (`filter(([, isEnabled]) => isEnabled)`), no renderiza `false`.
-  - Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`; muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`.
+  - Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`; muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`. Usa icono `license` (no `a2` como key).
   - Precio: `isPendingPrice` → `pendingPriceLabel` ("Precio pendiente de confirmar") si `priceEur <= 0` o `source = placeholder`. Nunca `0 €`.
-  - `specIconMap` local preparado para extracción en Fase 3 (iconos técnicos compartidos).
   - Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
   - Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
+- Fase 3A — Iconos técnicos compartidos: **implementada**.
+  - Nuevo módulo compartido: `src/shared/motorcycles/motorcycleTechnicalIcons.ts`.
+  - Exporta: `motorcycleTechnicalIconMap`, `MotorcycleTechnicalIconKey`, `getMotorcycleTechnicalIcon(key)`.
+  - Contrato de 18 keys: 8 de specs técnicas (engine, power, torque, weight, seatHeight, fuelTank, license, price) + 10 de aspectos de reviews (ergonomics, consumption, braking, suspension, electronics, aerodynamics, passenger, maintenance, design).
+  - `a2` NO es una key del mapa; A2 es variante/estado dentro de `license`. El bloque A2 en SpecificationsTab usa `getMotorcycleTechnicalIcon('license')`.
+  - Iconos Material Symbols: `fuelTank → oil_barrel`, `consumption → local_gas_station`, `license → workspace_premium`, etc.
+  - Tests dedicados en `src/shared/motorcycles/motorcycleTechnicalIcons.test.ts`.
+  - `specIconMap` local eliminado de BikeDetailPage.tsx.
+- Fase 3B — Migración de iconos en ReviewModal/review form: **pendiente**. ReviewModal, review form y ReviewAspectSummary no fueron migrados en esta fase.
 - Fallbacks documentados:
   - Precio: fallback textual cuando `priceEur <= 0` o `source = placeholder`.
   - Features: solo booleanas `true` se renderizan.
-  - A2: bloque condicional.
+  - A2: bloque condicional con icono de `license`.
 - Campos no existentes en modelo: suspensiones, frenos, neumáticos, electrónica avanzada. No se muestran.
 - Secciones residuales pendientes:
   - `bike-detail__quick-specs` → absorbida parcialmente por SpecificationsTab.
@@ -90,10 +98,11 @@
 - Plan por fases actualizado:
   - Fase 1: estructura tabs + Resumen — **implementada**.
   - Fase 2: tab Especificaciones — **implementada**.
-  - Fase 3: iconos técnicos compartidos — **pendiente** (siguiente paso recomendado).
+  - Fase 3A: iconos técnicos compartidos — **implementada**.
+  - Fase 3B: migración de iconos en ReviewModal/review form — **pendiente**.
   - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas).
   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
-- Tests: 1026 passed (27 tests BikeDetailPage, 6 nuevos para SpecificationsTab).
+- Tests: 1035 passed (69 files). 27 tests BikeDetailPage + 9 tests motorcycleTechnicalIcons + resto de suite.
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
@@ -149,11 +158,11 @@
 - BikeDetailPage — reorganización por tabs:
   - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
   - Fase 2: tab Especificaciones (`SpecificationsTab` con bento grid, SpecCard, electronics, A2 condicional, fallbacks de precio) — **implementada**.
-  - Fase 3: iconos técnicos compartidos — **pendiente** (siguiente paso recomendado).
+  - Fase 3A: iconos técnicos compartidos (`motorcycleTechnicalIcons.ts`, 18 keys, `a2` no es key, A2 usa `license`) — **implementada**.
+  - Fase 3B: migración de iconos en ReviewModal/review form — **pendiente**.
   - Fase 4: tab Comunidad (mini resumen + reliability + reviews adaptadas con FeaturedReviewCard sin imagen).
   - Fase 5: tab Comparar (related + MotorcycleGarageCard + acciones comparador).
   - Secciones residuales: `bike-detail__specs` old, `bike-detail__reliability`, `bike-detail__reviews`, `bike-detail__related` pending de fases 4/5.
-  - `specIconMap` local preparado para extracción en Fase 3.
   - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
