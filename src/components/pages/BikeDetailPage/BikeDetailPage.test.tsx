@@ -383,12 +383,12 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
 
-    const specsTab = document.querySelector('.bike-detail__specs-tab') as HTMLElement;
-    const withinSpecs = within(specsTab);
+    const specsExtended = document.querySelector('.bike-detail__specs-extended') as HTMLElement;
+    const withinExtended = within(specsExtended);
 
-    expect(withinSpecs.getByRole('heading', { name: 'Motor & transmisión' })).toBeInTheDocument();
-    expect(withinSpecs.getByRole('heading', { name: 'Chasis & ergonomía' })).toBeInTheDocument();
-    expect(withinSpecs.getByRole('heading', { name: 'Mercado & registro' })).toBeInTheDocument();
+    expect(withinExtended.getByRole('heading', { name: 'Motor & transmisión' })).toBeInTheDocument();
+    expect(withinExtended.getByRole('heading', { name: 'Chasis & ergonomía' })).toBeInTheDocument();
+    expect(withinExtended.getByRole('heading', { name: 'Mercado & registro' })).toBeInTheDocument();
   });
 
   it('Specs detalladas no visibles antes de abrir Especificaciones tab', async () => {

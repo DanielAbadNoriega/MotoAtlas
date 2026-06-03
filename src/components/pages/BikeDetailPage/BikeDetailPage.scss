@@ -214,7 +214,6 @@
     display: grid;
     gap: 2rem;
     padding-block: 2rem 4rem;
-    padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
   }
 
   &__community-summary {
@@ -338,7 +337,7 @@
   }
 
   &__specs-tab {
-    padding-block: 2rem 4rem;
+    background: $color-surface-lowest;
   }
 
   &__specs-bento {
@@ -950,6 +949,8 @@
     }
   }
 
+
+
   .bike-detail__compare-tab {
     padding-block: 2rem 4rem;
     padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
@@ -983,6 +984,15 @@
       }
     }
   }
+}
+
+#bike-detail-specs-title {
+
+  @include headline-lg;
+
+  font-style: italic;
+  margin: 0 0 3rem;
+  text-align: center;
 }
 
 .bike-detail__compare-empty {
