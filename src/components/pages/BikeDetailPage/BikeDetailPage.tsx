@@ -244,6 +244,7 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
       >
         <div className="bike-detail__section-container">
           <h2 id="bike-detail-specs-title">Especificaciones ampliadas</h2>
+          <p className="bike-detail__specs-extended-desc">Detalles técnicos y equipamiento específico del modelo.</p>
           <div className="bike-detail__spec-groups">
             {getSpecGroups(bike).map((group) => (
               <article key={group.title}>
@@ -287,19 +288,21 @@ function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
 
   if (relatedBikes.length === 0) {
     return (
-      <div className="bike-detail__compare-tab">
-        <p className="bike-detail__compare-empty">Sin modelos relacionados del mismo segmento por ahora.</p>
-      </div>
+      <section className="bike-detail__section bike-detail__section--compare bike-detail__compare-tab">
+        <div className="bike-detail__section-container">
+          <p className="bike-detail__compare-empty">Sin modelos relacionados del mismo segmento por ahora.</p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="bike-detail__compare-tab">
-      <div className="bike-detail__compare-header">
-        <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
-        <p>Para comparar con criterio: mismo uso, distinta ejecución.</p>
-      </div>
-      <div className="bike-detail__related-list">
+    <section className="bike-detail__section bike-detail__section--compare bike-detail__compare-tab">
+      <div className="bike-detail__section-container">
+        <div className="bike-detail__compare-header">
+          <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
+        </div>
+        <div className="bike-detail__related-list">
         {relatedBikes.map((relatedBike) => {
           const state = getButtonState(relatedBike.id);
           const displayName = getBikeDisplayName(relatedBike);
@@ -339,8 +342,9 @@ function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
             />
           );
         })}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 

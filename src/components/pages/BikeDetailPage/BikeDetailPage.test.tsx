@@ -374,7 +374,11 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
 
-    expect(screen.getByText('Detalles técnicos y equipamiento específico del modelo.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Especificaciones ampliadas' })).toBeInTheDocument();
+    const specsExtended = document.querySelector('.bike-detail__specs-extended') as HTMLElement;
+    expect(specsExtended).toBeInTheDocument();
+    const desc = within(specsExtended).getByText((content) => content.includes('Detalles técnicos'));
+    expect(desc).toBeInTheDocument();
   });
 
   it('Especificaciones tab muestra grupos de specs detalladas', async () => {

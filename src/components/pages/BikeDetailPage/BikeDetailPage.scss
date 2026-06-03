@@ -196,6 +196,12 @@
       border-bottom-color: $color-accent;
       color: $color-accent;
     }
+
+    &-content {
+      section:nth-of-type(even) {
+        background-color: $color-surface-lowest;
+      }
+    }
   }
 
   &__tab-placeholder {
@@ -334,10 +340,6 @@
       display: inline-flex;
       gap: 0.4rem;
     }
-  }
-
-  &__specs-tab {
-    background: $color-surface-lowest;
   }
 
   &__specs-bento {
@@ -540,8 +542,6 @@
   }
 
   &__riding {
-    background: $color-surface-lowest;
-    
     .bike-detail__section-container {
       @include container;
       @include section-spacing;
@@ -952,9 +952,6 @@
 
 
   .bike-detail__compare-tab {
-    padding-block: 2rem 4rem;
-    padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
-
     .bike-detail__compare-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -963,11 +960,6 @@
       @include headline-md;
 
       margin: 0 0 0.5rem;
-    }
-
-    p {
-      color: $color-on-surface-variant;
-      margin: 0;
     }
   }
 
@@ -986,18 +978,18 @@
   }
 }
 
-#bike-detail-specs-title {
+#bike-detail-specs-title, 
+#bike-detail-related-title {
 
   @include headline-lg;
 
+  line-height: 1;
   font-style: italic;
   margin: 0 0 3rem;
   text-align: center;
 }
 
 .bike-detail__compare-empty {
-  @include container;
-
   color: $color-on-surface-variant;
   font-style: italic;
   padding-block: 4rem;
