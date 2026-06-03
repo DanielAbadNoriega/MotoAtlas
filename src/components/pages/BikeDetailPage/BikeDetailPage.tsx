@@ -178,82 +178,91 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
   const hasA2Data = bike.isA2Compatible || bike.isA2LimitedVersion;
 
   return (
-    <div className="bike-detail__specs-tab">
-      <div className="bike-detail__specs-bento">
-        <SpecCard icon="engine" label="MOTOR" value={String(bike.displacementCc)} unit="CC" />
-        <SpecCard icon="power" label="POTENCIA" value={String(bike.powerHp)} unit="HP" />
-        <SpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
-        <SpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
-        <SpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
-        <SpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
-        <SpecCard icon="license" label="CARNET" value={a2Badge.label} />
-        <SpecCard
-          icon="price"
-          label="PRECIO BASE"
-          value={isPendingPrice(bike.priceEur, bike.priceSource) ? priceLabel : numberFormatter.format(bike.priceEur)}
-          unit={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : '€'}
-          variant={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : 'accent'}
-        />
+    <>
+      <section className="bike-detail__section bike-detail__section--specs bike-detail__specs-tab">
+        <div className="bike-detail__section-container">
+          <div className="bike-detail__specs-bento">
+            <SpecCard icon="engine" label="MOTOR" value={String(bike.displacementCc)} unit="CC" />
+            <SpecCard icon="power" label="POTENCIA" value={String(bike.powerHp)} unit="HP" />
+            <SpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
+            <SpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
+            <SpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
+            <SpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
+            <SpecCard icon="license" label="CARNET" value={a2Badge.label} />
+            <SpecCard
+              icon="price"
+              label="PRECIO BASE"
+              value={isPendingPrice(bike.priceEur, bike.priceSource) ? priceLabel : numberFormatter.format(bike.priceEur)}
+              unit={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : '€'}
+              variant={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : 'accent'}
+            />
 
-        {enabledFeatures.length > 0 && (
-          <article className="bike-detail__spec-card bike-detail__spec-card--electronics">
-            <div className="bike-detail__spec-card-header">
-              <span className="material-symbols-outlined" aria-hidden="true">
-                {getMotorcycleTechnicalIcon('electronics')}
-              </span>
-            </div>
-            <p className="bike-detail__spec-label">ELECTRÓNICA</p>
-            <div className="bike-detail__electronics-chips">
-              {enabledFeatures.map(([key]) => (
-                <span key={key} className="bike-detail__electronics-chip">
-                  {featureLabels[key]}
-                </span>
-              ))}
-            </div>
-          </article>
-        )}
+            {enabledFeatures.length > 0 && (
+              <article className="bike-detail__spec-card bike-detail__spec-card--electronics">
+                <div className="bike-detail__spec-card-header">
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    {getMotorcycleTechnicalIcon('electronics')}
+                  </span>
+                </div>
+                <p className="bike-detail__spec-label">ELECTRÓNICA</p>
+                <div className="bike-detail__electronics-chips">
+                  {enabledFeatures.map(([key]) => (
+                    <span key={key} className="bike-detail__electronics-chip">
+                      {featureLabels[key]}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            )}
 
-        {hasA2Data && (
-          <article className="bike-detail__spec-card bike-detail__spec-card--a2">
-            <div className="bike-detail__spec-card-header">
-              <span className="material-symbols-outlined" aria-hidden="true">
-                {getMotorcycleTechnicalIcon('license')}
-              </span>
-            </div>
-            <p className="bike-detail__spec-label">COMPATIBILIDAD A2</p>
-            <div className="bike-detail__a2-info">
-              <span className="bike-detail__a2-badge">{a2Badge.label}</span>
-              {bike.isA2LimitedVersion && bike.limitedPowerHp !== null && (
-                <span className="bike-detail__a2-limited">
-                  Limitada a {bike.limitedPowerHp} CV
-                  {bike.originalPowerHp !== null && ` (orig. ${bike.originalPowerHp} CV)`}
-                </span>
-              )}
-            </div>
-          </article>
-        )}
-      </div>
-
-      <section className="bike-detail__specs-extended" aria-labelledby="bike-detail-specs-title">
-        <h2 id="bike-detail-specs-title">Especificaciones ampliadas</h2>
-        <p className="bike-detail__specs-extended-desc">Detalles técnicos y equipamiento específico del modelo.</p>
-        <div className="bike-detail__spec-groups">
-          {getSpecGroups(bike).map((group) => (
-            <article key={group.title}>
-              <h3>{group.title}</h3>
-              <dl>
-                {group.items.map((item) => (
-                  <div key={item.label}>
-                    <dt>{item.label}</dt>
-                    <dd>{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </article>
-          ))}
+            {hasA2Data && (
+              <article className="bike-detail__spec-card bike-detail__spec-card--a2">
+                <div className="bike-detail__spec-card-header">
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    {getMotorcycleTechnicalIcon('license')}
+                  </span>
+                </div>
+                <p className="bike-detail__spec-label">COMPATIBILIDAD A2</p>
+                <div className="bike-detail__a2-info">
+                  <span className="bike-detail__a2-badge">{a2Badge.label}</span>
+                  {bike.isA2LimitedVersion && bike.limitedPowerHp !== null && (
+                    <span className="bike-detail__a2-limited">
+                      Limitada a {bike.limitedPowerHp} CV
+                      {bike.originalPowerHp !== null && ` (orig. ${bike.originalPowerHp} CV)`}
+                    </span>
+                  )}
+                </div>
+              </article>
+            )}
+          </div>
         </div>
       </section>
-    </div>
+
+      <section
+        className="bike-detail__section bike-detail__section--specs-extended bike-detail__specs-extended"
+        aria-labelledby="bike-detail-specs-title"
+      >
+        <div className="bike-detail__section-container">
+          <h2 id="bike-detail-specs-title">Especificaciones ampliadas</h2>
+          <p className="bike-detail__specs-extended-desc">Detalles técnicos y equipamiento específico del modelo.</p>
+          <div className="bike-detail__spec-groups">
+            {getSpecGroups(bike).map((group) => (
+              <article key={group.title}>
+                <h3>{group.title}</h3>
+                <dl>
+                  {group.items.map((item) => (
+                    <div key={item.label}>
+                      <dt>{item.label}</dt>
+                      <dd>{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 
@@ -279,19 +288,21 @@ function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
 
   if (relatedBikes.length === 0) {
     return (
-      <div className="bike-detail__compare-tab">
-        <p className="bike-detail__compare-empty">Sin modelos relacionados del mismo segmento por ahora.</p>
-      </div>
+      <section className="bike-detail__section bike-detail__section--compare bike-detail__compare-tab">
+        <div className="bike-detail__section-container">
+          <p className="bike-detail__compare-empty">Sin modelos relacionados del mismo segmento por ahora.</p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="bike-detail__compare-tab">
-      <div className="bike-detail__compare-header">
-        <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
-        <p>Para comparar con criterio: mismo uso, distinta ejecución.</p>
-      </div>
-      <div className="bike-detail__related-list">
+    <section className="bike-detail__section bike-detail__section--compare bike-detail__compare-tab">
+      <div className="bike-detail__section-container">
+        <div className="bike-detail__compare-header">
+          <h2 id="bike-detail-related-title">Rivales del mismo segmento</h2>
+        </div>
+        <div className="bike-detail__related-list">
         {relatedBikes.map((relatedBike) => {
           const state = getButtonState(relatedBike.id);
           const displayName = getBikeDisplayName(relatedBike);
@@ -331,8 +342,9 @@ function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
             />
           );
         })}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -370,112 +382,115 @@ function CommunityTab({
   const communityHref = `#/comunidad/${bike.id}`;
 
   return (
-    <div className="bike-detail__community-tab">
-      <div className="bike-detail__community-summary">
-        <div className="bike-detail__community-rating">
-          {aggregate.reviewCount > 0 && aggregate.averageRating > 0 ? (
-            <>
-              <span className="bike-detail__community-stars" aria-hidden="true">
-                ★
+    <>
+      <section className="bike-detail__section bike-detail__section--reliability bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
+        <div className="bike-detail__section-container">
+          <div>
+            <h2 id="bike-detail-reliability-title">Fiabilidad comunidad</h2>
+            <p>Datos agregados de reportes técnicos de usuarios.</p>
+            <div className="bike-detail__reliability-index">
+              <strong>{Math.round(bike.reliabilityReports.reliabilityScore * 10)}</strong>
+              <span>
+                Fiabilidad · {getReliabilityLevel(bike.reliabilityReports.reliabilityScore)} ·{' '}
+                {numberFormatter.format(bike.reliabilityReports.reportCount)} reportes
               </span>
-              <strong>{formatReviewRating(aggregate.averageRating)}</strong>
-              <span>/5</span>
-            </>
+            </div>
+            <div className="bike-detail__community-summary">
+              <div className="bike-detail__community-rating">
+                {aggregate.reviewCount > 0 && aggregate.averageRating > 0 ? (
+                  <>
+                    <span className="bike-detail__community-stars" aria-hidden="true">
+                      ★
+                    </span>
+                    <strong>{formatReviewRating(aggregate.averageRating)}</strong>
+                    <span>/5</span>
+                  </>
+                ) : (
+                  <span>Sin rating</span>
+                )}
+              </div>
+              <div className="bike-detail__community-meta">
+                <span>{aggregate.reviewCount > 0 ? `${aggregate.reviewCount} reviews` : 'Sin reviews'}</span>
+                {aggregate.reviewCount > 0 && (
+                  <span
+                    className={`bike-detail__confidence-shield bike-detail__confidence-shield--${confidence}`}
+                    aria-label={confidenceLabel}
+                  >
+                    <span aria-hidden="true">{confidence === 'high' ? '●' : confidence === 'medium' ? '◐' : '○'}</span>
+                    <span>{confidenceLabel}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {hasReports && hasIssues ? (
+            <div className="bike-detail__issues">
+              {bike.reliabilityReports.commonIssues.map((issue, index) => (
+                <article key={issue}>
+                  <span>{index === 0 ? 'A vigilar' : 'Reporte frecuente'}</span>
+                  <p>{issue}</p>
+                </article>
+              ))}
+            </div>
           ) : (
-            <span>Sin rating</span>
+            <p className="bike-detail__reliability-empty">Sin reportes de fiabilidad todavía.</p>
           )}
         </div>
-        <div className="bike-detail__community-meta">
-          <span>{aggregate.reviewCount > 0 ? `${aggregate.reviewCount} reviews` : 'Sin reviews'}</span>
-          {aggregate.reviewCount > 0 && (
-            <span
-              className={`bike-detail__confidence-shield bike-detail__confidence-shield--${confidence}`}
-              aria-label={confidenceLabel}
-            >
-              <span aria-hidden="true">{confidence === 'high' ? '●' : confidence === 'medium' ? '◐' : '○'}</span>
-              <span>{confidenceLabel}</span>
-            </span>
-          )}
-        </div>
-      </div>
-
-      <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
-        <div>
-          <h2 id="bike-detail-reliability-title">Fiabilidad comunidad</h2>
-          <p>Datos agregados de reportes técnicos de usuarios.</p>
-          <div className="bike-detail__reliability-index">
-            <strong>{Math.round(bike.reliabilityReports.reliabilityScore * 10)}</strong>
-            <span>
-              Fiabilidad · {getReliabilityLevel(bike.reliabilityReports.reliabilityScore)} ·{' '}
-              {numberFormatter.format(bike.reliabilityReports.reportCount)} reportes
-            </span>
-          </div>
-        </div>
-
-        {hasReports && hasIssues ? (
-          <div className="bike-detail__issues">
-            {bike.reliabilityReports.commonIssues.map((issue, index) => (
-              <article key={issue}>
-                <span>{index === 0 ? 'A vigilar' : 'Reporte frecuente'}</span>
-                <p>{issue}</p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="bike-detail__reliability-empty">Sin reportes de fiabilidad todavía.</p>
-        )}
       </section>
 
-      <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
-        <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
-        <div className="bike-detail__reviews-list" aria-live="polite">
-          {reviews.length > 0 ? (
-            reviewsToShow.map((review) => {
-              const isOwn = isOwnReview(review, userId);
-              const hasReported = Boolean(reportedReviewIds[review.id]);
-              const isPending = reactionPendingIds.includes(review.id);
-              const summary = reactionSummaries.find((s) => s.reviewId === review.id) ?? null;
-              const hasReactionAuth = Boolean(session);
-              const canInteractHelpful = hasReactionAuth && !isOwn && !hasReported;
+      <section className="bike-detail__section bike-detail__section--reviews bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
+        <div className="bike-detail__section-container">
+          <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
+          <div className="bike-detail__reviews-list" aria-live="polite">
+            {reviews.length > 0 ? (
+              reviewsToShow.map((review) => {
+                const isOwn = isOwnReview(review, userId);
+                const hasReported = Boolean(reportedReviewIds[review.id]);
+                const isPending = reactionPendingIds.includes(review.id);
+                const summary = reactionSummaries.find((s) => s.reviewId === review.id) ?? null;
+                const hasReactionAuth = Boolean(session);
+                const canInteractHelpful = hasReactionAuth && !isOwn && !hasReported;
 
-              return (
-                <FeaturedReviewCard
-                  key={review.id}
-                  review={review}
-                  hideImage
-                  hideLinks
-                  isOwnReview={isOwn}
-                  actionsSlot={
-                    <FeaturedReviewCardCommunityActions
-                      review={review}
-                      isOwn={isOwn}
-                      hasReported={hasReported}
-                      isPending={isPending}
-                      summary={summary}
-                      canInteract={canInteractHelpful}
-                      onToggleHelpful={onToggleHelpful}
-                      onToggleNotHelpful={onToggleNotHelpful}
-                    />
-                  }
-                />
-              );
-            })
-          ) : (
-            <p className="bike-detail__reviews-empty">Sin reviews aprobadas todavía.</p>
-          )}
-        </div>
-        <div className="bike-detail__reviews-cta">
-          <button className="button button--primary" type="button" onClick={onWriteReview}>
-            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
-            Escribir review
-          </button>
-          <a className="button button--secondary" href={communityHref}>
-            <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-            Ver reviews
-          </a>
+                return (
+                  <FeaturedReviewCard
+                    key={review.id}
+                    review={review}
+                    hideImage
+                    hideLinks
+                    isOwnReview={isOwn}
+                    actionsSlot={
+                      <FeaturedReviewCardCommunityActions
+                        review={review}
+                        isOwn={isOwn}
+                        hasReported={hasReported}
+                        isPending={isPending}
+                        summary={summary}
+                        canInteract={canInteractHelpful}
+                        onToggleHelpful={onToggleHelpful}
+                        onToggleNotHelpful={onToggleNotHelpful}
+                      />
+                    }
+                  />
+                );
+              })
+            ) : (
+              <p className="bike-detail__reviews-empty">Sin reviews aprobadas todavía.</p>
+            )}
+          </div>
+          <div className="bike-detail__reviews-cta">
+            <button className="button button--primary" type="button" onClick={onWriteReview}>
+              <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+              Escribir review
+            </button>
+            <a className="button button--secondary" href={communityHref}>
+              <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
+              Ver reviews
+            </a>
+          </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }
 
@@ -768,71 +783,75 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
       >
         {activeTab === 'resumen' && (
           <>
-            <section className="bike-detail__riding" aria-labelledby="bike-detail-riding-title">
-              <div className="bike-detail__score-card">
-                <span>Riding profile</span>
-                <h2 id="bike-detail-riding-title">Perfil dinámico</h2>
-                <p>Nuestra lectura técnica basada en uso real, ergonomía y enfoque de segmento.</p>
-                <strong>{overallScore.toFixed(1)}</strong>
-                <small>Overall performance</small>
-              </div>
+            <section className="bike-detail__section bike-detail__section--riding bike-detail__riding" aria-labelledby="bike-detail-riding-title">
+              <div className="bike-detail__section-container">
+                <div className="bike-detail__score-card">
+                  <span>Riding profile</span>
+                  <h2 id="bike-detail-riding-title">Perfil dinámico</h2>
+                  <p>Nuestra lectura técnica basada en uso real, ergonomía y enfoque de segmento.</p>
+                  <strong>{overallScore.toFixed(1)}</strong>
+                  <small>Overall performance</small>
+                </div>
 
-              <div className="bike-detail__score-list">
-                {getUseScoreEntries(bike).map(([key, value]) => (
-                  <div className="bike-detail__score-row" key={key}>
-                    <div>
-                      <span>{useScoreLabels[key]}</span>
-                      <strong>{value.toFixed(1)}</strong>
+                <div className="bike-detail__score-list">
+                  {getUseScoreEntries(bike).map(([key, value]) => (
+                    <div className="bike-detail__score-row" key={key}>
+                      <div>
+                        <span>{useScoreLabels[key]}</span>
+                        <strong>{value.toFixed(1)}</strong>
+                      </div>
+                      <div aria-hidden="true">
+                        <span style={{ width: scorePercent(value) }} />
+                      </div>
                     </div>
-                    <div aria-hidden="true">
-                      <span style={{ width: scorePercent(value) }} />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </section>
 
-            <section className="bike-detail__fit" aria-labelledby="bike-detail-fit-title">
-              <h2 id="bike-detail-fit-title">¿Es esta moto para ti?</h2>
-              <div className="bike-detail__fit-grid">
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    person_pin
-                  </span>
-                  <h3>El perfil</h3>
-                  <p>{segmentProfile[bike.segment]}</p>
-                </article>
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    explore
-                  </span>
-                  <h3>Mejor uso</h3>
-                  <p>
-                    Destaca en <strong>{bestUse.label}</strong> con {bestUse.value.toFixed(1)}/10 dentro del catálogo.
-                  </p>
-                </article>
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    add_circle
-                  </span>
-                  <h3>Fortalezas</h3>
-                  <ul>
-                    {bike.pros.map((pro) => (
-                      <li key={pro}>{pro}</li>
-                    ))}
-                  </ul>
-                </article>
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    do_not_disturb_on
-                  </span>
-                  <h3>Limitaciones</h3>
-                  <ul>
-                    {bike.cons.map((con) => (
-                      <li key={con}>{con}</li>
-                    ))}
-                  </ul>
-                </article>
+            <section className="bike-detail__section bike-detail__section--fit bike-detail__fit" aria-labelledby="bike-detail-fit-title">
+              <div className="bike-detail__section-container">
+                <h2 id="bike-detail-fit-title">¿Es esta moto para ti?</h2>
+                <div className="bike-detail__fit-grid">
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      person_pin
+                    </span>
+                    <h3>El perfil</h3>
+                    <p>{segmentProfile[bike.segment]}</p>
+                  </article>
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      explore
+                    </span>
+                    <h3>Mejor uso</h3>
+                    <p>
+                      Destaca en <strong>{bestUse.label}</strong> con {bestUse.value.toFixed(1)}/10 dentro del catálogo.
+                    </p>
+                  </article>
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      add_circle
+                    </span>
+                    <h3>Fortalezas</h3>
+                    <ul>
+                      {bike.pros.map((pro) => (
+                        <li key={pro}>{pro}</li>
+                      ))}
+                    </ul>
+                  </article>
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      do_not_disturb_on
+                    </span>
+                    <h3>Limitaciones</h3>
+                    <ul>
+                      {bike.cons.map((con) => (
+                        <li key={con}>{con}</li>
+                      ))}
+                    </ul>
+                  </article>
+                </div>
               </div>
             </section>
           </>

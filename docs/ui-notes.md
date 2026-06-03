@@ -105,18 +105,51 @@ Responsive:
 
 ## Ficha de moto — BikeDetailPage con tabs
 
-Estado: **Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3 implementadas**.
+Estado: **Fases 1, 2, 2-B, 3, 4 y 5 implementadas**.
 
 La ficha `#/motos/[moto-id]` se reorganiza por tabs para evitar una ficha demasiado larga:
 
 | Tab | Contenido | Estado |
 |-----|-----------|--------|
-| Resumen | `bike-detail__riding` + `bike-detail__fit` | Implementada (Fase 1) |
-| Especificaciones | bento grid de SpecCards + specs detalladas (heading `Especificaciones ampliadas`) | Implementada (Fases 2 y 2C) |
-| Comunidad | mini resumen + reliability + reviews con FeaturedReviewCard compacto | Implementada (Fases 4.1–4.3C) |
-| Comparar | related bikes con MotorcycleGarageCard + acciones reales de comparador via footerActions | Implementada (Fases 5.1, 5.2 y 5.3) |
+| Resumen | `bike-detail__riding` + `bike-detail__fit` (secciones normalizadas con section/container) | Implementada (Fase 1) |
+| Especificaciones | bento grid de SpecCards + specs detalladas como sección hermana (heading `Especificaciones ampliadas`) | Implementada (Fases 2 y 2-B) |
+| Comunidad | summary + reliability + reviews como secciones sisters, cada una con section/container propio | Implementada (Fases 3 y 4) |
+| Comparar | related bikes con MotorcycleGarageCard + acciones reales de comparador via footerActions | Implementada (Fase 5) |
 
-Tab Especificaciones — detalles de implementación:
+### Patrón de layout normalizado
+
+Todas las secciones de tabs siguen el mismo patrón:
+
+```html
+<section class="bike-detail__section bike-detail__section--contexto bike-detail__nombre">
+  <div class="bike-detail__section-container">
+    ...contenido...
+  </div>
+</section>
+```
+
+- `.bike-detail__section` → ancho completo (width: 100%).
+- `.bike-detail__section-container` → repite `@include container` + `@include section-spacing` para controlar max-width y padding horizontal.
+- `.bike-detail__tab-content` → **no es contenedor de ancho**. Solo gestiona el flujo/ritmo vertical de los tabs.
+- Objetivo: permitir que los fondos de sección ocupen todo el ancho mientras el contenido interno se alinea con el mismo contenedor.
+
+Secciones Resumen:
+- `bike-detail__riding`: `section.bike-detail__section.bike-detail__section--riding.bike-detail__riding` + container interno.
+- `bike-detail__fit`: `section.bike-detail__section.bike-detail__section--fit.bike-detail__fit` + container interno.
+
+Secciones Especificaciones:
+- `bike-detail__specs-tab`: sección propia (bento grid, SpecCards, electronics, A2, price fallback).
+- `bike-detail__specs-extended`: sección hermana, no anidada dentro de specs-tab. `section.bike-detail__section.bike-detail__section--specs-extended.bike-detail__specs-extended` + container interno. Heading `Especificaciones ampliadas` con `aria-labelledby="bike-detail-specs-title"`. Copy restaurada: `Detalles técnicos y equipamiento específico del modelo.`
+
+Secciones Comunidad:
+- `bike-detail__community-tab`: summary con `bike-detail__section--community-summary`.
+- `bike-detail__reliability`: sección sister, `bike-detail__section--reliability` + container interno.
+- `bike-detail__reviews`: sección sister, `bike-detail__section--reviews` + container interno.
+
+Secciones Comparar:
+- `bike-detail__compare-tab`: normalizado en ambos estados (empty y con related bikes). `bike-detail__section--compare` + container interno.
+
+### Tab Especificaciones — detalles de implementación:
 - `SpecificationsTab`: componente con bento grid de `SpecCard`.
 - 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
 - Card electrónica/features: solo features activas filtradas con `filter(([, isEnabled]) => isEnabled)`. No renderiza `false`.
@@ -132,12 +165,13 @@ Tab Especificaciones — detalles de implementación:
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
 - Tab Resumen activa por defecto.
-- `FeaturedReviewCard` en Comunidad: sin imagen (ya estamos en la ficha de esa moto), sin CTAs redundantes ("Más reviews" / "Ver ficha" dentro de las cards), acciones seguras (no fake/no-op, `Útil N` público, Reportar solo con handler real, Responder no existe en BikeDetailPage).
-- Community tab — layout cleanup (Fase 5.3): `bike-detail__community-summary` reducido a strip compacto (flex-row, bg surface-dim, padding reducido). Muestra rating medio o "Sin rating", review count o "Sin reviews", y confidence shield si hay datos. Reviews limitados a 3 con `reviews.slice(0, 3)`. CTAs "Escribir review" y "Ver reviews" movidos al footer de la sección reviews (link a `#/comunidad/[bike.id]`). Header duplicado eliminado. FeaturedReviewCard mantiene `hideImage`, `hideLinks` y acciones seguras sin cambios.
+- Layout normalizado: cada sección tab ahora es `section.bike-detail__section` full-width con `.bike-detail__section-container` interno que controla max-width y padding. Elimina double-container y permite que los fondos de sección ocupen todo el ancho. Verificado en Quality Gate con typecheck clean y 1088 tests passing.
+- `bike-detail__community-summary` reducido a strip compacto. Muestra rating medio o "Sin rating", review count o "Sin reviews", y confidence shield si hay datos. Reviews limitados a 3 con `reviews.slice(0, 3)`. CTAs "Escribir review" y "Ver reviews" en footer de sección reviews (link a `#/comunidad/[bike.id]`). FeaturedReviewCard mantiene `hideImage`, `hideLinks` y acciones seguras sin cambios.
 - Precio: fallback textual cuando no hay dato fiable.
-- Fiabilidad/problemas: contrato de datos necesario antes de claims fuertes; dentro de CommunityTab con copy conservadora.
+- Fiabilidad/problemas: dentro de Comunidad como sección sister, no anidada.
 - Mobile: responsive funcional; refinados premium pospuestos a fase mobile-first.
 - No duplicar CTA a reviews si ya está en hero de la ficha.
+- QA visual pendiente: verificar gap vertical entre `bike-detail__specs-tab` y `bike-detail__specs-extended` en desktop. Si es excesivo, posible follow-up SCSS: `.bike-detail__section--specs-extended .bike-detail__section-container { padding-block-start: 0; }`.
 
 Pendiente:
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).

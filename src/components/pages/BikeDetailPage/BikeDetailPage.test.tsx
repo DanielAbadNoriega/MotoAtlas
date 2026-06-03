@@ -70,8 +70,8 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
 
-    const communityTab = document.querySelector('.bike-detail__community-tab') as HTMLElement;
-    expect(within(communityTab).getByText('Calor en ciudad')).toBeInTheDocument();
+    const reliability = document.querySelector('.bike-detail__reliability') as HTMLElement;
+    expect(within(reliability).getByText('Calor en ciudad')).toBeInTheDocument();
   });
 
   it('has a working add-to-comparator link without calling Supabase', () => {
@@ -190,7 +190,7 @@ describe('BikeDetailPage', () => {
     }
     await user.click(comunidadTab);
 
-    const communitySection = document.querySelector('.bike-detail__community-tab') as HTMLElement | null;
+    const communitySection = document.querySelector('.bike-detail__reviews') as HTMLElement | null;
     if (!communitySection) {
       throw new Error('Community tab content not rendered');
     }
@@ -374,7 +374,11 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
 
-    expect(screen.getByText('Detalles técnicos y equipamiento específico del modelo.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Especificaciones ampliadas' })).toBeInTheDocument();
+    const specsExtended = document.querySelector('.bike-detail__specs-extended') as HTMLElement;
+    expect(specsExtended).toBeInTheDocument();
+    const desc = within(specsExtended).getByText((content) => content.includes('Detalles técnicos'));
+    expect(desc).toBeInTheDocument();
   });
 
   it('Especificaciones tab muestra grupos de specs detalladas', async () => {
@@ -383,12 +387,12 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Especificaciones/i }));
 
-    const specsTab = document.querySelector('.bike-detail__specs-tab') as HTMLElement;
-    const withinSpecs = within(specsTab);
+    const specsExtended = document.querySelector('.bike-detail__specs-extended') as HTMLElement;
+    const withinExtended = within(specsExtended);
 
-    expect(withinSpecs.getByRole('heading', { name: 'Motor & transmisión' })).toBeInTheDocument();
-    expect(withinSpecs.getByRole('heading', { name: 'Chasis & ergonomía' })).toBeInTheDocument();
-    expect(withinSpecs.getByRole('heading', { name: 'Mercado & registro' })).toBeInTheDocument();
+    expect(withinExtended.getByRole('heading', { name: 'Motor & transmisión' })).toBeInTheDocument();
+    expect(withinExtended.getByRole('heading', { name: 'Chasis & ergonomía' })).toBeInTheDocument();
+    expect(withinExtended.getByRole('heading', { name: 'Mercado & registro' })).toBeInTheDocument();
   });
 
   it('Specs detalladas no visibles antes de abrir Especificaciones tab', async () => {
@@ -500,8 +504,8 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
 
-    const communityTab = document.querySelector('.bike-detail__community-tab');
-    expect(communityTab).toBeInTheDocument();
+    const communitySummarySection = await screen.findByRole('region', { name: /Comunidad/i });
+    expect(communitySummarySection).toBeInTheDocument();
   });
 
   it('Comunidad tab bottom CTA Escribir review es un boton real', async () => {
