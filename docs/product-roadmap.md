@@ -128,10 +128,11 @@ Estado: parcialmente implementado (primera migración completada).
 - `AccountReviewsPage` migrada al FilterGroup compartido.
 - `AccountReviewsPage` ya no necesita `className="account-reviews-page__filter-group"` para baseline (clases base viene con el componente).
 - `AccountMotorcycleReviewsPage` migrada al FilterGroup compartido.
-- SCSS residual `.account-reviews-page__filter-group*` mantenido en AccountReviewsPage.scss porque `AccountReviewsPage` lo usa como className extra cuando necesita ajustar estilos locales del componente; los selectores `account-reviews-page__filter-option*`, `account-reviews-page__filter-star*`, `account-reviews-page__rating-grid` y `account-reviews-page__sort-grid` siguen activos en ambas páginas (AccountReviewsPage y AccountMotorcycleReviewsPage usan `FilterOptionButton` y `FilterRatingStars` locales).
+- `CommunityReviewsPage` migrada al FilterGroup compartido.
+- SCSS residual `.account-reviews-page__filter-group*` mantenido en AccountReviewsPage.scss porque `AccountReviewsPage` lo usa como className extra cuando necesita ajustar estilos locales del componente; los selectores `account-reviews-page__filter-option*`, `account-reviews-page__filter-star*`, `account-reviews-page__rating-grid` y `account-reviews-page__sort-grid` siguen activos en ambas páginas (AccountReviewsPage y AccountMotorcycleReviewsPage usan `FilterOptionButton` y `FilterRatingStars` locales). En `CommunityReviewsPage`, los selectores `community-reviews-page__filter-option*`, `community-reviews-page__filter-star*`, `community-reviews-page__segment-grid`, `community-reviews-page__pill-list`, `community-reviews-page__rating-grid` y `community-reviews-page__sort-grid` siguen activos (usados por `FilterOptionButton` y `RatingStars` locales). Los selectores huérfanos `.community-reviews-page__filter-group*` en CommunityReviewsPage.scss pueden evaluarse en cleanup SCSS futuro opcional.
 
 **Pendiente de futuras migraciones:**
-- Migrar filtros de `CommunityReviewsPage`, `SearchPage`, `MotorcycleCommunityPage` y `AdminPage` si safe.
+- Migrar filtros de `SearchPage`, `MotorcycleCommunityPage` y `AdminPage` si safe.
 - Evaluar eliminación de `.account-reviews-page__filter-group*` en AccountReviewsPage.scss solo después de verificar que no hay selectores activos de ese grupo (los option/star/grid siguen en uso).
 
 ### BikeDetailPage — Reorganización por tabs

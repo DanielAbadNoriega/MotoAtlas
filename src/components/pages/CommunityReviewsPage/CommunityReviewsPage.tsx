@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import communityHeroImage from '../../../assets/hero-community.png';
 import { useAuth } from '../../../features/auth';
 import { AccountPagination } from '../AccountPage/AccountPagination';
@@ -725,18 +726,6 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
         </footer>
       ) : null}
     </aside>
-  );
-}
-
-function FilterGroup({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
-  return (
-    <details className="community-reviews-page__filter-group" open>
-      <summary>
-        <span>{title}</span>
-        <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
-      </summary>
-      <div className="community-reviews-page__filter-group-body">{children}</div>
-    </details>
   );
 }
 
