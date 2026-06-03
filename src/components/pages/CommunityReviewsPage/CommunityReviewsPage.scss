@@ -539,51 +539,6 @@ span.community-reviews-page__insight-icon {
   }
 }
 
-.community-reviews-page__filter-group {
-  border-top: 1px solid rgba($color-outline-variant, 0.24);
-  padding-block: 1.25rem;
-
-  summary {
-    align-items: center;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    list-style: none;
-    user-select: none;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    .material-symbols-outlined {
-      color: $color-outline;
-      transition: transform $transition-base;
-    }
-  }
-
-  summary > span:first-child {
-    @include label-caps;
-
-    color: $color-on-surface;
-  }
-
-  &[open] summary .material-symbols-outlined {
-    transform: rotate(180deg);
-  }
-}
-
-.community-reviews-page__filter-group-body {
-  padding-top: 1rem;
-}
-
-.community-reviews-page__filter-group:not([open]) {
-  padding-bottom: 1.25rem;
-
-  .community-reviews-page__filter-group-body {
-    display: none;
-  }
-}
-
 .community-reviews-page__segment-grid,
 .community-reviews-page__rating-grid {
   display: grid;

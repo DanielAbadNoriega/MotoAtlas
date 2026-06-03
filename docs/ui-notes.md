@@ -56,6 +56,8 @@ La ruta `#/buscador` pagina el listado a 9 motos por página. La paginación se 
 
 Los filtros de segmento y carnet comparten labels/iconos con `#/comunidad/reviews`: segmentos principales con Material Symbols y carnet en orden `Carnet A2`, `Carnet A`, `A2 limitable`.
 
+Los grupos de filtros avanzados (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) usan el componente compartido `FilterGroup` (`src/shared/ui/filters/FilterGroup.tsx`) que importa sus propios estilos (`./FilterGroup.scss`). El shell del buscador mantiene su `grid-template-columns: minmax(18rem, 4fr) minmax(0px, 8fr);` para distribuir sidebar de filtros y listado de resultados. Tras la migración, los selectores SCSS huérfanos `.search-page__filter-group*` y `.search-page__filter-group-body` fueron eliminados en la rama `feature/filtergroup-residual-scss-cleanup`; los selectores activos de `__brand-grid`, `__segment-grid`, `__pill-list`, `__option-card`, `__toggle-grid` y `__range-*` se preservaron.
+
 Estrategia vigente de segmentos en UI pública:
 - se mantiene patrón compacto `primary + other` para evitar saturación en mobile;
 - `other` es bucket visual de segmentos secundarios (no segmento canónico real);
