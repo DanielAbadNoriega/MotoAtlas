@@ -1,0 +1,292 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.podium-card {
+  @include image-zoom;
+
+  background: $color-surface-container;
+  border: 1px solid rgba($color-outline-variant, 0.5);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  min-height: 28rem;
+  overflow: hidden;
+  position: relative;
+
+  .motorcycle-image {
+    height: 100%;
+    inset: 0;
+    position: absolute;
+    width: 100%;
+
+    img {
+      filter: grayscale(0.35) contrast(1.08);
+      height: 100%;
+      object-position: center;
+      object-fit: cover;
+      width: 100%;
+    }
+  }
+}
+
+.podium-card--large {
+  grid-column: 2;
+  min-height: 37.5rem;
+}
+
+.podium-card--compact {
+  flex: 1;
+}
+
+.podium-card__overlay {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba($color-surface, 0.82) 62%, rgba($color-surface-lowest, 0.96));
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.podium-card--compact .podium-card__overlay {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba($color-surface, 0.56) 56%, rgba($color-surface-lowest, 0.96));
+}
+
+.podium-card__rank-badge {
+  align-items: center;
+  background: rgba($color-surface-container-highest, 0.9);
+  border: 1px solid rgba($color-outline-variant, 0.8);
+  border-radius: $radius-lg;
+  display: flex;
+  left: 1.25rem;
+  padding: 0.5rem 0.85rem;
+  position: absolute;
+  top: 1.25rem;
+  z-index: 2;
+
+  strong {
+    color: $color-on-surface-variant;
+    font-family: $font-mono;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1;
+    opacity: 0.4;
+  }
+}
+
+.podium-card--large .podium-card__rank-badge {
+  background: rgba($color-accent-container, 0.95);
+  border-color: rgba($color-accent, 0.5);
+
+  strong {
+    color: white;
+    font-size: 2rem;
+    opacity: 0.5;
+  }
+}
+
+.podium-card__content {
+  bottom: 0;
+  display: grid;
+  gap: 0.85rem;
+  left: 0;
+  padding: 1.5rem;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+
+  p {
+    @include label-caps;
+
+    color: $color-on-surface-variant;
+  }
+
+  h3 {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    font-weight: 700;
+    line-height: 0.95;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+  }
+
+  > div:first-child span {
+    color: $color-on-surface-variant;
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+  }
+}
+
+.podium-card--compact .podium-card__content {
+  background: transparent;
+  backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  padding: 1rem;
+
+  h3 {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+  }
+}
+
+.podium-card__stats {
+  border-top: 1px solid rgba($color-outline-variant, 0.45);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+
+  span {
+    @include label-caps;
+
+    color: $color-on-surface-variant;
+    display: block;
+    font-size: 0.65rem;
+    margin-bottom: 0.2rem;
+  }
+
+  strong {
+    @include label-caps;
+
+    color: $color-on-surface;
+  }
+}
+
+.podium-card__score {
+  align-items: center;
+  display: flex;
+  gap: 0.35rem;
+
+  .podium-card__score-icon {
+    color: $color-accent;
+    font-size: 1.4rem;
+    line-height: 1;
+    text-shadow: 0 0 12px rgba($color-accent, 0.4);
+  }
+
+  strong {
+    color: $color-on-surface;
+    font-family: $font-headline;
+    font-size: 1.4rem;
+  }
+}
+
+.podium-card--large .podium-card__score strong {
+  font-size: 1.8rem;
+}
+
+.podium-card__confidence-shield {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.95rem;
+  line-height: 1;
+  position: relative;
+
+  .material-symbols-outlined {
+    font-size: inherit;
+    line-height: 1;
+  }
+}
+
+.podium-card__confidence-shield--high {
+  color: $color-positive;
+}
+
+.podium-card__confidence-shield--medium {
+  color: $color-warning;
+}
+
+.podium-card__confidence-shield--low {
+  color: $color-on-surface-variant;
+  opacity: 0.6;
+}
+
+.podium-card__confidence-tooltip {
+  background: $color-surface;
+  border: 1px solid rgba($color-on-surface, 0.12);
+  border-radius: $radius-sm;
+  color: $color-on-surface;
+  font-size: 0.75rem;
+  font-weight: 500;
+  left: 50%;
+  opacity: 0;
+  padding: 0.35rem 0.55rem;
+  pointer-events: none;
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  transform: translateX(-50%);
+  transition: opacity 0.15s ease;
+  visibility: hidden;
+  white-space: nowrap;
+  z-index: 10;
+
+  .podium-card__confidence-shield:hover &,
+  .podium-card__confidence-shield:focus-visible &,
+  .podium-card__confidence-shield:focus-within & {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.podium-card__action {
+  @include label-caps;
+
+  align-items: center;
+  background: $color-accent-container;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  color: white;
+  display: inline-flex;
+  gap: 0.4rem;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.6rem 0.85rem;
+  text-decoration: none;
+  transition:
+    background $transition-base,
+    border-color $transition-base,
+    transform $transition-fast;
+
+  .material-symbols-outlined {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    background: $color-accent;
+    border-color: rgba($color-accent, 0.85);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    background: $color-accent;
+    border-color: rgba($color-accent, 0.9);
+    box-shadow: 0 0 0 2px rgba($color-accent, 0.3);
+    outline: 0;
+    transform: translateY(-1px);
+  }
+}
+
+.podium-card--compact .podium-card__action {
+  background: transparent;
+  border-color: rgba($color-outline-variant, 0.75);
+  width: 100%;
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .podium-card--large {
+    grid-column: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .podium-card__action {
+    transition: none;
+
+    &:hover,
+    &:focus-visible {
+      transform: none;
+    }
+  }
+
+  .podium-card__confidence-tooltip {
+    transition: none;
+  }
+}
