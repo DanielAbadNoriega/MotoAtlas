@@ -76,7 +76,7 @@ Resultado esperado:
 Último resultado:
 
 * typecheck: clean
-* test: 1057 passed (69 files)
+* test: 1070 passed (70 files)
 
 Siguiente paso:
 

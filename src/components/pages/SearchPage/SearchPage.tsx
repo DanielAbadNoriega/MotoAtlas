@@ -33,7 +33,7 @@ import {
 } from '../../../shared/filters/motorcycleFilterOptions';
 import { getComparatorHashFromBikes, getCommunityCanonicalPath, getSearchTextFromRoute } from '../../../shared/routing/routeUtils';
 import { getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
-import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
+import { MotorcycleGarageCard, MotorcycleGarageCardAction } from '../../motorcycles/MotorcycleGarageCard';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import './SearchPage.scss';
 
@@ -587,16 +587,16 @@ export function BikeResultCard({
         as="div"
         detailHref={detailHref}
         footerActions={(
-          <Button
-            className="motorcycle-garage-card__action motorcycle-garage-card__compare-action"
-            variant={isSelected ? 'secondary' : 'primary'}
+          <MotorcycleGarageCardAction
+            isCompareAction
             onClick={() => onToggleCompare(bike)}
+            variant={isSelected ? 'secondary' : 'primary'}
           >
             <span className="material-symbols-outlined" aria-hidden="true">
               {isSelected ? 'check_circle' : 'compare_arrows'}
             </span>
             {isSelected ? 'Seleccionada' : 'Comparar'}
-          </Button>
+          </MotorcycleGarageCardAction>
         )}
         imageAlt={displayName}
         imageSource={bike}

@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { MotorcycleGarageCard } from './MotorcycleGarageCard';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import { MotorcycleGarageCard, MotorcycleGarageCardAction } from './MotorcycleGarageCard';
 
 describe('MotorcycleGarageCard', () => {
   const defaultProps = {
@@ -142,5 +143,58 @@ describe('MotorcycleGarageCard', () => {
   it('renders without imageSource', () => {
     render(<MotorcycleGarageCard {...defaultProps} imageSource={null} />);
     expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('BMW F 900 GS 2024');
+  });
+});
+
+describe('MotorcycleGarageCardAction', () => {
+  it('renders children', () => {
+    render(<MotorcycleGarageCardAction>Comparar</MotorcycleGarageCardAction>);
+    expect(screen.getByRole('button', { name: 'Comparar' })).toBeInTheDocument();
+  });
+
+  it('applies primary class by default', () => {
+    render(<MotorcycleGarageCardAction>Primary</MotorcycleGarageCardAction>);
+    const button = screen.getByRole('button');
+    expect(button.className).toContain('motorcycle-garage-card__action--primary');
+  });
+
+  it('applies secondary class when variant=secondary', () => {
+    render(<MotorcycleGarageCardAction variant="secondary">Secondary</MotorcycleGarageCardAction>);
+    const button = screen.getByRole('button');
+    expect(button.className).toContain('motorcycle-garage-card__action--secondary');
+  });
+
+  it('applies compare-action class when isCompareAction=true', () => {
+    render(<MotorcycleGarageCardAction isCompareAction>Compare</MotorcycleGarageCardAction>);
+    const button = screen.getByRole('button');
+    expect(button.className).toContain('motorcycle-garage-card__compare-action');
+  });
+
+  it('applies both primary and compare-action classes', () => {
+    render(<MotorcycleGarageCardAction isCompareAction>Compare</MotorcycleGarageCardAction>);
+    const button = screen.getByRole('button');
+    expect(button.className).toContain('motorcycle-garage-card__action--primary');
+    expect(button.className).toContain('motorcycle-garage-card__compare-action');
+  });
+
+  it('respects disabled prop', () => {
+    render(<MotorcycleGarageCardAction disabled>Disabled</MotorcycleGarageCardAction>);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+
+  it('calls onClick when enabled', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    render(<MotorcycleGarageCardAction onClick={onClick}>Click me</MotorcycleGarageCardAction>);
+    await user.click(screen.getByRole('button'));
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it('does not call onClick when disabled', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+    render(<MotorcycleGarageCardAction disabled onClick={onClick}>Disabled</MotorcycleGarageCardAction>);
+    await user.click(screen.getByRole('button'));
+    expect(onClick).not.toHaveBeenCalled();
   });
 });

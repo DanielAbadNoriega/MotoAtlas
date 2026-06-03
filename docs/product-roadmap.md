@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1057 passed`.
+- Tests de referencia: `1070 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -85,7 +85,7 @@ Estado: **implementado / cerrado**.
 Implementado:
 - `SearchPage` reutiliza `MotorcycleGarageCard` con adaptador local.
 - `MotorcycleGarageCard` flexibilizada con `footerActions?: ReactNode`.
-- Botón `Comparar/Seleccionada` inyectado desde `SearchPage` dentro de `.motorcycle-garage-card__actions`.
+- `MotorcycleGarageCardAction` extraído como API formal de acciones de footer: owning clases internas (`motorcycle-garage-card__action`, `--primary`, `--secondary`, `__compare-action`). SearchPage y BikeDetailPage usan este helper en vez de injectar classNames manualmente.
 - `MotorcycleGarageCard` sigue presentacional.
 - Enlaces `Reviews` y `Ficha` operativos; `Ficha` mantiene `aria-label="Ver ficha técnica"`.
 - Acciones compactas con patrón glass local `%motorcycle-garage-card-glass-action`.
@@ -98,14 +98,14 @@ Nota residual (señal comunitaria real):
 
 ## 5. P1/P2 — Sistema de filtros reutilizable
 
-Estado: pendiente.
+Estado: parcialmente implementado (primera migración completada).
 
 - Dependencia crítica previa: cierre de taxonomía de segmentos de motos (evitar filtros ambiguos o duplicados).
 - Los filtros actuales son prototipo/de prueba.
 - Objetivo: crear un sistema flexible y atomizado.
 - Componentes candidatos:
   - `FilterPanel`
-  - `FilterGroup`
+  - `FilterGroup` — **parcialmente implementado** (componente compartido extraído con estilos propios).
   - `FilterOption`
   - `FilterChip`
   - `ActiveFiltersBar`
@@ -120,6 +120,19 @@ Estado: pendiente.
   - `adminReportFilters`
   - `accountReviewFilters`
 - Resultado esperado: crecimiento sin duplicar UI por página.
+
+**Implementado en primera migración:**
+- `src/shared/ui/filters/FilterGroup.tsx` — componente compartido con `import './FilterGroup.scss'` directo; no requiere que el consumidor cargue sus estilos.
+- `src/shared/ui/filters/FilterGroup.scss` — estilos base del componente (`.filter-group`, `.__summary`, `.__title`, `.__icon`, `.__body`).
+- `src/shared/ui/filters/FilterGroup.test.tsx` — 5 tests directos (título, children, defaultOpen expandido/colapsado, icono con Material Symbols).
+- `AccountReviewsPage` migrada al FilterGroup compartido.
+- `AccountReviewsPage` ya no necesita `className="account-reviews-page__filter-group"` para baseline (clases base viene con el componente).
+- SCSS residual `.account-reviews-page__filter-group*` mantenido porque `AccountMotorcycleReviewsPage` usa `<details className="account-reviews-page__filter-group">` directamente (FilterGroup local, no el compartido).
+
+**Pendiente de futuras migraciones:**
+- Migrar `AccountMotorcycleReviewsPage` al FilterGroup compartido.
+- Luego evaluar移除残留 de `.account-reviews-page__filter-group*` en AccountReviewsPage.scss.
+- Migrar filtros de `CommunityReviewsPage`, `SearchPage`, `MotorcycleCommunityPage` y `AdminPage` si safe.
 
 ### BikeDetailPage — Reorganización por tabs
 

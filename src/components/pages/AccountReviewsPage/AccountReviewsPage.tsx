@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { AccountSidebar } from '../AccountPage/AccountSidebar';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import '../AccountPage/AccountPage.scss';
@@ -254,18 +256,6 @@ function AccountReviewMotorcycleSummaryCard({ item }: Readonly<{ item: AccountRe
         </footer>
       </div>
     </article>
-  );
-}
-
-function FilterGroup({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
-  return (
-    <details className="account-reviews-page__filter-group" open>
-      <summary>
-        <span>{title}</span>
-        <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
-      </summary>
-      <div className="account-reviews-page__filter-group-body">{children}</div>
-    </details>
   );
 }
 
