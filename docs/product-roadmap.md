@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1070 passed`.
+- Tests de referencia: `1088 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado

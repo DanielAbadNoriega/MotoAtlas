@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/motorcycle-garage-card-audit`
-- Último bloque validado: MotorcycleGarageCardAction API (componente helper para acciones de footer, SearchPage y BikeDetailPage migrados, consumidores ya no usan classNames internos).
-- Tests: 1070 passed
+- Rama actual: `feature/shared-podium-card`
+- Último bloque validado: extracción de `PodiumCard` compartido entre `TopRatedMotorcyclesPage` y `CommunityRankingsPage`. Componente self-styled con CSS propio, presentacional sin fetch ni auth. API con `showConfidence` (props booleana con tests unitarios directos). Migration completa de ambas páginas. Dead CSS de podios old eliminado.
+- Tests: 1088 passed
 - Typecheck: clean
 - Último commit:
 
@@ -141,7 +141,7 @@
    - Fase 5.1: CompareTab con related bikes — **implementada**.
    - Fase 5.2: acciones reales de comparador en CompareTab — **implementada**.
    - Fase 5.3: CompareTab con MotorcycleGarageCard + layout cleanup Comunidad — **implementada**.
-- Tests: 1070 passed (70 files).
+- Tests: 1088 passed (71 files).
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
