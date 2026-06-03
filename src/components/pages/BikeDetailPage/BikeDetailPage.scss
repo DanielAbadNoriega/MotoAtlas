@@ -216,21 +216,16 @@
     }
   }
 
-  &__community-tab {
-    display: grid;
-    gap: 2rem;
-    padding-block: 2rem 4rem;
-  }
-
   &__community-summary {
-    background: $color-surface-dim;
-    border: 1px solid rgba($color-outline-variant, 0.15);
+    background: $color-surface-lowest;
+    border: 1px solid rgba($color-outline-variant, 0.5);
     border-radius: $radius-lg;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
-    padding: 0.875rem 1.25rem;
+    margin-top: 2rem;
+    padding: 1.25rem;
   }
 
   &__community-rating {
@@ -359,6 +354,7 @@
     flex-direction: column;
     justify-content: center;
     gap: 1.25rem;
+    border-radius: $radius-md;
 
     &:hover {
       background: $color-surface-container;
@@ -427,6 +423,7 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 0.75rem;
+    width: 90%;
   }
 
   &__electronics-chip {
@@ -460,15 +457,6 @@
 
     color: $color-on-surface-variant;
     font-size: 0.65rem;
-  }
-
-  &__quick-specs,
-  &__features,
-  &__specs,
-  &__reviews,
-  &__related {
-    @include container;
-    @include section-spacing;
   }
 
   &__quick-specs {
@@ -698,11 +686,14 @@
   }
 
   &__reliability {
-    background: $color-surface-container;
-    display: grid;
-    gap: 4rem;
-    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.4fr);
-    padding: clamp(4rem, 8vw, 6rem) max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
+    
+    .bike-detail__section-container {
+      @include container;
+      @include section-spacing;
+      display: grid;
+      gap: 4rem;
+      grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.4fr);
+    }
 
     h2 {
       @include headline-lg;
@@ -719,8 +710,8 @@
 
   &__reliability-index {
     align-items: center;
-    background: $color-surface;
-    border: 1px solid rgba($color-accent, 0.26);
+    background: $color-surface-lowest;
+    border: 1px solid rgba($color-outline-variant, 0.5);
     border-radius: $radius-xl;
     display: flex;
     gap: 1.25rem;
@@ -754,7 +745,8 @@
     gap: 1rem;
 
     article {
-      background: $color-surface;
+      background: $color-surface-lowest;
+      border: 1px solid rgba($color-outline-variant, 0.32);
       border-left: 4px solid $color-accent;
       border-radius: $radius-md;
       padding: 1.25rem;

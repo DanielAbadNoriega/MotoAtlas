@@ -382,37 +382,9 @@ function CommunityTab({
   const communityHref = `#/comunidad/${bike.id}`;
 
   return (
-    <section className="bike-detail__section bike-detail__section--community bike-detail__community-tab">
-      <div className="bike-detail__section-container">
-        <div className="bike-detail__community-summary">
-          <div className="bike-detail__community-rating">
-            {aggregate.reviewCount > 0 && aggregate.averageRating > 0 ? (
-              <>
-                <span className="bike-detail__community-stars" aria-hidden="true">
-                  ★
-                </span>
-                <strong>{formatReviewRating(aggregate.averageRating)}</strong>
-                <span>/5</span>
-              </>
-            ) : (
-              <span>Sin rating</span>
-            )}
-          </div>
-          <div className="bike-detail__community-meta">
-            <span>{aggregate.reviewCount > 0 ? `${aggregate.reviewCount} reviews` : 'Sin reviews'}</span>
-            {aggregate.reviewCount > 0 && (
-              <span
-                className={`bike-detail__confidence-shield bike-detail__confidence-shield--${confidence}`}
-                aria-label={confidenceLabel}
-              >
-                <span aria-hidden="true">{confidence === 'high' ? '●' : confidence === 'medium' ? '◐' : '○'}</span>
-                <span>{confidenceLabel}</span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        <section className="bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
+    <>
+      <section className="bike-detail__section bike-detail__section--reliability bike-detail__reliability" aria-labelledby="bike-detail-reliability-title">
+        <div className="bike-detail__section-container">
           <div>
             <h2 id="bike-detail-reliability-title">Fiabilidad comunidad</h2>
             <p>Datos agregados de reportes técnicos de usuarios.</p>
@@ -422,6 +394,33 @@ function CommunityTab({
                 Fiabilidad · {getReliabilityLevel(bike.reliabilityReports.reliabilityScore)} ·{' '}
                 {numberFormatter.format(bike.reliabilityReports.reportCount)} reportes
               </span>
+            </div>
+            <div className="bike-detail__community-summary">
+              <div className="bike-detail__community-rating">
+                {aggregate.reviewCount > 0 && aggregate.averageRating > 0 ? (
+                  <>
+                    <span className="bike-detail__community-stars" aria-hidden="true">
+                      ★
+                    </span>
+                    <strong>{formatReviewRating(aggregate.averageRating)}</strong>
+                    <span>/5</span>
+                  </>
+                ) : (
+                  <span>Sin rating</span>
+                )}
+              </div>
+              <div className="bike-detail__community-meta">
+                <span>{aggregate.reviewCount > 0 ? `${aggregate.reviewCount} reviews` : 'Sin reviews'}</span>
+                {aggregate.reviewCount > 0 && (
+                  <span
+                    className={`bike-detail__confidence-shield bike-detail__confidence-shield--${confidence}`}
+                    aria-label={confidenceLabel}
+                  >
+                    <span aria-hidden="true">{confidence === 'high' ? '●' : confidence === 'medium' ? '◐' : '○'}</span>
+                    <span>{confidenceLabel}</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -437,9 +436,11 @@ function CommunityTab({
           ) : (
             <p className="bike-detail__reliability-empty">Sin reportes de fiabilidad todavía.</p>
           )}
-        </section>
+        </div>
+      </section>
 
-        <section className="bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
+      <section className="bike-detail__section bike-detail__section--reviews bike-detail__reviews" aria-labelledby="bike-detail-reviews-title">
+        <div className="bike-detail__section-container">
           <h2 id="bike-detail-reviews-title">Reviews de propietarios</h2>
           <div className="bike-detail__reviews-list" aria-live="polite">
             {reviews.length > 0 ? (
@@ -487,9 +488,9 @@ function CommunityTab({
               Ver reviews
             </a>
           </div>
-        </section>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }
 

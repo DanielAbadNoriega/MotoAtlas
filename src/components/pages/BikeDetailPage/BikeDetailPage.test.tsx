@@ -70,8 +70,8 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
 
-    const communityTab = document.querySelector('.bike-detail__community-tab') as HTMLElement;
-    expect(within(communityTab).getByText('Calor en ciudad')).toBeInTheDocument();
+    const reliability = document.querySelector('.bike-detail__reliability') as HTMLElement;
+    expect(within(reliability).getByText('Calor en ciudad')).toBeInTheDocument();
   });
 
   it('has a working add-to-comparator link without calling Supabase', () => {
@@ -190,7 +190,7 @@ describe('BikeDetailPage', () => {
     }
     await user.click(comunidadTab);
 
-    const communitySection = document.querySelector('.bike-detail__community-tab') as HTMLElement | null;
+    const communitySection = document.querySelector('.bike-detail__reviews') as HTMLElement | null;
     if (!communitySection) {
       throw new Error('Community tab content not rendered');
     }
