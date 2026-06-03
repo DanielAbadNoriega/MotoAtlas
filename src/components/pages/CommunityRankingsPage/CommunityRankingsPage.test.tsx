@@ -169,10 +169,10 @@ describe('CommunityRankingsPage', () => {
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      const shield = document.querySelector('.rankings__confidence-shield--high');
+      const shield = document.querySelector('.podium-card__confidence-shield--high');
       expect(shield).toBeInTheDocument();
       expect(shield?.getAttribute('aria-label')).toBe('Alta confianza');
-      const tooltip = shield?.querySelector('.rankings__confidence-tooltip');
+      const tooltip = shield?.querySelector('.podium-card__confidence-tooltip');
       expect(tooltip).toBeInTheDocument();
       expect(tooltip?.getAttribute('role')).toBe('tooltip');
       expect(tooltip?.textContent).toBe('Alta confianza');
@@ -196,10 +196,10 @@ describe('CommunityRankingsPage', () => {
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      const shield = document.querySelector('.rankings__confidence-shield--medium');
+      const shield = document.querySelector('.podium-card__confidence-shield--medium');
       expect(shield).toBeInTheDocument();
       expect(shield?.getAttribute('aria-label')).toBe('Media confianza');
-      const tooltip = shield?.querySelector('.rankings__confidence-tooltip');
+      const tooltip = shield?.querySelector('.podium-card__confidence-tooltip');
       expect(tooltip).toBeInTheDocument();
       expect(tooltip?.getAttribute('role')).toBe('tooltip');
       expect(tooltip?.textContent).toBe('Media confianza');
@@ -217,7 +217,7 @@ describe('CommunityRankingsPage', () => {
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      expect(document.querySelector('.rankings__confidence-shield')).not.toBeInTheDocument();
+      expect(document.querySelector('.podium-card__confidence-shield')).not.toBeInTheDocument();
     });
   });
 
@@ -233,10 +233,10 @@ describe('CommunityRankingsPage', () => {
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      const shield = document.querySelector('.rankings__confidence-shield--low');
+      const shield = document.querySelector('.podium-card__confidence-shield--low');
       expect(shield).toBeInTheDocument();
       expect(shield?.getAttribute('aria-label')).toBe('Baja confianza');
-      const tooltip = shield?.querySelector('.rankings__confidence-tooltip');
+      const tooltip = shield?.querySelector('.podium-card__confidence-tooltip');
       expect(tooltip).toBeInTheDocument();
       expect(tooltip?.getAttribute('role')).toBe('tooltip');
       expect(tooltip?.textContent).toBe('Baja confianza');
@@ -260,7 +260,7 @@ describe('CommunityRankingsPage', () => {
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     await waitFor(() => {
-      const shieldWrapper = document.querySelector('.rankings__confidence-shield--medium');
+      const shieldWrapper = document.querySelector('.podium-card__confidence-shield--medium');
       expect(shieldWrapper).toBeInTheDocument();
       const iconSpan = shieldWrapper?.querySelector('.material-symbols-outlined');
       expect(iconSpan).toBeInTheDocument();
@@ -285,7 +285,7 @@ describe('CommunityRankingsPage', () => {
     window.location.hash = '#/comunidad/rankings';
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
-    const analyticsIcon = document.querySelector('.rankings__rating-icon');
+    const analyticsIcon = document.querySelector('.podium-card__score-icon');
     expect(analyticsIcon).toBeInTheDocument();
     expect(analyticsIcon?.textContent).toBe('analytics');
     expect(document.querySelector('.rankings__rating-star')).not.toBeInTheDocument();

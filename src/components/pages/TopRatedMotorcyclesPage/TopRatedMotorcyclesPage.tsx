@@ -26,6 +26,7 @@ import type { Bike, BikeSegment } from '../../../types/bike';
 import { useAuth } from '../../../features/auth';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
 import './TopRatedMotorcyclesPage.scss';
@@ -69,21 +70,6 @@ function getCommunityHref(bike: Pick<Bike, 'id'>) {
   return `#/comunidad/${bike.id}`;
 }
 
-function RankingStats({ item }: { item: TopRatedMotorcycle }) {
-  return (
-    <div className="top-rated__podium-stats" aria-label={`Datos clave de ${getBikeDisplayName(item.bike)}`}>
-      <div aria-label={`${item.reviewCount} reviews aprobadas`}>
-        <span>Reviews</span>
-        <strong>{numberFormatter.format(item.reviewCount)}</strong>
-      </div>
-      <div>
-        <span>Potencia</span>
-        <strong>{numberFormatter.format(item.bike.powerHp)} CV</strong>
-      </div>
-    </div>
-  );
-}
-
 function formatRankingScore(rating: number): string {
   const scaled = rating * 2;
   const clamped = Math.max(0, Math.min(10, scaled));
@@ -97,46 +83,7 @@ const CONFIDENCE_TOOLTIPS: Record<string, string> = {
   low: 'Baja confianza',
 };
 
-function PodiumCard({ item, rank, variant = 'winner' }: { item: TopRatedMotorcycle; rank: number; variant?: 'winner' | 'compact' }) {
-  const bikeName = getBikeDisplayName(item.bike);
-  const confidence = getRankingConfidence(item.reviewCount);
-  const confidenceTooltip = CONFIDENCE_TOOLTIPS[confidence] ?? '';
 
-  return (
-    <article className={`top-rated__podium-card top-rated__podium-card--${variant}`} aria-label={`Puesto ${rank}: ${bikeName}`}>
-      <MotorcycleImage motorcycle={item.bike} alt={`Imagen de ${bikeName}`} loading={rank === 1 ? 'eager' : 'lazy'} />
-      <div className="top-rated__podium-overlay" aria-hidden="true" />
-      <div className="top-rated__rank-badge">
-        <strong>{String(rank).padStart(2, '0')}</strong>
-      </div>
-      <div className="top-rated__podium-content">
-        <div>
-          <p>{item.bike.brand}</p>
-          <h3>{item.bike.model}</h3>
-          <span>{item.bike.year} · {segmentLabels[item.bike.segment]} · {numberFormatter.format(item.bike.displacementCc)} cc</span>
-        </div>
-        <RankingStats item={item} />
-        <div className="top-rated__podium-rating">
-          <span className="top-rated__rating-icon material-symbols-outlined" aria-hidden="true">analytics</span>
-          <strong>{formatRankingScore(item.averageRating)}</strong>
-          <span
-            className={`top-rated__confidence-shield top-rated__confidence-shield--${confidence}`}
-            aria-label={confidenceTooltip}
-            tabIndex={0}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">shield</span>
-            <span className="top-rated__confidence-tooltip" role="tooltip">
-              {confidenceTooltip}
-            </span>
-          </span>
-        </div>
-        <a href={getCommunityHref(item.bike)} className="top-rated__podium-action">
-          Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-        </a>
-      </div>
-    </article>
-  );
-}
 
 function TopRatedEmptyState({ hasActiveFilters, onReset }: { hasActiveFilters: boolean; onReset: () => void }) {
   return (
@@ -609,9 +556,9 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
           <>
             <section className="top-rated__podium-section" aria-label="Top 3 motos mejor valoradas">
               <div className="top-rated__podium">
-                {podium[1] ? <PodiumCard item={podium[1]} rank={2} variant="compact" /> : null}
-                {podium[0] ? <PodiumCard item={podium[0]} rank={1} variant="winner" /> : null}
-                {podium[2] ? <PodiumCard item={podium[2]} rank={3} variant="compact" /> : null}
+                {podium[1] ? <PodiumCard bike={podium[1].bike} confidence={getRankingConfidence(podium[1].reviewCount)} confidenceTooltip={CONFIDENCE_TOOLTIPS[getRankingConfidence(podium[1].reviewCount)] ?? ''} href={getCommunityHref(podium[1].bike)} meta={`${podium[1].bike.year} · ${segmentLabels[podium[1].bike.segment]} · ${numberFormatter.format(podium[1].bike.displacementCc)} cc`} rank={2} scoreLabel={formatRankingScore(podium[1].averageRating)} stats={[ { label: 'Reviews', value: numberFormatter.format(podium[1].reviewCount) }, { label: 'Potencia', value: `${numberFormatter.format(podium[1].bike.powerHp)} CV` } ]} statsAriaLabel={`${podium[1].reviewCount} reviews aprobadas`} variant="compact" /> : null}
+                {podium[0] ? <PodiumCard bike={podium[0].bike} confidence={getRankingConfidence(podium[0].reviewCount)} confidenceTooltip={CONFIDENCE_TOOLTIPS[getRankingConfidence(podium[0].reviewCount)] ?? ''} href={getCommunityHref(podium[0].bike)} meta={`${podium[0].bike.year} · ${segmentLabels[podium[0].bike.segment]} · ${numberFormatter.format(podium[0].bike.displacementCc)} cc`} rank={1} scoreLabel={formatRankingScore(podium[0].averageRating)} stats={[ { label: 'Reviews', value: numberFormatter.format(podium[0].reviewCount) }, { label: 'Potencia', value: `${numberFormatter.format(podium[0].bike.powerHp)} CV` } ]} statsAriaLabel={`${podium[0].reviewCount} reviews aprobadas`} variant="large" /> : null}
+                {podium[2] ? <PodiumCard bike={podium[2].bike} confidence={getRankingConfidence(podium[2].reviewCount)} confidenceTooltip={CONFIDENCE_TOOLTIPS[getRankingConfidence(podium[2].reviewCount)] ?? ''} href={getCommunityHref(podium[2].bike)} meta={`${podium[2].bike.year} · ${segmentLabels[podium[2].bike.segment]} · ${numberFormatter.format(podium[2].bike.displacementCc)} cc`} rank={3} scoreLabel={formatRankingScore(podium[2].averageRating)} stats={[ { label: 'Reviews', value: numberFormatter.format(podium[2].reviewCount) }, { label: 'Potencia', value: `${numberFormatter.format(podium[2].bike.powerHp)} CV` } ]} statsAriaLabel={`${podium[2].reviewCount} reviews aprobadas`} variant="compact" /> : null}
               </div>
             </section>
 

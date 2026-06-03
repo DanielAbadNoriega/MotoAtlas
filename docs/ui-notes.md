@@ -32,7 +32,7 @@ Criterio actual del ranking:
 - por defecto exige al menos 1 review aprobada.
 - si no hay reviews suficientes o los filtros dejan el ranking vacío, muestra empty state técnico.
 
-Podio visual: replica el lenguaje del podio de `#/comunidad/rankings` — 3 cards con imagen full-background, overlay, badge numérico `01`/`02`/`03`, score con icono `analytics`, shield de confianza con tooltip (Alta/Media/Baja confianza) y CTA "Ver reviews". La card 01 ocupa la columna central destacada.
+Podio visual: componente `PodiumCard` compartido extraído en `src/components/rankings/PodiumCard/`. Self-styled con CSS propio (`.podium-card*`), presentacional sin fetch ni auth. API: `bike`, `rank`, `variant`, `scoreLabel`, `confidence`, `confidenceTooltip`, `stats`, `statsAriaLabel`, `meta`, `href`, `ctaLabel`, `loading`, `showConfidence`. El componente es la fuente de estilo de los podios en ambas páginas — los estilos de layout de página (`.top-rated__podium`, `.top-rated__podium-cta`, `.rankings__podium-section`, `.rankings__podium-grid`) permanecen en sus SCSS respectivos.
 
 Filtros disponibles:
 
@@ -206,7 +206,7 @@ Aspectos técnicos:
 - Pesos por categoría definidos en `RANKING_ASPECT_WEIGHTS`.
 - Ajuste escalonado por confianza: 35% (<3), 70% (3-9), 100% (≥10).
 
-**Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros.
+**Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros. El componente `PodiumCard` es compartido entre `TopRatedMotorcyclesPage` (`#/motos-mejor-valoradas`) y `CommunityRankingsPage` (`#/comunidad/rankings`), lo que garantiza paridad visual entre ambas rutas. La prop `showConfidence` permite controlar la visibilidad del shield de confianza directamente; tiene tests unitarios dedicados.
 
 Nota de estrategia taxonómica:
 - esta vista puede exponer segmentos canónicos explícitos (`BIKE_SEGMENTS`) para análisis técnico;
@@ -224,6 +224,8 @@ La ruta `#/comunidad/reviews` funciona como entrada pública a reviews `approved
 El hero de `#/comunidad/reviews` replica el patrón visual del hero oficial de Home: imagen full-bleed con overlay/degradado, texto centrado y CTAs. Usa `src/assets/hero-community.png`.
 
 Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews destacadas`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Garaje de la comunidad`, que agrupa por `motorcycleId` y calcula rating medio (sobre 5 con estrella), número de reviews, última review en formato corto DD.MM.YY, y uso más repetido. El panel de filtros es apply-on-change en tiempo real; el botón "Aplicar" cierra el panel en mobile. El aside `Insights en vivo` tiene polling suave cada 60 segundos y muestra indicador "Datos aproximados · Actualizado ahora" (sin precisión realtime). Las cards del garaje usan `MotorcycleGarageCard` (componente extraído en `src/components/motorcycles/MotorcycleGarageCard/`), con shield de confianza junto al rating /5 con estrella, tooltip visual (Alta/Media/Baja confianza) y CTAs reducidos "Reviews" y "Ficha técnica". `MotorcycleGarageCard` también se reutiliza en `#/buscador` con acciones compactas para comparar.
+
+El Podio rankings de `#/comunidad` ahora usa `PodiumCard` compartido con `#/comunidad/rankings` y `#/motos-mejor-valoradas`. Paridad visual garantizada: ambos podios usan el mismo componente self-styled con CSS propio. Estilos de layout de página (`.top-rated__podium`, `.rankings__podium-grid`, etc.) permanecen en las páginas; los estilos de card interna son responsabilidad del componente.
 
 **Criterio `Reviews destacadas`:** prioriza utilidad comunitaria (votos `Útil`). Criterio: 1) `helpfulCount` desc, 2) rating desc, 3) comentario más largo, 4) más reciente. Si no hay votos útiles (o fallan las reactions), usa fallback por rating/fecha/completitud — nunca queda vacío. **Los kilómetros declarados NO son criterio** para destacar. `Últimos reportes` es cronológico puro (fecha desc), no usa helpfulCount. Cada bloque editorial deduplica internamente por `motorcycleId`; no hay deduplicación editorial↔garaje.
 
