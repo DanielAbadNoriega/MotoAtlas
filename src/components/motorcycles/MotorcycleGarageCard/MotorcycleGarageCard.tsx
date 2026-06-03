@@ -1,7 +1,8 @@
-import type { ElementType, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ElementType, ReactNode } from 'react';
 import type { MotorcycleImageSource } from '../../../shared/images/getMotorcycleImage';
 import { getRankingConfidence, type RankingConfidence } from '../../../shared/reviews/communityRankings';
 import { formatReviewRating } from '../../../shared/reviews/reviewUtils';
+import { Button } from '../../ui/Button';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import './MotorcycleGarageCard.scss';
 
@@ -17,6 +18,37 @@ export interface MotorcycleGarageCardProps {
   readonly lastReviewDate?: string | Date | null;
   readonly reviewsHref: string;
   readonly detailHref: string;
+}
+
+export type MotorcycleGarageCardActionVariant = 'primary' | 'secondary';
+
+export interface MotorcycleGarageCardActionProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
+  readonly children: ReactNode;
+  readonly variant?: MotorcycleGarageCardActionVariant;
+  readonly isCompareAction?: boolean;
+}
+
+export function MotorcycleGarageCardAction({
+  children,
+  variant = 'primary',
+  isCompareAction = false,
+  className = '',
+  ...props
+}: MotorcycleGarageCardActionProps) {
+  const classes = [
+    'motorcycle-garage-card__action',
+    `motorcycle-garage-card__action--${variant}`,
+    isCompareAction ? 'motorcycle-garage-card__compare-action' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <Button className={classes} type="button" {...props}>
+      {children}
+    </Button>
+  );
 }
 
 const CONFIDENCE_LABELS: Record<RankingConfidence, string> = {

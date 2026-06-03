@@ -19,7 +19,7 @@ import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
-import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
+import { MotorcycleGarageCard, MotorcycleGarageCardAction } from '../../motorcycles/MotorcycleGarageCard';
 import './BikeDetailPage.scss';
 
 type BikeDetailPageProps = {
@@ -308,17 +308,17 @@ function CompareTab({ relatedBikes }: { relatedBikes: readonly Bike[] }) {
               key={relatedBike.id}
               detailHref={detailHref}
               footerActions={
-                <Button
-                  className="motorcycle-garage-card__action motorcycle-garage-card__compare-action"
-                  variant={state === 'added' ? 'secondary' : 'primary'}
+                <MotorcycleGarageCardAction
                   disabled={state === 'added' || state === 'full'}
+                  isCompareAction
                   onClick={() => handleToggleCompare(relatedBike.id)}
+                  variant={state === 'added' ? 'secondary' : 'primary'}
                 >
                   <span className="material-symbols-outlined" aria-hidden="true">
                     {state === 'added' ? 'check_circle' : state === 'full' ? 'block' : 'compare_arrows'}
                   </span>
                   {state === 'added' ? 'Ya en comparador' : state === 'full' ? 'Comparador lleno' : 'Comparar'}
-                </Button>
+                </MotorcycleGarageCardAction>
               }
               imageAlt={displayName}
               imageSource={relatedBike}

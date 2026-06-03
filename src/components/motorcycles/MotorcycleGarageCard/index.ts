@@ -1,1 +1,1 @@
-export { MotorcycleGarageCard, type MotorcycleGarageCardProps } from './MotorcycleGarageCard';
+export { MotorcycleGarageCard, MotorcycleGarageCardAction, type MotorcycleGarageCardProps, type MotorcycleGarageCardActionProps, type MotorcycleGarageCardActionVariant } from './MotorcycleGarageCard';
