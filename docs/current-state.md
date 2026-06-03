@@ -2,8 +2,8 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/bike-detail-section-layout`
-- Último bloque validado: BikeDetailPage section layout normalization. Patrón unificado `section.bike-detail__section + .bike-detail__section-container` aplicado a todos los tabs (Resumen, Especificaciones, Comunidad, Comparar). Elimina double-container, permite fondos de sección full-width y contenido alineado. Quality Gate limpio. Tests actualizados para reflejar la nueva estructura de sibling sections en Comunidad y Especificaciones.
+- Rama actual: `feature/filtergroup-residual-scss-cleanup`
+- Último bloque validado: limpieza residual SCSS tras migración de `SearchPage` a `FilterGroup` compartido. Eliminados selectores huérfanos `.search-page__filter-group*`, `.search-page__filter-group-body`, `.community-reviews-page__filter-group*` y `.community-reviews-page__filter-group-body`. Selectores activos preservados. Pequeña corrección de layout en `SearchPage.scss:115` adjunta al cleanup. Quality Gate aprobado. `AccountReviewsPage.scss` no tocado.
 - Tests: 1088 passed
 - Typecheck: clean
 - Último commit:
@@ -116,6 +116,21 @@
    - `bike-detail__reviews` → sección sister en Comunidad.
    - `bike-detail__related` → integrado en CompareTab.
 
+### Filtros reutilizables — `FilterGroup` compartido
+
+- Componente compartido extraído en `src/shared/ui/filters/FilterGroup.tsx` con su propio `FilterGroup.scss` (self-styled).
+- Migraciones completadas al `FilterGroup` compartido:
+  - `AccountReviewsPage` (`#/cuenta/reviews`): filtros de marca/modelo, segmento, carnet, rating medio, uso principal y orden.
+  - `AccountMotorcycleReviewsPage` (`#/cuenta/reviews/[motorcycleId]`): filtros de rating y orden (preserva `FilterOptionButton` y `FilterRatingStars` locales para option/star/grid activos).
+  - `CommunityReviewsPage` (`#/comunidad/reviews`): grupos Segmento, Carnet, Rating, Uso principal, Orden.
+  - `SearchPage` (`#/buscador`): 10 grupos (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos).
+- Limpieza residual SCSS (rama `feature/filtergroup-residual-scss-cleanup`):
+  - Eliminados `.search-page__filter-group*` y `.search-page__filter-group-body` huérfanos en `SearchPage.scss`. Preservados `__brand-grid`, `__segment-grid`, `__pill-list`, `__option-card`, `__toggle-grid` y `__range-*`.
+  - Eliminados `.community-reviews-page__filter-group*` y `.community-reviews-page__filter-group-body` huérfanos en `CommunityReviewsPage.scss`. Preservados `__filter-option*`, `__filter-star*`, `__segment-grid`, `__pill-list`, `__rating-grid` y `__sort-grid`.
+  - Corrección de layout aceptada por producto en `SearchPage.scss`: `grid-template-columns: minmax(18rem, 4fr) minmax(0px, 8fr);`.
+  - `.account-reviews-page__filter-group*` no tocado (preservado por riesgo de override contextual).
+- Pendientes: migrar filtros de `MotorcycleCommunityPage` y `AdminPage` si safe.
+
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
 - Fuente central con factories y overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`).
@@ -185,6 +200,7 @@
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
+- Backlog P1/P2: migrar filtros de `MotorcycleCommunityPage` y `AdminPage` al `FilterGroup` compartido si safe.
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
