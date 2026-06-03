@@ -127,12 +127,12 @@ Estado: parcialmente implementado (primera migración completada).
 - `src/shared/ui/filters/FilterGroup.test.tsx` — 5 tests directos (título, children, defaultOpen expandido/colapsado, icono con Material Symbols).
 - `AccountReviewsPage` migrada al FilterGroup compartido.
 - `AccountReviewsPage` ya no necesita `className="account-reviews-page__filter-group"` para baseline (clases base viene con el componente).
-- SCSS residual `.account-reviews-page__filter-group*` mantenido porque `AccountMotorcycleReviewsPage` usa `<details className="account-reviews-page__filter-group">` directamente (FilterGroup local, no el compartido).
+- `AccountMotorcycleReviewsPage` migrada al FilterGroup compartido.
+- SCSS residual `.account-reviews-page__filter-group*` mantenido en AccountReviewsPage.scss porque `AccountReviewsPage` lo usa como className extra cuando necesita ajustar estilos locales del componente; los selectores `account-reviews-page__filter-option*`, `account-reviews-page__filter-star*`, `account-reviews-page__rating-grid` y `account-reviews-page__sort-grid` siguen activos en ambas páginas (AccountReviewsPage y AccountMotorcycleReviewsPage usan `FilterOptionButton` y `FilterRatingStars` locales).
 
 **Pendiente de futuras migraciones:**
-- Migrar `AccountMotorcycleReviewsPage` al FilterGroup compartido.
-- Luego evaluar eliminar residuos de `.account-reviews-page__filter-group*` en AccountReviewsPage.scss.
 - Migrar filtros de `CommunityReviewsPage`, `SearchPage`, `MotorcycleCommunityPage` y `AdminPage` si safe.
+- Evaluar eliminación de `.account-reviews-page__filter-group*` en AccountReviewsPage.scss solo después de verificar que no hay selectores activos de ese grupo (los option/star/grid siguen en uso).
 
 ### BikeDetailPage — Reorganización por tabs
 
