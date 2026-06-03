@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { getBikeDetailHash } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
 import {
@@ -164,18 +165,6 @@ function RatingStars({ rating }: Readonly<{ rating: number }>) {
         </span>
       ))}
     </span>
-  );
-}
-
-function FilterGroup({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
-  return (
-    <details className="account-reviews-page__filter-group" open>
-      <summary>
-        <span>{title}</span>
-        <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
-      </summary>
-      <div className="account-reviews-page__filter-group-body">{children}</div>
-    </details>
   );
 }
 
