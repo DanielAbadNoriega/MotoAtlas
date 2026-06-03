@@ -768,71 +768,75 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
       >
         {activeTab === 'resumen' && (
           <>
-            <section className="bike-detail__riding" aria-labelledby="bike-detail-riding-title">
-              <div className="bike-detail__score-card">
-                <span>Riding profile</span>
-                <h2 id="bike-detail-riding-title">Perfil dinámico</h2>
-                <p>Nuestra lectura técnica basada en uso real, ergonomía y enfoque de segmento.</p>
-                <strong>{overallScore.toFixed(1)}</strong>
-                <small>Overall performance</small>
-              </div>
+            <section className="bike-detail__section bike-detail__section--riding bike-detail__riding" aria-labelledby="bike-detail-riding-title">
+              <div className="bike-detail__section-container">
+                <div className="bike-detail__score-card">
+                  <span>Riding profile</span>
+                  <h2 id="bike-detail-riding-title">Perfil dinámico</h2>
+                  <p>Nuestra lectura técnica basada en uso real, ergonomía y enfoque de segmento.</p>
+                  <strong>{overallScore.toFixed(1)}</strong>
+                  <small>Overall performance</small>
+                </div>
 
-              <div className="bike-detail__score-list">
-                {getUseScoreEntries(bike).map(([key, value]) => (
-                  <div className="bike-detail__score-row" key={key}>
-                    <div>
-                      <span>{useScoreLabels[key]}</span>
-                      <strong>{value.toFixed(1)}</strong>
+                <div className="bike-detail__score-list">
+                  {getUseScoreEntries(bike).map(([key, value]) => (
+                    <div className="bike-detail__score-row" key={key}>
+                      <div>
+                        <span>{useScoreLabels[key]}</span>
+                        <strong>{value.toFixed(1)}</strong>
+                      </div>
+                      <div aria-hidden="true">
+                        <span style={{ width: scorePercent(value) }} />
+                      </div>
                     </div>
-                    <div aria-hidden="true">
-                      <span style={{ width: scorePercent(value) }} />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </section>
 
-            <section className="bike-detail__fit" aria-labelledby="bike-detail-fit-title">
-              <h2 id="bike-detail-fit-title">¿Es esta moto para ti?</h2>
-              <div className="bike-detail__fit-grid">
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    person_pin
-                  </span>
-                  <h3>El perfil</h3>
-                  <p>{segmentProfile[bike.segment]}</p>
-                </article>
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    explore
-                  </span>
-                  <h3>Mejor uso</h3>
-                  <p>
-                    Destaca en <strong>{bestUse.label}</strong> con {bestUse.value.toFixed(1)}/10 dentro del catálogo.
-                  </p>
-                </article>
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    add_circle
-                  </span>
-                  <h3>Fortalezas</h3>
-                  <ul>
-                    {bike.pros.map((pro) => (
-                      <li key={pro}>{pro}</li>
-                    ))}
-                  </ul>
-                </article>
-                <article>
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    do_not_disturb_on
-                  </span>
-                  <h3>Limitaciones</h3>
-                  <ul>
-                    {bike.cons.map((con) => (
-                      <li key={con}>{con}</li>
-                    ))}
-                  </ul>
-                </article>
+            <section className="bike-detail__section bike-detail__section--fit bike-detail__fit" aria-labelledby="bike-detail-fit-title">
+              <div className="bike-detail__section-container">
+                <h2 id="bike-detail-fit-title">¿Es esta moto para ti?</h2>
+                <div className="bike-detail__fit-grid">
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      person_pin
+                    </span>
+                    <h3>El perfil</h3>
+                    <p>{segmentProfile[bike.segment]}</p>
+                  </article>
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      explore
+                    </span>
+                    <h3>Mejor uso</h3>
+                    <p>
+                      Destaca en <strong>{bestUse.label}</strong> con {bestUse.value.toFixed(1)}/10 dentro del catálogo.
+                    </p>
+                  </article>
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      add_circle
+                    </span>
+                    <h3>Fortalezas</h3>
+                    <ul>
+                      {bike.pros.map((pro) => (
+                        <li key={pro}>{pro}</li>
+                      ))}
+                    </ul>
+                  </article>
+                  <article>
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      do_not_disturb_on
+                    </span>
+                    <h3>Limitaciones</h3>
+                    <ul>
+                      {bike.cons.map((con) => (
+                        <li key={con}>{con}</li>
+                      ))}
+                    </ul>
+                  </article>
+                </div>
               </div>
             </section>
           </>

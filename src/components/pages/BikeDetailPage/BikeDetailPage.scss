@@ -7,6 +7,15 @@
     linear-gradient(180deg, rgba($color-surface-lowest, 0.55), rgba($color-surface, 0));
   min-height: 100vh;
 
+  &__section {
+    width: 100%;
+  }
+
+  &__section-container {
+    @include container;
+    @include section-spacing;
+  }
+
   &__hero {
     min-height: min(860px, calc(100vh - 80px));
     overflow: hidden;
@@ -189,12 +198,6 @@
     }
   }
 
-  &__tab-content {
-    @include container;
-
-    padding-top: 3rem;
-  }
-
   &__tab-placeholder {
     @include container;
 
@@ -208,11 +211,10 @@
   }
 
   &__community-tab {
-    @include container;
-
     display: grid;
     gap: 2rem;
     padding-block: 2rem 4rem;
+    padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
   }
 
   &__community-summary {
@@ -336,9 +338,8 @@
   }
 
   &__specs-tab {
-    @include container;
-
     padding-block: 2rem 4rem;
+    padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
   }
 
   &__specs-bento {
@@ -463,7 +464,6 @@
 
   &__quick-specs,
   &__features,
-  &__fit,
   &__specs,
   &__reviews,
   &__related {
@@ -543,10 +543,15 @@
 
   &__riding {
     background: $color-surface-lowest;
-    display: grid;
-    gap: 4rem;
-    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.5fr);
-    padding: clamp(4rem, 8vw, 6rem);
+    
+    .bike-detail__section-container {
+      @include container;
+      @include section-spacing;
+
+      display: grid;
+      gap: 4rem;
+      grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.5fr);
+    }
   }
 
   &__score-card {
@@ -634,6 +639,11 @@
   }
 
   &__fit {
+    .bike-detail__section-container {
+      @include container;
+      @include section-spacing;
+    }
+
     h2 {
       @include headline-lg;
 
@@ -942,11 +952,10 @@
   }
 
   .bike-detail__compare-tab {
-  @include container;
+    padding-block: 2rem 4rem;
+    padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
 
-  padding-block: 2rem 4rem;
-
-  .bike-detail__compare-header {
+    .bike-detail__compare-header {
     text-align: center;
     margin-bottom: 2rem;
 
