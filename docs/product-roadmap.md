@@ -131,7 +131,7 @@ Estado: parcialmente implementado (primera migración completada).
 
 **Pendiente de futuras migraciones:**
 - Migrar `AccountMotorcycleReviewsPage` al FilterGroup compartido.
-- Luego evaluar移除残留 de `.account-reviews-page__filter-group*` en AccountReviewsPage.scss.
+- Luego evaluar eliminar residuos de `.account-reviews-page__filter-group*` en AccountReviewsPage.scss.
 - Migrar filtros de `CommunityReviewsPage`, `SearchPage`, `MotorcycleCommunityPage` y `AdminPage` si safe.
 
 ### BikeDetailPage — Reorganización por tabs
@@ -1213,6 +1213,68 @@ Al cerrar funcionalidades principales:
 - revisar componentes reutilizables
 - revisar cards, chips, actions, filtros, formularios y layouts
 - convertir patrones repetidos en componentes/mixins/placeholders
+
+### 13.1 Backlog: Unificación de Hero, CTAs y Button System
+
+Estado: **pendiente / futuro**.
+
+No es implementación. Es una tarea de documentación y planificación futura.
+
+**Objetivo:**
+- Unificar estilos base de Hero en MotoAtlas.
+- Crear patrones reutilizables de CTA/button/action.
+- Reducir duplicación de estilos page-specific.
+- Acelerar futuras fases de pulido de páginas con coherencia visual.
+
+**Alcance futuro (no ahora):**
+
+1. **Auditoría de implementaciones actuales de Hero:**
+   - Identificar todas las variantes de Hero usadas en Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin.
+   - Documentar qué tienen en común y qué varía por contexto.
+
+2. **Definición de patrón/base compartidos:**
+   - Posibles componentes/patrones base: `PageHero`, `HeroAction`, `CtaGroup`, `Button`, `ActionLink`, `IconAction`.
+   - Permitir variantes contextuales sin replicar estructuras completas.
+   - Ejemplo: un mismo `PageHero` base con slots para badge, título, descripción, acciones y imagen de fondo.
+
+3. **Normalización de grupos de CTA por página:**
+   - Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin donde aplique.
+   - Mantener flexibilidad para diferencias contextuales legítimas (un CTA primario en una landing no es igual a un CTA en una ficha de moto).
+
+4. **Sistema de variantes de botón/acción a documentar:**
+   - `primary`, `secondary`, `ghost`, `glass`, `glass-primary`, `glass-secondary`, `danger`, `success`, `link`.
+   - Definir la semántica de cada variante y cuándo usar cada una.
+   -No crear implementación todavía; solo documentar la intención de diseño.
+
+5. **Convenciones de iconos para acciones comunes (dirección futura):**
+   | Acción | Icono |
+   |--------|-------|
+   | Reviews | `rate_review` |
+   | Ficha | `description` o `two_wheeler` |
+   | Comparar | `compare_arrows` |
+   | Escribir review | `edit` |
+   | Ver más | `arrow_forward` |
+   | Solicitar modelo | `add_circle` |
+   | Comunidad | `groups` |
+   | Ranking / analytics | `analytics` |
+
+   Estas convenciones son **dirección futura**, no implementación actual. Los iconos actuales pueden no seguirlas todavía.
+
+**Reglas:**
+- No implementar ahora.
+- No migrar heroes actuales todavía.
+- No rediseñar el sitio completo en esta tarea.
+- No tocar código fuente, tests, SCSS, rutas, schema/RLS o Supabase.
+- Documentar como backlog P3/P4 UI/SCSS.
+- Mantener responsive funcional actual.
+- Dejar lugar para diferencias contextuales legítimas por página.
+- La fase mobile-first premium (sección 13b) permanece como esfuerzo separado posterior a esta unificación.
+
+**Conexión con roadmap:**
+- Conecta con sección 13 (revisión global UI/SCSS) como subtarea específica dentro de esa fase.
+- Conecta con P1/P2 UX pública + componentes reutilizables (mejora de quick specs, filtros atomizados).
+- Conecta con fase mobile-first (sección 13b) una vez cerrada la unificación base.
+- No bloquea funcionalidades core actuales.
 
 ## 13b. P3/P4 — Fase mobile-first (futura)
 

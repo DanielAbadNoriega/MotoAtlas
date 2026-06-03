@@ -344,3 +344,61 @@ Las rutas enlazadas desde el footer ya tienen páginas reales en `src/components
 - `#/terminos` — base inicial de términos de uso pendiente de revisión legal final.
 
 Estas páginas ignoran header/footer de Stitch y usan el Navbar/Footer reales de MotoAtlas.
+
+---
+
+## Backlog futuro: Unificación de Hero, CTAs y Button System
+
+Estado: **pendiente / no implementado**.
+
+No es implementación. Es documentación de una tarea futura de pulido UI/SCSS.
+
+**Objetivo:**
+- Unificar estilos base de Hero en MotoAtlas.
+- Crear patrones reutilizables de CTA/button/action.
+- Reducir duplicación de estilos page-specific.
+- Acelerar futuras fases de pulido con coherencia visual.
+
+**Alcance futuro (no ahora):**
+
+1. **Auditoría de implementaciones actuales de Hero:**
+   - Identificar todas las variantes usadas en Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin.
+   - Documentar qué tienen en común y qué varía por contexto.
+
+2. **Definición de patrón/base compartidos:**
+   - Posibles componentes/patrones base: `PageHero`, `HeroAction`, `CtaGroup`, `Button`, `ActionLink`, `IconAction`.
+   - Permitir variantes contextuales sin replicar estructuras completas.
+   - Ejemplo: un mismo `PageHero` base con slots para badge, título, descripción, acciones y imagen de fondo.
+
+3. **Normalización de grupos de CTA por página:**
+   - Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin donde aplique.
+   - Mantener flexibilidad para diferencias contextuales legítimas.
+
+4. **Sistema de variantes de botón/acción a documentar:**
+   - `primary`, `secondary`, `ghost`, `glass`, `glass-primary`, `glass-secondary`, `danger`, `success`, `link`.
+   - Definir la semántica de cada variante y cuándo usar cada una.
+   - No crear implementación todavía; solo documentar la intención.
+
+5. **Convenciones de iconos para acciones comunes (dirección futura):**
+   | Acción | Icono |
+   |--------|-------|
+   | Reviews | `rate_review` |
+   | Ficha | `description` o `two_wheeler` |
+   | Comparar | `compare_arrows` |
+   | Escribir review | `edit` |
+   | Ver más | `arrow_forward` |
+   | Solicitar modelo | `add_circle` |
+   | Comunidad | `groups` |
+   | Ranking / analytics | `analytics` |
+
+   Estas convenciones son **dirección futura**, no implementación actual.
+
+**Reglas:**
+- No implementar ahora.
+- No migrar heroes actuales.
+- No rediseñar el sitio completo.
+- No tocar código fuente, tests, SCSS, rutas, schema/RLS o Supabase.
+- Documentar como backlog P3/P4 UI/SCSS.
+- Mantener responsive funcional actual.
+- Dejar lugar para diferencias contextuales por página.
+- La fase mobile-first premium permanece como esfuerzo separado posterior a esta unificación.
