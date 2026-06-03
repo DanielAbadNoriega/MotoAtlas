@@ -178,82 +178,84 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
   const hasA2Data = bike.isA2Compatible || bike.isA2LimitedVersion;
 
   return (
-    <div className="bike-detail__specs-tab">
-      <div className="bike-detail__specs-bento">
-        <SpecCard icon="engine" label="MOTOR" value={String(bike.displacementCc)} unit="CC" />
-        <SpecCard icon="power" label="POTENCIA" value={String(bike.powerHp)} unit="HP" />
-        <SpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
-        <SpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
-        <SpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
-        <SpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
-        <SpecCard icon="license" label="CARNET" value={a2Badge.label} />
-        <SpecCard
-          icon="price"
-          label="PRECIO BASE"
-          value={isPendingPrice(bike.priceEur, bike.priceSource) ? priceLabel : numberFormatter.format(bike.priceEur)}
-          unit={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : '€'}
-          variant={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : 'accent'}
-        />
+    <section className="bike-detail__section bike-detail__section--specs bike-detail__specs-tab">
+      <div className="bike-detail__section-container">
+        <div className="bike-detail__specs-bento">
+          <SpecCard icon="engine" label="MOTOR" value={String(bike.displacementCc)} unit="CC" />
+          <SpecCard icon="power" label="POTENCIA" value={String(bike.powerHp)} unit="HP" />
+          <SpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
+          <SpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
+          <SpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
+          <SpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
+          <SpecCard icon="license" label="CARNET" value={a2Badge.label} />
+          <SpecCard
+            icon="price"
+            label="PRECIO BASE"
+            value={isPendingPrice(bike.priceEur, bike.priceSource) ? priceLabel : numberFormatter.format(bike.priceEur)}
+            unit={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : '€'}
+            variant={isPendingPrice(bike.priceEur, bike.priceSource) ? undefined : 'accent'}
+          />
 
-        {enabledFeatures.length > 0 && (
-          <article className="bike-detail__spec-card bike-detail__spec-card--electronics">
-            <div className="bike-detail__spec-card-header">
-              <span className="material-symbols-outlined" aria-hidden="true">
-                {getMotorcycleTechnicalIcon('electronics')}
-              </span>
-            </div>
-            <p className="bike-detail__spec-label">ELECTRÓNICA</p>
-            <div className="bike-detail__electronics-chips">
-              {enabledFeatures.map(([key]) => (
-                <span key={key} className="bike-detail__electronics-chip">
-                  {featureLabels[key]}
+          {enabledFeatures.length > 0 && (
+            <article className="bike-detail__spec-card bike-detail__spec-card--electronics">
+              <div className="bike-detail__spec-card-header">
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  {getMotorcycleTechnicalIcon('electronics')}
                 </span>
-              ))}
-            </div>
-          </article>
-        )}
-
-        {hasA2Data && (
-          <article className="bike-detail__spec-card bike-detail__spec-card--a2">
-            <div className="bike-detail__spec-card-header">
-              <span className="material-symbols-outlined" aria-hidden="true">
-                {getMotorcycleTechnicalIcon('license')}
-              </span>
-            </div>
-            <p className="bike-detail__spec-label">COMPATIBILIDAD A2</p>
-            <div className="bike-detail__a2-info">
-              <span className="bike-detail__a2-badge">{a2Badge.label}</span>
-              {bike.isA2LimitedVersion && bike.limitedPowerHp !== null && (
-                <span className="bike-detail__a2-limited">
-                  Limitada a {bike.limitedPowerHp} CV
-                  {bike.originalPowerHp !== null && ` (orig. ${bike.originalPowerHp} CV)`}
-                </span>
-              )}
-            </div>
-          </article>
-        )}
-      </div>
-
-      <section className="bike-detail__specs-extended" aria-labelledby="bike-detail-specs-title">
-        <h2 id="bike-detail-specs-title">Especificaciones ampliadas</h2>
-        <p className="bike-detail__specs-extended-desc">Detalles técnicos y equipamiento específico del modelo.</p>
-        <div className="bike-detail__spec-groups">
-          {getSpecGroups(bike).map((group) => (
-            <article key={group.title}>
-              <h3>{group.title}</h3>
-              <dl>
-                {group.items.map((item) => (
-                  <div key={item.label}>
-                    <dt>{item.label}</dt>
-                    <dd>{item.value}</dd>
-                  </div>
+              </div>
+              <p className="bike-detail__spec-label">ELECTRÓNICA</p>
+              <div className="bike-detail__electronics-chips">
+                {enabledFeatures.map(([key]) => (
+                  <span key={key} className="bike-detail__electronics-chip">
+                    {featureLabels[key]}
+                  </span>
                 ))}
-              </dl>
+              </div>
             </article>
-          ))}
+          )}
+
+          {hasA2Data && (
+            <article className="bike-detail__spec-card bike-detail__spec-card--a2">
+              <div className="bike-detail__spec-card-header">
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  {getMotorcycleTechnicalIcon('license')}
+                </span>
+              </div>
+              <p className="bike-detail__spec-label">COMPATIBILIDAD A2</p>
+              <div className="bike-detail__a2-info">
+                <span className="bike-detail__a2-badge">{a2Badge.label}</span>
+                {bike.isA2LimitedVersion && bike.limitedPowerHp !== null && (
+                  <span className="bike-detail__a2-limited">
+                    Limitada a {bike.limitedPowerHp} CV
+                    {bike.originalPowerHp !== null && ` (orig. ${bike.originalPowerHp} CV)`}
+                  </span>
+                )}
+              </div>
+            </article>
+          )}
         </div>
-      </section>
-    </div>
+
+        <section className="bike-detail__specs-extended" aria-labelledby="bike-detail-specs-title">
+          <h2 id="bike-detail-specs-title">Especificaciones ampliadas</h2>
+          <p className="bike-detail__specs-extended-desc">Detalles técnicos y equipamiento específico del modelo.</p>
+          <div className="bike-detail__spec-groups">
+            {getSpecGroups(bike).map((group) => (
+              <article key={group.title}>
+                <h3>{group.title}</h3>
+                <dl>
+                  {group.items.map((item) => (
+                    <div key={item.label}>
+                      <dt>{item.label}</dt>
+                      <dd>{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </section>
   );
 }
 
