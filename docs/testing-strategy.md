@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1062` tests passing.
+- `1070` tests passing.
 
 ## Stack actual
 

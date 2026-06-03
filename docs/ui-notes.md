@@ -62,7 +62,7 @@ Estrategia vigente de segmentos en UI pública:
 - el contrato canónico vs visible ya está formalizado en capa shared de filtros/taxonomía;
 - no se abren todavía 16 chips públicos en buscador mientras el catálogo siga con cobertura desigual por segmento.
 
-El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante.
+El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante. El botón de comparar en SearchPage usa `MotorcycleGarageCardAction` con `isCompareAction` — helper presentacional que owning las clases internas del componente en vez de injectarlas manualmente.
 
 ## Cards legacy — `BikeCard`
 

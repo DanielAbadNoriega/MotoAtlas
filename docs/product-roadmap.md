@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1062 passed`.
+- Tests de referencia: `1070 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -85,7 +85,7 @@ Estado: **implementado / cerrado**.
 Implementado:
 - `SearchPage` reutiliza `MotorcycleGarageCard` con adaptador local.
 - `MotorcycleGarageCard` flexibilizada con `footerActions?: ReactNode`.
-- Botón `Comparar/Seleccionada` inyectado desde `SearchPage` dentro de `.motorcycle-garage-card__actions`.
+- `MotorcycleGarageCardAction` extraído como API formal de acciones de footer: owning clases internas (`motorcycle-garage-card__action`, `--primary`, `--secondary`, `__compare-action`). SearchPage y BikeDetailPage usan este helper en vez de injectar classNames manualmente.
 - `MotorcycleGarageCard` sigue presentacional.
 - Enlaces `Reviews` y `Ficha` operativos; `Ficha` mantiene `aria-label="Ver ficha técnica"`.
 - Acciones compactas con patrón glass local `%motorcycle-garage-card-glass-action`.
