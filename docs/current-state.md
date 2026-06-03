@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/bike-detail-compare-tab`
-- Último bloque validado: BikeDetailPage Phase 5.3 (CompareTab con MotorcycleGarageCard + layout cleanup Comunidad)
-- Tests: 1057 passed
+- Rama actual: `feature/shared-filter-group`
+- Último bloque validado: FilterGroup compartido auto-estilado (FilterGroup.tsx importa ./FilterGroup.scss directamente, AccountReviewsPage migrada, AccountMotorcycleReviewsPage残留 filtro local con `<details>` nativo).
+- Tests: 1062 passed
 - Typecheck: clean
 - Último commit:
 
@@ -140,7 +140,7 @@
    - Fase 5.1: CompareTab con related bikes — **implementada**.
    - Fase 5.2: acciones reales de comparador en CompareTab — **implementada**.
    - Fase 5.3: CompareTab con MotorcycleGarageCard + layout cleanup Comunidad — **implementada**.
-- Tests: 1057 passed (69 files).
+- Tests: 1062 passed (70 files).
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.

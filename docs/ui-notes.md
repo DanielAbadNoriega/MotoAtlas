@@ -281,7 +281,7 @@ La agrupación prioriza motos con reviews pendientes.
 
 ## Mi cuenta — Reviews
 
-La ruta `#/cuenta/reviews` funciona como “Mi garaje de reviews”: agrupa las reviews del usuario autenticado por moto, pagina modelos agrupados y aplica filtros sobre marca/modelo, segmento, carnet, rating medio, uso principal y orden. Los filtros replican el patrón visual de `#/comunidad/reviews` con header/body/footer y botones/chips sin selects; en desktop viven dentro del sidebar de cuenta antes del notice y en tablet/mobile usan panel responsive. El CTA `Ver mis reviews` de cada moto apunta al detalle privado `#/cuenta/reviews/[motorcycleId]`.
+La ruta `#/cuenta/reviews` funciona como “Mi garaje de reviews”: agrupa las reviews del usuario autenticado por moto, pagina modelos agrupados y aplica filtros sobre marca/modelo, segmento, carnet, rating medio, uso principal y orden. Los filtros usan el componente compartido `FilterGroup` (`src/shared/ui/filters/FilterGroup.tsx`) que importa sus propios estilos (`./FilterGroup.scss`); no requiere que la página cargue sus estilos. Los filtros replican el patrón visual de `#/comunidad/reviews` con header/body/footer y botones/chips sin selects; en desktop viven dentro del sidebar de cuenta antes del notice y en tablet/mobile usan panel responsive. El CTA `Ver mis reviews` de cada moto apunta al detalle privado `#/cuenta/reviews/[motorcycleId]`.
 
 La ruta `#/cuenta/reviews/[motorcycleId]` muestra solo las reviews propias de una moto concreta. Cada review muestra estado traducido (`Publicada`, `Pendiente`, `Oculta`, `Rechazada`), pros/contras saneados, `ReviewAspectSummary` con aspectos técnicos si existen, contador pasivo de útiles recibidos y CTA hacia reviews públicas.
 
