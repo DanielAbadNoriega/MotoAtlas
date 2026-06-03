@@ -7,6 +7,7 @@ import {
   buildAspectSignalsByMotorcycleId,
   buildReviewSignalsByMotorcycleId,
   getPodiumEntries,
+  getRankingConfidence,
   RANKING_CATEGORIES,
   type CategoryRanking,
   type RankingAspectSignalsByMotorcycleId,
@@ -20,6 +21,7 @@ import type { Bike, BikeSegment } from '../../../types/bike';
 
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
 import './CommunityRankingsPage.scss';
 
 type CommunityRankingsPageProps = Readonly<{
@@ -41,6 +43,8 @@ const defaultFilters: RankingFilters = {
   search: '',
   sortBy: 'score',
 };
+
+const numberFormatter = new Intl.NumberFormat('es-ES');
 
 const segmentOptions = [
   { label: 'Todos los segmentos', value: 'all' as const },
@@ -108,57 +112,6 @@ const RANKING_TOOLTIPS: Record<string, string> = {
   reliability: 'Incidencias + reviews + confianza',
   passenger: 'Confort pasajero + reviews + confianza',
 };
-
-function PodiumCard({ entry, rank, variant = 'featured' }: { entry: RankingEntry; rank: number; variant?: 'featured' | 'compact' }) {
-  const bikeName = getBikeDisplayName(entry.bike);
-  const confidenceTooltip = CONFIDENCE_TOOLTIPS[entry.confidence] ?? '';
-
-  return (
-    <article className={`rankings__podium-card rankings__podium-card--${variant}`} aria-label={`Puesto ${rank}: ${bikeName}`}>
-      <MotorcycleImage motorcycle={entry.bike} alt={`Imagen de ${bikeName}`} loading={rank === 1 ? 'eager' : 'lazy'} />
-      <div className="rankings__podium-overlay" aria-hidden="true" />
-      <div className="rankings__rank-badge">
-        <strong>{String(rank).padStart(2, '0')}</strong>
-      </div>
-      <div className="rankings__podium-content">
-        <div>
-          <p>{entry.bike.brand}</p>
-          <h3>{entry.bike.model}</h3>
-          <span>{entry.bike.year} · {segmentLabels[entry.bike.segment]} · {entry.bike.displacementCc} cc</span>
-        </div>
-        <div className="rankings__podium-stats">
-          <div>
-            <span>Reviews</span>
-            <strong>{entry.reviews}</strong>
-          </div>
-          <div>
-            <span>Potencia</span>
-            <strong>{entry.bike.powerHp} CV</strong>
-          </div>
-        </div>
-        <div className="rankings__podium-rating">
-          <span className="rankings__rating-icon material-symbols-outlined" aria-hidden="true">analytics</span>
-          <strong>{formatRankingScore(entry.score)}</strong>
-          {entry.reviewCount > 0 && (
-            <span
-              className={`rankings__confidence-shield rankings__confidence-shield--${entry.confidence}`}
-              aria-label={confidenceTooltip}
-              tabIndex={0}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">shield</span>
-              <span className="rankings__confidence-tooltip" role="tooltip">
-                {confidenceTooltip}
-              </span>
-            </span>
-          )}
-        </div>
-        <a href={getCommunityHref(entry.bike)} className="rankings__podium-action">
-          Ver reviews <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-        </a>
-      </div>
-    </article>
-  );
-}
 
 function CategoryCard({ ranking }: { ranking: CategoryRanking }) {
   const tooltip = RANKING_TOOLTIPS[ranking.category.id] ?? '';
@@ -350,9 +303,51 @@ export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProp
       {podiumEntries.length > 0 && (
         <section className="rankings__podium-section" aria-labelledby="podium-title">
           <div className="rankings__podium-grid">
-            {podiumEntries[1] && <PodiumCard entry={podiumEntries[1]} rank={2} variant="compact" />}
-            {podiumEntries[0] && <PodiumCard entry={podiumEntries[0]} rank={1} variant="featured" />}
-            {podiumEntries[2] && <PodiumCard entry={podiumEntries[2]} rank={3} variant="compact" />}
+            {podiumEntries[1] ? (
+              <PodiumCard
+                bike={podiumEntries[1].bike}
+                confidence={getRankingConfidence(podiumEntries[1].reviewCount)}
+                confidenceTooltip={CONFIDENCE_TOOLTIPS[getRankingConfidence(podiumEntries[1].reviewCount)] ?? ''}
+                href={getCommunityHref(podiumEntries[1].bike)}
+                meta={`${podiumEntries[1].bike.year} · ${segmentLabels[podiumEntries[1].bike.segment]} · ${podiumEntries[1].bike.displacementCc} cc`}
+                rank={2}
+                scoreLabel={formatRankingScore(podiumEntries[1].score)}
+                showConfidence={podiumEntries[1].reviewCount > 0}
+                stats={[ { label: 'Reviews', value: numberFormatter.format(podiumEntries[1].reviews) }, { label: 'Potencia', value: `${podiumEntries[1].bike.powerHp} CV` } ]}
+                statsAriaLabel={`${podiumEntries[1].reviewCount} reviews aprobadas`}
+                variant="compact"
+              />
+            ) : null}
+            {podiumEntries[0] ? (
+              <PodiumCard
+                bike={podiumEntries[0].bike}
+                confidence={getRankingConfidence(podiumEntries[0].reviewCount)}
+                confidenceTooltip={CONFIDENCE_TOOLTIPS[getRankingConfidence(podiumEntries[0].reviewCount)] ?? ''}
+                href={getCommunityHref(podiumEntries[0].bike)}
+                meta={`${podiumEntries[0].bike.year} · ${segmentLabels[podiumEntries[0].bike.segment]} · ${podiumEntries[0].bike.displacementCc} cc`}
+                rank={1}
+                scoreLabel={formatRankingScore(podiumEntries[0].score)}
+                showConfidence={podiumEntries[0].reviewCount > 0}
+                stats={[ { label: 'Reviews', value: numberFormatter.format(podiumEntries[0].reviews) }, { label: 'Potencia', value: `${podiumEntries[0].bike.powerHp} CV` } ]}
+                statsAriaLabel={`${podiumEntries[0].reviewCount} reviews aprobadas`}
+                variant="large"
+              />
+            ) : null}
+            {podiumEntries[2] ? (
+              <PodiumCard
+                bike={podiumEntries[2].bike}
+                confidence={getRankingConfidence(podiumEntries[2].reviewCount)}
+                confidenceTooltip={CONFIDENCE_TOOLTIPS[getRankingConfidence(podiumEntries[2].reviewCount)] ?? ''}
+                href={getCommunityHref(podiumEntries[2].bike)}
+                meta={`${podiumEntries[2].bike.year} · ${segmentLabels[podiumEntries[2].bike.segment]} · ${podiumEntries[2].bike.displacementCc} cc`}
+                rank={3}
+                scoreLabel={formatRankingScore(podiumEntries[2].score)}
+                showConfidence={podiumEntries[2].reviewCount > 0}
+                stats={[ { label: 'Reviews', value: numberFormatter.format(podiumEntries[2].reviews) }, { label: 'Potencia', value: `${podiumEntries[2].bike.powerHp} CV` } ]}
+                statsAriaLabel={`${podiumEntries[2].reviewCount} reviews aprobadas`}
+                variant="compact"
+              />
+            ) : null}
           </div>
         </section>
       )}

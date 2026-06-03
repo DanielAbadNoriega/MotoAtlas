@@ -23,6 +23,7 @@ export interface PodiumCardProps {
   readonly ctaLabel?: string;
   readonly loading?: 'eager' | 'lazy';
   readonly statsAriaLabel?: string;
+  readonly showConfidence?: boolean;
 }
 
 export function PodiumCard({
@@ -37,6 +38,7 @@ export function PodiumCard({
   href,
   ctaLabel = 'Ver reviews',
   statsAriaLabel,
+  showConfidence = true,
 }: PodiumCardProps) {
   const rankPadded = String(rank).padStart(2, '0');
 
@@ -70,16 +72,18 @@ export function PodiumCard({
         <div className="podium-card__score">
           <span className="material-symbols-outlined podium-card__score-icon" aria-hidden="true">analytics</span>
           <strong>{scoreLabel}</strong>
-          <span
-            className={`podium-card__confidence-shield podium-card__confidence-shield--${confidence}`}
-            aria-label={confidenceTooltip}
-            tabIndex={0}
-          >
-            <span className="material-symbols-outlined" aria-hidden="true">shield</span>
-            <span className="podium-card__confidence-tooltip" role="tooltip">
-              {confidenceTooltip}
+          {showConfidence ? (
+            <span
+              className={`podium-card__confidence-shield podium-card__confidence-shield--${confidence}`}
+              aria-label={confidenceTooltip}
+              tabIndex={0}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">shield</span>
+              <span className="podium-card__confidence-tooltip" role="tooltip">
+                {confidenceTooltip}
+              </span>
             </span>
-          </span>
+          ) : null}
         </div>
         <a href={href} className="podium-card__action">
           {ctaLabel} <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>

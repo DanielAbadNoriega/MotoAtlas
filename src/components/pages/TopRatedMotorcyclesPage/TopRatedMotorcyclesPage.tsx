@@ -25,8 +25,8 @@ import { getRankingConfidence } from '../../../shared/reviews/communityRankings'
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { useAuth } from '../../../features/auth';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
-import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
 import './TopRatedMotorcyclesPage.scss';
@@ -68,21 +68,6 @@ function getApprovedReviews(reviews: readonly MotorcycleReview[]) {
 
 function getCommunityHref(bike: Pick<Bike, 'id'>) {
   return `#/comunidad/${bike.id}`;
-}
-
-function RankingStats({ item }: { item: TopRatedMotorcycle }) {
-  return (
-    <div className="top-rated__podium-stats" aria-label={`Datos clave de ${getBikeDisplayName(item.bike)}`}>
-      <div aria-label={`${item.reviewCount} reviews aprobadas`}>
-        <span>Reviews</span>
-        <strong>{numberFormatter.format(item.reviewCount)}</strong>
-      </div>
-      <div>
-        <span>Potencia</span>
-        <strong>{numberFormatter.format(item.bike.powerHp)} CV</strong>
-      </div>
-    </div>
-  );
 }
 
 function formatRankingScore(rating: number): string {

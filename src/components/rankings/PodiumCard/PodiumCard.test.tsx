@@ -85,6 +85,19 @@ describe('PodiumCard', () => {
     expect(tooltip).toHaveTextContent('Alta confianza');
   });
 
+  it('does not render confidence shield when showConfidence=false', () => {
+    render(<PodiumCard {...defaultProps} showConfidence={false} />);
+    expect(screen.queryByLabelText('Alta confianza')).not.toBeInTheDocument();
+  });
+
+  it('renders remaining content when showConfidence=false', () => {
+    render(<PodiumCard {...defaultProps} showConfidence={false} />);
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('F 900 GS');
+    expect(screen.getByText('BMW')).toBeInTheDocument();
+    expect(screen.getByText('8.5')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Ver reviews/i })).toBeInTheDocument();
+  });
+
   it('renders CTA href', () => {
     render(<PodiumCard {...defaultProps} />);
     const cta = screen.getByRole('link', { name: /Ver reviews/i });
