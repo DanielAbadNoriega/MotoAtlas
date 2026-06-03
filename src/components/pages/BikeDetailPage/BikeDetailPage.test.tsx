@@ -504,8 +504,8 @@ describe('BikeDetailPage', () => {
 
     await user.click(screen.getByRole('tab', { name: /Comunidad/i }));
 
-    const communityTab = document.querySelector('.bike-detail__community-tab');
-    expect(communityTab).toBeInTheDocument();
+    const communitySummarySection = await screen.findByRole('region', { name: /Comunidad/i });
+    expect(communitySummarySection).toBeInTheDocument();
   });
 
   it('Comunidad tab bottom CTA Escribir review es un boton real', async () => {

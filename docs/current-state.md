@@ -2,8 +2,8 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/shared-podium-card`
-- Último bloque validado: extracción de `PodiumCard` compartido entre `TopRatedMotorcyclesPage` y `CommunityRankingsPage`. Componente self-styled con CSS propio, presentacional sin fetch ni auth. API con `showConfidence` (props booleana con tests unitarios directos). Migration completa de ambas páginas. Dead CSS de podios old eliminado.
+- Rama actual: `feature/bike-detail-section-layout`
+- Último bloque validado: BikeDetailPage section layout normalization. Patrón unificado `section.bike-detail__section + .bike-detail__section-container` aplicado a todos los tabs (Resumen, Especificaciones, Comunidad, Comparar). Elimina double-container, permite fondos de sección full-width y contenido alineado. Quality Gate limpio. Tests actualizados para reflejar la nueva estructura de sibling sections en Comunidad y Especificaciones.
 - Tests: 1088 passed
 - Typecheck: clean
 - Último commit:
@@ -61,87 +61,60 @@
   - Responsive: desktop 2 cols en secondary, tablet 2 cols, mobile stack.
 - Tests de `FeaturedMachines`: 9 tests cubriendo render, CTAs, specs y ausencia de textos legacy.
 
-### BikeDetailPage — Reorganización por tabs (Fases 1, 2, 2C, 2C-B, 3A, 3B, 4.1, 4.2, 4.3A, 4.3B, 4.3C, 5.1, 5.2 y 5.3 implementadas)
+### BikeDetailPage — Reorganización por tabs + Layout normalization (Fases 1–5 implementadas)
 - tabs accesibles con 4 tabs: Resumen, Especificaciones, Comunidad, Comparar.
 - Sin tab Metodología (ya existe `#/metodologia`).
 - Tab Resumen activa por defecto.
-- Contenido en Resumen: `section.bike-detail__riding` + `section.bike-detail__fit`.
+- Contenido en Resumen: `section.bike-detail__riding` + `section.bike-detail__fit` (normalizados con section/container).
 - Fase 1 — estructura tabs + Resumen: **implementada**.
-- Fase 2 — `SpecificationsTab`: **implementada**.
-   - Componente `SpecificationsTab` con bento grid de `SpecCard`.
+- Fase 2 — `SpecificationsTab` con bento grid de `SpecCard`: **implementada**.
    - 8 cards base: Motor (cc), Potencia (HP), Torque (NM), Peso (KG), Altura asiento (MM), Depósito (L), Carnet, Precio.
    - Card electrónica/features: solo features activas (`filter(([, isEnabled]) => isEnabled)`), no renderiza `false`.
    - Card A2: solo si `isA2Compatible` o `isA2LimitedVersion`; muestra badge y versión limitada con `limitedPowerHp`/`originalPowerHp`. Usa icono `license` (no `a2` como key).
    - Precio: `isPendingPrice` → `pendingPriceLabel` ("Precio pendiente de confirmar") si `priceEur <= 0` o `source = placeholder`. Nunca `0 €`.
    - Diseño inspirado en Stitch/specs.html: bento grid, border sutil, hover, adaptado a SCSS/MotoAtlas.
    - Responsive: 4 cols desktop, 2 cols tablet, 1 col mobile.
-   - Extended specs dentro del tab: sección `bike-detail__specs-extended` debajo del bento grid con heading `Especificaciones ampliadas` y copy `Detalles técnicos y equipamiento específico del modelo.`
-   - Reutiliza `getSpecGroups(bike)` para grupos detallados (Motor & transmisión, Chasis & ergonomía, Mercado & registro).
 - Fase 2C — specs detalladas dentro de Especificaciones tab: **implementada**.
-   - La vieja `section.bike-detail__specs` (fuera de tabs) fue eliminada del flujo principal.
-   - Extended specs vive dentro de `SpecificationsTab`, debajo del bento grid de SpecCards.
    - Heading: `Especificaciones ampliadas`.
-   - Copy: `Detalles técnicos y equipamiento específico del modelo.`
+   - Copy: `Detalles técnicos y equipamiento específico del modelo.` (restaurada tras split P2-B).
    - Grupos: Motor & transmisión, Chasis & ergonomía, Mercado & registro.
 - Fase 2C-B — tests de extended specs: **implementada**.
-   - 5 tests añadidos cubriendo heading, copy, grupos, invisibilidad antes de abrir tab y ausencia de sección residual.
+   - 5 tests cubriendo heading, copy, grupos, invisibilidad antes de abrir tab y ausencia de sección residual.
+- Fase 2-B — split specs-extended en sección hermana: **implementada**.
+   - `bike-detail__specs-extended` ahora es sibling de `bike-detail__specs-tab`, no anidado dentro.
+   - Cada sección tiene su propio `.bike-detail__section-container`.
+   - `aria-labelledby="bike-detail-specs-title"` preservado.
 - Fase 3A — Iconos técnicos compartidos: **implementada**.
    - Nuevo módulo compartido: `src/shared/motorcycles/motorcycleTechnicalIcons.ts`.
    - Exporta: `motorcycleTechnicalIconMap`, `MotorcycleTechnicalIconKey`, `getMotorcycleTechnicalIcon(key)`.
-   - Contrato de 18 keys: 8 de specs técnicas (engine, power, torque, weight, seatHeight, fuelTank, license, price) + 10 de aspectos de reviews (ergonomics, consumption, braking, suspension, electronics, aerodynamics, passenger, maintenance, design).
-   - `a2` NO es una key del mapa; A2 es variante/estado dentro de `license`. El bloque A2 en SpecificationsTab usa `getMotorcycleTechnicalIcon('license')`.
-   - Iconos Material Symbols: `fuelTank → oil_barrel`, `consumption → local_gas_station`, `license → workspace_premium`, etc.
-   - Tests dedicados en `src/shared/motorcycles/motorcycleTechnicalIcons.test.ts`.
-   - `specIconMap` local eliminado de BikeDetailPage.tsx.
-- Fase 3B — Iconos técnicos compartidos en ReviewModal: **implementada**. ReviewModal `technicalAspects` ahora usa `getMotorcycleTechnicalIcon(category)` del módulo compartido. Sin iconos hardcodeados, sin duplicación. `consumption` → `local_gas_station`. `ReviewAspectSummary` no fue migrada (pendiente coordinación futura si aplica).
-- Fallbacks documentados:
-   - Precio: fallback textual cuando `priceEur <= 0` o `source = placeholder`.
-   - Features: solo booleanas `true` se renderizan.
-   - A2: bloque condicional con icono de `license`.
-- Campos no existentes en modelo: suspensiones, frenos, neumáticos, electrónica avanzada. No se muestran.
+   - Contrato de 18 keys: 8 de specs técnicas + 10 de aspectos de reviews.
+   - `a2` NO es una key del mapa; A2 es variante/estado dentro de `license`.
+- Fase 3B — Iconos técnicos compartidos en ReviewModal: **implementada**.
+- Layout normalization (P1–P5): **implementada**.
+   - Patrón unificado en todos los tabs:
+
+     ```html
+     <section class="bike-detail__section bike-detail__section--contexto existing-class">
+       <div class="bike-detail__section-container">
+         ...contenido...
+       </div>
+     </section>
+     ```
+
+   - `.bike-detail__section` → ancho completo (width: 100%).
+   - `.bike-detail__section-container` → `@include container` + `@include section-spacing` para cada sección.
+   - `.bike-detail__tab-content` → **no es contenedor de ancho**. Solo gestiona flujo/ritmo vertical.
+   - Resumen: `bike-detail__riding` y `bike-detail__fit` como secciones sisters con container propio.
+   - Especificaciones: `bike-detail__specs-tab` y `bike-detail__specs-extended` como secciones sisters, cada una con container propio.
+   - Comunidad: `bike-detail__community-tab` (summary), `bike-detail__reliability` y `bike-detail__reviews` como secciones sisters, cada una con container propio.
+   - Comparar: `bike-detail__compare-tab` normalizado (empty y normal state) con container interno.
+- Calidad verificada: Quality Gate limpio (typecheck clean, 1088 tests passed).
+- QA visual pendiente: verificar gap vertical entre specs-tab y specs-extended en desktop. Si es excesivo, posible follow-up SCSS mínimo.
 - Secciones residuales cerradas:
-   - `bike-detail__specs` → eliminada del flujo principal; specs detalladas ahora dentro de Especificaciones tab (Fase 2C).
-   - `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
-   - `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto (Fases 4.3B/4.3C).
-   - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
-- Fase 5.1 — CompareTab local con related bikes: **implementada**.
-   - Componente `CompareTab` local en BikeDetailPage.tsx con related bikes (mismo segmento, excluye actual, max 3).
-   - Empty state: `Sin modelos relacionados del mismo segmento por ahora.`
-- Fase 5.2 — Acciones reales de comparador en CompareTab: **implementada**.
-   - Botones reales: `Comparar`, `Ya en comparador`, `Comparador lleno`.
-   - Infraestructura de compare queue reutilizada: `loadCompareQueue`, `saveCompareQueue`, `compareQueueMaxSize`, `getNextCompareSelection`.
-   - `saveCompareQueue` dispensa el evento de sync automáticamente; no se añade evento custom en BikeDetailPage.
-   - Sin botones fake/no-op.
-   - Sin ids duplicados en cola; máximo 3 respetado.
-- Fase 5.3 — CompareTab con MotorcycleGarageCard: **implementada**.
-   - CompareTab ahora usa `MotorcycleGarageCard` directamente para cada related bike.
-   - Sin cambios en `MotorcycleGarageCard`; no se añadieron props nuevas.
-   - Acciones de comparador inyectadas via `footerActions` (botón Comparar/Ya en comparador/Comparador lleno).
-   - Rating y reviewCount usan proxy pattern (reliabilityScore / 2 y reportCount) — no son señal comunitaria real.
-   - 8 tests nuevos cubriendo render de MotorcycleGarageCard, estados de botón, persistencia en cola y link Ver ficha.
-- Fase 5.3 — Layout cleanup Comunidad: **implementada**.
-   - `bike-detail__community-summary` reducido a strip compacto (flex-row, bg surface-dim, padding reducido).
-   - Summary muestra: rating medio o "Sin rating", review count o "Sin reviews", confidence shield si hay datos.
-   - Reviews limitados a 3 con `reviews.slice(0, 3)`.
-   - CTAs movidos al footer de la sección reviews: "Escribir review" + "Ver reviews" → `#/comunidad/[bike.id]`.
-   - Header duplicado eliminado.
-   - FeaturedReviewCard mantiene `hideImage`, `hideLinks`, acciones seguras sin cambios.
-- Plan por fases actualizado:
-   - Fase 1: estructura tabs + Resumen — **implementada**.
-   - Fase 2: tab Especificaciones — **implementada**.
-   - Fase 2C: specs detalladas dentro de Especificaciones tab — **implementada**.
-   - Fase 2C-B: tests de specs detalladas — **implementada**.
-   - Fase 3A: iconos técnicos compartidos — **implementada**.
-   - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
-   - Fase 4.1: tab Comunidad local con mini comunidad summary — **implementada**.
-   - Fase 4.2: fiabilidad dentro de CommunityTab — **implementada**.
-   - Fase 4.3A: FeaturedReviewCard compact variant — **implementada**.
-   - Fase 4.3B: reviews dentro de CommunityTab con FeaturedReviewCard — **implementada**.
-   - Fase 4.3C: acciones seguras de comunidad con FeaturedReviewCardCommunityActions — **implementada**.
-   - Fase 5.1: CompareTab con related bikes — **implementada**.
-   - Fase 5.2: acciones reales de comparador en CompareTab — **implementada**.
-   - Fase 5.3: CompareTab con MotorcycleGarageCard + layout cleanup Comunidad — **implementada**.
-- Tests: 1088 passed (71 files).
+   - `bike-detail__specs` → eliminada del flujo principal.
+   - `bike-detail__reliability` → sección sister en Comunidad.
+   - `bike-detail__reviews` → sección sister en Comunidad.
+   - `bike-detail__related` → integrado en CompareTab.
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
@@ -194,25 +167,20 @@
 ## Pendiente
 
 - Rediseño mobile avanzado de rankings/listado técnico — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch. Mantener responsive usable y sin pantallas rotas.
-- BikeDetailPage — reorganización por tabs:
+- BikeDetailPage — reorganización por tabs + layout normalization:
    - Fase 1: estructura tabs + Resumen (riding + fit) — **implementada**.
    - Fase 2: tab Especificaciones (`SpecificationsTab` con bento grid, SpecCard, electronics, A2 condicional, fallbacks de precio) — **implementada**.
+   - Fase 2-B: split specs-extended como sección hermana de specs-tab — **implementada**.
    - Fase 2C: specs detalladas dentro de Especificaciones tab — **implementada**.
    - Fase 2C-B: tests de specs detalladas — **implementada**.
    - Fase 3A: iconos técnicos compartidos (`motorcycleTechnicalIcons.ts`, 18 keys, `a2` no es key, A2 usa `license`) — **implementada**.
    - Fase 3B: iconos técnicos compartidos en ReviewModal — **implementada**.
-   - Fase 4.1: tab Comunidad local con mini comunidad summary (rating medio, count, confidence shield, empty state) — **implementada**.
-   - Fase 4.2: `bike-detail__reliability` dentro de CommunityTab, copy conservadora, common issues solo si `reportCount > 0`, empty state seguro — **implementada**.
-   - Fase 4.3A: FeaturedReviewCard compact variant (`hideImage`, `hideLinks`) — **implementada**.
-   - Fase 4.3B: `bike-detail__reviews` dentro de CommunityTab con FeaturedReviewCard (`hideImage`, `hideLinks`), sin "Más reviews" / "Ver ficha", MotorcycleReviewCard eliminada — **implementada**.
-   - Fase 4.3C: FeaturedReviewCardCommunityActions para acciones seguras, `Útil N` público, no fake/no-op, no-auth sin interacción, own review pasivo, reported bloquea, Reportar solo con handler real, Responder no existe en BikeDetailPage — **implementada**.
-   - Fase 5.1: CompareTab local con related bikes (mismo segmento, max 3) — **implementada**.
-   - Fase 5.2: acciones reales de comparador en CompareTab (loadCompareQueue, saveCompareQueue, getNextCompareSelection) — **implementada**.
-   - Fase 5.3: CompareTab con MotorcycleGarageCard + layout cleanup Comunidad — **implementada**.
-   - Sección residual `bike-detail__specs` eliminada; specs detalladas dentro de Especificaciones tab.
-   - Sección residual `bike-detail__related` integrada en CompareTab.
+   - Fase 4: tab Comunidad con summary + reliability + reviews como secciones sisters (cada una con `.bike-detail__section-container` propio) — **implementada**.
+   - Fase 5: tab Comparar normalizado (empty y normal state, cada uno con container interno) — **implementada**.
+   - Layout normalization P1–P5: patrón unificado `section.bike-detail__section + .bike-detail__section-container` aplicado a todos los tabs. Quality Gate limpio (typecheck clean, 1088 tests passed).
+   - Sección residual `bike-detail__specs` eliminada.
    - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
-   - Layout cleanup Comunidad: summary compacto, reviews limitados a 3, CTAs en footer.
+   - QA visual pendiente: verificar gap vertical entre specs-tab y specs-extended en desktop. Si es excesivo, posible follow-up SCSS mínimo.
    - Refinado visual/global de layout pospuesto a fase futura (después de cerrar funcionalidad core).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
