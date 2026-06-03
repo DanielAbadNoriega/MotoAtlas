@@ -1,0 +1,43 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.filter-group {
+  border-top: 1px solid rgba($color-outline-variant, 0.24);
+  padding-block: 1.25rem;
+
+  &__summary {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    .filter-group__icon {
+      color: $color-outline;
+      transition: transform $transition-base;
+    }
+  }
+
+  &__title {
+    @include label-caps;
+
+    color: $color-on-surface;
+  }
+
+  &[open] &__icon {
+    transform: rotate(180deg);
+  }
+
+  &__body {
+    padding-top: 1rem;
+  }
+
+  &:not([open]) &__body {
+    display: none;
+  }
+}
