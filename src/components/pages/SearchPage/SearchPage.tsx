@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   clearIncomingCompareHash,
@@ -179,20 +180,6 @@ function ActiveFilterChips({ chips, compact = false }: { chips: readonly ActiveF
         </button>
       ))}
     </div>
-  );
-}
-
-function FilterGroup({ children, title }: { children: ReactNode; title: string }) {
-  return (
-    <details className="search-page__filter-group" open>
-      <summary>
-        <span>{title}</span>
-        <span className="material-symbols-outlined" aria-hidden="true">
-          expand_more
-        </span>
-      </summary>
-      <div className="search-page__filter-group-body">{children}</div>
-    </details>
   );
 }
 
