@@ -130,6 +130,7 @@ Estado: parcialmente implementado (primera migración completada).
 - `AccountMotorcycleReviewsPage` migrada al FilterGroup compartido.
 - `CommunityReviewsPage` migrada al FilterGroup compartido.
 - `SearchPage` migrada al FilterGroup compartido. La función local `FilterGroup` se eliminó y los 10 grupos (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) usan el componente compartido.
+- `MotorcycleCommunityPage` migrada al FilterGroup compartido. La función local `FilterGroup` se eliminó y los 2 grupos (Rating, Orden) usan el componente compartido. `FilterOptionButton` y `FilterRatingStars` locales se preservan porque `motorcycle-community__filter-option*`, `motorcycle-community__filter-stars` y `motorcycle-community__filter-star--filled` siguen activos.
 - SCSS residual `.account-reviews-page__filter-group*` se mantiene en AccountReviewsPage.scss por posible uso como className contextual para ajustes locales del componente; los selectores `account-reviews-page__filter-option*`, `account-reviews-page__filter-star*`, `account-reviews-page__rating-grid` y `account-reviews-page__sort-grid` siguen activos en ambas páginas (AccountReviewsPage y AccountMotorcycleReviewsPage usan `FilterOptionButton` y `FilterRatingStars` locales). En `CommunityReviewsPage`, los selectores `community-reviews-page__filter-option*`, `community-reviews-page__filter-star*`, `community-reviews-page__segment-grid`, `community-reviews-page__pill-list`, `community-reviews-page__rating-grid` y `community-reviews-page__sort-grid` siguen activos (usados por `FilterOptionButton` y `RatingStars` locales). En `SearchPage`, los selectores `search-page__brand-grid`, `search-page__segment-grid`, `search-page__pill-list`, `search-page__option-card`, `search-page__toggle-grid` y `search-page__range-*` siguen activos.
 
 **Limpieza residual SCSS tras migraciones (rama `feature/filtergroup-residual-scss-cleanup`):**
@@ -139,8 +140,12 @@ Estado: parcialmente implementado (primera migración completada).
 - Quality Gate de la rama: typecheck clean, 1088 tests passed.
 - `.account-reviews-page__filter-group*` queda intacto: no hay evidencia de orphan en TSX y se preserva por riesgo de override contextual documentado.
 
+**Limpieza residual SCSS tras migración de `MotorcycleCommunityPage` (rama `feature/motorcycle-community-filtergroup`):**
+- Eliminados de `MotorcycleCommunityPage.scss` los selectores huérfanos `.motorcycle-community__filter-group*` y `.motorcycle-community__filter-group-body` (incluido el `:not([open])` con body anidado). Los selectores activos `__rating-grid`, `__sort-grid`, `__filter-option`, `__filter-option--rating`, `__filter-stars` y `__filter-star--filled` se preservaron.
+- Quality Gate de la rama: typecheck clean, 1088 tests passed.
+
 **Pendiente de futuras migraciones:**
-- Migrar filtros de `MotorcycleCommunityPage` y `AdminPage` si safe.
+- Migrar filtros de `AdminPage` si safe.
 
 ### BikeDetailPage — Reorganización por tabs
 

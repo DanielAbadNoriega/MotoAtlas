@@ -17,6 +17,7 @@ import {
 import { type ReviewReportReason } from '../../../services/reviewReportService';
 import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import {
   buildReviewAuthContext,
@@ -270,18 +271,6 @@ function filterOwnerReports(reviews: readonly MotorcycleReview[], filters: Owner
 
 function hasActiveOwnerReportFilters(filters: OwnerReportsFilters) {
   return filters.rating !== defaultOwnerReportsFilters.rating || filters.sort !== defaultOwnerReportsFilters.sort;
-}
-
-function FilterGroup({ children, title }: Readonly<{ children: ReactNode; title: string }>) {
-  return (
-    <details className="motorcycle-community__filter-group" open>
-      <summary>
-        <span>{title}</span>
-        <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
-      </summary>
-      <div className="motorcycle-community__filter-group-body">{children}</div>
-    </details>
-  );
 }
 
 function FilterOptionButton({
