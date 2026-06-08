@@ -343,80 +343,10 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  &__spec-card {
-    min-height: 150px;
-    padding: 1.25rem;
-    position: relative;
-    background: $color-surface-dim;
-    border: 1px solid rgba($color-outline-variant, 0.15);
-    transition: background-color $transition-base;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 1.25rem;
-    border-radius: $radius-md;
-
-    &:hover {
-      background: $color-surface-container;
-    }
-
-    &--accent {
-      background: rgba($color-accent-soft, 0.15);
-      border-color: rgba($color-accent, 0.3);
-    }
-
-    &--electronics {
-      grid-column: span 2;
-    }
-
-    &--a2 {
-      grid-column: span 2;
-    }
-  }
-
-  &__spec-card-header {
-    display: flex;
-    justify-content: flex-end;
-    position: absolute;
-    right: 1rem;
-    bottom: 1.25rem;
-
-    .material-symbols-outlined {
-      color: rgba($color-on-surface, 0.3);
-      font-size: 4rem;
-    }
-  }
-
-  &__spec-label {
-    @include label-caps;
-
-    color: $color-on-surface-variant;
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    margin: 0 0 0.5rem;
-  }
-
-  &__spec-value-row {
-    max-width: 70%;
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-  }
-
-  &__spec-value {
-    font-family: $font-headline;
-    font-size: 1.7rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  &__spec-unit {
-    @include label-caps;
-
-    color: $color-accent;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
+  // Cards de SpecCard, spec-card-header, spec-label, spec-value-row,
+  // spec-value y spec-unit viven en TechnicalSpecCard.scss. El bento
+  // de BikeDetailPage solo controla el layout grid de los modificadores
+  // --electronics y --a2 (que son específicos del bento).
 
   &__electronics-chips {
     display: flex;
@@ -457,76 +387,6 @@
 
     color: $color-on-surface-variant;
     font-size: 0.65rem;
-  }
-
-  &__quick-specs {
-    display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-
-    article {
-      @include dashboard-card;
-
-      display: grid;
-      gap: 1rem;
-      min-height: 150px;
-      padding: 1.5rem;
-    }
-
-    span:first-child {
-      @include label-caps;
-
-      color: $color-on-surface-variant;
-    }
-
-    strong {
-      @include headline-md;
-    }
-
-    .material-symbols-outlined {
-      color: rgba($color-accent, 0.65);
-      justify-self: end;
-    }
-  }
-
-  &__features {
-    align-items: start;
-    display: grid;
-    gap: 2rem;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.5fr);
-    padding-top: 0;
-
-    > div:first-child > span {
-      @include label-caps;
-
-      color: $color-accent;
-    }
-
-    h2 {
-      @include headline-lg;
-
-      margin: 0.6rem 0 0;
-    }
-  }
-
-  &__feature-list {
-    @include glass-hud;
-
-    border-radius: $radius-xl;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 1.5rem;
-
-    span {
-      @include label-caps;
-
-      background: $color-surface-lowest;
-      border: 1px solid rgba($color-outline-variant, 0.42);
-      border-radius: $radius-sm;
-      color: $color-on-surface;
-      padding: 0.7rem 0.8rem;
-    }
   }
 
   &__riding {
@@ -760,14 +620,6 @@
 
     p {
       margin-top: 0.5rem;
-    }
-  }
-
-  &__specs {
-    h2 {
-      @include headline-lg;
-
-      margin: 0 0 2.5rem;
     }
   }
 
@@ -1045,8 +897,7 @@
       padding-inline: $margin-tablet;
     }
 
-    &__fit-grid,
-    &__quick-specs {
+    &__fit-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
@@ -1063,7 +914,6 @@
       grid-column: span 1;
     }
 
-    &__features,
     &__riding,
     &__reliability {
       grid-template-columns: 1fr;
@@ -1110,7 +960,6 @@
       width: 100%;
     }
 
-    &__quick-specs,
     &__fit-grid {
       grid-template-columns: 1fr;
     }

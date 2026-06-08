@@ -16,7 +16,7 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1088 passed`.
+- Tests de referencia: `1097 passed`.
 - Typecheck: clean.
 
 ## 3. Foco inmediato recomendado
@@ -150,7 +150,7 @@ La rama `feature/admin-filtergroup-audit` recomendó inicialmente no migrar admi
 ### Quality Gate de la normalización
 
 - `npm run typecheck` → clean.
-- `npm run test` → 1088 / 1088 pasando.
+- `npm run test` → 1097 / 1097 pasando (baseline vigente).
 
 ### BikeDetailPage — Reorganización por tabs
 
@@ -265,7 +265,7 @@ Secciones residuales cerradas:
 - `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
 - `bike-detail__reviews` → movido a CommunityTab (Fases 4.3B/4.3C).
 - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
-- `bike-detail__quick-specs` y `bike-detail__features` → parcialmente absorbidas por SpecificationsTab.
+- `bike-detail__quick-specs` y `bike-detail__features` → parcialmente absorbidas por SpecificationsTab y, en rama `feature/bike-detail-technical-spec-cards`, cerradas con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 
 ## 6. P2 — Plataforma/Admin/Productividad interna
 
@@ -1296,7 +1296,7 @@ No es implementación. Es una tarea de documentación y planificación futura.
 
 **Conexión con roadmap:**
 - Conecta con sección 13 (revisión global UI/SCSS) como subtarea específica dentro de esa fase.
-- Conecta con P1/P2 UX pública + componentes reutilizables (mejora de quick specs, filtros atomizados).
+- Conecta con P1/P2 UX pública + componentes reutilizables (filtros atomizados, ya cerrados; mejora de quick specs cerrada en rama `feature/bike-detail-technical-spec-cards` con `TechnicalSpecCard`).
 - Conecta con fase mobile-first (sección 13b) una vez cerrada la unificación base.
 - No bloquea funcionalidades core actuales.
 
@@ -1354,7 +1354,7 @@ Reglas actuales para mobile:
 - Reclasificación aplicada: la tarjeta histórica “Implementar login y cuentas de usuario” queda dentro de **P2 Plataforma/Admin/Productividad interna** como **auth baseline** (parcialmente implementado, pendiente de auditoría de cierre).
 - Tarjeta incorporada: “Revisar y cerrar taxonomía de categorías de motos” queda como tarea transversal de **P2 Plataforma/Admin/Productividad interna** y dependencia de filtros/admin/SEO catálogo.
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
-- Tarjeta incorporada: mejora futura de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables**.
+- Tarjeta incorporada y cerrada: mejora de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables** y resuelta en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Tarjeta incorporada: “Mejorar generador de reviews mock realistas” clasificada como **P2 Datos demo / QA visual** para soporte de maquetación y validación visual.
 - Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.
 - Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **parcialmente implementada** (base central + migración incremental pendiente) dentro de **P2 Auth baseline / Testing / Fixtures**.

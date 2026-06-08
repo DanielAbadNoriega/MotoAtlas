@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/motorcycle-taxonomy-closure`
-- Último bloque validado: cierre de la taxonomía base de segmentos de motos (rama `feature/motorcycle-taxonomy-closure`). Fuente única de verdad: `src/shared/motorcycles/motorcycleTaxonomy.ts` (`BIKE_SEGMENTS` + `segmentLabels` + `segmentIcons`). Schema SQL enum `motorcycle_segment`, tipo TypeScript `BikeSegment`, importer y dataset (`data/import/motorcycles.json`) alineados. `validateMotorcycleImport` rechaza segmentos fuera de la taxonomía canónica y el bucket UI `other`. Criterio operativo `trail` vs `adventure` documentado en `docs/taxonomy-decisions.md`. Quality Gate aprobado: typecheck clean, 1091 tests passed.
-- Tests: 1091 passed
+- Rama actual: `feature/bike-detail-technical-spec-cards`
+- Último bloque validado: cierre del path legacy de `bike-detail__quick-specs` en `BikeDetailPage` y consolidación de las tarjetas técnicas. `bike-detail__quick-specs` y `bike-detail__features` ya no se renderizan (absorbidas por `SpecificationsTab` en fases previas). SCSS huérfano eliminado. `SpecCard` local de `BikeDetailPage` extraído como `TechnicalSpecCard` shared en `src/components/motorcycles/TechnicalSpecCard/` (presentacional, sin fetch, no conoce `BikeDetailPage`, no renderiza null/undefined, icono Material Symbols decorativo `aria-hidden`, label/value/unit/meta/children opcionales). Quality Gate aprobado: typecheck clean, 1097 tests passed.
+- Tests: 1097 passed
 - Typecheck: clean
 - Último commit:
 
@@ -212,7 +212,7 @@
    - Refinado visual/global de layout pospuesto a fase futura (después de cerrar funcionalidad core).
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
-- Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
+- Backlog P1/P2 (cerrado): mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`). Implementado en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Backlog P1/P2: refactor admin focal — completado como parte de la normalización al shared `FilterGroup` + `FilterOptionButton` (rama `feature/admin-filtergroup-normalization`). Los wrappers `AdminFilterGroup` y `FilterChipButton` fueron eliminados y el HTML crudo duplicado de `AdminMotorcycleReviewsPage` quedó consolidado al usar `FilterGroup` + `FilterOptionButton` compartidos.
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
@@ -252,7 +252,7 @@
 - La tarea “Revisar y cerrar taxonomía de categorías de motos” se clasifica como dependencia estratégica previa para filtros reutilizables, admin catálogo y futuras landings SEO por segmento.
 - Estado de taxonomía actualizado por fases: Fases 0, 1, 2, 2 extendida (cierre de taxonomía base), 3 y 3.1 cerradas; Fase 4 (SEO/Admin/landings) pendiente.
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
-- La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
+- La mejora de quick specs de `BikeDetailPage` (clasificación original **P1/P2 UX pública + componentes reutilizables**) queda **cerrada** en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard`.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
 - “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
 - Fixtures de usuarios/perfiles para auth quedan como **P2 Auth baseline / Testing / Fixtures** con base central implementada; pendiente residual: migración incremental de mocks repetidos.

@@ -20,6 +20,7 @@ import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
 import { MotorcycleGarageCard, MotorcycleGarageCardAction } from '../../motorcycles/MotorcycleGarageCard';
+import { TechnicalSpecCard } from '../../motorcycles/TechnicalSpecCard';
 import './BikeDetailPage.scss';
 
 type BikeDetailPageProps = {
@@ -138,35 +139,6 @@ function getReliabilityLevel(score: number) {
   return 'A vigilar';
 }
 
-function SpecCard({
-  icon,
-  label,
-  value,
-  unit,
-  variant,
-}: {
-  icon: MotorcycleTechnicalIconKey;
-  label: string;
-  value: string;
-  unit?: string;
-  variant?: 'accent';
-}) {
-  return (
-    <article className={variant === 'accent' ? 'bike-detail__spec-card bike-detail__spec-card--accent' : 'bike-detail__spec-card'}>
-      <div className="bike-detail__spec-card-header">
-        <span className="material-symbols-outlined" aria-hidden="true">
-          {getMotorcycleTechnicalIcon(icon)}
-        </span>
-      </div>
-      <p className="bike-detail__spec-label">{label}</p>
-      <div className="bike-detail__spec-value-row">
-        <span className="bike-detail__spec-value">{value}</span>
-        {unit && <span className="bike-detail__spec-unit">{unit}</span>}
-      </div>
-    </article>
-  );
-}
-
 function SpecificationsTab({ bike }: { bike: Bike }) {
   const priceLabel = isPendingPrice(bike.priceEur, bike.priceSource)
     ? pendingPriceLabel
@@ -182,14 +154,14 @@ function SpecificationsTab({ bike }: { bike: Bike }) {
       <section className="bike-detail__section bike-detail__section--specs bike-detail__specs-tab">
         <div className="bike-detail__section-container">
           <div className="bike-detail__specs-bento">
-            <SpecCard icon="engine" label="MOTOR" value={String(bike.displacementCc)} unit="CC" />
-            <SpecCard icon="power" label="POTENCIA" value={String(bike.powerHp)} unit="HP" />
-            <SpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
-            <SpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
-            <SpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
-            <SpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
-            <SpecCard icon="license" label="CARNET" value={a2Badge.label} />
-            <SpecCard
+            <TechnicalSpecCard icon="engine" label="MOTOR" value={String(bike.displacementCc)} unit="CC" />
+            <TechnicalSpecCard icon="power" label="POTENCIA" value={String(bike.powerHp)} unit="HP" />
+            <TechnicalSpecCard icon="torque" label="TORQUE" value={String(bike.torqueNm)} unit="NM" />
+            <TechnicalSpecCard icon="weight" label="PESO" value={String(bike.wetWeightKg)} unit="KG" />
+            <TechnicalSpecCard icon="seatHeight" label="ALTURA ASIENTO" value={String(bike.seatHeightMm)} unit="MM" />
+            <TechnicalSpecCard icon="fuelTank" label="DEPÓSITO" value={String(bike.fuelTankLiters)} unit="L" />
+            <TechnicalSpecCard icon="license" label="CARNET" value={a2Badge.label} />
+            <TechnicalSpecCard
               icon="price"
               label="PRECIO BASE"
               value={isPendingPrice(bike.priceEur, bike.priceSource) ? priceLabel : numberFormatter.format(bike.priceEur)}
