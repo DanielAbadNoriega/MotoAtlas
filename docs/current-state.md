@@ -2,8 +2,8 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/motorcycle-community-filtergroup`
-- Último bloque validado: migración de `MotorcycleCommunityPage` a `FilterGroup` compartido. Función local `FilterGroup` eliminada. Grupos Rating y Orden usan el componente compartido. `FilterOptionButton` y `FilterRatingStars` locales preservados. Limpieza residual SCSS: selectores huérfanos `.motorcycle-community__filter-group*` y `.motorcycle-community__filter-group-body` eliminados. Selectores activos (`__rating-grid`, `__sort-grid`, `__filter-option*`, `__filter-stars`, `__filter-star--filled`) preservados. Quality Gate aprobado.
+- Rama actual: `feature/admin-filtergroup-normalization`
+- Último bloque validado: normalización de filtros admin a `FilterGroup` + `FilterOptionButton` compartidos (rama `feature/admin-filtergroup-normalization`). Decisión de producto revisada: admin debe reusar el mismo sistema de filtros que el resto de la app. `AdminPage` (3 sidebars: moderación, reviews, solicitudes) y `AdminMotorcycleReviewsPage` (sidebar de Estado y Orden) ya están normalizadas. Componentes locales eliminados: `AdminFilterGroup`, `AdminFilterOptionButton`, `FilterChipButton`. El `FilterOptionButton` shared usa `classPrefix="admin-page"` para mantener las clases SCSS `admin-page__filter-option` y `admin-page__filter-option--active`. SCSS huérfano limpiado (`__filter-group*` y `__filter-options--pills` + `__filter-option--pill*`). Quality Gate aprobado: typecheck clean, 1088 tests passed.
 - Tests: 1088 passed
 - Typecheck: clean
 - Último commit:
@@ -116,19 +116,27 @@
    - `bike-detail__reviews` → sección sister en Comunidad.
    - `bike-detail__related` → integrado en CompareTab.
 
-### Filtros reutilizables — `FilterGroup` compartido
+### Filtros reutilizables — `FilterGroup` y `FilterOptionButton` compartidos
 
-- Componente compartido extraído en `src/shared/ui/filters/FilterGroup.tsx` con su propio `FilterGroup.scss` (self-styled).
+- Componentes compartidos extraídos en `src/shared/ui/filters/`:
+  - `FilterGroup.tsx` + `FilterGroup.scss` (self-styled, con `import './FilterGroup.scss'` directo).
+  - `FilterOptionButton.tsx` con `classPrefix` configurable que mantiene la convención de prefijos por página (`admin-page`, `account-reviews-page`, `community-reviews-page`, `motorcycle-community`).
+- `FilterGroup.test.tsx`: 5 tests directos (título, children, `defaultOpen` expandido/colapsado, icono Material Symbols).
 - Migraciones completadas al `FilterGroup` compartido:
   - `AccountReviewsPage` (`#/cuenta/reviews`): filtros de marca/modelo, segmento, carnet, rating medio, uso principal y orden.
   - `AccountMotorcycleReviewsPage` (`#/cuenta/reviews/[motorcycleId]`): filtros de rating y orden (preserva `FilterOptionButton` y `FilterRatingStars` locales para option/star/grid activos).
   - `CommunityReviewsPage` (`#/comunidad/reviews`): grupos Segmento, Carnet, Rating, Uso principal, Orden.
   - `SearchPage` (`#/buscador`): 10 grupos (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos).
   - `MotorcycleCommunityPage` (`#/comunidad/[motorcycleId]`): grupos Rating y Orden. Preserva `FilterOptionButton` y `FilterRatingStars` locales para option/star activos.
+  - `AdminPage` (`#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/solicitudes`): 12 grupos/call sites usan `FilterGroup` + `FilterOptionButton` con `classPrefix="admin-page"`. Grupos: `Estado del reporte`, `Motivo`, `Orden` (moderación); `Estado`, `Origen`, `Segmento`, `Verificadas`, `Carnet`, `Uso principal`, `Orden` (reviews por modelo); `Estado`, `Origen` (solicitudes).
+  - `AdminMotorcycleReviewsPage` (`#/admin/reviews/[motorcycleId]`): `Estado` y `Orden` usan `FilterGroup` + `FilterOptionButton` con `classPrefix="admin-page"`.
+- Componentes locales de admin eliminados: `AdminFilterGroup`, `AdminFilterOptionButton`, `FilterChipButton`. Admin conserva su lógica de dominio: report status, report reason, moderation sort, review status, origin/source, segment, verification, license, riding style, requests filters, paginación con reset, acciones de moderación, auth gate.
 - Limpieza residual SCSS:
   - Rama `feature/filtergroup-residual-scss-cleanup` (SearchPage y CommunityReviewsPage): eliminados `.search-page__filter-group*`, `.search-page__filter-group-body`, `.community-reviews-page__filter-group*` y `.community-reviews-page__filter-group-body` huérfanos; selectores activos preservados. Corrección de layout aceptada por producto en `SearchPage.scss`: `grid-template-columns: minmax(18rem, 4fr) minmax(0px, 8fr);`. `.account-reviews-page__filter-group*` preservado por riesgo de override contextual.
   - Rama `feature/motorcycle-community-filtergroup` (MotorcycleCommunityPage): eliminados `.motorcycle-community__filter-group*` y `.motorcycle-community__filter-group-body` huérfanos; selectores activos (`__rating-grid`, `__sort-grid`, `__filter-option*`, `__filter-stars`, `__filter-star--filled`) preservados.
-- Pendientes: migrar filtros de `AdminPage` si safe.
+  - Rama `feature/admin-filtergroup-normalization` (AdminPage y AdminMotorcycleReviewsPage): eliminados `admin-page__filter-group`, `admin-page__filter-group-toggle`, `admin-page__filter-group-body`, `admin-page__filter-group--open` (wrapper de grupo) y `admin-page__filter-options--pills` + `admin-page__filter-option--pill*` (variantes pill nunca usadas). Preservados: `admin-page__filter-options` (grid 2-col, layout genuino de admin), `admin-page__filter-option`, `admin-page__filter-option--active`, icon styles y media query mobile con `grid-template-columns: 1fr`. `FilterGroup.scss` sigue siendo dueño único de `.filter-group`, `.filter-group__summary`, `.filter-group__title`, `.filter-group__icon`, `.filter-group__body`.
+- Estado: la onda de migración reusable a `FilterGroup` + `FilterOptionButton` compartidos está **completa** incluyendo admin. No hay filtros admin que dependan de wrappers locales.
+- Decisión histórica documentada: la rama `feature/admin-filtergroup-audit` recomendó inicialmente no migrar admin. Esa decisión fue superada por la decisión de producto posterior (rama `feature/admin-filtergroup-normalization`) que sí normalizó admin al shared. La justificación de la auditoría inicial se conserva en `docs/product-roadmap.md` como contexto histórico, no como estado vigente.
 
 ### Auth / testing
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
@@ -199,7 +207,7 @@
 - Aspectos agregados en garaje de `#/comunidad/reviews`.
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2: mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`).
-- Backlog P1/P2: migrar filtros de `AdminPage` al `FilterGroup` compartido si safe.
+- Backlog P1/P2: refactor admin focal — completado como parte de la normalización al shared `FilterGroup` + `FilterOptionButton` (rama `feature/admin-filtergroup-normalization`). Los wrappers `AdminFilterGroup` y `FilterChipButton` fueron eliminados y el HTML crudo duplicado de `AdminMotorcycleReviewsPage` quedó consolidado al usar `FilterGroup` + `FilterOptionButton` compartidos.
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
