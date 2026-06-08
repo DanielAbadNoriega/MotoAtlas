@@ -191,7 +191,7 @@ Secciones residuales cerradas:
 - `bike-detail__reliability` → movido a CommunityTab (Fase 4.2).
 - `bike-detail__reviews` → movido a CommunityTab con FeaturedReviewCard compacto `hideImage`/`hideLinks` (Fases 4.3B/4.3C).
 - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
-- `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab.
+- `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab y, en rama `feature/bike-detail-technical-spec-cards`, cerradas con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`. El SCSS huérfano de `quick-specs`, `features`, `feature-list` y el `h2` legacy de `__specs` fue eliminado. `SpecCard` local fue reemplazado por `TechnicalSpecCard` shared (presentacional, sin fetch, no conoce `BikeDetailPage`).
 
 ## Datos demo para QA visual (backlog)
 

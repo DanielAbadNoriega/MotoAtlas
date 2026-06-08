@@ -1,0 +1,79 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.bike-detail__spec-card {
+  background: $color-surface-dim;
+  border: 1px solid rgba($color-outline-variant, 0.15);
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  justify-content: center;
+  min-height: 150px;
+  padding: 1.25rem;
+  position: relative;
+  transition: background-color $transition-base;
+
+  &:hover {
+    background: $color-surface-container;
+  }
+
+  &--accent {
+    background: rgba($color-accent-soft, 0.15);
+    border-color: rgba($color-accent, 0.3);
+  }
+}
+
+.bike-detail__spec-card-header {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 1.5rem;
+
+  .material-symbols-outlined {
+    color: rgba($color-accent, 0.65);
+    font-size: 1.4rem;
+  }
+}
+
+.bike-detail__spec-label {
+  @include label-caps;
+
+  color: rgba($color-on-surface-variant, 0.86);
+  margin: 0;
+}
+
+.bike-detail__spec-value-row {
+  align-items: baseline;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.bike-detail__spec-value {
+  @include headline-md;
+
+  color: $color-on-surface;
+}
+
+.bike-detail__spec-unit {
+  @include label-caps;
+
+  color: rgba($color-on-surface-variant, 0.78);
+  font-size: 0.7rem;
+}
+
+.bike-detail__spec-meta {
+  @include label-caps;
+
+  color: rgba($color-on-surface-variant, 0.7);
+  font-size: 0.6rem;
+  margin: 0;
+}
+
+// Modificadores de layout del bento de BikeDetailPage (cards de electrónica y A2).
+// TechnicalSpecCard los conoce para que las cards inline del bento con esas
+// clases reciban automáticamente los mismos estilos base.
+.bike-detail__spec-card--electronics,
+.bike-detail__spec-card--a2 {
+  grid-column: span 2;
+}
