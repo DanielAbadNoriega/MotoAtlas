@@ -340,31 +340,26 @@ describe('AdminPage', () => {
     expect(filters.querySelector('.admin-page__filters-footer')).toBeInTheDocument();
     expect(within(filters).getAllByRole('button', { name: 'Limpiar filtros' }).length).toBeGreaterThan(0);
     expect(within(filters).getByRole('button', { name: 'Aplicar filtros' })).toBeInTheDocument();
-    const statusGroup = within(filters).getByRole('heading', { name: 'Estado del reporte' }).closest('.admin-page__filter-group');
-    const reasonGroup = within(filters).getByRole('heading', { name: 'Motivo' }).closest('.admin-page__filter-group');
-    const orderGroup = within(filters).getByRole('heading', { name: 'Orden' }).closest('.admin-page__filter-group');
+    const statusGroup = within(filters).getByText('Estado del reporte', { selector: '.filter-group__title' }).closest('details') as HTMLDetailsElement | null;
+    const reasonGroup = within(filters).getByText('Motivo', { selector: '.filter-group__title' }).closest('details') as HTMLDetailsElement | null;
+    const orderGroup = within(filters).getByText('Orden', { selector: '.filter-group__title' }).closest('details') as HTMLDetailsElement | null;
 
     expect(statusGroup).not.toBeNull();
     expect(reasonGroup).not.toBeNull();
     expect(orderGroup).not.toBeNull();
     expect(filters.querySelectorAll('.material-symbols-outlined').length).toBeGreaterThan(0);
-    expect(within(statusGroup as HTMLElement).getByRole('button', { name: 'Estado del reporte' })).toHaveAttribute('aria-expanded', 'true');
-    expect(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' })).toHaveAttribute('aria-expanded', 'false');
-    expect(within(orderGroup as HTMLElement).getByRole('button', { name: 'Orden' })).toHaveAttribute('aria-expanded', 'false');
+    expect(statusGroup).toHaveAttribute('open');
+    expect(reasonGroup).not.toHaveAttribute('open');
+    expect(orderGroup).not.toHaveAttribute('open');
 
-    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' }));
-    await user.click(within(orderGroup as HTMLElement).getByRole('button', { name: 'Orden' }));
-    expect(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' })).toHaveAttribute('aria-expanded', 'true');
-    expect(within(orderGroup as HTMLElement).getByRole('button', { name: 'Orden' })).toHaveAttribute('aria-expanded', 'true');
-
-    await user.click(within(statusGroup as HTMLElement).getByRole('button', { name: /Estado del reporte: Todos/i }));
-    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: /Motivo: Ofensivo/i }));
-    await user.click(within(orderGroup as HTMLElement).getByRole('button', { name: /Orden: Más antiguos/i }));
-    expect(within(statusGroup as HTMLElement).getByRole('button', { name: /Estado del reporte: Resueltos/i })).toBeInTheDocument();
+    await user.click(within(filters).getByRole('button', { name: /Estado del reporte: Resueltos/i }));
+    await user.click(within(filters).getByRole('button', { name: /Motivo: Ofensivo/i }));
+    await user.click(within(filters).getByRole('button', { name: /Orden: Más antiguos/i }));
+    expect(within(filters).getByRole('button', { name: /Estado del reporte: Resueltos/i })).toHaveAttribute('aria-pressed', 'true');
 
     await waitFor(() => expect(getReviewReportsMock).toHaveBeenLastCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
-      { reason: 'offensive', sort: 'oldest', status: 'all' },
+      { reason: 'offensive', sort: 'oldest', status: 'action_taken' },
     ));
   });
 
@@ -374,24 +369,24 @@ describe('AdminPage', () => {
 
     await screen.findByText('Información falsa');
     const filters = screen.getByRole('region', { name: /Filtros/i });
-    const statusToggle = within(filters).getByRole('button', { name: 'Estado del reporte' });
-    const reasonToggle = within(filters).getByRole('button', { name: 'Motivo' });
-    const sortToggle = within(filters).getByRole('button', { name: 'Orden' });
+    const statusGroup = within(filters).getByText('Estado del reporte', { selector: '.filter-group__title' }).closest('details') as HTMLDetailsElement | null;
+    const reasonGroup = within(filters).getByText('Motivo', { selector: '.filter-group__title' }).closest('details') as HTMLDetailsElement | null;
+    const orderGroup = within(filters).getByText('Orden', { selector: '.filter-group__title' }).closest('details') as HTMLDetailsElement | null;
 
-    expect(statusToggle).toHaveAttribute('aria-expanded', 'true');
-    expect(reasonToggle).toHaveAttribute('aria-expanded', 'false');
-    expect(sortToggle).toHaveAttribute('aria-expanded', 'false');
-    expect(statusToggle).toHaveAttribute('aria-controls');
-    expect(reasonToggle).toHaveAttribute('aria-controls');
-    expect(sortToggle).toHaveAttribute('aria-controls');
+    expect(statusGroup).toHaveAttribute('open');
+    expect(reasonGroup).not.toHaveAttribute('open');
+    expect(orderGroup).not.toHaveAttribute('open');
 
-    await user.click(reasonToggle);
-    await user.click(sortToggle);
-    expect(reasonToggle).toHaveAttribute('aria-expanded', 'true');
-    expect(sortToggle).toHaveAttribute('aria-expanded', 'true');
+    const reasonSummary = within(reasonGroup as HTMLElement).getByText('Motivo', { selector: '.filter-group__title' });
+    await user.click(reasonSummary);
+    const orderSummary = within(orderGroup as HTMLElement).getByText('Orden', { selector: '.filter-group__title' });
+    await user.click(orderSummary);
+    expect(reasonGroup).toHaveAttribute('open');
+    expect(orderGroup).toHaveAttribute('open');
 
-    await user.click(statusToggle);
-    expect(statusToggle).toHaveAttribute('aria-expanded', 'false');
+    const statusSummary = within(statusGroup as HTMLElement).getByText('Estado del reporte', { selector: '.filter-group__title' });
+    await user.click(statusSummary);
+    expect(statusGroup).not.toHaveAttribute('open');
   });
 
   it('permite cambiar estado de reporte y de review con feedback claro', async () => {
@@ -625,9 +620,9 @@ describe('AdminPage', () => {
     expect(within(filters).getByRole('heading', { name: 'Filtros' })).toBeInTheDocument();
 
     // filtrar por estado: Pendientes
-    const statusGroup = within(filters).getByRole('heading', { name: 'Estado' }).closest('.admin-page__filter-group');
+    const statusGroup = within(filters).getByText('Estado', { selector: '.filter-group__title' }).closest('details');
     expect(statusGroup).not.toBeNull();
-    await user.click(within(statusGroup as HTMLElement).getByRole('button', { name: /Estado: Pendientes/i }));
+    await user.click(within(filters).getByRole('button', { name: /Estado: Pendientes/i }));
 
     // ahora solo deben quedar las motos con reviews pendientes (bike-1 y bike-3)
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(2));
@@ -640,16 +635,18 @@ describe('AdminPage', () => {
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(3));
 
     // abrir sección Origen y filtrar por 'Mock'
-    const sourceToggle = within(filters).getByRole('button', { name: 'Origen' });
-    await user.click(sourceToggle);
+    const sourceGroup = within(filters).getByText('Origen', { selector: '.filter-group__title' }).closest('details');
+    const sourceSummary = within(sourceGroup as HTMLElement).getByText('Origen', { selector: '.filter-group__title' });
+    await user.click(sourceSummary);
     await user.click(within(filters).getByRole('button', { name: /Origen: Mock/i }));
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
     expect(screen.getByRole('heading', { name: 'B M2 2023' })).toBeInTheDocument();
 
     // probar filtro de verificación
     await user.click(clearButtons[0]);
-    const verifiedToggle = within(filters).getByRole('button', { name: 'Verificadas' });
-    await user.click(verifiedToggle);
+    const verifiedGroup = within(filters).getByText('Verificadas', { selector: '.filter-group__title' }).closest('details');
+    const verifiedSummary = within(verifiedGroup as HTMLElement).getByText('Verificadas', { selector: '.filter-group__title' });
+    await user.click(verifiedSummary);
     await user.click(within(filters).getByRole('button', { name: /Verificadas: Verificadas/i }));
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
     expect(screen.getByRole('heading', { name: 'A M1 2024' })).toBeInTheDocument();
@@ -701,9 +698,10 @@ describe('AdminPage', () => {
     expect(screen.getByText('Mostrando 7-12 de 13 reportes')).toBeInTheDocument();
 
     const filters = screen.getByRole('region', { name: /Filtros/i });
-    const reasonGroup = within(filters).getByRole('heading', { name: 'Motivo' }).closest('.admin-page__filter-group');
+    const reasonGroup = within(filters).getByText('Motivo', { selector: '.filter-group__title' }).closest('details') as HTMLDetailsElement | null;
     expect(reasonGroup).not.toBeNull();
-    await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: 'Motivo' }));
+    const reasonSummary = within(reasonGroup as HTMLElement).getByText('Motivo', { selector: '.filter-group__title' });
+    await user.click(reasonSummary);
     await user.click(within(reasonGroup as HTMLElement).getByRole('button', { name: /Motivo: Ofensivo/i }));
     expect(screen.getByText('Mostrando 1-6 de 13 reportes')).toBeInTheDocument();
 
@@ -813,8 +811,9 @@ describe('AdminPage', () => {
     expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
 
     const filters = screen.getByRole('region', { name: /Filtros/i });
-    const segmentToggle = within(filters).getByRole('button', { name: 'Segmento' });
-    await user.click(segmentToggle);
+    const segmentGroup = within(filters).getByText('Segmento', { selector: '.filter-group__title' }).closest('details');
+    const segmentSummary = within(segmentGroup as HTMLElement).getByText('Segmento', { selector: '.filter-group__title' });
+    await user.click(segmentSummary);
     await user.click(within(filters).getByRole('button', { name: /Segmento: Trail/i }));
 
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
@@ -844,8 +843,9 @@ describe('AdminPage', () => {
     expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
 
     const filters = screen.getByRole('region', { name: /Filtros/i });
-    const licenseToggle = within(filters).getByRole('button', { name: 'Carnet' });
-    await user.click(licenseToggle);
+    const licenseGroup = within(filters).getByText('Carnet', { selector: '.filter-group__title' }).closest('details');
+    const licenseSummary = within(licenseGroup as HTMLElement).getByText('Carnet', { selector: '.filter-group__title' });
+    await user.click(licenseSummary);
     await user.click(within(filters).getByRole('button', { name: /Carnet: Carnet A$/i }));
 
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
@@ -877,8 +877,9 @@ describe('AdminPage', () => {
     expect(await screen.findAllByTestId('admin-review-summary-card')).toHaveLength(2);
 
     const filters = screen.getByRole('region', { name: /Filtros/i });
-    const ridingStyleToggle = within(filters).getByRole('button', { name: 'Uso principal' });
-    await user.click(ridingStyleToggle);
+    const ridingStyleGroup = within(filters).getByText('Uso principal', { selector: '.filter-group__title' }).closest('details');
+    const ridingStyleSummary = within(ridingStyleGroup as HTMLElement).getByText('Uso principal', { selector: '.filter-group__title' });
+    await user.click(ridingStyleSummary);
     await user.click(within(filters).getByRole('button', { name: /Uso principal: Ciudad/i }));
 
     await waitFor(() => expect(screen.getAllByTestId('admin-review-summary-card')).toHaveLength(1));
@@ -893,8 +894,9 @@ describe('AdminPage', () => {
     await screen.findByTestId('admin-review-summary-card');
 
     const filters = screen.getByRole('region', { name: /Filtros/i });
-    const sortToggle = within(filters).getByRole('button', { name: 'Orden' });
-    await user.click(sortToggle);
+    const sortGroup = within(filters).getByText('Orden', { selector: '.filter-group__title' }).closest('details');
+    const sortSummary = within(sortGroup as HTMLElement).getByText('Orden', { selector: '.filter-group__title' });
+    await user.click(sortSummary);
 
     const oldButton = within(filters).getByRole('button', { name: /Orden: Más antiguos/i });
     expect(oldButton).toHaveAttribute('aria-pressed', 'false');
@@ -1273,8 +1275,9 @@ describe('AdminPage', () => {
 
     await screen.findByText('Honda Transalp 750 2025');
     const filters = screen.getByRole('region', { name: /Filtros/i });
-    const sourceToggle = within(filters).getByRole('button', { name: 'Origen' });
-    await user.click(sourceToggle);
+    const sourceGroup = within(filters).getByText('Origen', { selector: '.filter-group__title' }).closest('details');
+    const sourceSummary = within(sourceGroup as HTMLElement).getByText('Origen', { selector: '.filter-group__title' });
+    await user.click(sourceSummary);
     await user.click(within(filters).getByRole('button', { name: /Origen: Admin/i }));
 
     await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
