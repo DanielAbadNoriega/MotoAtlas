@@ -297,6 +297,16 @@
       width: 2rem;
     }
   }
+
+  .community-reviews-page__insights-subtitle {
+    @include label-caps;
+
+    color: rgba($color-on-surface-variant, 0.6);
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: none;
+  }
 }
 
 .community-reviews-page__insight-list {

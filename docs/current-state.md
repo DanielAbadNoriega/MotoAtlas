@@ -2,8 +2,8 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/bike-detail-technical-spec-cards`
-- Último bloque validado: cierre del path legacy de `bike-detail__quick-specs` en `BikeDetailPage` y consolidación de las tarjetas técnicas. `bike-detail__quick-specs` y `bike-detail__features` ya no se renderizan (absorbidas por `SpecificationsTab` en fases previas). SCSS huérfano eliminado. `SpecCard` local de `BikeDetailPage` extraído como `TechnicalSpecCard` shared en `src/components/motorcycles/TechnicalSpecCard/` (presentacional, sin fetch, no conoce `BikeDetailPage`, no renderiza null/undefined, icono Material Symbols decorativo `aria-hidden`, label/value/unit/meta/children opcionales). Quality Gate aprobado: typecheck clean, 1097 tests passed.
+- Rama actual: `feature/live-insights-redesign`
+- Último bloque validado: rediseño del bloque `Insights en vivo` de `#/comunidad/reviews` como bloque de descubrimiento comunitario. Auditoría confirmó que los 4 signals comunitarios ya eran los correctos: `Moto más comentada`, `Review más útil`, `Segmento más activo` (con label friendly de `segmentLabels`), `Uso más activo` (con label friendly de `accountReviewRidingStyleLabels`). Refuerzos de copia: kicker "Pulso de la comunidad · Actividad reciente", subtítulo "Señales según reviews aprobadas, no en tiempo real", footer "Datos aproximados · {refreshLabel} · Según reviews aprobadas". Solo se alimenta de reviews `approved`; polling suave cada 60s; no se renderizan `review con más kilómetros` ni `rating medio global`. Quality Gate aprobado: typecheck clean, 1097 tests passed.
 - Tests: 1097 passed
 - Typecheck: clean
 - Último commit:

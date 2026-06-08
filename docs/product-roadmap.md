@@ -29,18 +29,23 @@ Implementado (baseline actual):
 
 ### Insights en vivo
 
-Objetivo: convertirlo en un bloque de descubrimiento comunitario.
+Estado: **implementado / cerrado** (rama `feature/live-insights-redesign`).
 
-Pendiente (cambios propuestos):
-- Quitar:
-  - review con más kilómetros.
-  - rating medio global.
-- Usar:
-  - moto más comentada.
-  - review más útil.
-  - segmento más activo.
-  - uso más activo.
-- Mantener formato de lectura rápida de actividad comunitaria.
+Objetivo cumplido: convertirlo en un bloque de descubrimiento comunitario.
+
+Implementado:
+- Quitados los weak metrics que proponía la lista de cambios:
+  - `review con más kilómetros` (estaba en `SortOption` de garaje, no en insights; ya no se renderiza como insight).
+  - `rating medio global` (nunca estuvo en insights; confirmado no presente).
+- Reemplazados por los 4 signals comunitarios:
+  - **Moto más comentada**: moto con más reviews aprobadas en el dataset cargado (orden secundario por `latestReviewAt` y nombre).
+  - **Review más útil**: review con mayor `helpfulCount` (orden secundario por `rating`, fecha y nombre).
+  - **Segmento más activo**: segmento canónico con más reviews, mostrado con label friendly de `segmentLabels`.
+  - **Uso más activo**: `ridingStyle` con más reviews, mostrado con label friendly de `accountReviewRidingStyleLabels`.
+- Conservador de datos: solo se alimenta de reviews `approved` (no `pending`/`rejected`/`hidden`). Polling suave cada 60 segundos. Copy del footer: "Datos aproximados · {refreshLabel} · Según reviews aprobadas" (sin reclamar realtime).
+- Subtítulo/kicker reforzado: "Pulso de la comunidad · Actividad reciente" + subtítulo "Señales según reviews aprobadas, no en tiempo real".
+- Título h2 preservado como "Insights en vivo" (compatibilidad con tests y otros consumidores); si en el futuro product copy decide renombrar a "Pulso de la comunidad" como h2, será un cambio puntual con su propio test.
+- `Radar MotoAtlas / Pulso de la Comunidad` permanece como backlog P3/P4 (sección más ambiciosa con más señales y métricas). Este rediseño es el paso mínimo viable hacia esa dirección.
 
 ### Home — Reemplazo de `FeaturedBikes` / `BikeCard` (legacy temporal)
 

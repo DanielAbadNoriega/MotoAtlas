@@ -683,11 +683,14 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
   return (
     <aside className="community-reviews-page__insights" aria-labelledby="community-reviews-insights-title">
       <header className="community-reviews-page__insights-header">
-        <span className="community-reviews-page__insights-kicker">Lectura rápida</span>
+        <span className="community-reviews-page__insights-kicker">Pulso de la comunidad · Actividad reciente</span>
         <h2 id="community-reviews-insights-title">
           <span className="material-symbols-outlined" aria-hidden="true">monitoring</span>
           Insights en vivo
         </h2>
+        <p className="community-reviews-page__insights-subtitle">
+          Señales según reviews aprobadas, no en tiempo real.
+        </p>
       </header>
 
       <div className="community-reviews-page__insight-list">
@@ -722,7 +725,7 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
 
       {refreshLabel ? (
         <footer className="community-reviews-page__insights-refresh">
-          <span>Datos aproximados · {refreshLabel}</span>
+          <span>Datos aproximados · {refreshLabel} · Según reviews aprobadas</span>
         </footer>
       ) : null}
     </aside>
