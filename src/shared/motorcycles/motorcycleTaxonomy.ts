@@ -45,6 +45,25 @@ export const segmentLabels: Record<BikeSegment, string> = {
   trail: 'Trail',
 };
 
+export const segmentIcons: Record<BikeSegment, string> = {
+  adventure: 'explore',
+  cruiser: 'two_wheeler',
+  custom: 'build',
+  'dual-sport': 'offroad_bolt',
+  enduro: 'terrain',
+  hypernaked: 'bolt',
+  naked: 'motorcycle',
+  'neo-retro': 'history_edu',
+  retro: 'history',
+  scooter: 'scooter',
+  scrambler: 'route',
+  sport: 'speed',
+  'sport-touring': 'route',
+  supersport: 'fast_forward',
+  touring: 'travel_explore',
+  trail: 'terrain',
+};
+
 export function isBikeSegment(value: unknown): value is BikeSegment {
   return typeof value === 'string' && bikeSegmentSet.has(value);
 }
