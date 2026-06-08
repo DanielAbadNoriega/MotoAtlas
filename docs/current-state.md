@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/admin-filtergroup-normalization`
-- Último bloque validado: normalización de filtros admin a `FilterGroup` + `FilterOptionButton` compartidos (rama `feature/admin-filtergroup-normalization`). Decisión de producto revisada: admin debe reusar el mismo sistema de filtros que el resto de la app. `AdminPage` (3 sidebars: moderación, reviews, solicitudes) y `AdminMotorcycleReviewsPage` (sidebar de Estado y Orden) ya están normalizadas. Componentes locales eliminados: `AdminFilterGroup`, `AdminFilterOptionButton`, `FilterChipButton`. El `FilterOptionButton` shared usa `classPrefix="admin-page"` para mantener las clases SCSS `admin-page__filter-option` y `admin-page__filter-option--active`. SCSS huérfano limpiado (`__filter-group*` y `__filter-options--pills` + `__filter-option--pill*`). Quality Gate aprobado: typecheck clean, 1088 tests passed.
-- Tests: 1088 passed
+- Rama actual: `feature/motorcycle-taxonomy-closure`
+- Último bloque validado: cierre de la taxonomía base de segmentos de motos (rama `feature/motorcycle-taxonomy-closure`). Fuente única de verdad: `src/shared/motorcycles/motorcycleTaxonomy.ts` (`BIKE_SEGMENTS` + `segmentLabels` + `segmentIcons`). Schema SQL enum `motorcycle_segment`, tipo TypeScript `BikeSegment`, importer y dataset (`data/import/motorcycles.json`) alineados. `validateMotorcycleImport` rechaza segmentos fuera de la taxonomía canónica y el bucket UI `other`. Criterio operativo `trail` vs `adventure` documentado en `docs/taxonomy-decisions.md`. Quality Gate aprobado: typecheck clean, 1091 tests passed.
+- Tests: 1091 passed
 - Typecheck: clean
 - Último commit:
 
@@ -150,14 +150,19 @@
 - Scripts de normalización + sync con dry-run (`normalize:images:*`, `sync:images:*`) documentados y activos.
 - Contrato actual de imagen: sincronización de `image_url`/`image_source` y respeto de `image_locked` para no pisar curación manual.
 
-### Taxonomía de segmentos (Fase 0-3.1)
+### Taxonomía de segmentos (Fase 0-3.1) — base cerrada
+
 - Fase 0 (auditoría inicial): cerrada.
 - Fase 1 (guardrails/tests de contrato): cerrada.
-- Fase 2 (saneo puntual inicial de datos): aplicada parcialmente.
+- Fase 2 (saneo puntual inicial de datos): aplicada parcialmente. Caso saneado: `cfmoto-800mt-x-2025` `segment` de `naked` a `trail`.
 - Fase 3 (auditoría de estrategia final de filtros): cerrada.
 - Fase 3.1 (formalización canónico vs visible): cerrada.
-- Caso saneado en Fase 2:
-  - `cfmoto-800mt-x-2025`: `segment` de `naked` a `trail`.
+- **Fase 2 extendida (cierre de taxonomía base, rama `feature/motorcycle-taxonomy-closure`):**
+  - `BIKE_SEGMENTS` (`src/shared/motorcycles/motorcycleTaxonomy.ts`) confirmado como fuente única de verdad de los 16 segmentos.
+  - `segmentIcons` añadido al mismo módulo para centralizar label e icono por segmento (antes los iconos vivían dispersos en `motorcycleSegmentFilterOptions` con prefijo `community-reviews-page__`).
+  - `validateMotorcycleImport` ahora rechaza explícitamente segmentos fuera de la taxonomía canónica y el valor `other` (que es bucket UI, no segmento real).
+  - Decisiones operativas de clasificación documentadas en `docs/taxonomy-decisions.md` (incluye la regla de oro para distinguir `trail` vs `adventure` con la lista actual de motos de Fase 2).
+  - Guardrails reforzados en `motorcycleTaxonomy.contract.test.ts` con cobertura de iconos.
 - Decisión recomendada en Fase 3:
   - estrategia **híbrida**: UI pública compacta con `primary + other` + taxonomía canónica de 16 segmentos como fuente de verdad.
 - Hallazgo de Fase 3:
@@ -174,10 +179,11 @@
   - `BIKE_SEGMENTS` exacto (16 categorías esperadas).
   - alineación `BikeSegment` (`src/types/bike.ts`) ↔ `BIKE_SEGMENTS`.
   - alineación enum `motorcycle_segment` (`supabase/schema.sql`) ↔ `BIKE_SEGMENTS`.
-  - cobertura de `segmentLabels` para todos los segmentos.
+  - cobertura de `segmentLabels` y `segmentIcons` para todos los segmentos.
+  - `validateMotorcycleImport` rechaza segmentos fuera de la taxonomía y `other`.
   - validación de `data/import/motorcycles.json` sin segmentos inválidos.
   - contrato de filtros actual `primary + other` con `other` como bucket UI (no segmento real).
-- Resultado de quality gate de fase: aprobado con observación no bloqueante (parsing textual en tests sobre `bike.ts`/`schema.sql`, fallo visible si cambia formato).
+- Resultado de quality gate de fase: aprobado. Pendiente de Fase 4 SEO/Admin/landings.
 
 ### Datos demo
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.
@@ -226,11 +232,11 @@
 
 ## En curso
 
-- Cierre completo de taxonomía de segmentos de motos (tarea transversal de plataforma):
-  - Fase 2 en curso: saneo puntual (primer ajuste aplicado; quedan casos por auditar).
-  - Fase 3 auditoría: cerrada (recomendación híbrida validada).
-  - Fase 3.1 cerrada: contrato canónico vs visible formalizado.
-  - Fase 4 pendiente: preparación SEO/Admin/landings por categoría.
+- Taxonomía de segmentos de motos (tarea transversal de plataforma): base cerrada. Fases 0, 1, 2, 2 extendida, 3 y 3.1 finalizadas; ver bloque "Taxonomía de segmentos" más arriba.
+- Backlog de Fase 4 (futuro, fuera de alcance del cierre base):
+  - SEO/landings por categoría.
+  - Admin catálogo de modelos con 16 categorías explícitas.
+  - Decisión final `trail` vs `adventure` con contrato de producto (criterio operativo ya documentado en `docs/taxonomy-decisions.md` para no romper en el interim).
 - ...
 
 ## Siguiente paso
@@ -244,7 +250,7 @@
 - Rankings usan reviewCount real y confidence.
 - La tarjeta histórica “Implementar login y cuentas de usuario” se reclasifica en roadmap como **Auth baseline** dentro de **P2 Plataforma/Admin/Productividad interna**; capa social avanzada queda para fase futura separada.
 - La tarea “Revisar y cerrar taxonomía de categorías de motos” se clasifica como dependencia estratégica previa para filtros reutilizables, admin catálogo y futuras landings SEO por segmento.
-- Estado de taxonomía actualizado por fases: Fase 0 y Fase 1 cerradas; Fase 2 parcialmente aplicada; Fase 3 auditoría cerrada con recomendación híbrida; Fase 3.1 cerrada con contrato formal; Fase 4 pendiente.
+- Estado de taxonomía actualizado por fases: Fases 0, 1, 2, 2 extendida (cierre de taxonomía base), 3 y 3.1 cerradas; Fase 4 (SEO/Admin/landings) pendiente.
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
 - La mejora de quick specs de `BikeDetailPage` se clasifica como **P1/P2 UX pública + componentes reutilizables**, conectada con revisión UI/SCSS y futuro admin de catálogo.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).

@@ -153,4 +153,30 @@ describe('validateMotorcycleImport', () => {
       }),
     );
   });
+
+  it('rechaza segmentos fuera de la taxonomía canónica', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, segment: 'quad' as never }]);
+
+    expect(result.valid).toBe(false);
+    expect(result.invalidItems[0].errors).toContainEqual(
+      expect.objectContaining({
+        field: 'segment',
+        message: 'segment es obligatorio y debe ser válido.',
+        receivedValue: 'quad',
+      }),
+    );
+  });
+
+  it('rechaza "other" como segmento porque es solo bucket UI', () => {
+    const result = validateMotorcycleImport([{ ...completeMotorcycle, segment: 'other' as never }]);
+
+    expect(result.valid).toBe(false);
+    expect(result.invalidItems[0].errors).toContainEqual(
+      expect.objectContaining({
+        field: 'segment',
+        message: 'segment es obligatorio y debe ser válido.',
+        receivedValue: 'other',
+      }),
+    );
+  });
 });

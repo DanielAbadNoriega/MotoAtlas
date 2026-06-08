@@ -273,19 +273,25 @@ Este bloque agrupa herramientas internas y bases de plataforma necesarias para e
 
 ### Tarea transversal: Taxonomía de segmentos de motos
 
-Estado: cierre por fases en progreso (F0/F1 cerradas; F2 parcialmente aplicada; F3 auditoría cerrada; F3.1 cerrada; F4 pendiente).
+Estado: base cerrada (F0/F1/F2/F3/F3.1). Fase 4 SEO/Admin/landings queda pendiente como fase futura separada.
 
 Fases de cierre (estado actualizado):
 - Fase 0 — Auditoría inicial: **cerrada**.
 - Fase 1 — Guardrails/tests de contrato: **cerrada**.
-- Fase 2 — Saneo puntual de datos y clasificaciones dudosas: **parcialmente aplicada**.
+- Fase 2 — Saneo puntual de datos y clasificaciones dudosas: **aplicada** (caso `cfmoto-800mt-x-2025` corregido en su día; criterio operativo `trail` vs `adventure` documentado en `docs/taxonomy-decisions.md`).
 - Fase 3 — Auditoría de estrategia final de filtros: **cerrada**.
 - Fase 3.1 — Formalización de estrategia final (`canónico vs visible`) y criterios de exposición: **cerrada**.
-- Fase 4 — Preparación SEO/Admin/landings por categoría: **pendiente**.
+- Fase 2 extendida — Cierre de taxonomía base (rama `feature/motorcycle-taxonomy-closure`):
+  - `BIKE_SEGMENTS` confirmado como fuente única de verdad de los 16 segmentos.
+  - `segmentIcons` añadido al mismo módulo compartido para centralizar label e icono por segmento.
+  - `validateMotorcycleImport` rechaza explícitamente segmentos fuera de la taxonomía canónica y el bucket UI `other`.
+  - Decisiones operativas (incluida la regla para `trail` vs `adventure`) documentadas en `docs/taxonomy-decisions.md`.
+  - Guardrails reforzados en `motorcycleTaxonomy.contract.test.ts` (cobertura de iconos, dataset, schema, TS, labels).
+- Fase 4 — SEO/Admin/landings por categoría: **pendiente** (futuro, no se aborda en este ciclo).
 
 Caso aplicado en Fase 2:
 - `cfmoto-800mt-x-2025`: `segment` corregido de `naked` a `trail` por warning explícito del merge report (modelo apuntaba a `trail/adventure`).
-- La frontera semántica `trail` vs `adventure` queda como deuda de producto para Fase 4.
+- La frontera semántica `trail` vs `adventure` queda como deuda de producto para Fase 4 (criterio operativo documentado en `docs/taxonomy-decisions.md` para evitar reclasificaciones a futuro sin evidencia clara).
 
 Resultado de Fase 3 (auditoría):
 - Recomendación estratégica: **híbrida**.
@@ -311,7 +317,7 @@ Implementado en Fase 3.1:
 Pendiente de Fase 4:
 - admin catálogo con 16 categorías explícitas;
 - landings SEO por categoría;
-- decisión final `trail` vs `adventure` con contrato de producto.
+- decisión final `trail` vs `adventure` con contrato de producto (criterio operativo ya documentado en `docs/taxonomy-decisions.md` para no romper en el interim).
 
 Objetivo:
 Cerrar una taxonomía clara de segmentos para que el catálogo sea coherente y escalable.

@@ -62,9 +62,9 @@ Regla UX: no mostrar `PLACEHOLDER` al usuario final. Usar textos como “Precio 
 
 ## Taxonomía de segmentos (estado actual)
 
-Estado: en desarrollo / pendiente de auditoría y cierre.
+Estado: base cerrada (Fases 0, 1, 2, 3 y 3.1 finalizadas). La taxonomía canónica de 16 segmentos es estable. Criterios operativos, incluyendo la distinción `trail` vs `adventure`, documentados en `docs/taxonomy-decisions.md`.
 
-Segmentos esperados del contrato:
+Segmentos esperados del contrato (16):
 - `trail`
 - `adventure`
 - `touring`
@@ -82,17 +82,25 @@ Segmentos esperados del contrato:
 - `neo-retro`
 - `scooter`
 
-Fuente de verdad coordinada:
-- `supabase/schema.sql` (`motorcycle_segment`)
-- `src/types/bike.ts` (`BikeSegment`)
-- `src/shared/motorcycles/motorcycleTaxonomy.ts` (`BIKE_SEGMENTS` + labels)
+Fuente de verdad única:
+- `src/shared/motorcycles/motorcycleTaxonomy.ts` (`BIKE_SEGMENTS` + `segmentLabels` + `segmentIcons`).
 
-Validación operativa mínima:
-- evitar duplicados ambiguos
-- mantener labels/iconos coherentes
-- asegurar filtros funcionales (desktop/mobile)
-- verificar clasificación de motos existentes
-- mantener sincronización schema/TS/importador/UI
+Capas alineadas con esa fuente de verdad:
+- `supabase/schema.sql` enum `motorcycle_segment`.
+- `src/types/bike.ts` tipo `BikeSegment`.
+- `src/features/import/validateMotorcycleImport.ts` valida enum contra `BIKE_SEGMENTS` y rechaza `other` y cualquier valor fuera de la taxonomía.
+- `src/shared/filters/motorcycleFilterOptions.ts` mapea primarios a sí mismos y secundarios a `other` (UI-only).
+
+Validación operativa cubierta por tests:
+- `src/shared/motorcycles/motorcycleTaxonomy.contract.test.ts` verifica alineación de `BIKE_SEGMENTS`, `BikeSegment`, enum SQL, `segmentLabels`, `segmentIcons` y dataset.
+- `src/shared/filters/motorcycleFilterOptions.test.ts` verifica estrategia canónico vs visible y que `other` nunca es un `BikeSegment` real.
+- `src/features/import/validateMotorcycleImport.test.ts` cubre rechazo de segmentos inválidos y de `other`.
+- `scripts/mergeGeneratedMotorcycles.ts` reporta segmentos sospechosos en el merge report.
+
+Pendiente para Fase 4 (futuro, fuera de alcance del cierre base):
+- SEO/landings por categoría.
+- Admin catálogo de modelos con 16 categorías explícitas.
+- Decisión final `trail` vs `adventure` con contrato de producto (criterio operativo ya documentado en `docs/taxonomy-decisions.md`).
 
 ## Campos de reviews
 

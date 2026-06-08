@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import motorcyclesSeed from '../../../data/import/motorcycles.json';
-import { BIKE_SEGMENTS, segmentLabels } from './motorcycleTaxonomy';
+import { BIKE_SEGMENTS, segmentIcons, segmentLabels } from './motorcycleTaxonomy';
 
 const expectedSegments = [
   'trail',
@@ -61,6 +61,18 @@ describe('motorcycle taxonomy contract', () => {
       const label = segmentLabels[segment];
       expect(label.trim().length).toBeGreaterThan(0);
       expect(label).not.toBe(segment);
+    });
+  });
+
+  it('exposes Material Symbols icons for every BikeSegment key (no missing mapping)', () => {
+    const iconKeys = Object.keys(segmentIcons).sort();
+    const expectedKeys = [...expectedSegments].sort();
+
+    expect(iconKeys).toEqual(expectedKeys);
+
+    expectedSegments.forEach((segment) => {
+      const icon = segmentIcons[segment];
+      expect(icon.trim().length).toBeGreaterThan(0);
     });
   });
 
