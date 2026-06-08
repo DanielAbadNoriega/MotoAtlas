@@ -42,6 +42,8 @@ import {
   type MotorcycleSegmentFilterValue,
 } from '../../../shared/filters/motorcycleFilterOptions';
 import { getBikeA2Status, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
+import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
 import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
@@ -68,7 +70,6 @@ type AdminFilterOption<T extends string> = Readonly<{
   value: T;
 }>;
 
-type AdminFilterSectionId = 'reason' | 'sort' | 'status' | 'source' | 'verified' | 'segment' | 'license' | 'ridingStyle';
 type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews' | 'requests';
 
 type AdminReviewGarageItem = Readonly<{
@@ -448,72 +449,6 @@ export function AdminDashboardPage() {
   );
 }
 
-function AdminFilterGroup<T extends string>({
-  isOpen,
-  label,
-  onChange,
-  onToggle,
-  optionClassName,
-  options,
-  optionsClassName,
-  sectionId,
-  value,
-}: Readonly<{
-  isOpen: boolean;
-  label: string;
-  onChange: (value: T) => void;
-  onToggle: () => void;
-  optionClassName?: string;
-  options: readonly AdminFilterOption<T>[];
-  optionsClassName?: string;
-  sectionId: AdminFilterSectionId;
-  value: T;
-}>) {
-  const sectionContentId = `admin-filters-${sectionId}-content`;
-  const containerClasses = ['admin-page__filter-options', optionsClassName].filter(Boolean).join(' ');
-
-  return (
-    <section className={isOpen ? 'admin-page__filter-group admin-page__filter-group--open' : 'admin-page__filter-group'} aria-label={label}>
-      <h3>
-        <button
-          className="admin-page__filter-group-toggle"
-          type="button"
-          aria-expanded={isOpen}
-          aria-controls={sectionContentId}
-          onClick={onToggle}
-        >
-          <span>{label}</span>
-          <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
-        </button>
-      </h3>
-      <div id={sectionContentId} className="admin-page__filter-group-body" aria-hidden={!isOpen} inert={!isOpen}>
-        <div className={containerClasses}>
-          {options.map((option) => {
-            const buttonClasses = [
-              'admin-page__filter-option',
-              value === option.value ? 'admin-page__filter-option--active' : '',
-              optionClassName ?? '',
-            ].filter(Boolean).join(' ');
-            return (
-              <button
-                className={buttonClasses}
-                type="button"
-                aria-label={`${label}: ${option.label}`}
-                aria-pressed={value === option.value}
-                key={option.value}
-                onClick={() => onChange(option.value)}
-              >
-                {option.icon ? <span className="material-symbols-outlined" aria-hidden="true">{option.icon}</span> : null}
-                <span>{option.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function AdminModerationSidebar({
   filters,
   isOpen,
@@ -531,23 +466,6 @@ function AdminModerationSidebar({
 }>) {
   const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
   const clearButtonDisabled = !hasActiveFilters(filters);
-  const [filterSectionsOpenState, setFilterSectionsOpenState] = useState<Record<AdminFilterSectionId, boolean>>({
-    status: true,
-    reason: false,
-    sort: false,
-    source: false,
-    verified: false,
-    segment: false,
-    license: false,
-    ridingStyle: false,
-  });
-
-  const toggleFilterSection = (sectionId: AdminFilterSectionId) => {
-    setFilterSectionsOpenState((currentState) => ({
-      ...currentState,
-      [sectionId]: !currentState[sectionId],
-    }));
-  };
 
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de moderación">
@@ -578,33 +496,51 @@ function AdminModerationSidebar({
         </div>
 
         <div className="admin-page__filters-body">
-          <AdminFilterGroup
-            sectionId="status"
-            isOpen={filterSectionsOpenState.status}
-            label="Estado del reporte"
-            options={reportStatusOptions}
-            value={filters.status}
-            onToggle={() => toggleFilterSection('status')}
-            onChange={(status) => onChange({ status })}
-          />
-          <AdminFilterGroup
-            sectionId="reason"
-            isOpen={filterSectionsOpenState.reason}
-            label="Motivo"
-            options={reasonOptions}
-            value={filters.reason}
-            onToggle={() => toggleFilterSection('reason')}
-            onChange={(reason) => onChange({ reason })}
-          />
-          <AdminFilterGroup
-            sectionId="sort"
-            isOpen={filterSectionsOpenState.sort}
-            label="Orden"
-            options={sortOptions}
-            value={filters.sort}
-            onToggle={() => toggleFilterSection('sort')}
-            onChange={(sort) => onChange({ sort })}
-          />
+          <FilterGroup title="Estado del reporte">
+            <div className="admin-page__filter-options">
+              {reportStatusOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.status === option.value}
+                  ariaLabel={`Estado del reporte: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ status: option.value })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+          <FilterGroup title="Motivo" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {reasonOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.reason === option.value}
+                  ariaLabel={`Motivo: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ reason: option.value })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+          <FilterGroup title="Orden" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {sortOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.sort === option.value}
+                  ariaLabel={`Orden: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ sort: option.value })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
         </div>
 
         <footer className="admin-page__filters-footer">
@@ -651,24 +587,6 @@ function AdminReviewsSidebar({
     && filters.sort === defaultReviewsFilters.sort
   );
 
-  const [filterSectionsOpenState, setFilterSectionsOpenState] = useState<Record<AdminFilterSectionId, boolean>>({
-    status: true,
-    reason: false,
-    source: false,
-    verified: false,
-    sort: false,
-    segment: false,
-    license: false,
-    ridingStyle: false,
-  });
-
-  const toggleFilterSection = (sectionId: AdminFilterSectionId) => {
-    setFilterSectionsOpenState((currentState) => ({
-      ...currentState,
-      [sectionId]: !currentState[sectionId],
-    }));
-  };
-
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de reviews">
       <nav className="account-page__quick-links" aria-label="Navegación de administración">
@@ -709,75 +627,117 @@ function AdminReviewsSidebar({
             />
           </label>
 
-          <AdminFilterGroup
-            sectionId="status"
-            isOpen={filterSectionsOpenState.status}
-            label="Estado"
-            options={reviewStatusOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.status}
-            onToggle={() => toggleFilterSection('status')}
-            onChange={(status) => onChange({ status: status as AdminReviewsFilters['status'] })}
-          />
+          <FilterGroup title="Estado">
+            <div className="admin-page__filter-options">
+              {reviewStatusOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.status === option.value}
+                  ariaLabel={`Estado: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ status: option.value as AdminReviewsFilters['status'] })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
 
-          <AdminFilterGroup
-            sectionId="source"
-            isOpen={filterSectionsOpenState.source}
-            label="Origen"
-            options={reviewSourceOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.source}
-            onToggle={() => toggleFilterSection('source')}
-            onChange={(source) => onChange({ source: source as AdminReviewsFilters['source'] })}
-          />
+          <FilterGroup title="Origen" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {reviewSourceOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.source === option.value}
+                  ariaLabel={`Origen: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ source: option.value as AdminReviewsFilters['source'] })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
 
-          <AdminFilterGroup
-            sectionId="segment"
-            isOpen={filterSectionsOpenState.segment}
-            label="Segmento"
-            options={motorcycleSegmentFilterOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.segment}
-            onToggle={() => toggleFilterSection('segment')}
-            onChange={(segment) => onChange({ segment: segment as AdminReviewsFilters['segment'] })}
-          />
+          <FilterGroup title="Segmento" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {motorcycleSegmentFilterOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.segment === option.value}
+                  ariaLabel={`Segmento: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ segment: option.value as AdminReviewsFilters['segment'] })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
 
-          <AdminFilterGroup
-            sectionId="verified"
-            isOpen={filterSectionsOpenState.verified}
-            label="Verificadas"
-            options={reviewVerifiedOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.verified}
-            onToggle={() => toggleFilterSection('verified')}
-            onChange={(verified) => onChange({ verified: verified as AdminReviewsFilters['verified'] })}
-          />
+          <FilterGroup title="Verificadas" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {reviewVerifiedOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.verified === option.value}
+                  ariaLabel={`Verificadas: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ verified: option.value as AdminReviewsFilters['verified'] })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
 
-          <AdminFilterGroup
-            sectionId="license"
-            isOpen={filterSectionsOpenState.license}
-            label="Carnet"
-            options={adminLicenseOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.license}
-            onToggle={() => toggleFilterSection('license')}
-            onChange={(license) => onChange({ license: license as AdminReviewsFilters['license'] })}
-          />
+          <FilterGroup title="Carnet" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {adminLicenseOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.license === option.value}
+                  ariaLabel={`Carnet: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ license: option.value as AdminReviewsFilters['license'] })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
 
-          <AdminFilterGroup
-            sectionId="ridingStyle"
-            isOpen={filterSectionsOpenState.ridingStyle}
-            label="Uso principal"
-            options={adminRidingStyleOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.ridingStyle}
-            onToggle={() => toggleFilterSection('ridingStyle')}
-            onChange={(ridingStyle) => onChange({ ridingStyle: ridingStyle as AdminReviewsFilters['ridingStyle'] })}
-          />
+          <FilterGroup title="Uso principal" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {adminRidingStyleOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.ridingStyle === option.value}
+                  ariaLabel={`Uso principal: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ ridingStyle: option.value as AdminReviewsFilters['ridingStyle'] })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
 
-          <AdminFilterGroup
-            sectionId="sort"
-            isOpen={filterSectionsOpenState.sort}
-            label="Orden"
-            options={reviewSortOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.sort}
-            onToggle={() => toggleFilterSection('sort')}
-            onChange={(sort) => onChange({ sort: sort as AdminReviewsFilters['sort'] })}
-          />
+          <FilterGroup title="Orden" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {reviewSortOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.sort === option.value}
+                  ariaLabel={`Orden: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ sort: option.value as AdminReviewsFilters['sort'] })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
         </div>
 
         <footer className="admin-page__filters-footer">
@@ -1381,17 +1341,6 @@ function AdminRequestsFilterSidebar({
 }>) {
   const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
   const clearButtonDisabled = !hasActiveRequestsFilters(filters);
-  const [filterSectionsOpenState, setFilterSectionsOpenState] = useState<Record<string, boolean>>({
-    status: true,
-    source: false,
-  });
-
-  const toggleFilterSection = (sectionId: string) => {
-    setFilterSectionsOpenState((currentState) => ({
-      ...currentState,
-      [sectionId]: !currentState[sectionId],
-    }));
-  };
 
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de solicitudes">
@@ -1434,25 +1383,37 @@ function AdminRequestsFilterSidebar({
             />
           </label>
 
-          <AdminFilterGroup
-            sectionId="status"
-            isOpen={filterSectionsOpenState.status}
-            label="Estado"
-            options={requestStatusOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.status}
-            onToggle={() => toggleFilterSection('status')}
-            onChange={(status) => onChange({ status: status as ModelRequestStatusType | 'all' })}
-          />
+          <FilterGroup title="Estado">
+            <div className="admin-page__filter-options">
+              {requestStatusOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.status === option.value}
+                  ariaLabel={`Estado: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ status: option.value as ModelRequestStatusType | 'all' })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
 
-          <AdminFilterGroup
-            sectionId="source"
-            isOpen={filterSectionsOpenState.source}
-            label="Origen"
-            options={requestSourceOptions as unknown as readonly AdminFilterOption<string>[]}
-            value={filters.source}
-            onToggle={() => toggleFilterSection('source')}
-            onChange={(source) => onChange({ source: source as ModelRequestType['source'] | 'all' })}
-          />
+          <FilterGroup title="Origen" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {requestSourceOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.source === option.value}
+                  ariaLabel={`Origen: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChange({ source: option.value as ModelRequestType['source'] | 'all' })}
+                />
+              ))}
+            </div>
+          </FilterGroup>
         </div>
 
         <footer className="admin-page__filters-footer">

@@ -10,6 +10,8 @@ import {
   type MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
 import { formatReviewRating, getReviewAggregate, isReviewVerified } from '../../../shared/reviews/reviewUtils';
+import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
+import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
 import type { Bike } from '../../../types/bike';
 import {
   accountReviewRidingStyleLabels,
@@ -116,30 +118,6 @@ function RatingStars({ rating }: Readonly<{ rating: number }>) {
   );
 }
 
-function FilterChipButton<T extends string>({
-  active,
-  icon,
-  label,
-  onClick,
-}: Readonly<{
-  active: boolean;
-  icon: string;
-  label: string;
-  onClick: () => void;
-}>) {
-  return (
-    <button
-      className={active ? 'admin-page__filter-option admin-page__filter-option--active' : 'admin-page__filter-option'}
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-    >
-      <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>
-      <span>{label}</span>
-    </button>
-  );
-}
-
 function AdminMotorcycleSidebar({
   filters,
   isFilterPanelOpen,
@@ -220,49 +198,37 @@ function AdminMotorcycleSidebar({
         </div>
 
         <div className="admin-page__filters-body">
-          <section className="admin-page__filter-group admin-page__filter-group--open" aria-label="Estado">
-            <h3>
-              <button className="admin-page__filter-group-toggle" type="button" aria-expanded aria-disabled>
-                <span>Estado</span>
-                <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
-              </button>
-            </h3>
-            <div className="admin-page__filter-group-body">
-              <div className="admin-page__filter-options">
-                {statusFilterOptions.map((option) => (
-                  <FilterChipButton
-                    active={filters.status === option.value}
-                    icon={option.icon}
-                    key={option.value}
-                    label={option.label}
-                    onClick={() => onChangeFilters({ status: option.value })}
-                  />
-                ))}
-              </div>
+          <FilterGroup title="Estado">
+            <div className="admin-page__filter-options">
+              {statusFilterOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.status === option.value}
+                  ariaLabel={`Estado: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChangeFilters({ status: option.value })}
+                />
+              ))}
             </div>
-          </section>
+          </FilterGroup>
 
-          <section className="admin-page__filter-group admin-page__filter-group--open" aria-label="Orden">
-            <h3>
-              <button className="admin-page__filter-group-toggle" type="button" aria-expanded aria-disabled>
-                <span>Orden</span>
-                <span className="material-symbols-outlined" aria-hidden="true">expand_more</span>
-              </button>
-            </h3>
-            <div className="admin-page__filter-group-body">
-              <div className="admin-page__filter-options">
-                {sortFilterOptions.map((option) => (
-                  <FilterChipButton
-                    active={filters.sort === option.value}
-                    icon={option.icon}
-                    key={option.value}
-                    label={option.label}
-                    onClick={() => onChangeFilters({ sort: option.value })}
-                  />
-                ))}
-              </div>
+          <FilterGroup title="Orden">
+            <div className="admin-page__filter-options">
+              {sortFilterOptions.map((option) => (
+                <FilterOptionButton
+                  active={filters.sort === option.value}
+                  ariaLabel={`Orden: ${option.label}`}
+                  classPrefix="admin-page"
+                  icon={option.icon}
+                  key={option.value}
+                  label={option.label}
+                  onClick={() => onChangeFilters({ sort: option.value })}
+                />
+              ))}
             </div>
-          </section>
+          </FilterGroup>
         </div>
 
         <footer className="admin-page__filters-footer">
