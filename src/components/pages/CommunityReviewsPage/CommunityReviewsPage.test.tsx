@@ -1269,7 +1269,7 @@ describe('CommunityReviewsPage', () => {
     await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
     const insights = screen.getByRole('complementary', { name: 'Insights en vivo' });
-    expect(within(insights).getByText('Datos aproximados · Actualizado ahora')).toBeInTheDocument();
+    expect(within(insights).getByText('Datos aproximados · Actualizado ahora · Según reviews aprobadas')).toBeInTheDocument();
   });
 
   describe('HelpfulReviewAction y NotHelpfulReviewAction en FeaturedReviewCard', () => {
