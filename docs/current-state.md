@@ -232,11 +232,11 @@
 
 ## En curso
 
-- Cierre completo de taxonomía de segmentos de motos (tarea transversal de plataforma):
-  - Fase 2 en curso: saneo puntual (primer ajuste aplicado; quedan casos por auditar).
-  - Fase 3 auditoría: cerrada (recomendación híbrida validada).
-  - Fase 3.1 cerrada: contrato canónico vs visible formalizado.
-  - Fase 4 pendiente: preparación SEO/Admin/landings por categoría.
+- Taxonomía de segmentos de motos (tarea transversal de plataforma): base cerrada. Fases 0, 1, 2, 2 extendida, 3 y 3.1 finalizadas; ver bloque "Taxonomía de segmentos" más arriba.
+- Backlog de Fase 4 (futuro, fuera de alcance del cierre base):
+  - SEO/landings por categoría.
+  - Admin catálogo de modelos con 16 categorías explícitas.
+  - Decisión final `trail` vs `adventure` con contrato de producto (criterio operativo ya documentado en `docs/taxonomy-decisions.md` para no romper en el interim).
 - ...
 
 ## Siguiente paso
