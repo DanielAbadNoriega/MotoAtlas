@@ -144,8 +144,34 @@ Estado: parcialmente implementado (primera migración completada).
 - Eliminados de `MotorcycleCommunityPage.scss` los selectores huérfanos `.motorcycle-community__filter-group*` y `.motorcycle-community__filter-group-body` (incluido el `:not([open])` con body anidado). Los selectores activos `__rating-grid`, `__sort-grid`, `__filter-option`, `__filter-option--rating`, `__filter-stars` y `__filter-star--filled` se preservaron.
 - Quality Gate de la rama: typecheck clean, 1088 tests passed.
 
-**Pendiente de futuras migraciones:**
-- Migrar filtros de `AdminPage` si safe.
+**Auditoría inicial de `AdminPage` (rama `feature/admin-filtergroup-audit`):**
+- Decisión original: no migrar `AdminPage` al `FilterGroup` compartido en esa fase.
+- Admin usaba un componente local `AdminFilterGroup<T extends string>` con 11 instancias distribuidas en `AdminModerationSidebar`, `AdminReviewsSidebar` y `AdminRepliesSidebar`. `AdminMotorcycleReviewsPage` repetía HTML crudo con las mismas clases para Estado y Orden.
+- Razones registradas en esa auditoría: estado abierto/cerrado controlado por sección, genéricos tipados, icono por opción, accesibilidad estricta (`inert` + `aria-hidden`), grids por grupo, y tests que ataban estructura concreta (`<section>` + `<h3>` + `<button>`).
+- Esta decisión quedó **superada** por la decisión de producto posterior (ver bloque siguiente).
+
+**Normalización final de filtros admin a `FilterGroup` + `FilterOptionButton` compartidos (rama `feature/admin-filtergroup-normalization`):**
+- Decisión de producto revisada: admin debe reusar el mismo sistema de filtros que el resto de la app, sin mantener wrappers de grupo ni option buttons locales.
+- `AdminPage` y `AdminMotorcycleReviewsPage` ya están normalizadas al shared `FilterGroup` y al shared `FilterOptionButton`.
+- Componentes locales eliminados: `AdminFilterGroup`, `AdminFilterOptionButton`, `FilterChipButton`.
+- `classPrefix="admin-page"` se usa de forma consistente en todos los call sites de `FilterOptionButton` para preservar las clases SCSS `admin-page__filter-option` / `admin-page__filter-option--active`.
+- Admin sigue conservando su lógica de dominio: report status, report reason, moderation sort, review status, origin/source, segment, verification, license, riding style, requests filters, replies filters si aplica, paginación con reset al cambiar filtros, acciones de moderación y auth gate.
+- Preservados: iconos Material Symbols, labels, estado activo, `aria-label` con prefijo del grupo, `aria-pressed` y `onClick` con `onChange({ key: value })`.
+- `FilterGroup` con `defaultOpen` se usa para preservar el initial state del admin: primera sección abierta por default y el resto cerradas. Esta es la única decisión de estado inicial específica.
+- Tests admin (`AdminPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`) cubren el mismo comportamiento (filtros afectan listas, paginación reset, acciones de moderación, auth, no `null` visible) usando `<details>` con atributo `open` y `aria-label` / `aria-pressed` sobre los chips, no la estructura vieja de `<section>` + `<h3>` + `<button>`.
+
+**Limpieza SCSS tras normalización admin:**
+- Eliminados como huérfanos: `admin-page__filter-group`, `admin-page__filter-group-toggle`, `admin-page__filter-group-body`, `admin-page__filter-group--open` (wrapper de grupo) y `admin-page__filter-options--pills` + `admin-page__filter-option--pill*` (variantes pill que admin nunca usó).
+- Preservados: `admin-page__filter-options` (grid 2-col, layout genuino de admin, distinto de `__segment-grid`/`__pill-list` de otras páginas), `admin-page__filter-option`, `admin-page__filter-option--active`, icon styles y media query mobile con `grid-template-columns: 1fr`.
+- `FilterGroup.scss` sigue siendo dueño único de `.filter-group`, `.filter-group__summary`, `.filter-group__title`, `.filter-group__icon`, `.filter-group__body`. Sin duplicación en `AdminPage.scss`.
+
+**Cierre del ciclo de migración reusable a filtros compartidos:**
+- Onda de migración **completa** incluyendo admin. Páginas migradas: `AccountReviewsPage`, `AccountMotorcycleReviewsPage`, `CommunityReviewsPage`, `SearchPage`, `MotorcycleCommunityPage`, `AdminPage` y `AdminMotorcycleReviewsPage`.
+- Componentes compartidos en `src/shared/ui/filters/`:
+  - `FilterGroup.tsx` + `FilterGroup.scss` + `FilterGroup.test.tsx`.
+  - `FilterOptionButton.tsx` (nuevo en esta normalización, con `classPrefix` configurable que mantiene la convención de prefijos por página: `admin-page`, `account-reviews-page`, `community-reviews-page`, `motorcycle-community`).
+- `FilterOptionButton` y `FilterRatingStars` locales se preservan en `AccountReviewsPage`, `AccountMotorcycleReviewsPage`, `CommunityReviewsPage` y `MotorcycleCommunityPage` para mantener `__filter-option*`, `__filter-stars` y `__filter-star--filled` activos. No se migran al shared en este ciclo (sería un refactor mayor con unificación de SCSS que excede el alcance de la normalización admin).
+- Quality Gate: typecheck clean, 1088 tests passed.
 
 ### BikeDetailPage — Reorganización por tabs
 

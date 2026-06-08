@@ -290,7 +290,9 @@ La moderación separa dos conceptos:
 - estado del reporte (`Pendiente`, `Revisado`, `Descartado`, `Resuelto`)
 - estado de la review (`Oculta`, `Aprobada`, `Rechazada`)
 
-Los filtros admin adoptan el patrón de `cuenta/reviews`: header/body/footer, iconos Material Symbols y secciones desplegables por grupo (`Estado del reporte`, `Motivo`, `Orden`) con chevron y `aria-expanded`. El panel ya no depende del padding de card heredado; el espaciado se controla solo desde header/body/footer para evitar doble padding y desalineación.
+Los filtros admin adoptan el patrón de `cuenta/reviews`: header/body/footer, iconos Material Symbols y secciones desplegables por grupo (`Estado del reporte`, `Motivo`, `Orden`) con chevron nativo de `<details>`/`<summary>`. El panel ya no depende del padding de card heredado; el espaciado se controla solo desde header/body/footer para evitar doble padding y desalineación.
+
+Los filtros admin usan los componentes compartidos `FilterGroup` (`src/shared/ui/filters/FilterGroup.tsx`) y `FilterOptionButton` (`src/shared/ui/filters/FilterOptionButton.tsx`), con `classPrefix="admin-page"` para preservar las clases SCSS `admin-page__filter-option` y `admin-page__filter-option--active`. El estado abierto/cerrado lo gestiona nativamente el `<details>` del `FilterGroup`; admin preserva el initial state original usando `defaultOpen` (primera sección abierta por defecto, resto cerradas). Los iconos Material Symbols por opción, los labels, el estado activo, `aria-label` con prefijo del grupo, `aria-pressed` y el `onClick` con `onChange({ key: value })` se preservan. La lógica de admin (report status, report reason, moderation sort, review status, origin/source, segment, verification, license, riding style, requests filters, paginación con reset al cambiar filtros, acciones de moderación y auth gate) no cambia.
 
 `#/admin/moderacion` pagina el listado de reportes en bloques de 6. El orden/filtros de admin se aplican primero y luego se recorta la página activa; al cambiar filtros o limpiar filtros, la paginación vuelve a la página 1.
 
