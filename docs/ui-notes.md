@@ -300,11 +300,11 @@ Las report cards son plegables por defecto: el header deja visible estado, motiv
 
 Los botones de acciones de moderación tienen hover por intención visual (azul para `Marcar revisado`, rojo para `Descartar`/`Rechazar`, verde para `Resuelto`/`Aprobar`, gris para `Ocultar`) sin heredar hover rojo genérico.
 
-Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). El tab de respuestas pendientes de moderación está implementado. Avisos al autor y administración completa de solicitudes quedan para fases futuras.
+Si el admin actúa sobre la review desde ese reporte, la review cambia de estado y el reporte se marca automáticamente como `action_taken` (visible como `Resuelto`). El tab de respuestas pendientes de moderación está implementado. Avisos al autor y cierre de contratos de respuestas quedan para fases futuras. `#/admin/solicitudes` ya fue auditado (ver bloque dedicado más abajo).
 
 Estado de fase:
 - La base de la Fase 2.5 (moderación/admin) está mayoritariamente implementada.
-- Lo pendiente es residual y debe entrar por auditoría focal (solicitudes, avisos al autor y cierre de contratos de moderación de respuestas).
+- Lo pendiente es residual y debe entrar por auditoría focal (avisos al autor y cierre de contratos de moderación de respuestas). `#/admin/solicitudes` ya cuenta con auditoría funcional en rama `feature/admin-requests-audit`.
 
 ## Admin — Reviews por modelo
 
@@ -318,6 +318,85 @@ Hay filtros por estado, origen, verificación y orden. El CTA `Revisar reviews` 
 `AdminReviewCard` muestra `ReviewAspectSummary` con los aspectos técnicos de cada review. Las acciones disponibles son aprobar, ocultar y rechazar.
 
 La agrupación prioriza motos con reviews pendientes.
+
+## Admin — Solicitudes de modelos
+
+La ruta `#/admin/solicitudes` es privada para perfiles con `user_profiles.role = admin` y se apoya en `AdminGate` igual que el resto de rutas admin. La rama `feature/admin-requests-audit` dejó la UI auditada funcionalmente y la rama `feature/admin-requests-phase-1` aplicó la Fase 1 de cierre funcional sin tocar schema/RLS. Quality Gate: typecheck clean, 1117 tests passing (72 files).
+
+Ruta y layout:
+- hash route `#/admin/solicitudes`.
+- hero admin basado en `motorcycle-community__hero` con eyebrow `ADMIN STUDIO`, título `Solicitudes de modelos`, descripción `Gestiona las solicitudes de nuevos modelos enviadas por la comunidad.` y chip del admin activo (`verified_user` + `getDisplayName`).
+- body con `account-page admin-page` y `admin-page__layout` (sidebar + main).
+
+Sidebar admin (reutilizado, `AdminRequestsFilterSidebar`):
+- quick links a Panel admin (`#/admin`), Moderación (`#/admin/moderacion`), Reviews (`#/admin/reviews`), Solicitudes (`#/admin/solicitudes`, marcada como activa) y Mi cuenta (`#/cuenta`).
+- header de filtros con título `Filtros`, botón `Limpiar filtros` (deshabilitado cuando no hay filtros activos; al activarlo resetea a página 1) y botón `close` accesible (`Cerrar filtros de solicitudes`).
+- cuerpo de filtros con búsqueda `Buscar por marca o modelo` (input `type="search"`, icono `search` Material Symbols), grupo `Estado` (abierto por defecto), grupo `Origen` y grupo `Fecha de creación` (cerrados por defecto).
+- footer con `Limpiar filtros` y `Aplicar filtros` (este último cierra el panel/drawer en mobile).
+- el sidebar se monta como sheet/drawer responsive con backdrop y `Escape` para cerrar en mobile; desktop lo muestra permanente.
+
+Filtros disponibles (multi-select):
+- `Estado` (multi): Todas, Pendientes, Revisadas, Aprobadas, Rechazadas (iconos `apps` / `pending` / `fact_check` / `task_alt` / `cancel`). Combinables entre sí.
+- `Origen` (multi): Todas, Usuario, Admin, Import (iconos `apps` / `person` / `shield_person` / `cloud_upload`). Combinables entre sí.
+- Búsqueda libre por marca o modelo.
+- `Fecha de creación`: inputs `type="date"` Desde / Hasta. El admin puede fijar solo uno de los dos; si fija ambos, el servicio interpreta `createdFrom` como `T00:00:00.000Z` y `createdTo` como `T23:59:59.999Z` (día completo, no se excluyen solicitudes del día final). Los inputs llevan `min`/`max` cruzados para evitar invertir el rango.
+- Los filtros usan `FilterGroup` + `FilterOptionButton` compartidos con `classPrefix="admin-page"`.
+
+Regla `Todas` consistente en multi-select:
+- `Todas` significa "sin filtro". `aria-pressed=true` solo si el grupo está vacío.
+- Al click en `Todas` se vacía la selección del grupo correspondiente.
+- Al activar un valor específico (`Pendientes`, `Rechazadas`, `Usuario`, `Import`, etc.) mientras `Todas` está activo, `Todas` se desactiva automáticamente.
+- La lista de chips en el backend se traduce a `in.(...)` cuando hay varios valores, `eq.X` cuando hay uno solo y se omite cuando el array está vacío (lo que se representa en el UI con `Todas` activo).
+
+Summary de resultados (`admin-page__results-summary`, `aria-live="polite"`):
+- Se muestra solo cuando hay resultados cargados.
+- Copy conservador basado en el dataset cargado por la página, no en totales del backend:
+  - `X solicitudes cargadas` (sustantivo en plural para `X !== 1`, en singular para `1`).
+  - Si hay pendientes: `· Y pendientes` (con sufijo `-s` salvo cuando `Y === 1`).
+  - Si la paginación tiene más de una página: `· Mostrando A-B` con el rango visible actual.
+- No se renderiza cuando la lista está vacía (ahí toma el relevo el empty state).
+
+Paginación:
+- Tamaño: 10 elementos por página (`REQUESTS_PER_PAGE`), consistente con el patrón admin de reportes.
+- Componente compartido `AccountPagination` (mismo usado en `#/admin/moderacion`) con `ariaLabel="Paginación de solicitudes admin"` y clase `admin-page__pagination`.
+- Cambiar los valores reales de filtros/búsqueda/fechas resetea automáticamente a página 1, incluso al sustituir una selección por otra con la misma cantidad de elementos.
+- Si hay una sola página no se renderiza el paginador (el componente retorna `null`).
+- Cambiar de página colapsa las cards expandidas.
+
+Listado de solicitudes (`AdminRequestCard`):
+- patrón expandible tipo `admin-page__report-card` con `admin-page__report-card--expanded` cuando está abierto. Header accesible con `aria-expanded`/`aria-controls`, badge de estado (`admin-page__status-pill` con `data-status`), título `Marca Modelo Año` y línea de reportero `@usuario · fecha`.
+- Detalle expandido (`admin-page__request-detail`) en grid responsive:
+  - grid de 2 columnas con `Marca` y `Modelo`.
+  - grid de 3 columnas con `Año` (o `No especificado`), `Segmento` (o `No especificado`) y `Origen` (etiqueta mapeada desde `requestSourceLabels`).
+  - campos full-width opcionales: `Usuario` (si hay `userName`/`userId`), `Email de contacto` (si hay `contactEmail`), `Página oficial o fuente` (con link externo `target="_blank" rel="noopener noreferrer"` e icono `open_in_new`) y `Comentario` con estilo `--comment`.
+- Fecha formateada con `Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })`; si el valor es inválido se muestra `Fecha pendiente`.
+- Acciones admin en footer (`admin-page__action-group` con `h3` `Gestionar solicitud`):
+  - `Marcar revisada` (`admin-page__action-button--reviewed`).
+  - `Aprobar` (`admin-page__action-button--approve`).
+  - `Rechazar` (`admin-page__action-button--reject`).
+  - Cada acción queda `disabled` cuando ya coincide con el estado actual de la solicitud o cuando hay una acción pendiente (`pendingAction` por id de solicitud).
+- El click en una acción dispara `updateModelRequestStatus` con feedback: `Solicitud marcada como revisada.` / `Solicitud aprobada.` / `Solicitud rechazada.`, o `No se pudo completar la acción sobre la solicitud.` en error.
+
+Estados de carga y feedback:
+- hero con chip admin (loading-safe).
+- aviso de éxito: `role="status"` con el copy de acción completada.
+- error: `account-page__empty-state--error` con icono `error`, mensaje y botón `Reintentar` que vuelve a llamar a `getAllModelRequests`.
+- loading: `admin-page__loading` con copy `Cargando solicitudes...`.
+- empty state: `account-page__empty-state` con icono `fact_check` y copy `No hay solicitudes con estos filtros.`.
+
+Validación defensiva de `segment` en `#/solicitar-modelo`:
+- El formulario público sigue usando el selector de `BIKE_SEGMENTS` con las 16 categorías canónicas (no se reemplazó por un input libre).
+- `createModelRequest` normaliza un `segment` vacío o compuesto solo por espacios a `null`, rechaza un valor no vacío fuera de `BIKE_SEGMENTS` antes de llamar a red y preserva un segmento canónico válido en el payload.
+- Esto blinda el endpoint público sin tocar el selector canónico del form ni cambiar el comportamiento visible por defecto.
+
+Limitaciones actuales (Fase 1 cerrada, pendientes para Fase 2/3/4 sin cambios estructurales de schema):
+- sin `motorcycle_id` que vincule la solicitud a una moto creada.
+- sin `in_review`, `duplicate` o `created` en el enum de estados actual.
+- sin notas internas ni motivo de rechazo visible para el solicitante.
+- sin creación de moto a partir de solicitud aprobada.
+- sin notificaciones al solicitante (cualquier vía futura debe pasar por backend/edge/email, nunca con `service role key` en frontend).
+- sin detección de duplicados (`brand` + `model` + `year`).
+- sin acciones en lote sobre múltiples solicitudes.
 
 ## Mi cuenta — Reviews
 

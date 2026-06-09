@@ -1265,7 +1265,42 @@ describe('AdminPage', () => {
 
     await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
-      { status: 'pending' },
+      { statuses: ['pending'] },
+    ));
+  });
+
+  it('selecciona múltiples estados con multi-select', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    await user.click(within(filters).getByRole('button', { name: /Estado: Pendientes/i }));
+    await user.click(within(filters).getByRole('button', { name: /Estado: Revisadas/i }));
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { statuses: ['pending', 'reviewed'] },
+    ));
+  });
+
+  it('click en Estado: Todas limpia los estados específicos', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    await user.click(within(filters).getByRole('button', { name: /Estado: Pendientes/i }));
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { statuses: ['pending'] },
+    ));
+
+    await user.click(within(filters).getByRole('button', { name: /Estado: Todas/i }));
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      {},
     ));
   });
 
@@ -1282,7 +1317,48 @@ describe('AdminPage', () => {
 
     await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
       { accessToken: 'admin-token', userId: 'admin-1' },
-      { source: 'admin' },
+      { sources: ['admin'] },
+    ));
+  });
+
+  it('selecciona múltiples orígenes con multi-select', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const sourceGroup = within(filters).getByText('Origen', { selector: '.filter-group__title' }).closest('details');
+    const sourceSummary = within(sourceGroup as HTMLElement).getByText('Origen', { selector: '.filter-group__title' });
+    await user.click(sourceSummary);
+    await user.click(within(filters).getByRole('button', { name: /Origen: Usuario/i }));
+    await user.click(within(filters).getByRole('button', { name: /Origen: Import/i }));
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { sources: ['user', 'import'] },
+    ));
+  });
+
+  it('click en Origen: Todas limpia los orígenes específicos', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const sourceGroup = within(filters).getByText('Origen', { selector: '.filter-group__title' }).closest('details');
+    const sourceSummary = within(sourceGroup as HTMLElement).getByText('Origen', { selector: '.filter-group__title' });
+    await user.click(sourceSummary);
+    await user.click(within(filters).getByRole('button', { name: /Origen: Admin/i }));
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { sources: ['admin'] },
+    ));
+
+    await user.click(within(filters).getByRole('button', { name: /Origen: Todas/i }));
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      {},
     ));
   });
 
@@ -1298,6 +1374,134 @@ describe('AdminPage', () => {
       { accessToken: 'admin-token', userId: 'admin-1' },
       { search: 'Honda' },
     ));
+  });
+
+  it('filtra por rango de fechas en solicitudes', async () => {
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    const dateGroup = within(filters).getByText('Fecha de creación', { selector: '.filter-group__title' }).closest('details');
+    const dateSummary = within(dateGroup as HTMLElement).getByText('Fecha de creación', { selector: '.filter-group__title' });
+    await user.click(dateSummary);
+
+    const fromInput = within(filters).getByLabelText('Desde');
+    const toInput = within(filters).getByLabelText('Hasta');
+    await user.type(fromInput, '2026-05-01');
+    await user.type(toInput, '2026-05-31');
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { createdFrom: '2026-05-01', createdTo: '2026-05-31' },
+    ));
+  });
+
+  it('renderiza summary con total y pendientes', async () => {
+    getAllModelRequestsMock.mockReset().mockResolvedValue([
+      requestFixtures[0],
+      { ...requestFixtures[1], status: 'reviewed' },
+    ]);
+    render(<AdminRequestsPage />);
+
+    await screen.findByText('Honda Transalp 750 2025');
+
+    expect(await screen.findByText(/2 solicitudes cargadas · 1 pendiente/)).toBeInTheDocument();
+  });
+
+  it('página la lista cuando hay más de 10 solicitudes', async () => {
+    const manyRequests: ModelRequest[] = Array.from({ length: 12 }, (_, index) => buildRequest(index + 1, {
+      brand: `Brand_${index + 1}`,
+      model: `Model_${index + 1}`,
+    }));
+    getAllModelRequestsMock.mockReset().mockResolvedValue(manyRequests);
+    render(<AdminRequestsPage />);
+
+    const cards = await screen.findAllByTestId('admin-request-card');
+    expect(cards).toHaveLength(10);
+
+    const pagination = screen.getByRole('navigation', { name: /Paginación de solicitudes admin/i });
+    expect(pagination).toBeInTheDocument();
+    const nextButton = within(pagination).getByRole('button', { name: /Página siguiente/i });
+    await userEvent.setup().click(nextButton);
+
+    await waitFor(() => expect(screen.getAllByTestId('admin-request-card')).toHaveLength(2));
+  });
+
+  it('aplicar filtros resetea la paginación a página 1', async () => {
+    const manyRequests: ModelRequest[] = Array.from({ length: 12 }, (_, index) => buildRequest(index + 1, {
+      brand: `Brand_${index + 1}`,
+      model: `Model_${index + 1}`,
+    }));
+    getAllModelRequestsMock.mockReset().mockResolvedValue(manyRequests);
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const initialCards = await screen.findAllByTestId('admin-request-card');
+    expect(initialCards).toHaveLength(10);
+
+    const pagination = screen.getByRole('navigation', { name: /Paginación de solicitudes admin/i });
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+    await waitFor(() => expect(screen.getAllByTestId('admin-request-card')).toHaveLength(2));
+
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    await user.click(within(filters).getByRole('button', { name: /Estado: Pendientes/i }));
+
+    await waitFor(() => expect(screen.getAllByTestId('admin-request-card')).toHaveLength(10));
+  });
+
+  it('resetea la paginación al reemplazar un estado seleccionado por otro', async () => {
+    const manyRequests: ModelRequest[] = Array.from({ length: 12 }, (_, index) => buildRequest(index + 1, {
+      brand: `Brand_${index + 1}`,
+      model: `Model_${index + 1}`,
+    }));
+    getAllModelRequestsMock.mockReset().mockResolvedValue(manyRequests);
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    await screen.findAllByTestId('admin-request-card');
+    const filters = screen.getByRole('region', { name: /Filtros/i });
+    await user.click(within(filters).getByRole('button', { name: /Estado: Pendientes/i }));
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { statuses: ['pending'] },
+    ));
+
+    const pagination = screen.getByRole('navigation', { name: /Paginación de solicitudes admin/i });
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+    await waitFor(() => expect(screen.getAllByTestId('admin-request-card')).toHaveLength(2));
+
+    await user.click(within(filters).getByRole('button', { name: /Estado: Revisadas/i }));
+    await user.click(within(filters).getByRole('button', { name: /Estado: Pendientes/i }));
+
+    await waitFor(() => expect(getAllModelRequestsMock).toHaveBeenLastCalledWith(
+      { accessToken: 'admin-token', userId: 'admin-1' },
+      { statuses: ['reviewed'] },
+    ));
+    expect(screen.getAllByTestId('admin-request-card')).toHaveLength(10);
+  });
+
+  it('cambiar de página colapsa las solicitudes expandidas', async () => {
+    const manyRequests: ModelRequest[] = Array.from({ length: 12 }, (_, index) => buildRequest(index + 1, {
+      brand: `Brand_${index + 1}`,
+      model: `Model_${index + 1}`,
+      comment: `Comentario_${index + 1}`,
+    }));
+    getAllModelRequestsMock.mockReset().mockResolvedValue(manyRequests);
+    const user = userEvent.setup();
+    render(<AdminRequestsPage />);
+
+    const firstCard = (await screen.findAllByTestId('admin-request-card'))[0];
+    const toggle = within(firstCard).getByRole('button', { name: /Expandir solicitud/i });
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(within(firstCard).getByText('Comentario_1')).toBeVisible();
+
+    const pagination = screen.getByRole('navigation', { name: /Paginación de solicitudes admin/i });
+    await user.click(within(pagination).getByRole('button', { name: /Página siguiente/i }));
+
+    await waitFor(() => expect(screen.queryByText('Comentario_1')).not.toBeInTheDocument());
+    expect(screen.getAllByTestId('admin-request-card')).toHaveLength(2);
   });
 
   it('navegación admin contiene Solicitudes en el sidebar', () => {
