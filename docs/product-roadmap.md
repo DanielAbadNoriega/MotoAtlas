@@ -18,6 +18,7 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - Tests de referencia: `1097 passed`.
 - Typecheck: clean.
+- Rama estable más reciente: `feature/admin-requests-audit` (auditoría funcional de `#/admin/solicitudes`, sin cambios de código).
 
 ## 3. Foco inmediato recomendado
 
@@ -497,10 +498,55 @@ Implementado:
 - acciones aprobar/ocultar/rechazar;
 - tab de respuestas pendientes de moderación.
 
-Pendientes residuales:
-- completar o auditar `#/admin/solicitudes` (flujo final y contratos de producto);
+`#/admin/solicitudes` (rama `feature/admin-requests-audit`):
+- **auditado** funcionalmente. Sin cambios de código. Typecheck clean, 1097 tests passing.
+- Capacidades ya implementadas y verificadas en auditoría:
+  - ruta `#/admin/solicitudes` operativa y separada de cuenta.
+  - admin protegido por sesión + rol (`isAdmin`).
+  - listado de solicitudes con `getAllModelRequests` (autenticado como admin).
+  - filtros laterales `Estado` (Todas, Pendientes, Revisadas, Aprobadas, Rechazadas), `Origen` (Todas, Usuario, Admin, Import) y búsqueda libre por marca o modelo.
+  - sidebar admin con quick links a Panel admin, Moderación, Reviews, Solicitudes, Mi cuenta.
+  - cards expandibles (`AdminRequestCard`) con detalle de Marca, Modelo, Año, Segmento, Origen, Usuario, Email de contacto, Página oficial/fuente y Comentario.
+  - badge de estado (`Pendiente`, `Revisada`, `Aprobada`, `Rechazada`) y fecha en formato `DD MMM YYYY` (`es-ES`).
+  - acciones admin: `Marcar revisada`, `Aprobar`, `Rechazar` (deshabilitadas si la solicitud ya está en ese estado o si hay una acción en curso).
+  - update de estado a través de `updateModelRequestStatus` con feedback de éxito/error.
+  - RLS vigente verificada: anon insert solo `pending`/`user`/`user_id null`; authenticated insert solo con `user_id = auth.uid()`; authenticated users leen solo sus propias solicitudes; admins leen todas; admins actualizan solo `status`.
+- Rutas paralelas verificadas:
+  - `#/solicitar-modelo` para envío público (anónimo o autenticado).
+  - `#/cuenta/solicitudes` para que el usuario autenticado vea sus propias solicitudes.
+- Gaps detectados en auditoría (no son bloqueantes):
+  - sin paginación específica de admin (la lista se carga completa y se renderiza de forma lineal; el contrato backend actual no exige paginación).
+  - sin filtro por rango de fechas.
+  - sin contador dedicado de pendientes en hero/lista.
+  - sin detección de duplicados (mismo `brand`+`model`+`year`).
+  - sin `in_review`, `duplicate`, `created` en el enum de estados actual.
+  - sin `motorcycle_id` que vincule la solicitud a una moto creada.
+  - sin notas internas o motivo de rechazo visibles para el solicitante.
+  - sin flujo de creación de moto a partir de solicitud aprobada.
+  - sin notificaciones al solicitante.
+  - `segment` sigue siendo texto libre (sin validación contra `BIKE_SEGMENTS`).
+  - sin acciones en lote sobre múltiples solicitudes.
+- Pendiente por fases recomendadas (no abordadas en esta auditoría):
+  - **Fase 1 — Cierre funcional admin solicitudes** (sin cambios de schema):
+    - paginación real o segmentación de carga si el dataset lo exige.
+    - filtro por rango de fechas (desde/hasta).
+    - contador de pendientes en el hero o resumen de la página.
+    - mejora de copy admin (badges, mensajes de feedback, empty state).
+    - validación opcional de `segment` contra `BIKE_SEGMENTS` con fallback controlado.
+  - **Fase 2 — Vincular solicitudes al admin de catálogo** (requiere decisión de schema):
+    - añadir `motorcycle_id` opcional a `model_requests`.
+    - crear moto del catálogo desde una solicitud aprobada.
+    - marcar la solicitud como `created` al cerrar el alta.
+  - **Fase 3 — Notificaciones al solicitante**:
+    - vía backend/edge/email o notificación pull-based.
+    - nunca con `service role key` en frontend.
+  - **Fase 4 — Detección de duplicados / analítica**:
+    - usar índices existentes por `brand`/`model`/`year` si es posible.
+    - sin cambio inmediato de schema salvo decisión posterior.
+- Admin catálogo de modelos (P2) se mantiene como fase futura separada y solo convergerá con solicitudes a partir de Fase 2.
+
+Pendientes residuales (no asociados a la auditoría de solicitudes):
 - avisos al autor;
-- administración completa de solicitudes (auditoría funcional final);
 - auditoría específica de moderación de respuestas:
   - aprobar/ocultar/rechazar respuestas;
   - reportes de respuestas si existen;

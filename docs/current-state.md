@@ -2,8 +2,8 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/live-insights-redesign`
-- Último bloque validado: rediseño del bloque `Insights en vivo` de `#/comunidad/reviews` como bloque de descubrimiento comunitario. Auditoría confirmó que los 4 signals comunitarios ya eran los correctos: `Moto más comentada`, `Review más útil`, `Segmento más activo` (con label friendly de `segmentLabels`), `Uso más activo` (con label friendly de `accountReviewRidingStyleLabels`). Refuerzos de copia: kicker "Pulso de la comunidad · Actividad reciente", subtítulo "Señales según reviews aprobadas, no en tiempo real", footer "Datos aproximados · {refreshLabel} · Según reviews aprobadas". Solo se alimenta de reviews `approved`; polling suave cada 60s; no se renderizan `review con más kilómetros` ni `rating medio global`. Quality Gate aprobado: typecheck clean, 1097 tests passed.
+- Rama actual: `feature/admin-requests-audit`
+- Último bloque validado: **auditoría funcional de `#/admin/solicitudes`** (rama `feature/admin-requests-audit`). Safe Builder ejecutó auditoría focal sin modificar código. Se confirmó que la ruta existe, es accesible solo para admin, lista solicitudes, permite filtrar por estado, origen y búsqueda libre por marca/modelo, renderiza cards expandibles con detalle completo, soporta acciones `Marcar revisada` / `Aprobar` / `Rechazar` y respeta la RLS vigente (anon insert solo `pending`/`user`/`user_id null`, authenticated insert solo con `user_id = auth.uid()`, lectura admin total, update admin limitado a `status`). Rutas paralelas verificadas: `#/solicitar-modelo` (envío público) y `#/cuenta/solicitudes` (consulta autenticada del propio usuario). Quality Gate aprobado sin diffs: typecheck clean, 1097 tests passed.
 - Tests: 1097 passed
 - Typecheck: clean
 - Último commit:
@@ -44,7 +44,15 @@
 - Admin protegido por sesión + rol (`user_profiles.role = admin`).
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
-- Flujo de solicitudes admin disponible, pendiente de auditoría funcional final y contratos de producto.
+- `#/admin/solicitudes` **auditado** funcionalmente (rama `feature/admin-requests-audit`, sin cambios de código). Capacidades verificadas:
+  - sidebar admin con quick links a Panel admin, Moderación, Reviews, Solicitudes, Mi cuenta.
+  - filtros laterales: `Estado` (Todas, Pendientes, Revisadas, Aprobadas, Rechazadas), `Origen` (Todas, Usuario, Admin, Import) y búsqueda libre por marca o modelo; botón `Limpiar filtros` y `Aplicar filtros` replicando el patrón visual de filtros admin.
+  - cards expandibles con detalle de Marca, Modelo, Año, Segmento, Origen, Usuario, Email de contacto, Página oficial/fuente y Comentario.
+  - badge de estado (`Pendiente` / `Revisada` / `Aprobada` / `Rechazada`) y fecha en formato `DD MMM YYYY` (`es-ES`).
+  - acciones `Marcar revisada`, `Aprobar`, `Rechazar` (deshabilitadas si la solicitud ya está en ese estado o hay una acción en curso) con feedback de éxito/error.
+  - RLS vigente verificada en auditoría: anon insert solo `pending`/`user`/`user_id null`; authenticated insert solo con `user_id = auth.uid()`; authenticated users leen solo sus propias solicitudes; admins leen todas; admins actualizan solo `status`.
+- Rutas paralelas verificadas: `#/solicitar-modelo` (envío público, anónimo o autenticado) y `#/cuenta/solicitudes` (consulta autenticada del propio usuario con paginación 8 + CTA `Solicitar otro modelo` como card visual).
+- Gaps residuales (Fase 1 pendiente, sin schema): sin paginación específica, sin filtro por rango de fechas, sin contador de pendientes, sin detección de duplicados, sin validación de `segment` contra `BIKE_SEGMENTS`, sin `motorcycle_id`/`created`/`in_review`/`duplicate`, sin notas internas, sin conversión a moto, sin notificaciones y sin acciones en lote.
 
 ### Home — FeaturedMachines (sustitución de FeaturedBikes / BikeCard)
 - Implementado: nueva sección `FeaturedMachines` en Home.
@@ -217,7 +225,7 @@
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
-- Backlog P2: auditoría residual de admin/moderación (solicitudes, avisos al autor y cierre de contratos de respuestas).
+- Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado (rama `feature/admin-requests-audit`) y queda con **Fase 1 pendiente** (paginación, rango de fechas, contador de pendientes, copy admin, validación opcional de `segment` contra `BIKE_SEGMENTS`), sin cambios de schema.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
@@ -257,6 +265,7 @@
 - “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
 - Fixtures de usuarios/perfiles para auth quedan como **P2 Auth baseline / Testing / Fixtures** con base central implementada; pendiente residual: migración incremental de mocks repetidos.
 - “Fase 2.5 moderación/admin de respuestas” queda reclasificada como base mayoritariamente implementada con pendientes residuales auditables.
+- La rama `feature/admin-requests-audit` queda registrada como **auditoría funcional de `#/admin/solicitudes`** sin diffs: las capacidades listadas en el bloque Admin pasan a estar verificadas y la Fase 1 (cierre funcional sin schema) queda como próximo trabajo concreto; Fase 2 (vincular a admin catálogo), Fase 3 (notificaciones) y Fase 4 (duplicados/analítica) permanecen como fases futuras con dependencia explícita de decisión de schema.
 - “Automatización avanzada de imágenes” queda clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual de imágenes.
 - “Noticias dinámicas y artículos desde datos MotoAtlas” queda clasificada como backlog estratégico **P3/P4 Contenido dinámico / SEO / IA futura**.
 - “Engagement sano y retorno de usuario” queda clasificada como backlog estratégico **P3/P4 Comunidad / Personalización** con enfoque explícito anti-spam y anti-feed-infinito.
