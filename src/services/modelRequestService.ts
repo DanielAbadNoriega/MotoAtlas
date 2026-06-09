@@ -1,3 +1,5 @@
+import { isBikeSegment } from '../shared/motorcycles/motorcycleTaxonomy';
+
 export type ModelRequestStatus = 'pending' | 'reviewed' | 'approved' | 'rejected';
 export type ModelRequestSource = 'user' | 'admin' | 'import';
 
@@ -20,7 +22,11 @@ export type ModelRequestAuthContext = Readonly<{
 export type ModelRequestFilters = Readonly<{
   status?: ModelRequestStatus;
   source?: ModelRequestSource;
+  statuses?: readonly ModelRequestStatus[];
+  sources?: readonly ModelRequestSource[];
   search?: string;
+  createdFrom?: string;
+  createdTo?: string;
 }>;
 
 export type ModelRequest = Readonly<{
@@ -87,6 +93,14 @@ function normalizeOptionalText(value: string | null | undefined) {
   return normalized.length > 0 ? normalized : null;
 }
 
+function normalizeSegment(value: string | null | undefined): string | null {
+  const normalized = normalizeOptionalText(value);
+  if (normalized === null) {
+    return null;
+  }
+  return isBikeSegment(normalized) ? normalized : null;
+}
+
 function normalizeAuthContext(authContext: ModelRequestAuthContext | undefined) {
   const userId = authContext?.userId.trim();
   const accessToken = authContext?.accessToken.trim();
@@ -115,6 +129,11 @@ function assertValidModelRequest(input: ModelRequestInput) {
   if (!Number.isInteger(input.year) || input.year < 1900 || input.year > 2100) {
     throw new Error('year debe ser un entero entre 1900 y 2100.');
   }
+
+  const normalizedSegment = normalizeOptionalText(input.segment);
+  if (normalizedSegment !== null && !isBikeSegment(normalizedSegment)) {
+    throw new Error('segment debe ser una categoría válida de BIKE_SEGMENTS.');
+  }
 }
 
 function buildModelRequestPayload(input: ModelRequestInput, authContext?: ModelRequestAuthContext): ModelRequestPayload {
@@ -126,7 +145,7 @@ function buildModelRequestPayload(input: ModelRequestInput, authContext?: ModelR
     brand: input.brand.trim(),
     model: input.model.trim(),
     year: input.year,
-    segment: normalizeOptionalText(input.segment),
+    segment: normalizeSegment(input.segment),
     contact_email: normalizeOptionalText(input.contactEmail),
     official_url: normalizeOptionalText(input.officialUrl),
     comment: normalizeOptionalText(input.comment),
@@ -236,11 +255,48 @@ export async function getModelRequestsByUserId(authContext?: ModelRequestAuthCon
 }
 
 const validAdminStatuses = new Set<ModelRequestStatus>(['pending', 'reviewed', 'approved', 'rejected']);
+const validAdminSources = new Set<ModelRequestSource>(['user', 'admin', 'import']);
 
 function assertValidAdminStatus(status: ModelRequestStatus) {
   if (!validAdminStatuses.has(status)) {
     throw new Error(`Estado inválido: ${status}`);
   }
+}
+
+function sanitizeAdminStatuses(values: readonly ModelRequestStatus[] | undefined): readonly ModelRequestStatus[] {
+  if (!values || values.length === 0) {
+    return [];
+  }
+  return values.filter((value): value is ModelRequestStatus => validAdminStatuses.has(value));
+}
+
+function sanitizeAdminSources(values: readonly ModelRequestSource[] | undefined): readonly ModelRequestSource[] {
+  if (!values || values.length === 0) {
+    return [];
+  }
+  return values.filter((value): value is ModelRequestSource => validAdminSources.has(value));
+}
+
+function normalizeIsoDateBoundary(value: string | undefined, boundary: 'from' | 'to'): string | null {
+  if (!value || !value.trim()) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  if (dateOnly) {
+    if (boundary === 'from') {
+      return `${trimmed}T00:00:00.000Z`;
+    }
+    return `${trimmed}T23:59:59.999Z`;
+  }
+
+  return parsed.toISOString();
 }
 
 function normalizeAuthContextStrict(authContext: ModelRequestAuthContext) {
@@ -265,12 +321,34 @@ export async function getAllModelRequests(
     select: 'id,user_id,user_name,brand,model,year,segment,contact_email,official_url,comment,status,source,created_at,updated_at',
   });
 
-  if (filters?.status) {
+  const sanitizedStatuses = sanitizeAdminStatuses(filters?.statuses);
+  const sanitizedSources = sanitizeAdminSources(filters?.sources);
+
+  if (filters?.status && sanitizedStatuses.length === 0) {
     params.set('status', `eq.${filters.status}`);
+  } else if (sanitizedStatuses.length === 1) {
+    params.set('status', `eq.${sanitizedStatuses[0]}`);
+  } else if (sanitizedStatuses.length > 1) {
+    params.set('status', `in.(${sanitizedStatuses.join(',')})`);
   }
 
-  if (filters?.source) {
+  if (filters?.source && sanitizedSources.length === 0) {
     params.set('source', `eq.${filters.source}`);
+  } else if (sanitizedSources.length === 1) {
+    params.set('source', `eq.${sanitizedSources[0]}`);
+  } else if (sanitizedSources.length > 1) {
+    params.set('source', `in.(${sanitizedSources.join(',')})`);
+  }
+
+  const createdFrom = normalizeIsoDateBoundary(filters?.createdFrom, 'from');
+  const createdTo = normalizeIsoDateBoundary(filters?.createdTo, 'to');
+
+  if (createdFrom && createdTo) {
+    params.set('and', `(created_at.gte.${createdFrom},created_at.lte.${createdTo})`);
+  } else if (createdFrom) {
+    params.set('created_at', `gte.${createdFrom}`);
+  } else if (createdTo) {
+    params.set('created_at', `lte.${createdTo}`);
   }
 
   if (filters?.search?.trim()) {

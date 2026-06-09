@@ -16,9 +16,9 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1097 passed`.
+- Tests de referencia: `1117 passed`.
 - Typecheck: clean.
-- Rama estable más reciente: `feature/admin-requests-audit` (auditoría funcional de `#/admin/solicitudes`, sin cambios de código).
+- Rama estable más reciente: `feature/admin-requests-phase-1` (cierre funcional de `#/admin/solicitudes`, sin cambios de schema/RLS).
 
 ## 3. Foco inmediato recomendado
 
@@ -156,7 +156,7 @@ La rama `feature/admin-filtergroup-audit` recomendó inicialmente no migrar admi
 ### Quality Gate de la normalización
 
 - `npm run typecheck` → clean.
-- `npm run test` → 1097 / 1097 pasando (baseline vigente).
+- `npm run test` → 1097 / 1097 pasando (baseline histórico de ese cierre).
 
 ### BikeDetailPage — Reorganización por tabs
 
@@ -514,7 +514,7 @@ Implementado:
 - Rutas paralelas verificadas:
   - `#/solicitar-modelo` para envío público (anónimo o autenticado).
   - `#/cuenta/solicitudes` para que el usuario autenticado vea sus propias solicitudes.
-- Gaps detectados en auditoría (no son bloqueantes):
+- Gaps detectados en auditoría (no son bloqueantes en ese momento; varios quedaron cerrados en Fase 1 descrita más abajo):
   - sin paginación específica de admin (la lista se carga completa y se renderiza de forma lineal; el contrato backend actual no exige paginación).
   - sin filtro por rango de fechas.
   - sin contador dedicado de pendientes en hero/lista.
@@ -524,25 +524,30 @@ Implementado:
   - sin notas internas o motivo de rechazo visibles para el solicitante.
   - sin flujo de creación de moto a partir de solicitud aprobada.
   - sin notificaciones al solicitante.
-  - `segment` sigue siendo texto libre (sin validación contra `BIKE_SEGMENTS`).
+  - `segment` sin validación defensiva contra `BIKE_SEGMENTS` en el service (el form público ya usaba el selector canónico, pero el endpoint no rechazaba payloads manipulados).
   - sin acciones en lote sobre múltiples solicitudes.
-- Pendiente por fases recomendadas (no abordadas en esta auditoría):
-  - **Fase 1 — Cierre funcional admin solicitudes** (sin cambios de schema):
-    - paginación real o segmentación de carga si el dataset lo exige.
-    - filtro por rango de fechas (desde/hasta).
-    - contador de pendientes en el hero o resumen de la página.
-    - mejora de copy admin (badges, mensajes de feedback, empty state).
-    - validación opcional de `segment` contra `BIKE_SEGMENTS` con fallback controlado.
-  - **Fase 2 — Vincular solicitudes al admin de catálogo** (requiere decisión de schema):
-    - añadir `motorcycle_id` opcional a `model_requests`.
-    - crear moto del catálogo desde una solicitud aprobada.
-    - marcar la solicitud como `created` al cerrar el alta.
-  - **Fase 3 — Notificaciones al solicitante**:
-    - vía backend/edge/email o notificación pull-based.
-    - nunca con `service role key` en frontend.
-  - **Fase 4 — Detección de duplicados / analítica**:
-    - usar índices existentes por `brand`/`model`/`year` si es posible.
-    - sin cambio inmediato de schema salvo decisión posterior.
+
+`#/admin/solicitudes` — Fase 1 (rama `feature/admin-requests-phase-1`):
+- Estado: **implementada / cerrada** (sin cambios de schema/RLS).
+- Mejoras funcionales aplicadas sobre la base auditada:
+  - **Filtros multi-select** de `Estado` y `Origen`: el admin puede combinar varios estados o varios orígenes a la vez. La opción `Todas` se mantiene y significa "sin filtro"; al click en `Todas` se limpian los específicos; al activar un estado/origen específico, `Todas` se desactiva.
+  - **Filtro por rango de fechas** (`createdFrom` / `createdTo`) con dos inputs `type="date"`. La fecha se interpreta como día completo (`YYYY-MM-DD`): `createdFrom` se envía como `T00:00:00.000Z` y `createdTo` como `T23:59:59.999Z` para evitar excluir solicitudes del día final. Inputs vinculados con `min`/`max` para evitar invertir el rango.
+  - **Paginación** de la lista con `REQUESTS_PER_PAGE = 10` (consistente con patrón admin de reportes) usando el componente compartido `AccountPagination`. Cambiar filtros/búsqueda/fechas resetea automáticamente a página 1. Si el dataset cabe en una sola página no se renderiza el paginador.
+  - **Summary** (`admin-page__results-summary`) con `aria-live="polite"` que muestra total cargado, pendientes y rango visible. Etiqueta `solicitudes cargadas` (no "totales" ni claims de backend), porque refleja el dataset cargado por la página, no el total absoluto de la base.
+  - **Validación defensiva de `segment` en el service** (`createModelRequest`): un valor vacío o compuesto solo por espacios se normaliza a `null`; un valor no vacío fuera de `BIKE_SEGMENTS` se rechaza antes de llamar a red; un segmento canónico válido se preserva en el payload. Esto blinda el endpoint público sin romper el selector nativo de `#/solicitar-modelo` (que ya usa las 16 categorías canónicas).
+- Servicio (`src/services/modelRequestService.ts`):
+  - `ModelRequestFilters` extendidos con `statuses?: readonly ModelRequestStatus[]`, `sources?: readonly ModelRequestSource[]`, `createdFrom?: string`, `createdTo?: string`. Compatibilidad mantenida con los filtros singulares legacy (`status`, `source`) si llegan solos.
+  - `getAllModelRequests` aplica `in.(...)` cuando hay varios valores y `eq.X` cuando hay uno solo. Arrays vacíos omiten el filtro. Date range se traduce a `created_at.gte.X` / `created_at.lte.X` (o `and=(created_at.gte.X,created_at.lte.Y)` cuando hay ambos). Inputs inválidos se ignoran sin error.
+  - Sanitización interna con `sanitizeAdminStatuses` / `sanitizeAdminSources` para tolerar valores inesperados.
+- Quality Gate: `npm run typecheck` clean, `npm run test` 1117 / 1117 pasando.
+- Pendientes fuera de alcance de Fase 1 (Fase 2/3/4 sin cambios estructurales):
+  - `motorcycle_id` para vincular solicitud con moto del catálogo (requiere decisión de schema).
+  - nuevos estados `in_review`, `duplicate`, `created` (requieren migración).
+  - creación de moto a partir de solicitud aprobada.
+  - notificaciones al solicitante (backend/edge/email, sin service role key en frontend).
+  - detección de duplicados por `brand`+`model`+`year` con índice si se decide.
+  - acciones en lote (bulk) sobre múltiples solicitudes.
+  - notas internas y motivo de rechazo visibles para el solicitante.
 - Admin catálogo de modelos (P2) se mantiene como fase futura separada y solo convergerá con solicitudes a partir de Fase 2.
 
 Pendientes residuales (no asociados a la auditoría de solicitudes):
