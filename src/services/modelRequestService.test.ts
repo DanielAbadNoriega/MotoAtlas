@@ -309,6 +309,159 @@ describe('modelRequestService', () => {
     expect(url.searchParams.get('status')).toBe('eq.pending');
   });
 
+  it('admin filtra solicitudes por múltiples statuses con operador in', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, {
+      statuses: ['pending', 'reviewed'],
+    });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('status')).toBe('in.(pending,reviewed)');
+  });
+
+  it('admin filtra con statuses vacío omite el filtro', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, {
+      statuses: [],
+    });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('status')).toBeNull();
+  });
+
+  it('admin filtra solicitudes por múltiples sources con operador in', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, {
+      sources: ['user', 'import'],
+    });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('source')).toBe('in.(user,import)');
+  });
+
+  it('admin filtra por rango de fechas con gte/lte', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, {
+      createdFrom: '2026-05-01',
+      createdTo: '2026-05-31',
+    });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    const andParam = url.searchParams.get('and');
+    expect(andParam).toBe('(created_at.gte.2026-05-01T00:00:00.000Z,created_at.lte.2026-05-31T23:59:59.999Z)');
+  });
+
+  it('admin filtra por createdFrom con gte', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, {
+      createdFrom: '2026-05-01',
+    });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('created_at')).toBe('gte.2026-05-01T00:00:00.000Z');
+    expect(url.searchParams.get('and')).toBeNull();
+  });
+
+  it('admin filtra por createdTo con lte', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, {
+      createdTo: '2026-05-31',
+    });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('created_at')).toBe('lte.2026-05-31T23:59:59.999Z');
+  });
+
+  it('admin ignora createdFrom inválido', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getAllModelRequests({ accessToken: 'admin-token', userId: 'admin-1' }, {
+      createdFrom: 'not-a-date',
+    });
+    const [requestUrl] = fetchMock.mock.calls[0];
+    const url = new URL(String(requestUrl));
+
+    expect(url.searchParams.get('created_at')).toBeNull();
+    expect(url.searchParams.get('and')).toBeNull();
+  });
+
+  it('rechaza segment inválido contra BIKE_SEGMENTS antes de llamar a red', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createModelRequest({
+      ...validModelRequestInput,
+      segment: 'no-existe',
+    })).rejects.toThrow('segment debe ser una categoría válida');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('normaliza segment vacío a null en el payload', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createModelRequest({ ...validModelRequestInput, segment: '   ' });
+    expect(getLastPayload(fetchMock)).toMatchObject({ segment: null });
+  });
+
+  it('mantiene segment válido canónico en el payload', async () => {
+    stubSupabaseEnv();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await createModelRequest({ ...validModelRequestInput, segment: 'trail' });
+    expect(getLastPayload(fetchMock)).toMatchObject({ segment: 'trail' });
+  });
+
   it('admin filtra solicitudes por búsqueda textual', async () => {
     stubSupabaseEnv();
     const fetchMock = vi.fn().mockResolvedValue({

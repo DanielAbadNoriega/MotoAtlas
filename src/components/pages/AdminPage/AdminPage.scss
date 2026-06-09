@@ -388,6 +388,50 @@
     }
   }
 
+  &__date-range {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: 1fr 1fr;
+
+    label {
+      align-items: flex-start;
+      color: rgba($color-on-surface-variant, 0.92);
+      display: flex;
+      flex-direction: column;
+      font-size: 0.78rem;
+      font-weight: 600;
+      gap: 0.3rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    input {
+      background: rgba($color-surface-container, 0.78);
+      border: 1px solid rgba($color-outline-variant, 0.36);
+      border-radius: $radius-md;
+      color: $color-on-surface;
+      font-family: $font-mono;
+      font-size: 0.85rem;
+      font-weight: 600;
+      min-height: 44px;
+      padding: 0.55rem 0.7rem;
+      text-transform: none;
+      transition:
+        background $transition-base,
+        border-color $transition-base;
+
+      &:hover {
+        background: rgba($color-surface-bright, 0.6);
+      }
+
+      &:focus-visible {
+        background: rgba($color-surface-bright, 0.7);
+        border-color: rgba($color-accent-container, 0.7);
+        outline: 0;
+      }
+    }
+  }
+
   &__loading,
   &__notice-message {
     border: 1px solid rgba($color-outline-variant, 0.42);

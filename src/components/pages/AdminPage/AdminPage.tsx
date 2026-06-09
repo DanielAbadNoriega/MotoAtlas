@@ -1286,37 +1286,60 @@ const requestSourceLabels: Record<ModelRequestType['source'], string> = {
   import: 'Import',
 };
 
-const requestStatusOptions = [
+type RequestStatusFilterValue = ModelRequestStatusType | 'all';
+type RequestSourceFilterValue = ModelRequestType['source'] | 'all';
+
+type RequestStatusOption = Readonly<{
+  icon: string;
+  label: string;
+  value: RequestStatusFilterValue;
+}>;
+
+type RequestSourceOption = Readonly<{
+  icon: string;
+  label: string;
+  value: RequestSourceFilterValue;
+}>;
+
+const requestStatusOptions: readonly RequestStatusOption[] = [
   { icon: 'apps', label: 'Todas', value: 'all' },
   { icon: 'pending', label: 'Pendientes', value: 'pending' },
   { icon: 'fact_check', label: 'Revisadas', value: 'reviewed' },
   { icon: 'task_alt', label: 'Aprobadas', value: 'approved' },
   { icon: 'cancel', label: 'Rechazadas', value: 'rejected' },
-] as const;
+];
 
-const requestSourceOptions = [
+const requestSourceOptions: readonly RequestSourceOption[] = [
   { icon: 'apps', label: 'Todas', value: 'all' },
   { icon: 'person', label: 'Usuario', value: 'user' },
   { icon: 'shield_person', label: 'Admin', value: 'admin' },
   { icon: 'cloud_upload', label: 'Import', value: 'import' },
-] as const;
+];
 
 type AdminRequestsFilters = {
-  status: ModelRequestStatusType | 'all';
-  source: ModelRequestType['source'] | 'all';
+  statuses: readonly ModelRequestStatusType[];
+  sources: readonly ModelRequestType['source'][];
   search: string;
+  createdFrom: string;
+  createdTo: string;
 };
 
 const defaultRequestsFilters: AdminRequestsFilters = {
-  status: 'all',
-  source: 'all',
+  statuses: [],
+  sources: [],
   search: '',
+  createdFrom: '',
+  createdTo: '',
 };
 
+const REQUESTS_PER_PAGE = 10;
+
 function hasActiveRequestsFilters(filters: AdminRequestsFilters) {
-  return filters.status !== defaultRequestsFilters.status
-    || filters.source !== defaultRequestsFilters.source
-    || filters.search !== defaultRequestsFilters.search;
+  return filters.statuses.length > 0
+    || filters.sources.length > 0
+    || filters.search !== defaultRequestsFilters.search
+    || filters.createdFrom !== defaultRequestsFilters.createdFrom
+    || filters.createdTo !== defaultRequestsFilters.createdTo;
 }
 
 function formatRequestDate(value: string) {
@@ -1341,6 +1364,34 @@ function AdminRequestsFilterSidebar({
 }>) {
   const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
   const clearButtonDisabled = !hasActiveRequestsFilters(filters);
+  const allStatusActive = filters.statuses.length === 0;
+  const allSourceActive = filters.sources.length === 0;
+
+  const handleStatusToggle = (value: RequestStatusFilterValue) => {
+    if (value === 'all') {
+      onChange({ statuses: [] });
+      return;
+    }
+    const isSelected = filters.statuses.includes(value);
+    onChange({
+      statuses: isSelected
+        ? filters.statuses.filter((status) => status !== value)
+        : [...filters.statuses, value],
+    });
+  };
+
+  const handleSourceToggle = (value: RequestSourceFilterValue) => {
+    if (value === 'all') {
+      onChange({ sources: [] });
+      return;
+    }
+    const isSelected = filters.sources.includes(value);
+    onChange({
+      sources: isSelected
+        ? filters.sources.filter((source) => source !== value)
+        : [...filters.sources, value],
+    });
+  };
 
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de solicitudes">
@@ -1385,33 +1436,78 @@ function AdminRequestsFilterSidebar({
 
           <FilterGroup title="Estado">
             <div className="admin-page__filter-options">
-              {requestStatusOptions.map((option) => (
-                <FilterOptionButton
-                  active={filters.status === option.value}
-                  ariaLabel={`Estado: ${option.label}`}
-                  classPrefix="admin-page"
-                  icon={option.icon}
-                  key={option.value}
-                  label={option.label}
-                  onClick={() => onChange({ status: option.value as ModelRequestStatusType | 'all' })}
-                />
-              ))}
+              <FilterOptionButton
+                active={allStatusActive}
+                ariaLabel="Estado: Todas"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todas"
+                onClick={() => handleStatusToggle('all')}
+              />
+              {requestStatusOptions
+                .filter((option): option is RequestStatusOption & { value: ModelRequestStatusType } => option.value !== 'all')
+                .map((option) => (
+                  <FilterOptionButton
+                    active={filters.statuses.includes(option.value)}
+                    ariaLabel={`Estado: ${option.label}`}
+                    classPrefix="admin-page"
+                    icon={option.icon}
+                    key={option.value}
+                    label={option.label}
+                    onClick={() => handleStatusToggle(option.value)}
+                  />
+                ))}
             </div>
           </FilterGroup>
 
           <FilterGroup title="Origen" defaultOpen={false}>
             <div className="admin-page__filter-options">
-              {requestSourceOptions.map((option) => (
-                <FilterOptionButton
-                  active={filters.source === option.value}
-                  ariaLabel={`Origen: ${option.label}`}
-                  classPrefix="admin-page"
-                  icon={option.icon}
-                  key={option.value}
-                  label={option.label}
-                  onClick={() => onChange({ source: option.value as ModelRequestType['source'] | 'all' })}
+              <FilterOptionButton
+                active={allSourceActive}
+                ariaLabel="Origen: Todas"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todas"
+                onClick={() => handleSourceToggle('all')}
+              />
+              {requestSourceOptions
+                .filter((option): option is RequestSourceOption & { value: ModelRequestType['source'] } => option.value !== 'all')
+                .map((option) => (
+                  <FilterOptionButton
+                    active={filters.sources.includes(option.value)}
+                    ariaLabel={`Origen: ${option.label}`}
+                    classPrefix="admin-page"
+                    icon={option.icon}
+                    key={option.value}
+                    label={option.label}
+                    onClick={() => handleSourceToggle(option.value)}
+                  />
+                ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Fecha de creación" defaultOpen={false}>
+            <div className="admin-page__date-range">
+              <label htmlFor="admin-requests-created-from">
+                Desde
+                <input
+                  id="admin-requests-created-from"
+                  type="date"
+                  value={filters.createdFrom}
+                  onChange={(event) => onChange({ createdFrom: event.target.value })}
+                  max={filters.createdTo || undefined}
                 />
-              ))}
+              </label>
+              <label htmlFor="admin-requests-created-to">
+                Hasta
+                <input
+                  id="admin-requests-created-to"
+                  type="date"
+                  value={filters.createdTo}
+                  onChange={(event) => onChange({ createdTo: event.target.value })}
+                  min={filters.createdFrom || undefined}
+                />
+              </label>
             </div>
           </FilterGroup>
         </div>
@@ -1577,6 +1673,9 @@ export function AdminRequestsPage() {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [expandedRequests, setExpandedRequests] = useState<Record<string, boolean>>({});
   const [requestFilters, setRequestFilters] = useState<AdminRequestsFilters>(defaultRequestsFilters);
+  const [currentPage, setCurrentPage] = useState(1);
+  const selectedRequestStatuses = requestFilters.statuses.join('|');
+  const selectedRequestSources = requestFilters.sources.join('|');
 
   const authContext = useMemo<ModelRequestAuthContext | null>(() => (
     user?.id && session?.access_token ? { accessToken: session.access_token, userId: user.id } : null
@@ -1591,9 +1690,11 @@ export function AdminRequestsPage() {
     setError(null);
 
     const serviceFilters: ModelRequestFilters = {
-      ...(requestFilters.status !== 'all' ? { status: requestFilters.status } : {}),
-      ...(requestFilters.source !== 'all' ? { source: requestFilters.source } : {}),
+      ...(requestFilters.statuses.length > 0 ? { statuses: requestFilters.statuses } : {}),
+      ...(requestFilters.sources.length > 0 ? { sources: requestFilters.sources } : {}),
       ...(requestFilters.search ? { search: requestFilters.search } : {}),
+      ...(requestFilters.createdFrom ? { createdFrom: requestFilters.createdFrom } : {}),
+      ...(requestFilters.createdTo ? { createdTo: requestFilters.createdTo } : {}),
     };
 
     getAllModelRequests(authContext, serviceFilters)
@@ -1608,6 +1709,20 @@ export function AdminRequestsPage() {
   useEffect(() => {
     loadRequests();
   }, [loadRequests]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    selectedRequestStatuses,
+    selectedRequestSources,
+    requestFilters.search,
+    requestFilters.createdFrom,
+    requestFilters.createdTo,
+  ]);
+
+  useEffect(() => {
+    setExpandedRequests({});
+  }, [currentPage]);
 
   useEffect(() => {
     if (!isFilterPanelOpen) {
@@ -1635,6 +1750,30 @@ export function AdminRequestsPage() {
     reviewed: 'Solicitud marcada como revisada.',
     approved: 'Solicitud aprobada.',
     rejected: 'Solicitud rechazada.',
+  };
+
+  const totalRequests = requests.length;
+  const pendingCount = useMemo(
+    () => requests.filter((request) => request.status === 'pending').length,
+    [requests],
+  );
+  const totalPages = Math.max(1, Math.ceil(totalRequests / REQUESTS_PER_PAGE));
+  const rangeStart = totalRequests > 0 ? ((currentPage - 1) * REQUESTS_PER_PAGE) + 1 : 0;
+  const rangeEnd = totalRequests > 0 ? Math.min(currentPage * REQUESTS_PER_PAGE, totalRequests) : 0;
+  const paginatedRequests = useMemo(
+    () => requests.slice((currentPage - 1) * REQUESTS_PER_PAGE, currentPage * REQUESTS_PER_PAGE),
+    [currentPage, requests],
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
+  const goToPage = (page: number) => {
+    const nextPage = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(nextPage);
   };
 
   const handleRequestStatus = async (request: ModelRequestType, status: Exclude<ModelRequestStatusType, 'pending'>) => {
@@ -1693,7 +1832,11 @@ export function AdminRequestsPage() {
             onChange={(next) => {
               setRequestFilters((current) => ({ ...current, ...next }));
             }}
-            onClearFilters={() => setRequestFilters(defaultRequestsFilters)}
+            onClearFilters={() => {
+              setRequestFilters(defaultRequestsFilters);
+              setCurrentPage(1);
+              setExpandedRequests({});
+            }}
             onClose={() => setIsFilterPanelOpen(false)}
           />
           <div className="account-page__main">
@@ -1729,18 +1872,39 @@ export function AdminRequestsPage() {
                   <h3>No hay solicitudes con estos filtros.</h3>
                 </article>
               ) : (
-                <div className="admin-page__report-list">
-                  {requests.map((req) => (
-                    <AdminRequestCard
-                      expanded={Boolean(expandedRequests[req.id])}
-                      isPending={Boolean(pendingAction?.startsWith(`${req.id}:`))}
-                      key={req.id}
-                      onToggle={() => toggleRequestCard(req.id)}
-                      onStatusAction={handleRequestStatus}
-                      request={req}
-                    />
-                  ))}
-                </div>
+                <>
+                  <p className="admin-page__results-summary" aria-live="polite">
+                    {totalRequests === 1
+                      ? '1 solicitud cargada'
+                      : `${totalRequests} solicitudes cargadas`}
+                    {pendingCount > 0
+                      ? ` · ${pendingCount} pendiente${pendingCount !== 1 ? 's' : ''}`
+                      : ''}
+                    {totalPages > 1
+                      ? ` · Mostrando ${rangeStart}-${rangeEnd}`
+                      : ''}
+                  </p>
+                  <div className="admin-page__report-list">
+                    {paginatedRequests.map((req) => (
+                      <AdminRequestCard
+                        expanded={Boolean(expandedRequests[req.id])}
+                        isPending={Boolean(pendingAction?.startsWith(`${req.id}:`))}
+                        key={req.id}
+                        onToggle={() => toggleRequestCard(req.id)}
+                        onStatusAction={handleRequestStatus}
+                        request={req}
+                      />
+                    ))}
+                  </div>
+                  <AccountPagination
+                    ariaLabel="Paginación de solicitudes admin"
+                    className="admin-page__pagination"
+                    currentClassName="admin-page__pagination-current"
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                  />
+                </>
               )}
             </section>
           </div>
