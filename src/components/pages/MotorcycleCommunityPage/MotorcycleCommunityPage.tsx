@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { useAuth } from '../../../features/auth';
@@ -17,6 +17,7 @@ import {
 import { type ReviewReportReason } from '../../../services/reviewReportService';
 import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
 import { getBikeA2Badge, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { AuthRequiredAction } from '../../../shared/ui/auth/AuthRequiredAction';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { getComparatorHashFromBikes } from '../../../shared/routing/routeUtils';
 import {
@@ -672,6 +673,8 @@ function OwnerReportRow({
 
 export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommunityPageProps) {
   const { isAuthenticated, session, user, profile } = useAuth();
+  const writeReviewHintId = useId();
+  const firstReviewHintId = useId();
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [hasReviewError, setHasReviewError] = useState(false);
@@ -1165,9 +1168,16 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
         <a className="button button--ghost" href={getComparatorHashFromBikes([bike])}>
           Comparar esta moto
         </a>
-        <button className="button button--ghost" type="button" onClick={() => setIsReviewModalOpen(true)}>
+        <AuthRequiredAction
+          ariaLabel="Escribir review"
+          className="button button--ghost"
+          hintId={writeReviewHintId}
+          hintMessage="Inicia sesión para escribir una review."
+          isAuthenticated={isAuthenticated}
+          onAction={() => setIsReviewModalOpen(true)}
+        >
           Escribir review
-        </button>
+        </AuthRequiredAction>
       </section>
 
       <section className="motorcycle-community__layout">
@@ -1349,9 +1359,16 @@ export function MotorcycleCommunityPage({ bike, motorcycleId }: MotorcycleCommun
                 <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
                 <h3>Aún no hay reviews aprobadas para esta moto.</h3>
                 <p>Sé el primero en escribir una review. Entrará en moderación antes de publicarse.</p>
-                <button className="button button--primary" type="button" onClick={() => setIsReviewModalOpen(true)}>
+                <AuthRequiredAction
+                  ariaLabel="Sé el primero en escribir una review"
+                  className="button button--primary"
+                  hintId={firstReviewHintId}
+                  hintMessage="Inicia sesión para escribir una review."
+                  isAuthenticated={isAuthenticated}
+                  onAction={() => setIsReviewModalOpen(true)}
+                >
                   Sé el primero en escribir una review
-                </button>
+                </AuthRequiredAction>
               </div>
             )}
           </section>

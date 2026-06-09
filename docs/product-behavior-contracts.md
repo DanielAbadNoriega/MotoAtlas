@@ -391,6 +391,39 @@ Antes de extraer o reutilizar un comportamiento:
 
 ---
 
+## 13. Auth baseline
+
+**Contrato anónimo:**
+- puede navegar superficies públicas, leer reviews `approved`, leer contadores `helpful` y leer replies `approved`.
+- puede enviar solicitudes de modelo con `user_id = null`.
+- no accede a cuenta/admin ni muta reacciones/reportes.
+- el contador `Útil N` puede mostrarse pasivo.
+- excepción vigente: `MotorcycleCommunityPage` usa acciones con tooltip de login, bloqueadas antes de red.
+- **Escribir review es auth-only** (rama `feature/review-auth-only-contract`):
+  - el CTA `Escribir review` permanece visible pero con `aria-disabled="true"`, sin `disabled` real para conservar foco/click.
+  - al pulsarlo se muestra un hint `Inicia sesión para escribir una review.` durante ~4s en lugar de abrir `ReviewModal` o llamar a la RPC `create_motorcycle_review_with_aspects`.
+  - la implementación vive en `src/shared/ui/auth/AuthRequiredAction.tsx` y se aplica a `#/motos/[id]` (Comunidad tab) y a `#/comunidad/[motorcycleId]` (hero + empty state).
+  - `createReview` no debe invocarse en este camino: ni `ReviewModal` ni la RPC se exponen.
+  - No se añadió cross-link a `#/login` en este cambio para mantenerlo mínimo: el hint textual dirige al usuario y la fase global de unificación Hero/CTAs consolidará el patrón real de cross-link.
+
+**Contrato autenticado:**
+- cuenta consulta solo reviews/solicitudes propias usando token.
+- reviews autenticadas obtienen ownership desde `auth.uid()` en RPC.
+- solicitudes/reacciones/reportes envían `user_id`, pero RLS debe verificarlo contra `auth.uid()`.
+- no autoreacción ni autoreporte.
+
+**Contrato admin:**
+- sesión sola no alcanza: requiere `profile.role === 'admin'`.
+- frontend gate + RLS `public.is_admin()` + grants acotados.
+
+**Gates antes de capa social/gamificación:**
+- resolver identidad/alias server-side antes de reputación pública.
+- cubrir transición de perfil/rol en `onAuthStateChange`.
+- ejecutar smoke E2E/RLS real en staging.
+- migrar fixtures auth de forma incremental.
+
+---
+
 ## Referencias
 
 - Contratos de producto: `docs/product-behavior-contracts.md` (este archivo)

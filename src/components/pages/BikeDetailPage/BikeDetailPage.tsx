@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useId, useState, useRef, useCallback } from 'react';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import { getApprovedReviewsByMotorcycleId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
 import { compareQueueMaxSize, getBrowseSearchHash, getCompareSearchHash, loadCompareQueue, saveCompareQueue } from '../../../utils/compareQueue';
@@ -15,6 +15,7 @@ import { useReviewReports } from '../../../shared/reviews/useReviewReports';
 import { getReviewReactionSummary, type ReviewReactionSummary } from '../../../services/reviewReactionService';
 import { useAuth } from '../../../features/auth';
 import { Button } from '../../ui/Button';
+import { AuthRequiredAction } from '../../../shared/ui/auth/AuthRequiredAction';
 import { ReviewModal } from '../../reviews/ReviewModal';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
@@ -328,6 +329,7 @@ function CommunityTab({
   reactionPendingIds,
   reportedReviewIds,
   session,
+  isAuthenticated,
   onToggleHelpful,
   onToggleNotHelpful,
 }: {
@@ -338,10 +340,12 @@ function CommunityTab({
   reactionPendingIds: readonly string[];
   reportedReviewIds: Readonly<Record<string, boolean>>;
   session: { user?: { id?: string } } | null;
+  isAuthenticated: boolean;
   onToggleHelpful: (review: MotorcycleReview) => void;
   onToggleNotHelpful: (review: MotorcycleReview) => void;
 }) {
   const userId = session?.user?.id ?? null;
+  const writeReviewHintId = useId();
   const aggregate = getReviewAggregate(reviews);
   const confidence = getRankingConfidence(aggregate.reviewCount);
   const confidenceLabel =
@@ -451,10 +455,17 @@ function CommunityTab({
             )}
           </div>
           <div className="bike-detail__reviews-cta">
-            <button className="button button--primary" type="button" onClick={onWriteReview}>
+            <AuthRequiredAction
+              ariaLabel="Escribir review"
+              className="button button--primary"
+              hintId={writeReviewHintId}
+              hintMessage="Inicia sesión para escribir una review."
+              isAuthenticated={isAuthenticated}
+              onAction={onWriteReview}
+            >
               <span className="material-symbols-outlined" aria-hidden="true">edit</span>
               Escribir review
-            </button>
+            </AuthRequiredAction>
             <a className="button button--secondary" href={communityHref}>
               <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
               Ver reviews
@@ -838,6 +849,7 @@ export function BikeDetailPage({ bike, motorcycles }: BikeDetailPageProps) {
             reactionPendingIds={reactionPendingIds}
             reportedReviewIds={reportedReviewIds}
             session={session}
+            isAuthenticated={Boolean(session)}
             onToggleHelpful={handleToggleHelpful}
             onToggleNotHelpful={handleToggleNotHelpful}
           />

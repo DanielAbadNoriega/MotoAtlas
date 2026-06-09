@@ -18,7 +18,7 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - Tests de referencia: `1117 passed`.
 - Typecheck: clean.
-- Rama estable más reciente: `feature/admin-requests-phase-1` (cierre funcional de `#/admin/solicitudes`, sin cambios de schema/RLS).
+- Rama estable más reciente: `feature/auth-baseline-audit` (auditoría de cierre Auth, solo documentación; sin cambios de schema/RLS/auth).
 
 ## 3. Foco inmediato recomendado
 
@@ -569,12 +569,12 @@ Reglas:
 
 ### Auth baseline y cuentas de usuario
 
-Estado: parcialmente implementado / pendiente de auditoría de cierre.
+Estado: auditoría de cierre completada / baseline funcional con gaps P1/P2 previos a capa social.
 
 Objetivo:
 Consolidar autenticación para que reviews, solicitudes de modelos y acciones comunitarias queden asociadas a usuarios reales cuando exista sesión.
 
-Base actual verificada:
+Base verificada:
 - Supabase Auth.
 - Login / registro / logout.
 - sesión persistente con `AuthProvider` / `useAuth`.
@@ -582,14 +582,23 @@ Base actual verificada:
 - rol admin (`isAdmin`).
 - rutas `#/login` y `#/registro`.
 - admin protegido por sesión + rol.
+- reviews autenticadas vinculadas por `auth.uid()` desde RPC; solicitudes/reacciones/reportes alineados con `user_id` + RLS.
+- cuenta lee reviews/solicitudes propias con token; anonymous puede navegar y solicitar modelo, pero no interactuar ni acceder a cuenta/admin.
+- roles `user/admin` confirmados; `isAdmin` deriva de perfil y RLS usa `public.is_admin()`.
 
-Pendiente de auditoría:
-- verificar que reviews autenticadas guardan `user_id`.
-- verificar que solicitudes de modelo pueden asociarse a usuario autenticado.
-- verificar que acciones comunitarias usan auth real.
-- revisar contrato usuario anónimo vs autenticado.
-- confirmar roles `user/admin`.
-- confirmar cobertura de tests.
+Gaps detectados antes de social/gamificación:
+- **P1:** `ReviewModal` siempre usa `create_motorcycle_review_with_aspects`, RPC autenticada; el envío anónimo efectivo falla aunque schema, `createReview` y el test mockeado sugieren que está permitido. Requiere decisión sobre aspectos anónimos antes de tocar código/schema.
+- **P2:** `onAuthStateChange` no representa con `isLoading` la resolución asíncrona de perfil; puede haber estado transitorio `profile=null`/`isAdmin=false`.
+- **P2:** el alias de review autenticada se pasa como `p_user_name` desde cliente; antes de identidad pública/reputación debe derivarse o validarse server-side.
+- **P2:** smoke E2E/RLS real en staging y auditoría de privilegios efectivos de funciones `security definer`.
+- **P2:** migración incremental de 10 suites con `mockAuth` local a fixtures centrales.
+- **P3 polish:** armonizar no-auth pasivo entre páginas; `MotorcycleCommunityPage` conserva acciones clicables con tooltip y bloqueo antes de red.
+
+Plan recomendado:
+1. cerrar decisión/tests de review anónima, transición de perfil y hardening verificable;
+2. migrar fixtures + smoke staging;
+3. preparar recuperación de cuenta, identidad y privacidad;
+4. solo después habilitar capa social/gamificación/notificaciones.
 
 ### Personalización de emails de Supabase Auth
 
@@ -1390,6 +1399,10 @@ Reglas actuales para mobile:
 - literal de reporte duplicado.
 - quedan `FilterOptionButton` y `FilterRatingStars` locales en algunas páginas de cuenta/comunidad/motorcycle community; el wrapper `FilterGroup` y el `FilterOptionButton` compartido ya están normalizados, pero la unificación completa de SCSS entre páginas es polish futuro opcional.
 - futura ejecución de scripts desde admin requiere backend seguro.
+- el formulario `ReviewModal` no cumple hoy el contrato anónimo que permiten schema/servicio REST: la RPC usada exige autenticación.
+- `onAuthStateChange` puede exponer transitoriamente usuario autenticado con perfil aún no resuelto.
+- identidad visible de reviews autenticadas todavía depende de `p_user_name` enviado por cliente.
+- los tests estáticos de schema no prueban privilegios efectivos ni RLS real desplegada; falta smoke controlado de staging.
 
 ## 15. Qué NO hacer todavía
 
@@ -1407,7 +1420,7 @@ Reglas actuales para mobile:
 - Este documento = fuente estratégica del repositorio.
 - Cuando una idea pase a ejecución, crear tarjeta en Trello.
 - Si una idea surge en conversación pero aún no toca ejecutarla, documentarla aquí para no perder contexto.
-- Reclasificación aplicada: la tarjeta histórica “Implementar login y cuentas de usuario” queda dentro de **P2 Plataforma/Admin/Productividad interna** como **auth baseline** (parcialmente implementado, pendiente de auditoría de cierre).
+- Reclasificación aplicada: la tarjeta histórica “Implementar login y cuentas de usuario” queda dentro de **P2 Plataforma/Admin/Productividad interna** como **auth baseline auditado**, con gaps P1/P2 explícitos previos a capa social.
 - Tarjeta incorporada: “Revisar y cerrar taxonomía de categorías de motos” queda como tarea transversal de **P2 Plataforma/Admin/Productividad interna** y dependencia de filtros/admin/SEO catálogo.
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
 - Tarjeta incorporada y cerrada: mejora de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables** y resuelta en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.

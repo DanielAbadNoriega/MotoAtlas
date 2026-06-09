@@ -299,13 +299,32 @@ describe('MotorcycleCommunityPage', () => {
     expect(screen.getByRole('button', { name: /Sé el primero en escribir una review/i })).toBeInTheDocument();
   });
 
-  it('abre ReviewModal desde “Escribir review”', async () => {
+  it('abre ReviewModal desde “Escribir review” cuando hay sesión', async () => {
+    mockAuth({
+      user: { id: 'user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      isAuthenticated: true,
+    });
     const user = userEvent.setup();
     render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
 
     await user.click(screen.getAllByRole('button', { name: /Escribir review/i })[0]);
 
     expect(screen.getByRole('dialog', { name: /Valoración técnica/i })).toBeInTheDocument();
+    expect(createReviewMock).not.toHaveBeenCalled();
+  });
+
+  it('muestra el hint de login al pulsar “Escribir review” sin sesión y no abre el modal', async () => {
+    const user = userEvent.setup();
+    render(<MotorcycleCommunityPage bike={bikeFixtures[0]} motorcycleId={bikeFixtures[0].id} />);
+
+    const button = screen.getAllByRole('button', { name: /Escribir review/i })[0];
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+
+    await user.click(button);
+
+    expect(screen.getAllByText(/Inicia sesión para escribir una review/i).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('dialog', { name: /Valoración técnica/i })).not.toBeInTheDocument();
     expect(createReviewMock).not.toHaveBeenCalled();
   });
 

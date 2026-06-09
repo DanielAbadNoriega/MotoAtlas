@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1117` tests passing (72 files).
+- `1118` tests passing (72 files).
 
 ## Stack actual
 
@@ -34,7 +34,7 @@ npm run test
 - Responsive visual desktop/tablet/mobile con capturas pequeñas y revisadas.
 - Validación de modales/drawers con foco real y bloqueo de scroll en navegador.
 - Smoke test contra entorno staging de Supabase/Vercel, con datos de prueba controlados.
-- Flujos de login/admin cuando existan.
+- Flujos completos de login/registro/logout/admin contra staging controlado; los tests unitarios actuales usan mocks y no validan RLS desplegada.
 
 ## Convenciones para nuevos tests
 
@@ -71,9 +71,13 @@ Implementado (base):
   - sesión mock
 - cobertura base en `src/test/fixtures/auth.test.ts`.
 - primer uso migrado en `src/components/pages/AuthPage/AuthPage.test.tsx`.
+- adopción auditada: 11 suites mockean `useAuth`; solo `AuthPage.test.tsx` usa la fixture central y quedan 10 suites con `mockAuth` local.
 
 Pendiente residual (no bloqueante):
 - migración incremental de `mockAuth` repetidos en otros tests (Account*, Community*, ReviewModal, StaticInfoPages, Admin*).
+- integración realista que detecte el conflicto `ReviewModal` no-auth → RPC autenticada.
+- transición `onAuthStateChange` mientras el perfil/rol todavía se resuelve.
+- smoke E2E de RLS/roles y privilegios efectivos de funciones `security definer` en staging.
 
 Al crear fixtures:
 
@@ -299,6 +303,7 @@ Cobertura actual relevante:
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
 - `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
+- `ReviewModal.test.tsx` mockea como exitoso el envío no-auth, pero producción llama a una RPC que exige `auth.uid()`; es un gap de integración P1, no evidencia de soporte anónimo efectivo.
 - `src/shared/reviews/reviewSourcePolicy.test.ts` valida contrato por entorno: producción solo `user`; dev/pre con demo activo incluye `seed/mock`; dev/pre con demo inactivo vuelve a solo `user`.
 - `src/shared/reviews/useReviewReactions.test.tsx` cubre el hook compartido de reacciones:
   - blocked (`unauthenticated`, `own_review`, `reported`, `pending`)

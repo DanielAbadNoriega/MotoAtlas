@@ -282,6 +282,8 @@ Nota de alcance taxonómico:
 
 La ruta `#/comunidad/[motorcycleId]` reemplaza el slider de `Verified owner reports` por un listado compacto vertical de experiencias aprobadas. Los filtros de esta fase viven en el sidebar (`rating` y `orden`), seguidos por `Problemas comunes e insights`; en mobile pasan a panel responsive y la paginación muestra 5 reviews por página. Los grupos de filtro (Rating, Orden) usan el componente compartido `FilterGroup` (`src/shared/ui/filters/FilterGroup.tsx`) que importa sus propios estilos (`./FilterGroup.scss`). `FilterOptionButton` y `FilterRatingStars` locales se preservan para mantener los selectores `__filter-option*`, `__filter-stars` y `__filter-star--filled` activos y dar estilos premium a los chips con icono y a las estrellas de rating. Usuarios autenticados pueden marcar una review como `Útil` o `No útil`; `Útil` muestra contador público, `No útil` queda como feedback privado sin contador público. Ambas reacciones son mutuamente excluyentes y no se permite autoreacción. Las mutaciones de reacciones se consolidan con `useReviewReactions`, manteniendo la UX propia de esta página (tooltip en no-auth/reportada y `reactionNotice` en error). También pueden reportar reviews ajenas con un motivo controlado; hay un reporte por usuario/review y no se muestra contador público. El reporte usa `useReviewReports` conservando la UX propia de esta página (tooltips en no-auth/success/duplicate y `reactionNotice` en error no duplicado). El pending combinado (`reactionPendingIds + reportPendingIds`) evita dobles envíos incoherentes entre reacciones y reportes. Respuestas, menciones, reportes de respuestas y fotos quedan pendientes.
 
+Auditoría Auth: esta página conserva intencionalmente una excepción frente al patrón pasivo de otras superficies públicas. En no-auth renderiza `Útil`, `No útil` y `Reportar` como acciones clicables con tooltip de login; los hooks bloquean antes de red. No es una mutación falsa, pero queda como inconsistencia UX P3 a armonizar.
+
 ## Admin — Moderación
 
 Las rutas `#/admin` y `#/admin/moderacion` son privadas para perfiles con `user_profiles.role = admin`. El dashboard admin es mínimo y enlaza a moderación; `#/admin/moderacion` lista reportes de reviews con filtros por estado, motivo y orden.
@@ -414,6 +416,22 @@ En `#/cuenta`, el bloque “Mis reviews” agrupa las reviews propias por moto, 
 - pagina en frontend a 5 reviews por página.
 - usa `AccountReviewsEmptyState` para el estado “sin resultados” con radar CSS y soporte `prefers-reduced-motion`.
 - edición, borrado/retirada y panel admin quedan pendientes.
+
+## Auth y envío de reviews
+
+`ReviewModal` queda **auth-only** desde la rama `feature/review-auth-only-contract`. El CTA `Escribir review` se sigue renderizando en `#/motos/[id]` (Comunidad tab) y en `#/comunidad/[motorcycleId]` (hero + empty state), pero para usuarios no autenticados:
+
+- el botón recibe `aria-disabled="true"` y un estilo locked (filter grayscale 0.15, opacity 0.78, cursor not-allowed) sin perder foco/click.
+- al pulsarlo se muestra un hint `Inicia sesión para escribir una review.` con `aria-live="polite"` y `role="status"` durante ~4s; el modal no se abre y la RPC `create_motorcycle_review_with_aspects` no se invoca.
+- el contador `Útil N` y las replies `approved` siguen visibles y pasivos para no-auth (sin acción).
+
+El componente compartido `AuthRequiredAction` (`src/shared/ui/auth/AuthRequiredAction.tsx` + `AuthRequiredAction.scss`) encapsula este patrón con un timeout cleanup en `useEffect`. Cada consumidor pasa un `hintId` único (vía `useId()`) para mantener `aria-controls`/`id` correctos y permitir que el hint sea anunciado por tecnología de asistencia al activarse.
+
+No se ha añadido cross-link a `#/login` en el hint para mantener el cambio mínimo: el copy dirige al usuario y la fase global de unificación Hero/CTAs consolidará el patrón de cross-link real entre CTA bloqueado y ruta de login.
+
+`createReview` no debe invocarse en este camino: ni `ReviewModal` ni la RPC se exponen al usuario anónimo. El envío anónimo previo al cambio fallaba en la red (RPC exige `auth.uid()`) y quedaba como gap de producto; ahora el camino se cierra en UI de forma explícita y testeable.
+
+Las rutas de cuenta muestran estados privados controlados sin sesión y cargan datos solo con `user.id` + `session.access_token`. Las rutas admin exigen sesión + rol admin; no se habilitan solo por estar autenticado.
 
 
 ## Páginas de Datos y Legal

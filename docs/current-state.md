@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/admin-requests-phase-1`
-- Último bloque validado: **Fase 1 de cierre funcional de `#/admin/solicitudes`** (rama `feature/admin-requests-phase-1`, sobre la base auditada en `feature/admin-requests-audit`). Safe Builder aplicó las mejoras funcionales acordadas sin tocar schema/RLS: filtros multi-select de `Estado` y `Origen` con regla `Todas` consistente, filtro por rango de fechas (`createdFrom` / `createdTo` con interpretación de día completo), paginación de 10 elementos por página con `AccountPagination` y reset automático a página 1 al cambiar los valores reales de filtros/búsqueda/fechas, colapso de cards expandidas en todo cambio de página, summary de resultados con total cargado y pendientes (texto conservador: "solicitudes cargadas", no claims de backend), y validación defensiva de `segment` contra `BIKE_SEGMENTS` en `createModelRequest` para blindar el endpoint público sin alterar el selector canónico del form. Servicio `getAllModelRequests` extendido con `statuses[]` / `sources[]` (PostgREST `in.()`) y rango de fechas (`gte` / `lte` / `and`) manteniendo compatibilidad con los filtros singulares legacy. Quality Gate aprobado: typecheck clean, 1117 tests passed (72 files, +20 tests nuevos sobre Fase 1).
-- Tests: 1117 passed
+- Rama actual: `feature/review-auth-only-contract`
+- Último bloque validado: **contrato auth-only para escribir reviews** (rama `feature/review-auth-only-contract`). Safe Builder aplicó el cambio mínimo: nuevo componente compartido `AuthRequiredAction` (`src/shared/ui/auth/AuthRequiredAction.tsx` + `AuthRequiredAction.scss`) que envuelve el CTA con `aria-disabled="true"` cuando no hay sesión, foco/click conservados, hint `aria-live="polite"` `Inicia sesión para escribir una review.` visible ~4s en lugar de abrir `ReviewModal` o llamar a la RPC `create_motorcycle_review_with_aspects`. Aplicado a `#/motos/[id]` (Community tab) y `#/comunidad/[motorcycleId]` (hero + empty state). Sin cambios de schema/RLS/auth. Tests: el test previo `abre ReviewModal desde "Escribir review"` se actualizó a `abre ReviewModal desde "Escribir review" cuando hay sesión` y se añadió `muestra el hint de login al pulsar "Escribir review" sin sesión y no abre el modal` que verifica `aria-disabled`, visibilidad del hint y no invocación de `createReview`. El contador `Útil N` y replies `approved` siguen visibles y pasivos para no-auth. No se añadió cross-link a `#/login` para mantener el cambio mínimo: la fase global de unificación Hero/CTAs consolidará ese patrón.
+- Tests: 1118 passed (72 files, +1 sobre el baseline de Fase 1 de admin)
 - Typecheck: clean
 - Último commit:
 
@@ -152,11 +152,17 @@
 - Decisión histórica documentada: la rama `feature/admin-filtergroup-audit` recomendó inicialmente no migrar admin. Esa decisión fue superada por la decisión de producto posterior (rama `feature/admin-filtergroup-normalization`) que sí normalizó admin al shared. La justificación de la auditoría inicial se conserva en `docs/product-roadmap.md` como contexto histórico, no como estado vigente.
 
 ### Auth / testing
+- Auth baseline auditado end-to-end: anonymous navega y puede solicitar modelo; account/admin requieren sesión; admin requiere además `profile.role = admin`.
+- Reviews autenticadas obtienen `user_id` desde `auth.uid()` en la RPC; solicitudes, reacciones y reportes usan token + `user_id` y RLS valida ownership.
+- Cuenta carga reviews/solicitudes propias con token y mantiene estados controlados sin sesión, durante carga o con auth incompleto.
+- Gap P1 cerrado (rama `feature/review-auth-only-contract`): `Escribir review` queda auth-only. El CTA sigue visible con `aria-disabled="true"` para anónimos; al pulsarlo se muestra un hint en vez de abrir `ReviewModal` o llamar a la RPC. `Útil N` y replies siguen visibles y pasivos.
+- Gaps P2: transición de perfil en `onAuthStateChange`, alias visible enviado desde cliente, smoke RLS/privilegios efectivos en staging.
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
 - Fuente central con factories y overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`).
 - Cubre presets de user/admin/no-auth/perfil incompleto/avatar-display_name faltantes.
 - `src/test/fixtures/auth.test.ts` valida contrato base de fixtures.
 - `src/components/pages/AuthPage/AuthPage.test.tsx` migrado a fixtures centrales (sin Supabase real).
+- Adopción actual: 1 de 11 suites con mock de `useAuth` consume fixtures centrales; quedan 10 suites con `mockAuth` local.
 
 ### Catálogo / imágenes
 - Pipeline base de imágenes operativo: assets locales por `motorcycle.id` en `public/images/motorcycles/*.webp`.
@@ -230,6 +236,8 @@
 - Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
+- Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
+- Backlog P2 Auth: representar resolución de perfil en cambios de sesión, validar/derivar alias server-side y ejecutar smoke real de RLS/privilegios en staging.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
@@ -261,7 +269,7 @@
 - Producción solo `source=user`.
 - Dev/pre puede incluir `seed` y `mock`.
 - Rankings usan reviewCount real y confidence.
-- La tarjeta histórica “Implementar login y cuentas de usuario” se reclasifica en roadmap como **Auth baseline** dentro de **P2 Plataforma/Admin/Productividad interna**; capa social avanzada queda para fase futura separada.
+- La tarjeta histórica “Implementar login y cuentas de usuario” queda como **Auth baseline auditado** dentro de **P2 Plataforma/Admin/Productividad interna**; sus gaps P1/P2 deben cerrarse antes de capa social avanzada.
 - La tarea “Revisar y cerrar taxonomía de categorías de motos” se clasifica como dependencia estratégica previa para filtros reutilizables, admin catálogo y futuras landings SEO por segmento.
 - Estado de taxonomía actualizado por fases: Fases 0, 1, 2, 2 extendida (cierre de taxonomía base), 3 y 3.1 cerradas; Fase 4 (SEO/Admin/landings) pendiente.
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
@@ -271,6 +279,8 @@
 - Fixtures de usuarios/perfiles para auth quedan como **P2 Auth baseline / Testing / Fixtures** con base central implementada; pendiente residual: migración incremental de mocks repetidos.
 - “Fase 2.5 moderación/admin de respuestas” queda reclasificada como base mayoritariamente implementada con pendientes residuales auditables.
 - La rama `feature/admin-requests-audit` queda registrada como **auditoría funcional de `#/admin/solicitudes`** sin diffs.
+- La rama `feature/admin-requests-phase-1` queda registrada como **cierre funcional Fase 1** sobre la base auditada: multi-select de `Estado` y `Origen`, filtro por rango de fechas (`createdFrom`/`createdTo` con interpretación de día completo), paginación 10/página con `AccountPagination`, summary de pendientes y validación defensiva de `segment` en `createModelRequest`. Sin cambios de schema/RLS. Fase 2 (vincular a admin catálogo), Fase 3 (notificaciones) y Fase 4 (duplicados/analítica) permanecen como fases futuras con dependencia explícita de decisión de schema.
+- La rama `feature/review-auth-only-contract` queda registrada como **contrato auth-only para `Escribir review`**: el CTA sigue visible, pero con `aria-disabled="true"`, foco/click conservados, y al pulsarlo se muestra el hint `Inicia sesión para escribir una review.` (~4s) en lugar de abrir `ReviewModal` o llamar a la RPC. Implementado vía componente compartido `AuthRequiredAction` en `BikeDetailPage` Comunidad tab y en `MotorcycleCommunityPage` (hero + empty). Sin cambios de schema/RLS/auth.
 - La rama `feature/admin-requests-phase-1` queda registrada como **cierre funcional Fase 1** sobre la base auditada: multi-select de `Estado` y `Origen`, filtro por rango de fechas (`createdFrom`/`createdTo` con interpretación de día completo), paginación 10/página con `AccountPagination`, summary de pendientes y validación defensiva de `segment` en `createModelRequest`. Sin cambios de schema/RLS. Fase 2 (vincular a admin catálogo), Fase 3 (notificaciones) y Fase 4 (duplicados/analítica) permanecen como fases futuras con dependencia explícita de decisión de schema.
 - “Automatización avanzada de imágenes” queda clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual de imágenes.
 - “Noticias dinámicas y artículos desde datos MotoAtlas” queda clasificada como backlog estratégico **P3/P4 Contenido dinámico / SEO / IA futura**.
@@ -295,6 +305,10 @@
 - Posible flaky test aislado en Admin (`no muestra paginación cuando hay 6 reportes o menos`), sin evidencia de relación con Fase C.
 - En buscador, `rating` y `reviewCount` son proxies derivados de `fiabilidad`/`reportCount`, no señal comunitaria real. Riesgo de confusión semántica si se renormalizan sin contrato de producto claro.
 - `useReviewReactions` no tiene test explícito para doble toggle en el mismo tick exacto; hay cobertura de pending en request y guard por ref interno.
+- `ReviewModal` ya no es invocable por anónimos: el CTA en `BikeDetailPage` Comunidad tab y en `MotorcycleCommunityPage` (hero + empty) usa `AuthRequiredAction` con `aria-disabled="true"` cuando no hay sesión. La regresión queda cubierta por el test `muestra el hint de login al pulsar "Escribir review" sin sesión y no abre el modal`.
+- `onAuthStateChange` no reactiva `isLoading` mientras resuelve perfil; puede existir estado transitorio autenticado sin rol resuelto.
+- El alias público de una review autenticada llega como `p_user_name` desde cliente; no debe usarse como identidad confiable para reputación sin hardening server-side.
+- Falta smoke controlado contra staging para verificar RLS y privilegios efectivos de funciones `security definer`.
 
 ## Referencias de contratos
 
