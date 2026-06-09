@@ -44,7 +44,7 @@ import {
 import { getBikeA2Status, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
-import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
+import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
@@ -394,15 +394,16 @@ export function AdminSidebar({ active, children }: Readonly<{ active: AdminSideb
   );
 }
 
-// Nota: usamos `CommunityHero` para el hero en las páginas admin (estilos base
-// compartidos). El chip de admin se inyecta como `children` cuando se necesita.
+// Nota: usamos `PageHero` (base normalizada del antiguo `CommunityHero`)
+// para el hero en las páginas admin. El chip de admin se inyecta como
+// `children` cuando se necesita.
 
 export function AdminDashboardPage() {
   const { profile, user } = useAuth();
 
   return (
     <AdminGate>
-        <CommunityHero
+        <PageHero
           className="admin-page__community-hero admin-page__hero"
           titleId="admin-dashboard-title"
           imageSrc={adminHeroImage}
@@ -416,7 +417,7 @@ export function AdminDashboardPage() {
               {getDisplayName(profile?.displayName, user?.email)}
             </div>
           </div>
-        </CommunityHero>
+        </PageHero>
 
         <main className="account-page admin-page" aria-labelledby="admin-dashboard-title">
           <section className="account-page__dashboard">
@@ -1193,7 +1194,7 @@ export function AdminReviewsPage() {
 
   return (
     <AdminGate>
-        <CommunityHero
+        <PageHero
           className="admin-page__community-hero admin-page__hero"
           titleId="admin-reviews-page-title"
           imageSrc={adminHeroImage}
@@ -1207,7 +1208,7 @@ export function AdminReviewsPage() {
               {getDisplayName(profile?.displayName, user?.email)}
             </div>
           </div>
-        </CommunityHero>
+        </PageHero>
 
         <main className="account-page admin-page admin-reviews-page" aria-labelledby="admin-reviews-page-title">
           <section className="account-page__dashboard admin-page__layout">
@@ -1807,7 +1808,7 @@ export function AdminRequestsPage() {
 
   return (
     <AdminGate>
-      <CommunityHero
+      <PageHero
         className="admin-page__community-hero admin-page__hero"
         titleId="admin-requests-page-title"
         imageSrc={adminHeroImage}
@@ -1821,7 +1822,7 @@ export function AdminRequestsPage() {
             {getDisplayName(profile?.displayName, user?.email)}
           </div>
         </div>
-      </CommunityHero>
+      </PageHero>
 
       <main className="account-page admin-page" aria-labelledby="admin-requests-page-title">
         <section className="account-page__dashboard admin-page__layout">
@@ -2211,7 +2212,7 @@ export function AdminModerationPage() {
 
   return (
     <AdminGate>
-        <CommunityHero
+        <PageHero
           className="admin-page__community-hero admin-page__hero"
           titleId="admin-moderation-title"
           imageSrc={adminHeroImage}
@@ -2225,7 +2226,7 @@ export function AdminModerationPage() {
               {getDisplayName(profile?.displayName, user?.email)}
             </div>
           </div>
-        </CommunityHero>
+        </PageHero>
 
         <main className="account-page admin-page" aria-labelledby="admin-moderation-title">
           <section className="account-page__dashboard admin-page__layout">

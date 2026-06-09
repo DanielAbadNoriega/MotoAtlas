@@ -1305,7 +1305,7 @@ Al cerrar funcionalidades principales:
 
 ### 13.1 Backlog: Unificación de Hero, CTAs y Button System
 
-Estado: **pendiente / futuro**.
+Estado: **Fase A implementada** (rama `feature/page-hero-community-base`). Fases B/C/D pendientes.
 
 No es implementación. Es una tarea de documentación y planificación futura.
 
@@ -1315,47 +1315,49 @@ No es implementación. Es una tarea de documentación y planificación futura.
 - Reducir duplicación de estilos page-specific.
 - Acelerar futuras fases de pulido de páginas con coherencia visual.
 
-**Alcance futuro (no ahora):**
+**Alcance por fases:**
 
-1. **Auditoría de implementaciones actuales de Hero:**
-   - Identificar todas las variantes de Hero usadas en Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin.
-   - Documentar qué tienen en común y qué varía por contexto.
+**Fase A — implementada** (rama `feature/page-hero-community-base`):
+- Auditoría de implementaciones de Hero (rama `feature/hero-cta-audit`): inventario de 11 patrones distintos, 4 sistemas de botón, 2 reusos cross-page feos.
+- Componente compartido `PageHero` (`src/components/ui/PageHero/`) con API mínima: `titleId`, `title`, `eyebrow?`, `description?`, `imageSrc?`, `imageAlt?`, `className?`, `children?`, `actions?`. Replica la estructura del antiguo `CommunityHero`.
+- Migración de los 6 consumidores simples: 4 páginas admin (Dashboard, Reviews, Requests, Moderation) sin cambio visual; `CommunityRankingsPage` con remoción de CTAs del hero; `TopRatedMotorcyclesPage` con nueva prop `variant?: 'community' | 'topRated'` que quita CTAs en `#/comunidad` y las preserva en `#/motos-mejor-valoradas`.
+- Remoción de CTAs del hero en `#/comunidad` y `#/comunidad/rankings` porque la navegación vivirá en una futura navbar/subnav.
+- `CommunityHero` reusado como thin wrapper deprecated de `PageHero` para mantener compatibilidad con importadores externos.
+- Sin cambios de schema/RLS/auth/routes.
 
-2. **Definición de patrón/base compartidos:**
-   - Posibles componentes/patrones base: `PageHero`, `HeroAction`, `CtaGroup`, `Button`, `ActionLink`, `IconAction`.
-   - Permitir variantes contextuales sin replicar estructuras completas.
-   - Ejemplo: un mismo `PageHero` base con slots para badge, título, descripción, acciones y imagen de fondo.
+**Fase B — pendiente (próximo paso natural):**
+- Migrar `CommunityReviewsPage` (hero local con doble gradient, `fade-in`, overlay con `hero-community.png`) a `PageHero` con nuevas variantes de SCSS (`imageFilter`, `gradient`, `align`, `overlay`).
+- Decidir `HeroAction` system con tipos de acción diferenciados (anchor, button, `AuthRequiredAction`-aware).
 
-3. **Normalización de grupos de CTA por página:**
-   - Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin donde aplique.
-   - Mantener flexibilidad para diferencias contextuales legítimas (un CTA primario en una landing no es igual a un CTA en una ficha de moto).
+**Fase C — pendiente:**
+- Migrar los heroes de `BikeDetailPage`, `MotorcycleCommunityPage`, `AccountPage` y las páginas estáticas. Cada uno tiene detalles decorativos únicos (badge chip, spec grid, grid de puntos, layout 2-col para form) que requerirán parametrizar `PageHero` con slots adicionales o aceptar children con sus propios layouts.
+- Resolver el reuso cross-page de clases de hero (deuda actual: `AccountMotorcycleReviewsPage` y `AdminMotorcycleReviewsPage` reusan clases de `MotorcycleCommunityPage`).
 
-4. **Sistema de variantes de botón/acción a documentar:**
-   - `primary`, `secondary`, `ghost`, `glass`, `glass-primary`, `glass-secondary`, `danger`, `success`, `link`.
-   - Definir la semántica de cada variante y cuándo usar cada una.
-   -No crear implementación todavía; solo documentar la intención de diseño.
+**Fase D — pendiente:**
+- Sistema de variantes de botón/acción a documentar:
+  - `primary`, `secondary`, `ghost`, `glass`, `glass-primary`, `glass-secondary`, `danger`, `success`, `link`.
+  - Definir la semántica de cada variante y cuándo usar cada una.
+- Consolidar con la tabla del backlog ya documentada.
+- Mobile-first de Fase 13b con validación visual en Stitch.
 
-5. **Convenciones de iconos para acciones comunes (dirección futura):**
-   | Acción | Icono |
-   |--------|-------|
-   | Reviews | `rate_review` |
-   | Ficha | `description` o `two_wheeler` |
-   | Comparar | `compare_arrows` |
-   | Escribir review | `edit` |
-   | Ver más | `arrow_forward` |
-   | Solicitar modelo | `add_circle` |
-   | Comunidad | `groups` |
-   | Ranking / analytics | `analytics` |
+**Convenciones de iconos para acciones comunes (dirección futura, sin cambios en esta fase):**
+| Acción | Icono |
+|--------|-------|
+| Reviews | `rate_review` |
+| Ficha | `description` o `two_wheeler` |
+| Comparar | `compare_arrows` |
+| Escribir review | `edit` |
+| Ver más | `arrow_forward` |
+| Solicitar modelo | `add_circle` |
+| Comunidad | `groups` |
+| Ranking / analytics | `analytics` |
 
-   Estas convenciones son **dirección futura**, no implementación actual. Los iconos actuales pueden no seguirlas todavía.
+Estas convenciones son **dirección futura**, no implementación actual. Los iconos actuales pueden no seguirlas todavía.
 
 **Reglas:**
-- No implementar ahora.
-- No migrar heroes actuales todavía.
 - No rediseñar el sitio completo en esta tarea.
-- No tocar código fuente, tests, SCSS, rutas, schema/RLS o Supabase.
-- Documentar como backlog P3/P4 UI/SCSS.
-- Mantener responsive funcional actual.
+- No tocar código fuente fuera de las zonas permitidas por fase.
+- Mantener responsive funcional actual en cada paso.
 - Dejar lugar para diferencias contextuales legítimas por página.
 - La fase mobile-first premium (sección 13b) permanece como esfuerzo separado posterior a esta unificación.
 

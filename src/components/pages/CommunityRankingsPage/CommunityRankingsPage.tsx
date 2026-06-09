@@ -19,7 +19,7 @@ import { getApprovedCommunityReviews, getReviewAspectsByReviewIds } from '../../
 import type { MotorcycleReview, MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
 import type { Bike, BikeSegment } from '../../../types/bike';
 
-import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
+import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
 import './CommunityRankingsPage.scss';
@@ -288,16 +288,12 @@ export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProp
 
   return (
     <main className="rankings" aria-labelledby="rankings-title">
-      <CommunityHero
+      <PageHero
         titleId="rankings-title"
         imageSrc={rankingHeroImage}
         eyebrow="RANKINGS DE COMUNIDAD"
         title="Las motos mejor valoradas por la comunidad"
         description="Rankings creados a partir de experiencias reales, puntuaciones, uso diario y señales de propietarios. Datos puros sin filtros de marca."
-        actions={[
-          { label: 'Explorar rankings', href: '#rankings-categories' },
-          { label: 'Ver comunidad', href: '#/comunidad' },
-        ]}
       />
 
       {podiumEntries.length > 0 && (

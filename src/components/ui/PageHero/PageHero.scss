@@ -1,0 +1,130 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+// PageHero es la base normalizada del patrón `CommunityHero` (rama
+// feature/page-hero-community-base). Mantiene las mismas clases CSS para
+// preservar el visual y mantener compatibilidad con overrides existentes
+// en AdminPage y otras páginas consumidoras.
+
+.page-hero {
+  align-items: center;
+  display: grid;
+  min-height: min(760px, calc(100vh - 80px));
+  overflow: hidden;
+  padding: 8rem max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
+  position: relative;
+  text-align: left;
+
+  > img {
+    filter: grayscale(0.32) contrast(1.1);
+    height: 100%;
+    inset: 0;
+    object-fit: cover;
+    opacity: 0.64;
+    position: absolute;
+    width: 100%;
+  }
+
+  &::after {
+    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0) 48%, transparent 100%);
+    content: '';
+    inset: 0;
+    position: absolute;
+  }
+}
+
+.page-hero__content {
+  max-width: 58rem;
+  position: relative;
+  z-index: 1;
+
+  h1 {
+    @include headline-xl;
+
+    color: #fff;
+    line-height: 0.95;
+    margin-top: 1rem;
+    max-width: 56rem;
+    text-shadow: 0 5px 34px rgba(0, 0, 0, 0.95);
+    text-transform: uppercase;
+
+    span {
+      color: $color-accent;
+    }
+  }
+
+  p {
+    @include body-lg;
+
+    color: rgba(#fff, 0.86);
+    line-height: 1.65;
+    margin-top: 1.25rem;
+    max-width: 680px;
+    text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
+  }
+}
+
+.page-hero__eyebrow {
+  @include label-caps;
+
+  color: $color-accent;
+  letter-spacing: 0.22em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.88);
+}
+
+.page-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  a,
+  button {
+    @include label-caps;
+
+    align-items: center;
+    background: transparent;
+    border: 1px solid rgba($color-outline, 0.72);
+    border-radius: $radius-lg;
+    color: $color-on-surface;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    justify-content: center;
+    min-height: 3.4rem;
+    padding: 0.95rem 1.5rem;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+    text-decoration: none;
+
+    &:first-child {
+      background: $color-accent-container;
+      border-color: $color-accent-container;
+      color: #fff;
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: $color-accent;
+      filter: brightness(1.08);
+      outline: none;
+    }
+  }
+}
+
+@media (max-width: 1023px) {
+  .page-hero {
+    padding: 7rem $margin-tablet 4rem;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .page-hero {
+    min-height: 36rem;
+    padding: 8rem $margin-mobile 4rem;
+    text-align: left;
+  }
+
+  .page-hero__actions {
+    display: grid;
+  }
+}

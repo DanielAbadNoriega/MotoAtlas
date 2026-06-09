@@ -24,7 +24,7 @@ import { useReviewReports } from '../../../shared/reviews/useReviewReports';
 import { getRankingConfidence } from '../../../shared/reviews/communityRankings';
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { useAuth } from '../../../features/auth';
-import { CommunityHero } from '../../ui/CommunityHero/CommunityHero';
+import { PageHero, type PageHeroAction } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
@@ -33,6 +33,13 @@ import './TopRatedMotorcyclesPage.scss';
 
 type TopRatedMotorcyclesPageProps = Readonly<{
   motorcycles: readonly Bike[];
+  /**
+   * Variante de ruta que renderiza esta página.
+   * `community` (#/comunidad) omite las acciones del hero porque la navegación
+   * vivirá en una futura navbar/subnav.
+   * `topRated` (#/motos-mejor-valoradas) preserva las acciones del hero.
+   */
+  variant?: 'community' | 'topRated';
 }>;
 
 type RecentReviewItem = Readonly<{
@@ -346,7 +353,7 @@ function CommunityFeatureSections({
   );
 }
 
-export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPageProps) {
+export function TopRatedMotorcyclesPage({ motorcycles, variant = 'topRated' }: TopRatedMotorcyclesPageProps) {
   const { session } = useAuth();
   const [reviewsByMotorcycleId, setReviewsByMotorcycleId] = useState<ReviewsByMotorcycleId>({});
   const [filters, setFilters] = useState<TopRatedFilters>(defaultTopRatedFilters);
@@ -464,16 +471,16 @@ export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPage
 
   return (
     <main className="top-rated" aria-labelledby="top-rated-title">
-      <CommunityHero
+      <PageHero
         titleId="top-rated-title"
         imageSrc={rankingHeroImage}
         eyebrow="Opiniones reales"
         title="Comunidad MotoAtlas"
         description="Opiniones reales, rankings vivos y actividad de propietarios para elegir mejor."
-        actions={[
+        actions={variant === 'topRated' ? [
           { label: 'Explorar comunidades', onClick: scrollToPodium },
           { label: 'Comparar motos', href: '#/comparador' },
-        ]}
+        ] satisfies readonly PageHeroAction[] : undefined}
       />
 
       <section className="top-rated__content" id="community-podium" aria-label="Ranking de motos mejor valoradas">

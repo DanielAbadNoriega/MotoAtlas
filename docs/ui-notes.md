@@ -208,6 +208,8 @@ Dirección:
 
 La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` con acciones comunitarias seguras (Fase 4.4): Helpful/NotHelpful reales en auth, Útil N pasivo en no-auth, Report/Reply no cableados.
 
+El hero de `#/comunidad` usa el componente compartido `PageHero` (rama `feature/page-hero-community-base`, Fase A de la unificación de heroes). A partir de esa rama, el hero **ya no muestra CTAs** (`Explorar comunidades`, `Comparar motos`) porque la navegación vivirá en una futura navbar/subnav. La misma prop opcional `variant?: 'community' | 'topRated'` distingue en `TopRatedMotorcyclesPage` entre la renderización de `#/comunidad` (sin CTAs) y `#/motos-mejor-valoradas` (con CTAs preservados). La subnav de comunidad y los enlaces a `#/comunidad/rankings` y `#/comunidad/reviews` se consolidarán en una fase posterior.
+
 Paridad resuelta:
 - en `#/comunidad`, las cards de podio en posiciones 2 y 3 ya muestran el mismo span de metadatos que `#/comunidad/rankings`.
 - metadato actual de contrato visual en ambos podios: `año · segmento · cilindrada (cc)`.
@@ -220,6 +222,8 @@ Elementos principales:
 - Podio top 3 con imagen, stats y shield de confianza con tooltip visual. **NO se ve afectado por filtros.**
 - Grid de 8 categorías (global, daily, travel, sport, a2, power-weight, reliability, passenger).
 - Listado técnico con filtros por segmento, carnet y uso. **No usa `<table>`; usa cards/grid responsive.**
+
+El hero de `#/comunidad/rankings` usa el componente compartido `PageHero` (Fase A). A partir de la rama `feature/page-hero-community-base` el hero **ya no muestra CTAs** (`Explorar rankings`, `Ver comunidad`) porque la navegación vivirá en una futura navbar/subnav.
 
 **Pendiente:** rediseño mobile avanzado del listado técnico (cards responsive más refinadas) — **pospuesto a fase global mobile-first**. El responsive actual es funcional y correcto, pero no se invertirá en refinado mobile premium hasta una fase posterior con diseño específico desde Stitch.
 
@@ -257,7 +261,7 @@ Nota: el score de rankings (0–10 con icono `analytics`) es independiente del r
 
 La ruta `#/comunidad/reviews` funciona como entrada pública a reviews `approved`: los bloques editoriales superiores muestran reviews individuales, mientras `Garaje de la comunidad` agrupa reviews por moto y pagina 9 modelos por página.
 
-El hero de `#/comunidad/reviews` replica el patrón visual del hero oficial de Home: imagen full-bleed con overlay/degradado, texto centrado y CTAs. Usa `src/assets/hero-community.png`.
+El hero de `#/comunidad/reviews` replica el patrón visual del hero oficial de Home: imagen full-bleed con overlay/degradado, texto centrado y CTAs. Usa `src/assets/hero-community.png`. **Este hero local queda intacto en la rama `feature/page-hero-community-base` y queda pendiente para Fase B** (no se normaliza a `PageHero` en esta fase porque su estructura con doble gradient, `fade-in` y overlay decorativo no encaja en el patrón base).
 
 Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews destacadas`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Garaje de la comunidad`, que agrupa por `motorcycleId` y calcula rating medio (sobre 5 con estrella), número de reviews, última review en formato corto DD.MM.YY, y uso más repetido. El panel de filtros es apply-on-change en tiempo real; el botón "Aplicar" cierra el panel en mobile. El aside `Insights en vivo` (kicker "Pulso de la comunidad · Actividad reciente") muestra 4 signals comunitarios con copy conservadora: "Moto más comentada" (moto con más reviews), "Review más útil" (mayor `helpfulCount`), "Segmento más activo" (label friendly de `segmentLabels`) y "Uso más activo" (label friendly de `accountReviewRidingStyleLabels`). Subtítulo: "Señales según reviews aprobadas, no en tiempo real." Polling suave cada 60 segundos, footer "Datos aproximados · {refreshLabel} · Según reviews aprobadas". No se renderizan: review con más kilómetros, rating medio global, ni datos sensibles de usuario. Si en el futuro product copy decide renombrar el h2 a "Pulso de la comunidad", será un cambio puntual con su propio test. Las cards del garaje usan `MotorcycleGarageCard` (componente extraído en `src/components/motorcycles/MotorcycleGarageCard/`), con shield de confianza junto al rating /5 con estrella, tooltip visual (Alta/Media/Baja confianza) y CTAs reducidos "Reviews" y "Ficha técnica". `MotorcycleGarageCard` también se reutiliza en `#/buscador` con acciones compactas para comparar.
 
@@ -445,6 +449,37 @@ Las rutas enlazadas desde el footer ya tienen páginas reales en `src/components
 - `#/terminos` — base inicial de términos de uso pendiente de revisión legal final.
 
 Estas páginas ignoran header/footer de Stitch y usan el Navbar/Footer reales de MotoAtlas.
+
+---
+
+## PageHero — base normalizada de heroes de comunidad/admin
+
+Componente compartido `src/components/ui/PageHero/PageHero.tsx` introducido en la rama `feature/page-hero-community-base` (Fase A de la unificación de heroes). Replica la estructura del antiguo `CommunityHero` con API mínima:
+
+- `titleId` (requerido): id del `<h1>` para `aria-labelledby` del `<main>` padre.
+- `title` (requerido): el `<h1>`.
+- `eyebrow?` (opcional): label uppercase con `label-caps` y color `$color-accent`. Si no se pasa, no se renderiza.
+- `description?` (opcional): `<p>` con `body-lg`. Si no se pasa, no se renderiza.
+- `imageSrc?` (opcional): URL de imagen de fondo full-bleed. Filtros `grayscale(0.32) contrast(1.1)`, opacidad 0.64 y overlay degradado vertical replicando el patrón del antiguo `CommunityHero`.
+- `imageAlt?` (opcional): alt para la imagen. Si no se pasa, la imagen queda decorativa (`aria-hidden="true"`).
+- `className?` (opcional): clase adicional aplicada a la `<section>`. Las páginas admin lo usan para mantener `admin-page__community-hero admin-page__hero` y conservar el SCSS contextual.
+- `children?` (opcional): slot para contenido extra al final del `__content`. Las páginas admin inyectan el chip de admin activo.
+- `actions?` (opcional): array de `PageHeroAction` (`{ href?, onClick?, label }`) que renderiza un grupo de CTAs con estilo `:first-child` como primary auto-aplicado.
+
+Migraciones ya completadas en la rama `feature/page-hero-community-base`:
+- 4 páginas admin (Dashboard, Reviews, Requests, Moderation): reemplazan `CommunityHero` por `PageHero` sin cambio visual.
+- `CommunityRankingsPage` (`#/comunidad/rankings`): migra a `PageHero` y **quita las CTAs del hero** (`Explorar rankings`, `Ver comunidad`).
+- `TopRatedMotorcyclesPage` (renderiza `#/comunidad` y `#/motos-mejor-valoradas`): nueva prop opcional `variant?: 'community' | 'topRated'`. En `variant="community"` el hero queda sin CTAs; en `variant="topRated"` se preservan `Explorar comunidades` y `Comparar motos`. `App.tsx` pasa `variant` según la ruta activa.
+
+`CommunityHero` (`src/components/ui/CommunityHero/CommunityHero.tsx`) se reconvirtió en **thin wrapper deprecated** de `PageHero` para mantener compatibilidad con importadores externos. Su SCSS (`CommunityHero.scss`) queda en el repo pero ya no es referenciado por el wrapper ni por consumidores activos; se eliminará cuando se complete la migración de consumidores externos (si los hubiera).
+
+`CommunityReviewsPage` (`#/comunidad/reviews`) **no se migra en esta fase**. Su hero local tiene detalles decorativos únicos (doble gradient, `fade-in`, overlay con imagen `hero-community.png` filtrada con `grayscale(0.45) contrast(1.1)`) que no encajan en el patrón base de `PageHero`. Queda pendiente para Fase B cuando se decida cómo tratar heroes con gradient personalizado o cómo parametrizar el SCSS de `PageHero` para aceptar `imageFilter`, `gradient`, `align` y `overlay` por variante.
+
+Pendiente para Fase B (no incluido en este cambio):
+- Migrar `CommunityReviewsPage` y, eventualmente, los heroes de `BikeDetailPage`, `MotorcycleCommunityPage`, `AccountPage` y las páginas estáticas.
+- Decidir `HeroAction` system (rama `feature/hero-cta-audit` ya documentó la dirección).
+- Consolidar variantes del `Button` shared con la tabla de la fase 13.1 de `product-roadmap.md`.
+- Mobile-first de Fase 13b con validación visual en Stitch.
 
 ---
 
