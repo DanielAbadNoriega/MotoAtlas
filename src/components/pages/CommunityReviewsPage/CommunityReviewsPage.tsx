@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import communityHeroImage from '../../../assets/hero-community.png';
 import { useAuth } from '../../../features/auth';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountReviewsEmptyState } from '../AccountReviewsPage/AccountReviewsEmptyState';
 import { MotorcycleGarageCard } from '../../motorcycles/MotorcycleGarageCard';
+import { PageHero } from '../../ui/PageHero';
 import {
   accountReviewRidingStyleLabels,
   getAccountReviewMotorcycleDisplay,
@@ -1159,15 +1160,6 @@ export function CommunityReviewsPage() {
     setCurrentPage(1);
   };
 
-  const scrollToReviews = () => {
-    document.getElementById('community-reviews-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const scrollToGarageHeader = (event: MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    document.getElementById('community-reviews-garage-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   const toggleHelpful = async (review: MotorcycleReview) => {
     const outcome = await toggleHelpfulReactionForReview(review);
     if (outcome.outcome === 'success') {
@@ -1346,23 +1338,13 @@ export function CommunityReviewsPage() {
 
   return (
     <main className="community-reviews-page" aria-labelledby="community-reviews-title">
-      <section className="community-reviews-page__hero" aria-labelledby="community-reviews-title">
-        <div className="community-reviews-page__hero-background" aria-hidden="true">
-          <img data-testid="community-reviews-hero-image" src={communityHeroImage} alt="" />
-          <span />
-        </div>
-
-        <div className="community-reviews-page__hero-content fade-in">
-          <h1 id="community-reviews-title">Reviews de la comunidad</h1>
-          <p>
-            Opiniones reales de propietarios: kilómetros, uso, pros, contras y experiencias para elegir mejor tu próxima moto.
-          </p>
-          <div className="community-reviews-page__hero-actions" aria-label="Acciones del hero de reviews">
-            <button type="button" onClick={scrollToReviews}>Explorar reviews</button>
-            <a href="#community-reviews-garage-header" onClick={scrollToGarageHeader}>Buscar moto para opinar</a>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        className="community-reviews-page__hero"
+        description="Opiniones reales de propietarios: kilómetros, uso, pros, contras y experiencias para elegir mejor tu próxima moto."
+        imageSrc={communityHeroImage}
+        title="Reviews de la comunidad"
+        titleId="community-reviews-title"
+      />
 
       <section className="community-reviews-page__editorial" aria-label="Bloque editorial de reviews">
         <div className="community-reviews-page__editorial-grid">

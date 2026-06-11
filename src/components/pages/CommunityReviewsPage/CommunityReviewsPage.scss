@@ -10,111 +10,39 @@
 }
 
 .community-reviews-page__hero {
-  display: grid;
   height: 870px;
   min-height: min(870px, calc(100vh - 80px));
-  overflow: hidden;
+  padding: 0 max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
   place-items: center;
-  position: relative;
 
-  h1 {
-    @include headline-xl;
-
-    color: white;
-    margin: 0 auto 1.25rem;
-    max-width: 58rem;
-    text-transform: uppercase;
-    text-shadow: 0 5px 34px rgba(0, 0, 0, 0.95);
-  }
-
-  p {
-    @include body-lg;
-
-    color: rgba(#fff, 0.86);
-    margin: 0 auto;
-    max-width: 48rem;
-    text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
-  }
-}
-
-.community-reviews-page__hero-background {
-  inset: 0;
-  position: absolute;
-  z-index: 0;
-
-  img {
+  .page-hero__image {
     filter: grayscale(0.45) contrast(1.1);
-    height: 100%;
-    object-fit: cover;
     object-position: center;
+    opacity: 1;
     transform: scale(1.01);
-    width: 100%;
   }
 
-  span {
+  .page-hero__overlay {
     background:
       linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.45) 48%, transparent 100%),
       linear-gradient(90deg, rgba($color-surface, 0.72) 0%, rgba($color-surface, 0.16) 52%, rgba($color-surface, 0.56) 100%);
-    inset: 0;
-    position: absolute;
   }
-}
 
-.community-reviews-page__hero-content {
-  @include container;
+  .page-hero__content {
+    animation: fade-in 700ms ease both;
+    text-align: center;
 
-  position: relative;
-  text-align: center;
-  z-index: 1;
-}
-
-.community-reviews-page__hero-actions {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 2rem;
-
-  a,
-  button {
-    @include label-caps;
-
-    align-items: center;
-    border: 1px solid rgba($color-outline, 0.72);
-    border-radius: $radius-lg;
-    cursor: pointer;
-    display: inline-flex;
-    justify-content: center;
-    min-height: 3.4rem;
-    padding: 0.95rem 1.5rem;
-    text-decoration: none;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
-    transition:
-      background $transition-base,
-      border-color $transition-base,
-      filter $transition-base,
-      transform $transition-fast;
-
-    &:hover,
-    &:focus-visible {
-      border-color: $color-accent;
-      filter: brightness(1.08);
-      outline: 0;
-      transform: translateY(-1px);
+    h1 {
+      line-height: 1.1;
+      margin: 0 auto 1.25rem;
+      max-width: 58rem;
     }
-  }
 
-  button {
-    background: $color-accent-container;
-    border-color: $color-accent-container;
-    color: white;
-  }
-
-  a {
-    background: rgba($color-surface, 0.72);
-    color: $color-on-surface;
-    backdrop-filter: blur(20px);
+    p {
+      line-height: 1.6;
+      margin: 0 auto;
+      max-width: 48rem;
+    }
   }
 }
 
@@ -903,6 +831,10 @@ span.community-reviews-page__insight-icon {
 }
 
 @media (max-width: $breakpoint-tablet) {
+  .community-reviews-page__hero {
+    padding: 0 $margin-tablet;
+  }
+
   .community-reviews-page__editorial {
     padding-block: 3rem 1rem;
   }
@@ -965,17 +897,7 @@ span.community-reviews-page__insight-icon {
   .community-reviews-page__hero {
     height: 600px;
     min-height: 600px;
-  }
-
-  .community-reviews-page__hero-actions {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 0.75rem;
-
-    a,
-    button {
-      width: 100%;
-    }
+    padding: 0 $margin-mobile;
   }
 
   .community-reviews-page__editorial {
