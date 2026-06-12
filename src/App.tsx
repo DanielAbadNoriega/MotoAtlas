@@ -24,7 +24,7 @@ import {
 } from './components/pages/StaticInfoPages';
 import { TopRatedMotorcyclesPage } from './components/pages/TopRatedMotorcyclesPage';
 import { FeaturedMachines } from './components/sections/FeaturedMachines';
-import { Hero } from './components/sections/Hero';
+import { HomeHero } from './components/sections/HomeHero';
 import { LatestNews } from './components/sections/LatestNews';
 import { MachineDuel } from './components/sections/MachineDuel';
 import { ReliabilityReports } from './components/sections/ReliabilityReports';
@@ -86,7 +86,7 @@ function useAppRoute() {
 function HomePage() {
   return (
     <main>
-      <Hero />
+      <HomeHero />
       <FeaturedMachines />
       <MachineDuel />
       <LatestNews />
