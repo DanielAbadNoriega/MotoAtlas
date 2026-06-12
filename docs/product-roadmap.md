@@ -591,7 +591,7 @@ Gaps detectados antes de social/gamificación:
 - **P2:** `onAuthStateChange` no representa con `isLoading` la resolución asíncrona de perfil; puede haber estado transitorio `profile=null`/`isAdmin=false`.
 - **P2:** el alias de review autenticada se pasa como `p_user_name` desde cliente; antes de identidad pública/reputación debe derivarse o validarse server-side.
 - **P2:** smoke E2E/RLS real en staging y auditoría de privilegios efectivos de funciones `security definer`.
-- **P2:** migración incremental de 10 áreas con `mockAuth` local o mocks equivalentes de `useAuth` hacia fixtures centrales.
+- **P2:** migración incremental de 9 áreas con `mockAuth` local o mocks equivalentes de `useAuth` hacia fixtures centrales.
 - **P3 polish:** armonizar no-auth pasivo entre páginas; `MotorcycleCommunityPage` conserva acciones clicables con tooltip y bloqueo antes de red.
 
 Plan recomendado:
@@ -678,9 +678,10 @@ Implementado (base):
 - cobertura de contrato en `src/test/fixtures/auth.test.ts`;
 - migración inicial en `src/components/pages/AuthPage/AuthPage.test.tsx`.
 - batch 1 completado en `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx`, preservando el escenario autenticado original con `profile: null`.
+- batch 2 completado en `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx`, preservando el escenario no-auth original con `user/session/profile = null` y `isAuthenticated = false`, y manteniendo el perfil del escenario autenticado porque la suite legacy ya lo tenía.
 
 Pendiente residual:
-- migrar de forma incremental mocks `useAuth` repetidos en otras áreas (`AccountMotorcycleReviewsPage.test.tsx`, `AccountPage.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`), sin refactor masivo.
+- migrar de forma incremental mocks `useAuth` repetidos en otras áreas (`AccountMotorcycleReviewsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`), sin refactor masivo.
 
 Debe seguir cubriendo fixtures para:
 - usuario autenticado normal;
