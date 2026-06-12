@@ -28,6 +28,12 @@ type ComparatorPageProps = {
   motorcycles?: readonly Bike[];
 };
 
+type ComparatorSetupHeroProps = {
+  children: React.ReactNode;
+  description: string;
+  title: string;
+};
+
 const numberFormatter = new Intl.NumberFormat('es-ES');
 
 function navigateToHash(hash: string) {
@@ -49,51 +55,19 @@ function persistAndNavigateToComparison(ids: readonly Bike['id'][], motorcycles:
   navigateToHash(getCompareHashForIds(ids, motorcycles));
 }
 
-function EmptyComparator() {
+function ComparatorSetupHero({ children, description, title }: ComparatorSetupHeroProps) {
   return (
-    <main className="comparison-detail comparison-detail--empty">
-      <section className="comparison-detail__empty">
-        <span>Comparador</span>
-        <h1>Selecciona al menos 2 motos</h1>
-        <p>Selecciona hasta 3 motos para comparar ficha técnica, prestaciones y valoración de la comunidad.</p>
-        <a className="button button--primary" href={getBrowseSearchHash()}>
-          Ir al buscador
-        </a>
-      </section>
-    </main>
-  );
-}
-
-
-function OneBikeComparator({ bike, motorcycles }: { bike: Bike; motorcycles: readonly Bike[] }) {
-  const addableBike = getFirstAddableBike([bike], motorcycles);
-  const displayName = getSafeBikeDisplayName(bike);
-
-  return (
-    <main className="comparison-detail comparison-detail--empty">
-      <section className="comparison-detail__empty">
-        <span>Comparador</span>
-        <h1>Añade otra moto para comparar</h1>
-        <p>{displayName} ya está en la cola. Añade una segunda moto para activar el comparador dinámico.</p>
-        {addableBike ? (
-          <div className="comparison-detail__empty-actions">
-            <button
-              className="button button--primary"
-              type="button"
-              onClick={() => persistAndNavigateToComparison([bike.id, addableBike.id], motorcycles)}
-              aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
-            >
-              Añadir {getSafeBikeDisplayName(addableBike)}
-            </button>
-            <a className="button button--secondary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
-              Buscar otra moto
-            </a>
-          </div>
-        ) : (
-          <a className="button button--primary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
-            Buscar otra moto
-          </a>
-        )}
+    <main className="comparison-detail comparison-detail--empty" aria-labelledby="comparison-empty-title">
+      <section className="comparison-detail__empty comparison-detail__empty--hero">
+        <div className="comparison-detail__empty-media" aria-hidden="true">
+          <img src={comparisonHeroImage} alt="" />
+        </div>
+        <div className="comparison-detail__empty-content">
+          <span>Comparador</span>
+          <h1 id="comparison-empty-title">{title}</h1>
+          <p>{description}</p>
+          {children}
+        </div>
       </section>
     </main>
   );
@@ -139,11 +113,49 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
   }, [queueIds.join('|')]);
 
   if (bikes.length === 0) {
-    return <EmptyComparator />;
+    return (
+      <ComparatorSetupHero
+        title="Selecciona al menos 2 motos"
+        description="Selecciona hasta 3 motos para comparar ficha técnica, prestaciones y valoración de la comunidad."
+      >
+        <a className="button button--primary" href={getBrowseSearchHash()}>
+          Ir al buscador
+        </a>
+      </ComparatorSetupHero>
+    );
   }
 
   if (bikes.length === 1) {
-    return <OneBikeComparator bike={bikes[0]} motorcycles={motorcycles} />;
+    const bike = bikes[0];
+    const addableBike = getFirstAddableBike([bike], motorcycles);
+    const displayName = getSafeBikeDisplayName(bike);
+
+    return (
+      <ComparatorSetupHero
+        title="Añade otra moto para comparar"
+        description={`${displayName} ya está en la cola. Añade una segunda moto para activar el comparador dinámico.`}
+      >
+        {addableBike ? (
+          <div className="comparison-detail__empty-actions">
+            <button
+              className="button button--primary"
+              type="button"
+              onClick={() => persistAndNavigateToComparison([bike.id, addableBike.id], motorcycles)}
+              aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
+            >
+              Añadir {getSafeBikeDisplayName(addableBike)}
+            </button>
+            <a className="button button--secondary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
+              Buscar otra moto
+            </a>
+          </div>
+        ) : (
+          <a className="button button--primary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
+            Buscar otra moto
+          </a>
+        )}
+      </ComparatorSetupHero>
+    );
   }
 
   const comparison = buildCompareViewModel(bikes);
