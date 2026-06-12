@@ -1,7 +1,7 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
 import { getApprovedCommunityReviews, getReviewAspectsByReviewIds, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus, type MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
 import {
   clearMyReviewReaction,
@@ -12,6 +12,7 @@ import {
 } from '../../../services/reviewReactionService';
 import { createReviewReport, getMyReviewReports } from '../../../services/reviewReportService';
 import { createReviewReply, getRepliesByReviewId, type ReviewReply } from '../../../services/reviewReplyService';
+import { createAuthState, createAuthUser, createSession, createUserProfile, mockUnauthenticatedAuthState } from '../../../test/fixtures/auth';
 import { CommunityReviewsPage } from './CommunityReviewsPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -51,21 +52,64 @@ const getMyReviewReportsMock = vi.mocked(getMyReviewReports);
 const createReviewReplyMock = vi.mocked(createReviewReply);
 const getRepliesByReviewIdMock = vi.mocked(getRepliesByReviewId);
 const useAuthMock = vi.mocked(useAuth);
+const signInMock = vi.fn();
+const signUpMock = vi.fn();
+const signOutMock = vi.fn();
+const refreshProfileMock = vi.fn();
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({
-    user: null,
-    session: null,
-    profile: null,
-    isAuthenticated: false,
-    isAdmin: false,
-    isLoading: false,
-    signIn: vi.fn(),
-    signUp: vi.fn(),
-    signOut: vi.fn(),
-    refreshProfile: vi.fn(),
-    ...overrides,
-  } as never);
+type MockAuthOverrides = Omit<Partial<AuthContextValue>, 'user' | 'session' | 'profile'> & {
+  user?: Record<string, unknown> | null;
+  session?: Record<string, unknown> | null;
+  profile?: Record<string, unknown> | null;
+};
+
+function mockAuth(overrides: MockAuthOverrides = {}) {
+  const {
+    user: userOverrides,
+    session: sessionOverrides,
+    profile: profileOverrides,
+    signIn,
+    signUp,
+    signOut,
+    refreshProfile,
+    ...stateOverrides
+  } = overrides;
+
+  const resolvedUser = userOverrides === undefined
+    ? mockUnauthenticatedAuthState.user
+    : userOverrides === null
+      ? null
+      : createAuthUser(userOverrides as Parameters<typeof createAuthUser>[0]);
+
+  const resolvedSession = sessionOverrides === undefined
+    ? mockUnauthenticatedAuthState.session
+    : sessionOverrides === null
+      ? null
+      : createSession({
+          ...(sessionOverrides as Parameters<typeof createSession>[0]),
+          user: (sessionOverrides as { user?: ReturnType<typeof createAuthUser> } | null)?.user ?? resolvedUser ?? createAuthUser(),
+        });
+
+  const resolvedProfile = profileOverrides === undefined
+    ? mockUnauthenticatedAuthState.profile
+    : profileOverrides === null
+      ? null
+      : createUserProfile(profileOverrides as Partial<ReturnType<typeof createUserProfile>>);
+
+  useAuthMock.mockReturnValue(createAuthState({
+    ...mockUnauthenticatedAuthState,
+    ...stateOverrides,
+    user: resolvedUser,
+    session: resolvedSession,
+    profile: resolvedProfile,
+    isAuthenticated: stateOverrides.isAuthenticated ?? false,
+    isAdmin: stateOverrides.isAdmin ?? false,
+    isLoading: stateOverrides.isLoading ?? false,
+    signIn: signIn ?? signInMock,
+    signUp: signUp ?? signUpMock,
+    signOut: signOut ?? signOutMock,
+    refreshProfile: refreshProfile ?? refreshProfileMock,
+  }) as never);
 }
 
 function createCommunityReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
@@ -145,6 +189,10 @@ describe('CommunityReviewsPage', () => {
     cleanup();
     window.history.pushState(null, '', '/');
     window.location.hash = '';
+    signInMock.mockReset();
+    signUpMock.mockReset();
+    signOutMock.mockReset().mockResolvedValue(undefined);
+    refreshProfileMock.mockReset();
     getApprovedCommunityReviewsMock.mockReset();
     getReviewReactionSummaryMock.mockReset();
     getReviewAspectsByReviewIdsMock.mockReset();
