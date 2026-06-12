@@ -82,20 +82,29 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(within(firstRank).getByRole('link', { name: /Ver reviews/i })).toBeInTheDocument();
   });
 
-  it('el botón Explorar comunidades hace scroll al podium sin romper la ruta hash', async () => {
+  it('el botón Explorar comunidades hace scroll al podium en #/motos-mejor-valoradas', async () => {
     const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
     const scrollIntoView = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
-    window.location.hash = '#/comunidad';
+    window.location.hash = '#/motos-mejor-valoradas';
     const user = userEvent.setup();
 
     await renderPage();
     await user.click(screen.getByRole('button', { name: /Explorar comunidades/i }));
 
-    expect(window.location.hash).toBe('#/comunidad');
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
 
     window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
+
+  it('el hero de #/comunidad no muestra acciones porque la navegación vivirá en la navbar/subnav', async () => {
+    window.location.hash = '#/comunidad';
+    render(<TopRatedMotorcyclesPage motorcycles={bikeFixtures} variant="community" />);
+    await waitFor(() => expect(getApprovedReviewsMock).toHaveBeenCalledTimes(bikeFixtures.length));
+
+    expect(screen.getByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Explorar comunidades/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Comparar motos/i })).not.toBeInTheDocument();
   });
 
   it('solo cuenta reviews approved y no pending/rejected/hidden', async () => {

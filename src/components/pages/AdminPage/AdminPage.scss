@@ -11,23 +11,19 @@
   }
 
   &__community-hero {
-    /* Hacemos que el hero reutilizando .community-hero ocupe todo el ancho
-       de la página (full-bleed) pero mantenga el contenido centrado. */
+    /* Hacemos que el hero reutilizando `PageHero` (antes `.community-hero`)
+       ocupe todo el ancho de la página (full-bleed) pero mantenga el
+       contenido centrado. */
     padding-inline: 0;
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
     background: linear-gradient(180deg, rgba($color-surface-low, 0.02), rgba($color-surface-lowest, 0.06));
 
-    .community-hero__content {
+    .page-hero__content {
       max-width: 64rem;
       margin-inline: auto;
       padding-inline: clamp(1rem, 4vw, 2rem);
-    }
-
-    /* Forzamos que no se muestren CTAs en el hero admin ni aunque se pasen props. */
-    .community-hero__actions {
-      display: none;
     }
   }
 

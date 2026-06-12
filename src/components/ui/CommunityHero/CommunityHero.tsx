@@ -1,14 +1,8 @@
 import type { ReactNode } from 'react';
-import './CommunityHero.scss';
-
-type CommunityHeroAction = Readonly<{
-  href?: string;
-  label: string;
-  onClick?: () => void;
-}>;
+import { PageHero, type PageHeroAction } from '../PageHero';
 
 type CommunityHeroProps = Readonly<{
-  actions?: readonly CommunityHeroAction[];
+  actions?: readonly PageHeroAction[];
   children?: ReactNode;
   className?: string;
   description: string;
@@ -18,8 +12,14 @@ type CommunityHeroProps = Readonly<{
   titleId: string;
 }>;
 
+/**
+ * @deprecated Usar `PageHero` directamente. Este wrapper existe
+ * temporalmente (rama `feature/page-hero-community-base`) para mantener
+ * compatibilidad con importadores externos mientras se completa la
+ * migración.
+ */
 export function CommunityHero({
-  actions = [],
+  actions,
   children,
   className,
   description,
@@ -28,28 +28,18 @@ export function CommunityHero({
   title,
   titleId,
 }: CommunityHeroProps) {
-  const heroClassName = ['community-hero', className].filter(Boolean).join(' ');
-
   return (
-    <section className={heroClassName}>
-      <img src={imageSrc} alt="" aria-hidden="true" />
-      <div className="community-hero__content">
-        <span className="community-hero__eyebrow">{eyebrow}</span>
-        <h1 id={titleId}>{title}</h1>
-        <p>{description}</p>
-        {actions.length > 0 ? (
-          <div className="community-hero__actions">
-            {actions.map((action) => (
-              action.href ? (
-                <a href={action.href} key={`${action.label}-${action.href}`}>{action.label}</a>
-              ) : (
-                <button type="button" key={`${action.label}-button`} onClick={action.onClick}>{action.label}</button>
-              )
-            ))}
-          </div>
-        ) : null}
-        {children}
-      </div>
-    </section>
+    <PageHero
+      actions={actions}
+      className={className}
+      description={description}
+      eyebrow={eyebrow}
+      imageSrc={imageSrc}
+      imageAlt=""
+      title={title}
+      titleId={titleId}
+    >
+      {children}
+    </PageHero>
   );
 }

@@ -316,7 +316,7 @@ export function App() {
           motorcycles={motorcycles}
         />
       ) : isCommunityLandingPage ? (
-        <TopRatedMotorcyclesPage motorcycles={motorcycles} />
+        <TopRatedMotorcyclesPage motorcycles={motorcycles} variant="community" />
       ) : isCommunityReviewsPage ? (
         <CommunityReviewsPage />
       ) : isCommunityRankingsPage ? (
@@ -328,7 +328,7 @@ export function App() {
       ) : isSearchPage ? (
         <SearchPage motorcycles={motorcycles} routeHash={route} />
       ) : isTopRatedPage ? (
-        <TopRatedMotorcyclesPage motorcycles={motorcycles} />
+        <TopRatedMotorcyclesPage motorcycles={motorcycles} variant="topRated" />
       ) : staticInfoRouteKey === 'metodologia' ? (
         <DataMethodologyPage />
       ) : staticInfoRouteKey === 'fuentes-datos' ? (

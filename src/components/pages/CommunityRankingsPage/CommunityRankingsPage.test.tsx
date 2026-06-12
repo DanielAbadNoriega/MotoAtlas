@@ -59,14 +59,15 @@ describe('CommunityRankingsPage', () => {
     expect(screen.queryByText(/STATUS: ACQUIRING TELEMETRY/i)).not.toBeInTheDocument();
   });
 
-  it('renderiza el hero con eyebrow y acciones', () => {
+  it('renderiza el hero con eyebrow y descripción (sin CTAs porque la navegación vivirá en la navbar/subnav)', () => {
     window.location.hash = '#/comunidad/rankings';
     render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
 
     expect(screen.getByText('RANKINGS DE COMUNIDAD')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Explorar rankings/i })).toHaveAttribute('href', '#rankings-categories');
-    const allVerComunidadLinks = screen.getAllByRole('link', { name: /Ver comunidad/i });
-    expect(allVerComunidadLinks[0]).toHaveAttribute('href', '#/comunidad');
+    expect(screen.getByRole('heading', { name: /Las motos mejor valoradas por la comunidad/i })).toBeInTheDocument();
+    expect(screen.getByText(/Rankings creados a partir de experiencias reales/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Explorar rankings/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Ver comunidad$/i })).not.toBeInTheDocument();
   });
 
   it('renderiza el podium top 3', () => {
