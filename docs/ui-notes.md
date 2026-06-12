@@ -223,16 +223,20 @@ Secciones residuales cerradas:
 - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
 - `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab y, en rama `feature/bike-detail-technical-spec-cards`, cerradas con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`. El SCSS huérfano de `quick-specs`, `features`, `feature-list` y el `h2` legacy de `__specs` fue eliminado. `SpecCard` local fue reemplazado por `TechnicalSpecCard` shared (presentacional, sin fetch, no conoce `BikeDetailPage`).
 
-## Datos demo para QA visual (backlog)
+## Datos demo para QA visual
 
-Estado: pendiente (P2 técnico).
+Estado: mejora de realismo del generador mock implementada y validada; toggle admin sigue pendiente (P2 técnico).
 
-La validación visual de `FeaturedReviewCard`, `MotorcycleGarageCard`, bloques editoriales y layouts de comunidad depende de mocks que no parezcan texto de relleno repetitivo.
+La validación visual de `FeaturedReviewCard`, `MotorcycleGarageCard`, bloques editoriales, rankings y superficies de ficha ahora cuenta con mocks menos repetitivos y más útiles para stress visual. No es un cambio de UI, sino una mejora del dataset de QA.
 
-Dirección:
-- mejorar realismo de comentarios mock;
-- aumentar variedad de longitud/estructura;
-- mantener `source='mock'` y limpieza segura sin tocar `source='user'`.
+Estado actual del generador:
+- comentarios con perfiles `short` / `medium` / `long`;
+- tono por rating (`positive`, `balanced`, `critical`);
+- variedad por uso (`touring`, `offroad`, `daily`, `passenger`, `city`, `sport`) y por segmento;
+- `pros`/`cons` con cantidad variable y contexto más realista;
+- sanitización para evitar `null` / `undefined` visibles;
+- contrato `source='mock'` preservado, sin tocar `source='user'` ni `source='seed'`;
+- `data/mock/mockReviews.json` no se regeneró en este bloque.
 
 ## Comunidad landing
 

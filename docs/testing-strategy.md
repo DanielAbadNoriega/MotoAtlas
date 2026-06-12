@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1121` tests passing (73 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1123` tests passing (73 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 
 ## Stack actual
 
@@ -244,6 +244,22 @@ Guía de aserción:
 - Preferir asserts por heading, copy y acciones visibles; no acoplar los tests a clases internas salvo que no exista alternativa semántica.
 - Cuando haya una moto sugerida para completar la comparación, validar la CTA `Añadir ...`; si no la hay, validar `Buscar otra moto` como primary path.
 
+## Scripts de mock reviews — contrato de testing
+
+Cobertura vigente para `scripts/generateMockReviews.test.ts`:
+- las reviews generadas preservan `source: 'mock'`;
+- no se generan entradas con `source: 'user'` ni `source: 'seed'`;
+- `rating` permanece dentro de `1..5`;
+- `pros` y `cons` siguen siendo arrays válidos y no vacíos;
+- hay variedad observable de comentarios `short` / `medium` / `long`;
+- el texto user-facing no expone `null` ni `undefined`;
+- la generación seeded sigue siendo determinista cuando se repite la misma `seed`;
+- `prepareSupabasePayload` sigue recibiendo un shape compatible con importación.
+
+Cobertura validada en Quality Gate:
+- `scripts/generateMockReviews.test.ts` + `scripts/clearMockReviews.test.ts` pasando (`2` files / `7` tests).
+- `data/mock/mockReviews.json` no se regenera por defecto durante la validación.
+
 ## Cómo mockear Supabase y fetch
 
 Servicios frontend:
@@ -314,7 +330,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `73` files / `1121` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `73` files / `1123` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
