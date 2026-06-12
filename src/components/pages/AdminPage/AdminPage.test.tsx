@@ -243,6 +243,43 @@ describe('AdminPage', () => {
     expect(screen.getByRole('navigation', { name: /Navegación de administración/i })).toBeInTheDocument();
   });
 
+  it('muestra el toggle de datos demo en preview y persiste la preferencia', async () => {
+    vi.stubEnv('VITE_APP_ENV', 'preview');
+    vi.stubEnv('VITE_ENABLE_DEMO_DATA', 'false');
+    const user = userEvent.setup();
+
+    render(<AdminDashboardPage />);
+
+    const toggle = screen.getByRole('checkbox', { name: /Incluir datos demo/i });
+    expect(toggle).not.toBeChecked();
+    expect(screen.getByText(/Solo disponible en development\/preview\. En producción nunca habilita datos demo\./i)).toBeInTheDocument();
+
+    await user.click(toggle);
+
+    expect(toggle).toBeChecked();
+    expect(window.localStorage.getItem('motoatlas.includeDemoData')).toBe('true');
+  });
+
+  it('respeta la preferencia local para datos demo en preview', () => {
+    vi.stubEnv('VITE_APP_ENV', 'preview');
+    vi.stubEnv('VITE_ENABLE_DEMO_DATA', 'false');
+    window.localStorage.setItem('motoatlas.includeDemoData', 'true');
+
+    render(<AdminDashboardPage />);
+
+    expect(screen.getByRole('checkbox', { name: /Incluir datos demo/i })).toBeChecked();
+  });
+
+  it('oculta el toggle de datos demo en producción aunque exista preferencia local', () => {
+    vi.stubEnv('VITE_APP_ENV', 'production');
+    vi.stubEnv('VITE_ENABLE_DEMO_DATA', 'true');
+    window.localStorage.setItem('motoatlas.includeDemoData', 'true');
+
+    render(<AdminDashboardPage />);
+
+    expect(screen.queryByRole('checkbox', { name: /Incluir datos demo/i })).not.toBeInTheDocument();
+  });
+
   it('admin ve reviews agrupadas por moto con pendientes y última review', async () => {
     getAllReviewsMock.mockResolvedValueOnce([
       buildReview({

@@ -90,6 +90,47 @@
     opacity: 0.74;
   }
 
+  &__demo-data-toggle {
+    align-items: start;
+  }
+
+  &__demo-data-content {
+    display: grid;
+    gap: 0.75rem;
+
+    strong {
+      margin-top: 0;
+    }
+  }
+
+  &__demo-data-control {
+    align-items: center;
+    color: $color-on-surface;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.75rem;
+    width: fit-content;
+
+    input {
+      accent-color: $color-accent;
+      flex: 0 0 auto;
+      height: 1rem;
+      margin: 0;
+      width: 1rem;
+    }
+
+    span {
+      font-weight: 700;
+      line-height: 1.4;
+    }
+  }
+
+  &__demo-data-caption {
+    color: rgba($color-on-surface-variant, 0.76);
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+
   &__moderation {
     min-width: 0;
   }

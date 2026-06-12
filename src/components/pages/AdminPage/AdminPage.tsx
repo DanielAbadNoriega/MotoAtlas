@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
 import adminHeroImage from '../../../assets/hero-admin.png';
 import { useAuth } from '../../../features/auth';
 import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
@@ -42,6 +42,7 @@ import {
   type MotorcycleSegmentFilterValue,
 } from '../../../shared/filters/motorcycleFilterOptions';
 import { getBikeA2Status, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { canUseDemoData, isDemoDataToggleAvailable, setDemoDataPreference } from '../../../shared/env/runtimeEnvironment';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
 import { PageHero } from '../../ui/PageHero';
@@ -394,6 +395,41 @@ export function AdminSidebar({ active, children }: Readonly<{ active: AdminSideb
   );
 }
 
+function AdminDemoDataToggle() {
+  const toggleAvailable = isDemoDataToggleAvailable();
+  const [includeDemoData, setIncludeDemoData] = useState(() => canUseDemoData());
+
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.checked;
+    setDemoDataPreference(nextValue);
+    setIncludeDemoData(nextValue);
+  }, []);
+
+  if (!toggleAvailable) {
+    return null;
+  }
+
+  return (
+    <article className="account-page__notice admin-page__notice admin-page__demo-data-toggle">
+      <span className="material-symbols-outlined" aria-hidden="true">science</span>
+      <div className="admin-page__demo-data-content">
+        <strong>Datos demo</strong>
+        <p>Solo disponible en development/preview. En producción nunca habilita datos demo.</p>
+        <label className="admin-page__demo-data-control" htmlFor="admin-demo-data-toggle">
+          <input
+            id="admin-demo-data-toggle"
+            type="checkbox"
+            checked={includeDemoData}
+            onChange={handleChange}
+          />
+          <span>Incluir datos demo</span>
+        </label>
+        <small className="admin-page__demo-data-caption">El cambio se guarda en este navegador y afecta nuevas consultas o navegación.</small>
+      </div>
+    </article>
+  );
+}
+
 // Nota: usamos `PageHero` (base normalizada del antiguo `CommunityHero`)
 // para el hero en las páginas admin. El chip de admin se inyecta como
 // `children` cuando se necesita.
@@ -403,25 +439,27 @@ export function AdminDashboardPage() {
 
   return (
     <AdminGate>
-        <PageHero
-          className="admin-page__community-hero admin-page__hero"
-          titleId="admin-dashboard-title"
-          imageSrc={adminHeroImage}
-          eyebrow="ADMIN STUDIO"
-          title="Panel de administración"
-          description="Gestiona la actividad crítica de MotoAtlas desde un espacio privado."
-        >
-          <div className="admin-page__hero-meta">
-            <div className="admin-page__admin-chip" aria-label="Administrador activo">
-              <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
-              {getDisplayName(profile?.displayName, user?.email)}
-            </div>
+      <PageHero
+        className="admin-page__community-hero admin-page__hero"
+        titleId="admin-dashboard-title"
+        imageSrc={adminHeroImage}
+        eyebrow="ADMIN STUDIO"
+        title="Panel de administración"
+        description="Gestiona la actividad crítica de MotoAtlas desde un espacio privado."
+      >
+        <div className="admin-page__hero-meta">
+          <div className="admin-page__admin-chip" aria-label="Administrador activo">
+            <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
+            {getDisplayName(profile?.displayName, user?.email)}
           </div>
-        </PageHero>
+        </div>
+      </PageHero>
 
-        <main className="account-page admin-page" aria-labelledby="admin-dashboard-title">
-          <section className="account-page__dashboard">
-          <AdminSidebar active="dashboard" />
+      <main className="account-page admin-page" aria-labelledby="admin-dashboard-title">
+        <section className="account-page__dashboard">
+          <AdminSidebar active="dashboard">
+            <AdminDemoDataToggle />
+          </AdminSidebar>
           <div className="account-page__main">
             <section className="admin-page__dashboard-grid" aria-labelledby="admin-dashboard-cards-title">
               <article className="account-page__card admin-page__summary-card">
