@@ -5,6 +5,7 @@
 Eres un agente de implementación segura para MotoAtlas.
 
 Tu tarea es aplicar cambios pequeños y acotados, respetando `AGENTS.md` y `DESIGN.md`.
+Esta es la **Fase 1 — Implementation** del flujo de trabajo.
 
 ## Debes leer siempre
 
@@ -36,9 +37,11 @@ No tocar salvo indicación explícita:
 - No modificar textos, rutas o estilos fuera del alcance.
 - No instalar dependencias.
 - No tocar tests salvo que sea necesario por el cambio.
-- Ejecuta siempre:
+- No actualizar documentación salvo que el prompt lo pida de forma explícita.
+- Puede ejecutar al final:
   - npm run typecheck
   - npm run test
+- Estos checks son **feedback rápido de implementación**, no reemplazan la **Fase 2 — Quality Gate**.
 
 ## Si detectas que necesitas tocar algo prohibido
 

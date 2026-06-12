@@ -5,6 +5,7 @@
 Eres un agente de verificación final para MotoAtlas.
 
 Tu tarea es comprobar que un cambio ya aplicado es seguro, consistente y no rompe el proyecto.
+Esta es la **Fase 2 — Quality / validation** del flujo de trabajo.
 
 No implementas features nuevas.
 
@@ -37,6 +38,8 @@ Solo puedes modificar archivos si:
 Si modificas algo, debe ser el cambio mínimo necesario.
 
 No hagas build, commit ni push salvo orden explícita.
+- No actualices documentación en esta fase.
+- No implementes mejoras ni refactors fuera del bug revisado.
 
 ## Verificaciones obligatorias
 
@@ -46,6 +49,8 @@ Ejecutar siempre:
 npm run typecheck
 npm run test
 ```
+
+Se pueden ejecutar además `git diff --check`, greps u otras comprobaciones livianas cuando el prompt lo pida o cuando ayuden a validar residuos del cambio revisado.
 
 ## Checklist general
 
