@@ -1,13 +1,14 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
 import { updateAdminReviewStatus } from '../../../services/adminReviewService';
 import {
   getReviewsByMotorcycleId,
   getReviewAspectsByReviewIds,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
+import { createAuthState, createAuthUser, createSession, createUserProfile, mockAdminAuthState } from '../../../test/fixtures/auth';
 import { bikeFixtures } from '../../../test/fixtures/bikes';
 import { AdminMotorcycleReviewsPage } from './AdminMotorcycleReviewsPage';
 
@@ -28,19 +29,17 @@ const useAuthMock = vi.mocked(useAuth);
 const updateAdminReviewStatusMock = vi.mocked(updateAdminReviewStatus);
 const getReviewsByMotorcycleIdMock = vi.mocked(getReviewsByMotorcycleId);
 const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
-
-const adminAuth = {
-  user: { id: 'admin-1', email: 'admin@motoatlas.com' },
-  session: { access_token: 'admin-token' },
-  profile: { id: 'admin-1', displayName: 'Admin Rider', avatarUrl: null, role: 'admin' },
-  isAuthenticated: true,
-  isAdmin: true,
-  isLoading: false,
-  signIn: vi.fn(),
-  signUp: vi.fn(),
-  signOut: vi.fn(),
-  refreshProfile: vi.fn(),
-};
+const signInMock = vi.fn();
+const signUpMock = vi.fn();
+const signOutMock = vi.fn();
+const refreshProfileMock = vi.fn();
+const {
+  signIn: _adminSignIn,
+  signUp: _adminSignUp,
+  signOut: _adminSignOut,
+  refreshProfile: _adminRefreshProfile,
+  ...adminAuthState
+} = mockAdminAuthState;
 
 const bike = bikeFixtures[0];
 
@@ -76,8 +75,30 @@ function createReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleRevi
   };
 }
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({ ...adminAuth, ...overrides } as never);
+function mockAuth(overrides: Partial<AuthContextValue> = {}) {
+  const adminUser = createAuthUser({
+    id: 'admin-1',
+    email: 'admin@motoatlas.com',
+    user_metadata: {
+      display_name: 'Admin Rider',
+      avatar_url: null,
+    },
+  });
+
+  useAuthMock.mockReturnValue(createAuthState({
+    ...adminAuthState,
+    user: adminUser,
+    session: createSession({ access_token: 'admin-token', user: adminUser }),
+    profile: createUserProfile({ id: 'admin-1', displayName: 'Admin Rider', avatarUrl: null, role: 'admin' }),
+    isAuthenticated: true,
+    isAdmin: true,
+    isLoading: false,
+    ...overrides,
+    signIn: overrides.signIn ?? signInMock,
+    signUp: overrides.signUp ?? signUpMock,
+    signOut: overrides.signOut ?? signOutMock,
+    refreshProfile: overrides.refreshProfile ?? refreshProfileMock,
+  }) as never);
 }
 
 function renderPage(overrides: { bike?: typeof bike; motorcycleId?: string } = {}) {
@@ -92,6 +113,10 @@ function renderPage(overrides: { bike?: typeof bike; motorcycleId?: string } = {
 describe('AdminMotorcycleReviewsPage', () => {
   beforeEach(() => {
     useAuthMock.mockReset();
+    signInMock.mockReset();
+    signUpMock.mockReset();
+    signOutMock.mockReset().mockResolvedValue(undefined);
+    refreshProfileMock.mockReset();
     updateAdminReviewStatusMock.mockReset().mockResolvedValue(undefined);
     getReviewsByMotorcycleIdMock.mockReset();
     getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
