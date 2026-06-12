@@ -2,11 +2,12 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/search-hero-shell`
-- Último bloque validado: **limpieza de pureza post-Fase B de `PageHero`** (rama `feature/page-hero-purity-cleanup`). `CommunityReviewsPage` (`#/comunidad/reviews`) sigue usando el shared `PageHero` sin ampliar su API TypeScript, pero el styling contextual deja de vivir en `PageHero.scss`: ahora pasa `className="community-reviews-page__hero"` y `CommunityReviewsPage.scss` es dueña del full-bleed, doble gradient, filtro local, contenido centrado, `fade-in` y ajustes responsive. `PageHero.scss` queda solo con estructura y estilos genéricos del componente, sin selectores page-specific. Se mantienen `hero-community.png`, la jerarquía `h1`, la relación `aria-labelledby` del `<main>` y la ausencia de CTAs (`Explorar reviews`, `Buscar moto para opinar`). No se modifican otros heroes ni bloques editoriales, filtros, garaje, insights o acciones de reviews. La unificación de heroes queda separada en dos shells: `PageHero` para comunidad/admin donde encaja el patrón y `SearchHero` para Home + `#/buscador`. `BikeDetailPage` y `MotorcycleCommunityPage` se mantienen explícitamente fuera de alcance por decisión de producto. Sin cambios de schema/RLS/auth/routes.
-- `SearchHero` se extrajo como shell reusable para `#/` y `#/buscador`: comparte media/overlay/content/title/description/slot de UI, pero cada página mantiene su lógica de búsqueda y su styling contextual en `Hero.scss` y `SearchPage.scss`. No se toca `PageHero` ni los heroes específicos de `BikeDetailPage` o `MotorcycleCommunityPage`.
-- Tests: 1119 passed (72 files, +1 sobre el baseline de review-auth-only-contract: test que verifica que el hero de `#/comunidad` no muestra CTAs)
+- Rama actual: `feature/search-control-unification`
+- Último bloque validado: **refactor `SearchHero` / `HomeHero` / `SearchControl`** con Quality Gate aprobado. `SearchHero` permanece como shell compartido para Home y `#/buscador`; `HomeHero` pasa a ser el wrapper concreto de Home; `SearchControl` se extrae como input presentacional compartido. `HeroSearch` conserva el submit/navegación de Home hacia `#/buscador?q=...`; `SearchField` conserva el value controlado, el filtrado en vivo y el sync con `routeHash` en `SearchPage`. La lógica de búsqueda sigue siendo page-owned. `PageHero`, `BikeDetailPage`, `MotorcycleCommunityPage`, schema/RLS/auth/routes no se tocan.
+- Cleanup de naming validado: las clases legacy de Home `hero__search`, `hero__search-field` y `hero__search-button` se renombraron a `home-hero__search`, `home-hero__search-field` y `home-hero__search-button`. En checks de residuos hay que evitar falsos positivos: `search-hero__search` NO es una clase legacy del antiguo Home hero.
+- Tests: 1121 passed (73 files)
 - Typecheck: clean
+- `git diff --check`: clean
 - Último commit:
 
 ## Implementado

@@ -1333,6 +1333,8 @@ No es implementación. Es una tarea de documentación y planificación futura.
 
 **Nota de implementación actual:**
 - `SearchHero` (`src/components/sections/SearchHero/`) se extrajo como shell reusable para Home y `#/buscador`, separado de `PageHero`. Comparte estructura visual de hero orientado a búsqueda, pero no contiene submit, route hash, filtros ni navegación: la lógica de búsqueda sigue siendo page-owned.
+- Seguimiento posterior validado en `feature/search-control-unification`: el antiguo wrapper `Hero` de Home se renombra a `HomeHero`, y `SearchControl` (`src/shared/ui/search/`) pasa a ser el input presentacional compartido entre `HeroSearch` (Home) y `SearchField` (SearchPage). Ambos siguen siendo adapters de comportamiento; la lógica de búsqueda continúa en cada página.
+- El cleanup de naming de Home queda cerrado en esa misma rama: `hero__search*` pasa a `home-hero__search*` sin alterar el comportamiento del submit de Home ni el live filtering de SearchPage.
 
 **Fase C — revisión acotada / no forzar migraciones:**
 - Revisar solo heroes simples que encajen naturalmente en un shell compartido existente, sin forzar a todas las páginas a `PageHero`.
