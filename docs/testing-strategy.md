@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1132` tests passing (74 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1142` tests passing (74 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 
 ## Stack actual
 
@@ -330,7 +330,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `74` files / `1132` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `74` files / `1142` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused checks del bloque admin demo data toggle: `3` files / `103` tests passing.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
@@ -344,6 +344,8 @@ Cobertura actual relevante:
 - `ReviewModal.test.tsx` mockea como exitoso el envío no-auth, pero producción llama a una RPC que exige `auth.uid()`; es un gap de integración P1, no evidencia de soporte anónimo efectivo.
 - `src/shared/env/runtimeEnvironment.test.ts` valida el guard central de entorno/demo data: producción nunca habilita demo data, `VITE_ENABLE_DEMO_DATA='true'` no rompe esa protección, preview/development solo habilitan demo cuando corresponde y un `VITE_APP_ENV` inválido cae a comportamiento production-safe.
 - `src/shared/reviews/reviewSourcePolicy.test.ts` valida el contrato delegado al guard central: producción devuelve solo `user`; demo habilitado devuelve `user/seed/mock`; demo deshabilitado vuelve a solo `user`; el contrato ya no depende directamente de `import.meta.env.PROD`.
+- `src/components/pages/AdminPage/AdminPage.test.tsx` cubre el toggle admin de datos demo: solo se renderiza cuando el runtime lo permite, el click persiste `motoatlas.includeDemoData`, la preferencia local se hidrata al volver a montar y producción oculta el control aunque exista `localStorage` o `VITE_ENABLE_DEMO_DATA='true'`.
+- El contrato del toggle sigue siendo de comportamiento y no de implementación interna: validar visibilidad, persistencia local y delegación al guard central; evitar duplicar en tests la lógica de `reviewSourcePolicy` dentro del componente admin.
 - `src/shared/reviews/useReviewReactions.test.tsx` cubre el hook compartido de reacciones:
   - blocked (`unauthenticated`, `own_review`, `reported`, `pending`)
   - success/error de Helpful y NotHelpful

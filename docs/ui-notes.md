@@ -225,7 +225,7 @@ Secciones residuales cerradas:
 
 ## Datos demo para QA visual
 
-Estado: mejora de realismo del generador mock implementada y validada; toggle admin sigue pendiente (P2 técnico).
+Estado: mejora de realismo del generador mock implementada y validada; toggle admin de datos demo implementado y validado para dev/preview.
 
 La validación visual de `FeaturedReviewCard`, `MotorcycleGarageCard`, bloques editoriales, rankings y superficies de ficha ahora cuenta con mocks menos repetitivos y más útiles para stress visual. No es un cambio de UI, sino una mejora del dataset de QA.
 
@@ -237,7 +237,9 @@ Estado actual del generador:
 - sanitización para evitar `null` / `undefined` visibles;
 - contrato `source='mock'` preservado, sin tocar `source='user'` ni `source='seed'`;
 - `data/mock/mockReviews.json` no se regeneró en ese bloque.
-- la exposición pública de `seed/mock` ahora pasa por un guard central de entorno/runtime; no es un cambio de UI y el toggle admin sigue pendiente.
+- la exposición pública de `seed/mock` ahora pasa por un guard central de entorno/runtime.
+- `AdminDashboardPage` incorpora una utilidad interna pequeña en `AdminSidebar`: checkbox nativo `Incluir datos demo`, visible solo en development/preview, con persistencia local en `motoatlas.includeDemoData`.
+- Es una utilidad de QA/admin, no una feature pública: no introduce settings globales ni persistencia backend, y su efecto aplica a queries/navegación posteriores, no a datos ya cargados.
 
 ## Comunidad landing
 

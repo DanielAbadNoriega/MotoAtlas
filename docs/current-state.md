@@ -2,10 +2,10 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/demo-data-environment-guard`
-- Último bloque validado: **guard centralizado de entorno/runtime para demo data** con Quality Gate aprobado. `src/shared/env/runtimeEnvironment.ts` centraliza la decisión de entorno y expone `getRuntimeEnvironment()`, `isProductionEnvironment()`, `isPreviewEnvironment()`, `isDevelopmentEnvironment()` y `canUseDemoData()`. `reviewSourcePolicy` ya no decide desde `import.meta.env.PROD` y delega la selección de sources al guard compartido.
-- Alcance validado: producción permanece production-safe (`['user']`), development/preview solo exponen `seed/mock` cuando el guard lo permite y un `VITE_APP_ENV` inválido/desconocido cae a comportamiento seguro de producción. No se tocaron UI/app, schema/RLS/Supabase policies, scripts mock ni `data/mock/mockReviews.json`.
-- Tests: 1132 passed (74 files)
+- Rama actual: `feature/admin-demo-data-toggle`
+- Último bloque validado: **toggle admin "Incluir datos demo"** con Quality Gate aprobado. `src/shared/env/runtimeEnvironment.ts` sigue siendo la fuente de verdad para entorno/runtime y ahora también resuelve la preferencia local `motoatlas.includeDemoData` mediante `isDemoDataToggleAvailable()`, `getDemoDataPreference()`, `setDemoDataPreference()` y `clearDemoDataPreference()`. `reviewSourcePolicy` mantiene la delegación a `canUseDemoData()` y el toggle se monta en `AdminDashboardPage` dentro de `AdminSidebar` vía `children`.
+- Alcance validado: producción permanece production-safe (`['user']`) e ignora tanto `VITE_ENABLE_DEMO_DATA='true'` como la preferencia local habilitada; development/preview permiten activar o desactivar `seed/mock` con preferencia local o fallback de env/default; un `VITE_APP_ENV` inválido/desconocido cae a comportamiento seguro de producción. No se tocaron schema/RLS/Supabase policies, scripts mock, `data/mock/mockReviews.json` ni se introdujo refetch global forzado.
+- Tests: 1142 passed (74 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Último commit:
@@ -221,7 +221,8 @@
 - `data/mock/mockReviews.json` se dejó intencionalmente sin regenerar en ese bloque.
 - Policy por entorno vigente: producción solo `source='user'`; dev/pre puede incluir `seed` y `mock` únicamente a través del guard central `runtimeEnvironment` + `reviewSourcePolicy`.
 - Source policy central aplicada en servicios públicos de reviews (`reviewSourcePolicy` + `status='approved'`) sin tocar el filtro público por estado aprobado.
-- Pendiente P2: toggle admin “Incluir datos demo” solo para dev/pre, todavía sin UI ni persistencia local.
+- Toggle admin “Incluir datos demo” implementado y validado en `AdminDashboardPage` → `AdminSidebar`: solo aparece en development/preview, persiste la preferencia local en `motoatlas.includeDemoData` y afecta nuevas queries/navegación sin introducir persistencia backend ni refetch global forzado.
+- Producción permanece bloqueada a `source='user'`: el toggle no aparece y nunca puede habilitar `seed/mock`, aunque el env o `localStorage` intenten forzarlo.
 
 ## Pendiente
 
@@ -245,7 +246,6 @@
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2 (cerrado): mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`). Implementado en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Backlog P1/P2: refactor admin focal — completado como parte de la normalización al shared `FilterGroup` + `FilterOptionButton` (rama `feature/admin-filtergroup-normalization`). Los wrappers `AdminFilterGroup` y `FilterChipButton` fueron eliminados y el HTML crudo duplicado de `AdminMotorcycleReviewsPage` quedó consolidado al usar `FilterGroup` + `FilterOptionButton` compartidos.
-- Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
 - Backlog P2 Auth: representar resolución de perfil en cambios de sesión, validar/derivar alias server-side y ejecutar smoke real de RLS/privilegios en staging.
@@ -286,7 +286,7 @@
 - La funcionalidad “Temas de discusión por modelo” se clasifica como backlog estratégico **P3** (comunidad social), dependiente de auth baseline, moderación y anti-spam antes de implementación.
 - La mejora de quick specs de `BikeDetailPage` (clasificación original **P1/P2 UX pública + componentes reutilizables**) queda **cerrada** en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard`.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
-- “Controlar datos demo por entorno en comunidad” queda reclasificada en dos partes: source policy implementada + toggle admin pendiente.
+- “Controlar datos demo por entorno en comunidad” queda cerrada en su base técnica actual: source policy, guard runtime y toggle admin ya están implementados; queda pendiente solo una posible evolución futura de settings/refetch si producto la reabre.
 - Fixtures de usuarios/perfiles para auth quedan como **P2 Auth baseline / Testing / Fixtures** con base central implementada; pendiente residual: migración incremental de mocks repetidos.
 - “Fase 2.5 moderación/admin de respuestas” queda reclasificada como base mayoritariamente implementada con pendientes residuales auditables.
 - La rama `feature/admin-requests-audit` queda registrada como **auditoría funcional de `#/admin/solicitudes`** sin diffs.

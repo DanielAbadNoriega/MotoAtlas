@@ -733,7 +733,7 @@ Criterios de aceptación futuros:
 Estado:
 - source policy central: implementada/documentada.
 - guard central de entorno/runtime: implementado y validado.
-- toggle admin: pendiente futuro.
+- toggle admin “Incluir datos demo”: implementado y validado en `AdminDashboardPage` / `AdminSidebar`.
 
 Contrato:
 - producción solo puede mostrar `source='user'`.
@@ -755,11 +755,12 @@ Reglas:
 - `pending`, `hidden` y `rejected` no deben aparecer en vistas públicas.
 - cuenta/admin/moderación pueden tener reglas distintas si el contrato lo exige.
 
-Pendiente futuro:
-- crear toggle admin “Incluir datos demo”.
-- visible solo en dev/pre.
-- en producción no visible o sin efecto.
-- sin `localStorage` ni persistencia de settings hasta definir el diseño/producto.
+Contrato implementado actual:
+- el toggle admin es visible solo en dev/pre.
+- la preferencia se persiste localmente en `motoatlas.includeDemoData`.
+- en producción no visible y sin efecto; nunca puede habilitar `mock`/`seed`.
+- no existe persistencia backend ni sistema global de settings.
+- no se introdujo refetch global forzado; el cambio aplica a nuevas queries/navegación.
 - nunca exponer datos mock/seed en producción pública.
 
 Relación con roadmap:
@@ -1415,7 +1416,7 @@ Reglas actuales para mobile:
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
 - Tarjeta incorporada y cerrada: mejora de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables** y resuelta en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Tarjeta incorporada y cerrada: “Mejorar generador de reviews mock realistas” quedó resuelta como mejora técnica de **P2 Datos demo / QA visual** para soporte de maquetación y validación visual, sin cambiar source policy ni tocar UI productiva.
-- Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy + guard runtime implementados** + **toggle admin pendiente P2**.
+- Tarjeta reclasificada y actualizada: “Controlar datos demo por entorno en comunidad” queda con **source policy + guard runtime + toggle admin implementados**. Siguen fuera de alcance una persistencia backend/global settings y un refetch global automático.
 - Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **parcialmente implementada** (base central + migración incremental pendiente) dentro de **P2 Auth baseline / Testing / Fixtures**.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
