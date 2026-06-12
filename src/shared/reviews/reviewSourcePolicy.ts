@@ -1,30 +1,23 @@
-export type ReviewSource = 'user' | 'seed' | 'mock';
+import {
+  canUseDemoData,
+  getRuntimeEnvironment,
+  isProductionEnvironment,
+  type RuntimeEnvironmentInput,
+} from '../env/runtimeEnvironment'
+
+export type ReviewSource = 'user' | 'seed' | 'mock'
 
 export type ReviewSourcePolicyOptions = Readonly<{
-  isProduction?: boolean;
-  demoEnabled?: boolean;
-}>;
+  env?: RuntimeEnvironmentInput
+}>
 
-export function isProductionEnvironment(): boolean {
-  return import.meta.env.PROD === true;
-}
-
-export function shouldIncludeDemoData(options?: ReviewSourcePolicyOptions): boolean {
-  const isProduction = options?.isProduction ?? isProductionEnvironment();
-  if (isProduction) {
-    return false;
-  }
-  return options?.demoEnabled ?? true;
-}
+export { getRuntimeEnvironment, isProductionEnvironment }
+export const shouldIncludeDemoData = canUseDemoData
 
 export function getAllowedReviewSources(options?: ReviewSourcePolicyOptions): readonly ReviewSource[] {
-  const isProduction = options?.isProduction ?? isProductionEnvironment();
-  const includeDemo = shouldIncludeDemoData({ isProduction, demoEnabled: options?.demoEnabled });
-  if (isProduction) {
-    return ['user'];
+  if (canUseDemoData(options?.env)) {
+    return ['user', 'seed', 'mock']
   }
-  if (includeDemo) {
-    return ['user', 'seed', 'mock'];
-  }
-  return ['user'];
+
+  return ['user']
 }
