@@ -1,8 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
 import { getModelRequestsByUserId, type ModelRequest, type ModelRequestStatus } from '../../../services/modelRequestService';
+import { createAuthState, createSession, createAuthUser, createUserProfile, mockAuthenticatedAuthState, mockUnauthenticatedAuthState } from '../../../test/fixtures/auth';
 import { AccountRequestsPage } from './AccountRequestsPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -99,20 +100,20 @@ const modelRequests: readonly ModelRequest[] = [
   }),
 ];
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({
-    user: { id: 'user-1', email: 'rider@motoatlas.com' },
-    session: { access_token: 'session-token' },
-    profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    isAuthenticated: true,
-    isAdmin: false,
-    isLoading: false,
+function mockAuth(overrides: Partial<AuthContextValue> = {}) {
+  const authenticatedUser = createAuthUser({ id: 'user-1', email: 'rider@motoatlas.com' });
+
+  useAuthMock.mockReturnValue(createAuthState({
+    ...mockAuthenticatedAuthState,
+    user: authenticatedUser,
+    session: createSession({ access_token: 'session-token', user: authenticatedUser }),
+    profile: createUserProfile({ id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' }),
     signIn: vi.fn(),
     signUp: vi.fn(),
     signOut: signOutMock,
     refreshProfile: vi.fn(),
     ...overrides,
-  } as never);
+  }) as never);
 }
 
 describe('AccountRequestsPage', () => {
@@ -125,6 +126,7 @@ describe('AccountRequestsPage', () => {
 
   it('mantiene estado controlado sin sesión y no consulta solicitudes', () => {
     mockAuth({
+      ...mockUnauthenticatedAuthState,
       user: null,
       session: null,
       profile: null,
