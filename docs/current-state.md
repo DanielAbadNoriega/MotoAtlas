@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/admin-demo-data-toggle`
-- Último bloque validado: **toggle admin "Incluir datos demo"** con Quality Gate aprobado. `src/shared/env/runtimeEnvironment.ts` sigue siendo la fuente de verdad para entorno/runtime y ahora también resuelve la preferencia local `motoatlas.includeDemoData` mediante `isDemoDataToggleAvailable()`, `getDemoDataPreference()`, `setDemoDataPreference()` y `clearDemoDataPreference()`. `reviewSourcePolicy` mantiene la delegación a `canUseDemoData()` y el toggle se monta en `AdminDashboardPage` dentro de `AdminSidebar` vía `children`.
-- Alcance validado: producción permanece production-safe (`['user']`) e ignora tanto `VITE_ENABLE_DEMO_DATA='true'` como la preferencia local habilitada; development/preview permiten activar o desactivar `seed/mock` con preferencia local o fallback de env/default; un `VITE_APP_ENV` inválido/desconocido cae a comportamiento seguro de producción. No se tocaron schema/RLS/Supabase policies, scripts mock, `data/mock/mockReviews.json` ni se introdujo refetch global forzado.
+- Rama actual: `feature/auth-fixtures-migration-batch-3`
+- Último bloque validado: **auth fixtures migration batch 3** con Quality Gate aprobado. `src/components/pages/AccountPage/AccountPage.test.tsx` ya usa fixtures auth centrales desde `src/test/fixtures/auth.ts`, manteniendo el boundary mockeado de `useAuth` y helpers locales `mockAuthenticatedAccount` / `mockAdminAccount` para preservar las formas exactas de los escenarios legacy.
+- Alcance validado: se preservaron los escenarios sin auth, autenticado con profile, admin, autenticado sin `user/profile` y logout con `profile.displayName = null`. `signOutMock` sigue siendo el spy efectivo del test y no queda pisado por defaults de fixture. No se tocaron product code, `AuthProvider`, schema/RLS/Supabase policies ni docs fuera del bloque de auth/testing.
 - Tests: 1142 passed (74 files)
 - Typecheck: clean
 - `git diff --check`: clean
@@ -174,7 +174,8 @@
 - `src/components/pages/AuthPage/AuthPage.test.tsx` migrado a fixtures centrales (sin Supabase real).
 - `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx` migrado en batch 1 a fixtures centrales, preservando el escenario autenticado original con `profile: null`.
 - `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx` migrado en batch 2 a fixtures centrales, preservando el escenario legacy no-auth con `user: null`, `session: null`, `profile: null` e `isAuthenticated: false`, y manteniendo el perfil del escenario autenticado porque la suite original ya lo tenía.
-- Adopción actual: 3 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx` y `AccountRequestsPage.test.tsx`); quedan 9 áreas con mocks locales detectadas: `AccountMotorcycleReviewsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`.
+- `src/components/pages/AccountPage/AccountPage.test.tsx` migrado en batch 3 a fixtures centrales, preservando los escenarios legacy de no-auth, autenticado con profile, admin, autenticado sin `user/profile` y logout con `profile.displayName = null`. Aprendizaje validado: los defaults de fixture no deben pisar mocks de función específicos del test como `signOutMock`.
+- Adopción actual: 4 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx`, `AccountRequestsPage.test.tsx` y `AccountPage.test.tsx`); quedan 8 áreas con mocks locales detectadas: `AccountMotorcycleReviewsPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`.
 
 ### Catálogo / imágenes
 - Pipeline base de imágenes operativo: assets locales por `motorcycle.id` en `public/images/motorcycles/*.webp`.
