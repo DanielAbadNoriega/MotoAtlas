@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/search-control-unification`
-- Último bloque validado: **refactor `SearchHero` / `HomeHero` / `SearchControl`** con Quality Gate aprobado. `SearchHero` permanece como shell compartido para Home y `#/buscador`; `HomeHero` pasa a ser el wrapper concreto de Home; `SearchControl` se extrae como input presentacional compartido. `HeroSearch` conserva el submit/navegación de Home hacia `#/buscador?q=...`; `SearchField` conserva el value controlado, el filtrado en vivo y el sync con `routeHash` en `SearchPage`. La lógica de búsqueda sigue siendo page-owned. `PageHero`, `BikeDetailPage`, `MotorcycleCommunityPage`, schema/RLS/auth/routes no se tocan.
-- Cleanup de naming validado: las clases legacy de Home `hero__search`, `hero__search-field` y `hero__search-button` se renombraron a `home-hero__search`, `home-hero__search-field` y `home-hero__search-button`. En checks de residuos hay que evitar falsos positivos: `search-hero__search` NO es una clase legacy del antiguo Home hero.
+- Rama actual: `main`
+- Último bloque validado: **`ComparatorSetupHero` como setup hero local del comparador** con Quality Gate aprobado. Los estados de `0` y `1` moto seleccionada ahora comparten el mismo hero con fondo `comparisonHeroImage`; el estado de `0` motos mantiene la CTA `Ir al buscador`; el estado de `1` moto muestra la moto seleccionada dentro del hero, entre la descripción y `.comparison-detail__empty-actions`, reutilizando la visual language existente de `comparison-detail__hero-bike`. `Quitar` limpia la cola con `saveCompareQueue([])` y navega de forma segura a `#/comparador`. El estado normal de `2/3` motos no cambia.
+- Alcance validado: `ComparatorSetupHero` es un componente **local** de `ComparatorPage`; `EmptyComparator` y `OneBikeComparator` dejan de existir como componentes visuales separados y este cambio no introduce una abstracción global de hero.
 - Tests: 1121 passed (73 files)
 - Typecheck: clean
 - `git diff --check`: clean
@@ -60,6 +60,14 @@
   - **validación defensiva de `segment`** en `createModelRequest`: vacío/espacios se normaliza a `null`; un valor no vacío fuera de `BIKE_SEGMENTS` se rechaza antes de llamar a red; un segmento canónico válido se preserva (no rompe el selector canónico del form público).
 - Rutas paralelas verificadas: `#/solicitar-modelo` (envío público, anónimo o autenticado) y `#/cuenta/solicitudes` (consulta autenticada del propio usuario con paginación 8 + CTA `Solicitar otro modelo` como card visual).
 - Gaps residuales (Fase 2/3/4, fuera de alcance de Fase 1): sin `motorcycle_id` para vincular a moto del catálogo, sin nuevos estados (`in_review`, `duplicate`, `created`), sin creación de moto a partir de solicitud aprobada, sin notificaciones al solicitante, sin detección de duplicados por `brand`+`model`+`year`, sin acciones en lote, sin notas internas / motivo de rechazo visible al solicitante.
+
+### Comparador
+- `ComparatorPage` usa `ComparatorSetupHero` como único setup hero local para los estados de preparación del comparador.
+- El estado de `0` motos y el de `1` moto comparten el mismo fondo hero con `comparisonHeroImage`, copy centrado y CTAs centradas.
+- Estado `0` motos: CTA real `Ir al buscador` hacia el flujo actual de búsqueda.
+- Estado `1` moto: el hero ya no queda vacío; muestra una card compacta de la moto seleccionada entre la descripción y las acciones, reutilizando `comparison-detail__hero-bike`, `comparison-detail__hero-bike--center`, `comparison-detail__data-notes` y `comparison-detail__hero-bike-actions`. La card incluye imagen, línea brand/segment/A2, display name, notas de calidad de datos, `Ver ficha` y `Quitar`.
+- `Quitar` vacía la compare queue con `saveCompareQueue([])` y navega de forma segura a `#/comparador`.
+- El estado de `2/3` motos seleccionadas mantiene intacto el comparador dinámico normal.
 
 ### Home — FeaturedMachines (sustitución de FeaturedBikes / BikeCard)
 - Implementado: nueva sección `FeaturedMachines` en Home.

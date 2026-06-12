@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1121` tests passing (73 files).
+- `1121` tests passing (73 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 
 ## Stack actual
 
@@ -229,6 +229,20 @@ Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:
   - vistas compactas (`Search`, `CommunityReviews`, `AccountReviews`, `Admin`);
   - vistas con exposición explícita de segmentos (`TopRated`, `CommunityRankings`).
+
+## ComparatorPage — contrato del setup hero
+
+Contrato vigente a preservar en tests del comparador:
+- `0` motos seleccionadas → setup hero local con CTA `Ir al buscador`.
+- `1` moto seleccionada → mismo `ComparatorSetupHero` con card de moto seleccionada dentro del hero y acciones reales de `Añadir ...` / `Buscar otra moto` / `Quitar` según corresponda.
+- La card de la moto seleccionada debe exponer imagen, línea brand/segment/A2, display name, notas de calidad de datos y las acciones `Ver ficha` y `Quitar`.
+- `Quitar` debe vaciar la compare queue y llevar al estado seguro `#/comparador`.
+- `2/3` motos seleccionadas → comparador dinámico normal, sin pasar por el setup hero.
+- `ComparatorSetupHero` debe tratarse como componente local de página: no probarlo ni documentarlo como abstracción global de hero.
+
+Guía de aserción:
+- Preferir asserts por heading, copy y acciones visibles; no acoplar los tests a clases internas salvo que no exista alternativa semántica.
+- Cuando haya una moto sugerida para completar la comparación, validar la CTA `Añadir ...`; si no la hay, validar `Buscar otra moto` como primary path.
 
 ## Cómo mockear Supabase y fetch
 

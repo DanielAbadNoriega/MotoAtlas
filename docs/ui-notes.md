@@ -74,6 +74,28 @@ Estrategia vigente de segmentos en UI pública:
 
 El compare tray del buscador muestra mini-slots de motos seleccionadas y skeletons hasta completar 3 espacios; el summary textual de “x/3 motos seleccionadas” se omite por redundante. El botón de comparar en SearchPage usa `MotorcycleGarageCardAction` con `isCompareAction` — helper presentacional que owning las clases internas del componente en vez de injectarlas manualmente.
 
+## Comparador — setup hero local
+
+La ruta `#/comparador` mantiene su estado normal para `2/3` motos, pero los estados de preparación ahora comparten un único hero local: `ComparatorSetupHero` dentro de `src/components/pages/ComparatorPage/ComparatorPage.tsx`. No es un shared hero global ni una variante de `PageHero` o `SearchHero`.
+
+Contrato visual actual:
+- fondo con `comparisonHeroImage` como media decorativa;
+- overlay/gradiente para legibilidad;
+- copy y CTAs centradas dentro del hero;
+- mismo layout base para `0` y `1` moto seleccionada.
+
+Estados:
+- `0` motos: título de setup + CTA `Ir al buscador`.
+- `1` moto: mismo hero, pero deja de verse vacío porque muestra la moto seleccionada entre la descripción y `.comparison-detail__empty-actions`.
+- `2/3` motos: comparador normal sin cambios.
+
+La card del estado de `1` moto reutiliza la visual language existente del comparador (`comparison-detail__hero-bike`, `comparison-detail__hero-bike--center`, `comparison-detail__data-notes`, `comparison-detail__hero-bike-actions`) e incluye imagen, línea brand/segment/A2, display name, notas de calidad de datos y acciones reales `Ver ficha` / `Quitar`.
+
+Comportamiento asociado:
+- `Quitar` limpia la compare queue con `saveCompareQueue([])` y navega de forma segura a `#/comparador`.
+- Si hay una moto sugerida para completar la comparación, se mantiene la CTA primaria `Añadir ...`; si no, se conserva `Buscar otra moto`.
+- No se introducen acciones fake/no-op en el hero local del comparador.
+
 ## Cards legacy — `BikeCard`
 
 Estado: **retirado**.
