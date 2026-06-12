@@ -172,7 +172,8 @@
 - Cubre presets de user/admin/no-auth/perfil incompleto/avatar-display_name faltantes.
 - `src/test/fixtures/auth.test.ts` valida contrato base de fixtures.
 - `src/components/pages/AuthPage/AuthPage.test.tsx` migrado a fixtures centrales (sin Supabase real).
-- Adopción actual: 1 de 11 suites con mock de `useAuth` consume fixtures centrales; quedan 10 suites con `mockAuth` local.
+- `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx` migrado en batch 1 a fixtures centrales, preservando el escenario autenticado original con `profile: null`.
+- Adopción actual: 2 suites ya usan fixtures centrales (`AuthPage.test.tsx` y `StaticInfoPages.test.tsx`); quedan 10 áreas con mocks locales detectadas: `AccountMotorcycleReviewsPage.test.tsx`, `AccountPage.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`.
 
 ### Catálogo / imágenes
 - Pipeline base de imágenes operativo: assets locales por `motorcycle.id` en `public/images/motorcycles/*.webp`.
