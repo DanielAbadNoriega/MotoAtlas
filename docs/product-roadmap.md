@@ -769,55 +769,28 @@ Relación con roadmap:
 ### Mejorar generador de reviews mock realistas
 
 Estado:
-- pendiente / backlog técnico útil.
+- implementado y validado con Quality Gate.
 
-Objetivo:
-Mejorar el generador de reviews mock para que los datos de prueba parezcan más reales y ayuden a validar maquetación, cards, rankings, garaje, fichas y bloques editoriales de comunidad.
+Resultado:
+- `scripts/generateMockReviews.ts` ahora genera comentarios menos repetitivos usando tono por rating, perfiles `short` / `medium` / `long`, pools por uso (`touring`, `offroad`, `daily`, `passenger`, `city`, `sport`) y pools por segmento de moto.
+- `pros`/`cons` salen con cantidad variable, combinando contexto de la moto y pools contextuales, con sanitización para evitar `null` / `undefined` visibles.
+- La generación seeded sigue siendo determinista cuando se provee `seed`.
+- El cálculo de kilómetros usa el riding style raw correcto.
+- Se preserva siempre `source='mock'`; no se generan entradas `source='user'` ni `source='seed'`.
+- `data/mock/mockReviews.json` no se regeneró en este bloque.
 
-Problema actual (validación de repo):
-- el generador actual ya fuerza `pros`/`cons` como arrays y mantiene `source='mock'`, pero la riqueza de contenido todavía es limitada para QA visual exigente;
-- hay comentarios cortos o plantillas repetidas en parte del dataset;
-- no siempre aparecen combinaciones que estresen la maquetación real (contenido largo/corto, densidad variable, etc.).
-
-Mejoras previstas:
-- reducir `pros`/`cons` vacíos en datasets importados o históricos;
-- generar comentarios más naturales;
-- generar pros/contras coherentes con segmento y tipo de moto;
-- ratings variados;
-- evitar frases repetidas;
-- mantener siempre `source='mock'`;
-- permitir limpiar mocks sin tocar reviews reales;
-- generar casos variados para validar maquetación:
-  - comentarios largos;
-  - comentarios cortos;
-  - pros/contras múltiples;
-  - reviews con aspectos técnicos;
-  - variedad de usos: ciudad, viaje, offroad, deportivo, pasajero, diario.
-
-Reglas:
-- mantener `source='mock'` en todas las reviews generadas;
-- nunca mezclar mocks con `source='user'`;
+Reglas preservadas:
 - la limpieza de mocks no debe afectar reviews reales;
-- respetar la política actual de sources por entorno;
+- se mantiene la política actual de sources por entorno;
 - en producción no deben mostrarse datos mock;
-- no tocar schema/RLS salvo decisión explícita.
+- no se tocaron schema/RLS, import/clear scripts ni UI/app.
 
-Relación con roadmap:
-- ayuda a validar `FeaturedReviewCard`;
-- ayuda a validar `MotorcycleGarageCard`;
-- ayuda a validar `BikeDetailPage`;
-- ayuda a validar rankings y bloques editoriales;
-- será útil antes de la revisión global UI/SCSS;
-- ayuda a detectar problemas de maquetación antes de tener datos reales suficientes.
-
-Criterios de aceptación futuros:
-- mocks siguen marcados como `source='mock'`;
-- limpieza de mocks no toca `source='user'`;
-- los pros/contras vacíos se reducen notablemente;
-- los comentarios tienen variedad suficiente;
-- los ratings no son todos iguales;
-- hay variedad de segmentos y usos;
-- los datos ayudan a probar cards de comunidad, detalle, garaje, rankings y filtros;
+Impacto:
+- mejora la validación visual de `FeaturedReviewCard`;
+- mejora la validación visual de `MotorcycleGarageCard`;
+- mejora la validación visual de `BikeDetailPage`;
+- mejora rankings, garaje y bloques editoriales de comunidad;
+- aporta mejor stress de maquetación sin cambiar comportamiento productivo.
 - `npm run typecheck` pasa;
 - `npm run test` pasa.
 
@@ -1437,7 +1410,7 @@ Reglas actuales para mobile:
 - Tarjeta incorporada: “Revisar y cerrar taxonomía de categorías de motos” queda como tarea transversal de **P2 Plataforma/Admin/Productividad interna** y dependencia de filtros/admin/SEO catálogo.
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
 - Tarjeta incorporada y cerrada: mejora de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables** y resuelta en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
-- Tarjeta incorporada: “Mejorar generador de reviews mock realistas” clasificada como **P2 Datos demo / QA visual** para soporte de maquetación y validación visual.
+- Tarjeta incorporada y cerrada: “Mejorar generador de reviews mock realistas” quedó resuelta como mejora técnica de **P2 Datos demo / QA visual** para soporte de maquetación y validación visual, sin cambiar source policy ni tocar UI productiva.
 - Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.
 - Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **parcialmente implementada** (base central + migración incremental pendiente) dentro de **P2 Auth baseline / Testing / Fixtures**.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.

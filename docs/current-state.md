@@ -2,10 +2,10 @@
 
 ## Último estado estable
 
-- Rama actual: `main`
-- Último bloque validado: **`ComparatorSetupHero` como setup hero local del comparador** con Quality Gate aprobado. Los estados de `0` y `1` moto seleccionada ahora comparten el mismo hero con fondo `comparisonHeroImage`; el estado de `0` motos mantiene la CTA `Ir al buscador`; el estado de `1` moto muestra la moto seleccionada dentro del hero, entre la descripción y `.comparison-detail__empty-actions`, reutilizando la visual language existente de `comparison-detail__hero-bike`. `Quitar` limpia la cola con `saveCompareQueue([])` y navega de forma segura a `#/comparador`. El estado normal de `2/3` motos no cambia.
-- Alcance validado: `ComparatorSetupHero` es un componente **local** de `ComparatorPage`; `EmptyComparator` y `OneBikeComparator` dejan de existir como componentes visuales separados y este cambio no introduce una abstracción global de hero.
-- Tests: 1121 passed (73 files)
+- Rama actual: `feature/realistic-mock-reviews`
+- Último bloque validado: **mejora del generador de mock reviews realistas** con Quality Gate aprobado. `scripts/generateMockReviews.ts` ahora compone comentarios menos repetitivos usando tono por rating (`positive` / `balanced` / `critical`), perfiles de longitud (`short` / `medium` / `long`), pools por uso (`touring`, `offroad`, `daily`, `passenger`, `city`, `sport`) y pools por segmento de moto. También mejora la generación de `pros`/`cons`, mantiene el contrato `source='mock'`, preserva la salida determinista con seed y corrige el cálculo de kilómetros usando el riding style raw.
+- Alcance validado: no se regeneró `data/mock/mockReviews.json`; no se tocaron import/clear scripts, source policy de producción, schema/RLS/Supabase policies ni UI/app components. La mejora queda enfocada en QA visual para cards, rankings, garaje, fichas y bloques editoriales.
+- Tests: 1123 passed (73 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Último commit:
@@ -216,8 +216,10 @@
 
 ### Datos demo
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.
+- Mejora de realismo implementada y validada en `scripts/generateMockReviews.ts`: comentarios `short` / `medium` / `long`, menos repetición, tono por rating, variedad de usos y pools por segmento para estresar mejor la QA visual de `FeaturedReviewCard`, `MotorcycleGarageCard`, `BikeDetailPage`, rankings y bloques editoriales.
+- `pros`/`cons` mock ahora salen con cantidad variable, mezcla de contexto de moto + pools contextuales y sanitización para evitar `null` / `undefined` visibles.
+- `data/mock/mockReviews.json` se dejó intencionalmente sin regenerar en este bloque.
 - Policy por entorno vigente: producción solo `source='user'`; dev/pre puede incluir `seed` y `mock`.
-- Backlog P2: mejorar realismo de reviews mock para QA visual (variedad de contenido, menos repetición y mejor cobertura de maquetación).
 - Source policy central aplicada en servicios públicos de reviews (`reviewSourcePolicy` + `status='approved'`).
 - Pendiente P2: toggle admin “Incluir datos demo” solo para dev/pre.
 
@@ -243,7 +245,6 @@
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2 (cerrado): mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`). Implementado en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Backlog P1/P2: refactor admin focal — completado como parte de la normalización al shared `FilterGroup` + `FilterOptionButton` (rama `feature/admin-filtergroup-normalization`). Los wrappers `AdminFilterGroup` y `FilterChipButton` fueron eliminados y el HTML crudo duplicado de `AdminMotorcycleReviewsPage` quedó consolidado al usar `FilterGroup` + `FilterOptionButton` compartidos.
-- Backlog P2: mejorar generador de reviews mock realistas para validar cards/layouts con datos más representativos.
 - Backlog P2: toggle admin “Incluir datos demo” (en producción no visible/sin efecto).
 - Backlog P2: migración incremental de mocks `useAuth` repetidos en tests existentes (Account*, Community*, ReviewModal, StaticInfoPages, Admin*, etc.) sobre la nueva base central de fixtures.
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
