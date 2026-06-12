@@ -42,7 +42,7 @@
 
 .comparison-detail__hero-media {
   inset: 0;
-  opacity: 0.8;
+  opacity: 0.3;
   position: absolute;
   z-index: -2;
 
@@ -1111,7 +1111,7 @@
     isolation: isolate;
     margin-inline: 0;
     max-width: none;
-    min-height: clamp(34rem, 72vh, 48rem);
+    min-height: clamp(48rem, 72vh, 48rem);
     overflow: hidden;
     padding-block: 5rem;
     padding-inline: max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
@@ -1132,7 +1132,7 @@
 
 .comparison-detail__empty-media {
   inset: 0;
-  opacity: 0.8;
+  opacity: 0.3;
   position: absolute;
   z-index: -2;
 
