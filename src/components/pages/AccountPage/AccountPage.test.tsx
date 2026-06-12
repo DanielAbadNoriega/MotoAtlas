@@ -1,9 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
 import { getModelRequestsByUserId } from '../../../services/modelRequestService';
 import { getReviewsByUserId, type MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { createAuthState, createAuthUser, createSession, createUserProfile, mockAdminAuthState, mockAuthenticatedAuthState, mockUnauthenticatedAuthState } from '../../../test/fixtures/auth';
 import { AccountPage } from './AccountPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -22,6 +23,8 @@ const useAuthMock = vi.mocked(useAuth);
 const getModelRequestsByUserIdMock = vi.mocked(getModelRequestsByUserId);
 const getReviewsByUserIdMock = vi.mocked(getReviewsByUserId);
 const signOutMock = vi.fn();
+const { signIn: _authenticatedSignIn, signUp: _authenticatedSignUp, signOut: _authenticatedSignOut, refreshProfile: _authenticatedRefreshProfile, ...authenticatedAuthState } = mockAuthenticatedAuthState;
+const { signIn: _adminSignIn, signUp: _adminSignUp, signOut: _adminSignOut, refreshProfile: _adminRefreshProfile, ...adminAuthState } = mockAdminAuthState;
 
 const ownReview = {
   id: 'review-1',
@@ -75,20 +78,47 @@ const ownModelRequest = {
   updatedAt: '2026-05-15T10:00:00.000Z',
 } as const;
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({
-    user: null,
-    session: null,
-    profile: null,
-    isAuthenticated: false,
-    isAdmin: false,
-    isLoading: false,
-    signIn: vi.fn(),
-    signUp: vi.fn(),
-    signOut: signOutMock,
-    refreshProfile: vi.fn(),
+function mockAuth(overrides: Partial<AuthContextValue> = {}) {
+  useAuthMock.mockReturnValue(createAuthState({
+    ...mockUnauthenticatedAuthState,
     ...overrides,
-  } as never);
+    signIn: overrides.signIn ?? vi.fn(),
+    signUp: overrides.signUp ?? vi.fn(),
+    signOut: overrides.signOut ?? signOutMock,
+    refreshProfile: overrides.refreshProfile ?? vi.fn(),
+  }) as never);
+}
+
+function mockAuthenticatedAccount(overrides: Partial<AuthContextValue> = {}) {
+  const authenticatedUser = createAuthUser({ id: 'user-1', email: 'rider@motoatlas.com' });
+
+  mockAuth({
+    ...authenticatedAuthState,
+    user: authenticatedUser,
+    session: createSession({ access_token: 'session-token', user: authenticatedUser }),
+    profile: createUserProfile({ id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' }),
+    isAdmin: false,
+    isAuthenticated: true,
+    ...overrides,
+  });
+}
+
+function mockAdminAccount(overrides: Partial<AuthContextValue> = {}) {
+  const adminUser = createAuthUser({
+    id: 'admin-1',
+    email: 'admin@motoatlas.com',
+    user_metadata: { display_name: 'Admin Rider' },
+  });
+
+  mockAuth({
+    ...adminAuthState,
+    user: adminUser,
+    session: null,
+    profile: createUserProfile({ id: 'admin-1', displayName: 'Admin Rider', avatarUrl: null, role: 'admin' }),
+    isAdmin: true,
+    isAuthenticated: true,
+    ...overrides,
+  });
 }
 
 describe('AccountPage', () => {
@@ -110,12 +140,7 @@ describe('AccountPage', () => {
   });
 
   it('muestra email, alias, resumen y secciones principales si hay usuario', () => {
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -132,12 +157,7 @@ describe('AccountPage', () => {
 
   it('muestra loading al cargar reviews propias', () => {
     getReviewsByUserIdMock.mockReturnValue(new Promise(() => undefined));
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -147,12 +167,7 @@ describe('AccountPage', () => {
 
   it('muestra loading al cargar solicitudes propias', () => {
     getModelRequestsByUserIdMock.mockReturnValue(new Promise(() => undefined));
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -161,12 +176,7 @@ describe('AccountPage', () => {
   });
 
   it('muestra empty state si el usuario no tiene reviews', async () => {
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -176,12 +186,7 @@ describe('AccountPage', () => {
   });
 
   it('muestra empty state si el usuario no tiene solicitudes', async () => {
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -195,12 +200,7 @@ describe('AccountPage', () => {
       createOwnReview({ status: 'approved' }),
       createOwnReview({ id: 'review-other', userId: 'other-user', motorcycleId: 'yamaha-tenere-700-2024', status: 'rejected' }),
     ]);
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -233,12 +233,7 @@ describe('AccountPage', () => {
       { ...ownModelRequest, id: 'request-3', brand: 'Kawasaki', model: 'Z900', year: 2025, status: 'pending' },
       { ...ownModelRequest, id: 'request-other', userId: 'other-user', brand: 'Yamaha', model: 'R9', status: 'approved' },
     ]);
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -267,12 +262,7 @@ describe('AccountPage', () => {
       { ...ownModelRequest, id: 'request-approved', status: 'approved' },
       { ...ownModelRequest, id: 'request-rejected', status: 'rejected' },
     ]);
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -322,12 +312,7 @@ describe('AccountPage', () => {
         motorcycle: { id: 'bmw-old-bike-2024', brand: 'BMW', model: 'Old Bike', year: 2024, imageUrl: '/images/motorcycles/bmw-old-bike-2024.webp' },
       }),
     ]);
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -347,12 +332,7 @@ describe('AccountPage', () => {
 
   it('muestra error si falla la carga de reviews propias', async () => {
     getReviewsByUserIdMock.mockRejectedValue(new Error('RLS rejected'));
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -363,12 +343,7 @@ describe('AccountPage', () => {
 
   it('muestra error si falla la carga de solicitudes propias', async () => {
     getModelRequestsByUserIdMock.mockRejectedValue(new Error('RLS rejected'));
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-    });
+    mockAuthenticatedAccount();
 
     render(<AccountPage />);
 
@@ -378,9 +353,7 @@ describe('AccountPage', () => {
   });
 
   it('no consulta datos de cuenta si el usuario autenticado todavía no tiene userId', () => {
-    mockAuth({
-      isAuthenticated: true,
-      session: { access_token: 'session-token' },
+    mockAuthenticatedAccount({
       user: null,
       profile: null,
     });
@@ -392,12 +365,7 @@ describe('AccountPage', () => {
   });
 
   it('muestra Panel admin en el aside si el usuario es admin', () => {
-    mockAuth({
-      isAuthenticated: true,
-      user: { id: 'admin-1', email: 'admin@motoatlas.com' },
-      profile: { id: 'admin-1', displayName: 'Admin Rider', avatarUrl: null, role: 'admin' },
-      isAdmin: true,
-    });
+    mockAdminAccount();
 
     render(<AccountPage />);
 
@@ -407,12 +375,7 @@ describe('AccountPage', () => {
   });
 
   it('no muestra Panel admin si el usuario no es admin', () => {
-    mockAuth({
-      isAuthenticated: true,
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
-      isAdmin: false,
-    });
+    mockAuthenticatedAccount({ isAdmin: false, session: null });
 
     render(<AccountPage />);
 
@@ -431,10 +394,9 @@ describe('AccountPage', () => {
   });
 
   it('cierra sesión y vuelve al inicio', async () => {
-    mockAuth({
-      isAuthenticated: true,
-      user: { id: 'user-1', email: 'rider@motoatlas.com' },
-      profile: { id: 'user-1', displayName: null, avatarUrl: null, role: 'user' },
+    mockAuthenticatedAccount({
+      session: null,
+      profile: createUserProfile({ id: 'user-1', displayName: null, avatarUrl: null, role: 'user' }),
     });
     const user = userEvent.setup();
     render(<AccountPage />);
