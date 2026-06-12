@@ -732,13 +732,15 @@ Criterios de aceptación futuros:
 
 Estado:
 - source policy central: implementada/documentada.
+- guard central de entorno/runtime: implementado y validado.
 - toggle admin: pendiente futuro.
 
 Contrato:
 - producción solo puede mostrar `source='user'`.
-- producción nunca debe mostrar `source='seed'` ni `source='mock'`.
+- producción nunca debe mostrar `source='seed'` ni `source='mock'`, incluso si `VITE_ENABLE_DEMO_DATA='true'`.
 - dev/pre con demo activado puede mostrar `source='user'`, `source='seed'`, `source='mock'`.
 - dev/pre con demo desactivado debe mostrar solo `source='user'`.
+- valores inválidos/desconocidos de `VITE_APP_ENV` deben caer a comportamiento production-safe.
 
 Definiciones:
 - `source='user'`: datos reales creados por usuarios.
@@ -747,6 +749,7 @@ Definiciones:
 
 Reglas:
 - la lógica debe permanecer centralizada.
+- `reviewSourcePolicy` debe delegar la decisión de entorno/runtime al guard compartido en lugar de depender directamente de `import.meta.env.PROD`.
 - no duplicar filtros de source en componentes.
 - las vistas públicas deben seguir usando solo `status='approved'`.
 - `pending`, `hidden` y `rejected` no deben aparecer en vistas públicas.
@@ -756,6 +759,7 @@ Pendiente futuro:
 - crear toggle admin “Incluir datos demo”.
 - visible solo en dev/pre.
 - en producción no visible o sin efecto.
+- sin `localStorage` ni persistencia de settings hasta definir el diseño/producto.
 - nunca exponer datos mock/seed en producción pública.
 
 Relación con roadmap:
@@ -1411,7 +1415,7 @@ Reglas actuales para mobile:
 - Tarjeta incorporada: futura funcionalidad “Temas de discusión por modelo” clasificada como **P3 Comunidad social / temas por modelo** (backlog estratégico).
 - Tarjeta incorporada y cerrada: mejora de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables** y resuelta en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Tarjeta incorporada y cerrada: “Mejorar generador de reviews mock realistas” quedó resuelta como mejora técnica de **P2 Datos demo / QA visual** para soporte de maquetación y validación visual, sin cambiar source policy ni tocar UI productiva.
-- Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy implementada** + **toggle admin pendiente P2**.
+- Tarjeta reclasificada: “Controlar datos demo por entorno en comunidad” queda dividida en **source policy + guard runtime implementados** + **toggle admin pendiente P2**.
 - Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **parcialmente implementada** (base central + migración incremental pendiente) dentro de **P2 Auth baseline / Testing / Fixtures**.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).

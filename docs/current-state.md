@@ -2,10 +2,10 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/realistic-mock-reviews`
-- Último bloque validado: **mejora del generador de mock reviews realistas** con Quality Gate aprobado. `scripts/generateMockReviews.ts` ahora compone comentarios menos repetitivos usando tono por rating (`positive` / `balanced` / `critical`), perfiles de longitud (`short` / `medium` / `long`), pools por uso (`touring`, `offroad`, `daily`, `passenger`, `city`, `sport`) y pools por segmento de moto. También mejora la generación de `pros`/`cons`, mantiene el contrato `source='mock'`, preserva la salida determinista con seed y corrige el cálculo de kilómetros usando el riding style raw.
-- Alcance validado: no se regeneró `data/mock/mockReviews.json`; no se tocaron import/clear scripts, source policy de producción, schema/RLS/Supabase policies ni UI/app components. La mejora queda enfocada en QA visual para cards, rankings, garaje, fichas y bloques editoriales.
-- Tests: 1123 passed (73 files)
+- Rama actual: `feature/demo-data-environment-guard`
+- Último bloque validado: **guard centralizado de entorno/runtime para demo data** con Quality Gate aprobado. `src/shared/env/runtimeEnvironment.ts` centraliza la decisión de entorno y expone `getRuntimeEnvironment()`, `isProductionEnvironment()`, `isPreviewEnvironment()`, `isDevelopmentEnvironment()` y `canUseDemoData()`. `reviewSourcePolicy` ya no decide desde `import.meta.env.PROD` y delega la selección de sources al guard compartido.
+- Alcance validado: producción permanece production-safe (`['user']`), development/preview solo exponen `seed/mock` cuando el guard lo permite y un `VITE_APP_ENV` inválido/desconocido cae a comportamiento seguro de producción. No se tocaron UI/app, schema/RLS/Supabase policies, scripts mock ni `data/mock/mockReviews.json`.
+- Tests: 1132 passed (74 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Último commit:
@@ -218,10 +218,10 @@
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.
 - Mejora de realismo implementada y validada en `scripts/generateMockReviews.ts`: comentarios `short` / `medium` / `long`, menos repetición, tono por rating, variedad de usos y pools por segmento para estresar mejor la QA visual de `FeaturedReviewCard`, `MotorcycleGarageCard`, `BikeDetailPage`, rankings y bloques editoriales.
 - `pros`/`cons` mock ahora salen con cantidad variable, mezcla de contexto de moto + pools contextuales y sanitización para evitar `null` / `undefined` visibles.
-- `data/mock/mockReviews.json` se dejó intencionalmente sin regenerar en este bloque.
-- Policy por entorno vigente: producción solo `source='user'`; dev/pre puede incluir `seed` y `mock`.
-- Source policy central aplicada en servicios públicos de reviews (`reviewSourcePolicy` + `status='approved'`).
-- Pendiente P2: toggle admin “Incluir datos demo” solo para dev/pre.
+- `data/mock/mockReviews.json` se dejó intencionalmente sin regenerar en ese bloque.
+- Policy por entorno vigente: producción solo `source='user'`; dev/pre puede incluir `seed` y `mock` únicamente a través del guard central `runtimeEnvironment` + `reviewSourcePolicy`.
+- Source policy central aplicada en servicios públicos de reviews (`reviewSourcePolicy` + `status='approved'`) sin tocar el filtro público por estado aprobado.
+- Pendiente P2: toggle admin “Incluir datos demo” solo para dev/pre, todavía sin UI ni persistencia local.
 
 ## Pendiente
 
