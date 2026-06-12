@@ -236,7 +236,8 @@ Estado actual del generador:
 - `pros`/`cons` con cantidad variable y contexto más realista;
 - sanitización para evitar `null` / `undefined` visibles;
 - contrato `source='mock'` preservado, sin tocar `source='user'` ni `source='seed'`;
-- `data/mock/mockReviews.json` no se regeneró en este bloque.
+- `data/mock/mockReviews.json` no se regeneró en ese bloque.
+- la exposición pública de `seed/mock` ahora pasa por un guard central de entorno/runtime; no es un cambio de UI y el toggle admin sigue pendiente.
 
 ## Comunidad landing
 
