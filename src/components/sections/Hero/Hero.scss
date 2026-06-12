@@ -1,105 +1,99 @@
 @use '../../../styles/variables' as *;
 @use '../../../styles/mixins' as *;
 
-.hero {
-  position: relative;
-  display: grid;
+.home-hero {
   height: 870px;
   min-height: min(870px, calc(100vh - 80px));
   place-items: center;
-  overflow: hidden;
 
-  .hero__background {
-    position: absolute;
-    inset: 0;
+  .search-hero__media {
     z-index: 0;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: grayscale(0.45) contrast(1.1);
-      transform: scale(1.01);
-    }
-
-    span {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.45) 48%, transparent 100%);
-    }
   }
 
-  .hero__content {
+  .search-hero__image {
+    filter: grayscale(0.45) contrast(1.1);
+    transform: scale(1.01);
+  }
+
+  .search-hero__overlay {
+    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.45) 48%, transparent 100%);
+    z-index: 1;
+  }
+
+  .search-hero__content {
     @include container;
 
     position: relative;
-    z-index: 1;
     text-align: center;
+    z-index: 2;
   }
 
-  .hero__eyebrow {
+  .search-hero__eyebrow {
     @include label-caps;
 
     color: $color-accent;
-    display: block;
     letter-spacing: 0.22em;
     margin-bottom: 0.75rem;
     text-shadow: 0 2px 14px rgba(0, 0, 0, 0.88);
   }
 
-  h1 {
+  .search-hero__title {
     @include headline-xl;
 
-    max-width: 58rem;
-    margin: 0 auto 2rem;
     color: white;
+    margin: 0 auto 2rem;
+    max-width: 58rem;
+  }
+
+  .search-hero__search {
+    margin-inline: auto;
+    max-width: 42rem;
   }
 
   .hero__search {
     @include glass-hud;
 
-    display: flex;
-    max-width: 42rem;
     align-items: center;
-    gap: 0.5rem;
-    margin-inline: auto;
-    padding: 0.5rem;
     border-radius: $radius-lg;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    display: flex;
+    gap: 0.5rem;
+    margin-inline: auto;
+    max-width: 42rem;
+    padding: 0.5rem;
   }
 
   .hero__search-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: 0;
-    margin: -1px;
     clip: rect(0, 0, 0, 0);
+    height: 1px;
+    margin: -1px;
     overflow: hidden;
+    padding: 0;
+    position: absolute;
     white-space: nowrap;
+    width: 1px;
   }
 
   .hero__search-field {
-    display: flex;
-    min-width: 0;
-    flex: 1;
     align-items: center;
+    display: flex;
+    flex: 1;
+    min-width: 0;
   }
 
   .material-symbols-outlined {
-    padding-inline: 0.75rem;
     color: $color-on-surface-variant;
+    padding-inline: 0.75rem;
   }
 
   input {
     @include label-caps;
 
-    width: 100%;
-    border: 0;
-    outline: 0;
     background: transparent;
+    border: 0;
     color: white;
+    outline: 0;
+    width: 100%;
 
     &::placeholder {
       color: rgba($color-on-surface-variant, 0.55);
@@ -110,7 +104,7 @@
     height: 600px;
     min-height: 600px;
 
-    h1 {
+    .search-hero__title {
       margin-bottom: 1.5rem;
     }
 

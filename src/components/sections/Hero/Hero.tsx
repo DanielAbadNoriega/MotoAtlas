@@ -2,6 +2,7 @@ import type { FormEvent } from 'react';
 import heroMotorcycle from '../../../assets/Hero Motorcycle.png';
 import { heroContent } from '../../../data/home';
 import { getSearchHashWithText } from '../../../shared/routing/routeUtils';
+import { SearchHero } from '../SearchHero';
 import './Hero.scss';
 import { HeroSearch } from './HeroSearch';
 
@@ -15,17 +16,17 @@ export function Hero() {
   };
 
   return (
-    <section className="hero" id="top" aria-labelledby="hero-title">
-      <div className="hero__background" aria-hidden="true">
-        <img src={heroMotorcycle} alt="" />
-        <span />
-      </div>
-
-      <div className="hero__content fade-in">
-        <span className="hero__eyebrow">ENCICLOPEDIA TÉCNICA MOTERA</span>
-        <h1 id="hero-title">{heroContent.title}</h1>
+    <div id="top">
+      <SearchHero
+        className="home-hero"
+        eyebrow="ENCICLOPEDIA TÉCNICA MOTERA"
+        imageAlt=""
+        imageSrc={heroMotorcycle}
+        title={heroContent.title}
+        titleId="hero-title"
+      >
         <HeroSearch content={heroContent.search} onSubmit={handleSubmit} />
-      </div>
-    </section>
+      </SearchHero>
+    </div>
   );
 }

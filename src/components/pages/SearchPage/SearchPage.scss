@@ -9,10 +9,9 @@
     linear-gradient(180deg, rgba($color-surface-lowest, 0.55), rgba($color-surface, 0));
 
   &__hero {
-    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0) 48%, transparent 100%), url('../../../assets/comparison-hero.png') center / cover;
-    overflow: hidden;
     padding-block: clamp(4rem, 10vw, 8rem);
     position: relative;
+    place-items: center;
 
     &::before {
       background-image:
@@ -24,23 +23,39 @@
       opacity: 0.28;
       pointer-events: none;
       position: absolute;
+      z-index: 1;
     }
 
-    > div {
+    .search-hero__media {
+      z-index: 0;
+    }
+
+    .search-hero__image {
+      filter: saturate(0.9) contrast(1.05);
+    }
+
+    .search-hero__overlay {
+      background:
+        linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0.16) 48%, transparent 100%),
+        linear-gradient(180deg, rgba($color-surface-lowest, 0.12), rgba($color-surface-lowest, 0.36));
+      z-index: 1;
+    }
+
+    .search-hero__content {
       @include container;
 
-      isolation: isolate;
       position: relative;
       text-align: center;
+      z-index: 2;
     }
 
-    > div > span {
+    .search-hero__eyebrow {
       @include label-caps;
 
       color: $color-accent;
     }
 
-    h1 {
+    .search-hero__title {
       @include headline-xl;
 
       margin: 1rem auto 1.5rem;
@@ -48,12 +63,17 @@
       text-shadow: 0 2px 14px rgba(0, 0, 0, 0.88);
     }
 
-    p {
+    .search-hero__description {
       @include body-lg;
 
       color: $color-on-surface-variant;
       margin: 0 auto;
       max-width: 720px;
+    }
+
+    .search-hero__search {
+      margin: 2.5rem auto 0;
+      max-width: 760px;
     }
   }
 
@@ -65,8 +85,8 @@
     display: grid;
     gap: 1rem;
     grid-template-columns: auto 1fr;
-    margin: 2.5rem auto 0;
-    max-width: 760px;
+    margin: 0;
+    width: 100%;
     padding: 1rem 1.25rem;
 
     span {

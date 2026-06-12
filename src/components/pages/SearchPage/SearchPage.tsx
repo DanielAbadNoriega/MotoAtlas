@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import comparisonHero from '../../../assets/comparison-hero.png';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
@@ -36,6 +37,7 @@ import { getComparatorHashFromBikes, getCommunityCanonicalPath, getSearchTextFro
 import { getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { MotorcycleGarageCard, MotorcycleGarageCardAction } from '../../motorcycles/MotorcycleGarageCard';
 import { AccountPagination } from '../AccountPage/AccountPagination';
+import { SearchHero } from '../../sections/SearchHero';
 import './SearchPage.scss';
 
 const sortLabels: Record<SortOption, string> = {
@@ -875,17 +877,17 @@ export function SearchPage({ motorcycles, routeHash }: SearchPageProps) {
 
   return (
     <main className="search-page" aria-labelledby="search-page-title">
-      <section className="search-page__hero">
-        <div>
-          <span>Catálogo técnico</span>
-          <h1 id="search-page-title">Encuentra tu próxima moto</h1>
-          <p>
-            Filtra por estilo, motor, carnet, uso real y características técnicas para encontrar el equilibrio perfecto
-            entre ingeniería y adrenalina.
-          </p>
-          <SearchField filters={filters} onChange={updateFilters} />
-        </div>
-      </section>
+      <SearchHero
+        className="search-page__hero"
+        description="Filtra por estilo, motor, carnet, uso real y características técnicas para encontrar el equilibrio perfecto entre ingeniería y adrenalina."
+        eyebrow="Catálogo técnico"
+        imageAlt=""
+        imageSrc={comparisonHero}
+        title="Encuentra tu próxima moto"
+        titleId="search-page-title"
+      >
+        <SearchField filters={filters} onChange={updateFilters} />
+      </SearchHero>
 
       <div className="search-page__mobile-filter-trigger">
         <Button variant="ghost" fullWidth onClick={() => setIsFilterPanelOpen(true)}>

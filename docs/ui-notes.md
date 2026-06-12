@@ -54,6 +54,8 @@ Bloque `Reviews recientes` en esta página:
 
 La ruta `#/buscador` pagina el listado a 9 motos por página. La paginación se calcula después de aplicar búsqueda, filtros y ordenación, mientras el contador conserva el total filtrado.
 
+El hero de Home y el hero de `#/buscador` comparten el shell reutilizable `SearchHero` (`src/components/sections/SearchHero/`), pero la lógica de búsqueda sigue siendo de cada página: Home conserva `HeroSearch` y su submit hacia `#/buscador?q=...`, mientras `SearchPage` mantiene su input de filtro en vivo y su sync con `routeHash`. `SearchHero` no es una variante de `PageHero`; son shells distintos para necesidades distintas.
+
 Los filtros de segmento y carnet comparten labels/iconos con `#/comunidad/reviews`: segmentos principales con Material Symbols y carnet en orden `Carnet A2`, `Carnet A`, `A2 limitable`.
 
 Los grupos de filtros avanzados (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) usan el componente compartido `FilterGroup` (`src/shared/ui/filters/FilterGroup.tsx`) que importa sus propios estilos (`./FilterGroup.scss`). El shell del buscador mantiene su `grid-template-columns: minmax(18rem, 4fr) minmax(0px, 8fr);` para distribuir sidebar de filtros y listado de resultados. Tras la migración, los selectores SCSS huérfanos `.search-page__filter-group*` y `.search-page__filter-group-body` fueron eliminados en la rama `feature/filtergroup-residual-scss-cleanup`; los selectores activos de `__brand-grid`, `__segment-grid`, `__pill-list`, `__option-card`, `__toggle-grid` y `__range-*` se preservaron.
@@ -472,12 +474,16 @@ Migraciones ya completadas en Fases A/B:
 - `TopRatedMotorcyclesPage` (renderiza `#/comunidad` y `#/motos-mejor-valoradas`): nueva prop opcional `variant?: 'community' | 'topRated'`. En `variant="community"` el hero queda sin CTAs; en `variant="topRated"` se preservan `Explorar comunidades` y `Comparar motos`. `App.tsx` pasa `variant` según la ruta activa.
 - `CommunityReviewsPage` (`#/comunidad/reviews`, rama `feature/page-hero-community-reviews`, Fase B): reemplaza el hero local por `PageHero` y elimina sus CTAs.
 
+`PageHero` cubre los heroes editoriales/comunidad/admin donde el patrón encaja; `SearchHero` cubre el shell de búsqueda de Home + `#/buscador`. Son componentes distintos y no deben mezclarse en una sola abstracción.
+
 `CommunityHero` (`src/components/ui/CommunityHero/CommunityHero.tsx`) se reconvirtió en **thin wrapper deprecated** de `PageHero` para mantener compatibilidad con importadores externos. Su SCSS (`CommunityHero.scss`) queda en el repo pero ya no es referenciado por el wrapper ni por consumidores activos; se eliminará cuando se complete la migración de consumidores externos (si los hubiera).
 
 La limpieza post-Fase B no amplía la API TypeScript de `PageHero`: el `className` existente permite que el styling contextual viva en la página consumidora (`.community-reviews-page__hero`) sin dejar selectores page-specific dentro de `PageHero.scss`. Así se preservan doble gradient, `fade-in`, filtro de imagen y alineación centrada sin generalizar props visuales.
 
-Pendiente para Fases C/D (no incluido en este cambio):
-- Migrar los heroes de `BikeDetailPage`, `MotorcycleCommunityPage`, `AccountPage` y las páginas estáticas.
+Pendiente para fases futuras (no incluido en este cambio):
+- Revisar solo heroes simples adicionales que encajen de manera natural en un shell compartido; no forzar `PageHero` donde no encaja.
+- `BikeDetailPage` y `MotorcycleCommunityPage` quedan fuera por decisión de producto: sus heroes son específicos y no deben documentarse como migraciones pendientes.
+- `AccountPage` y páginas estáticas quedan como posibles candidatos de auditoría futura si el alcance se reabre.
 - Decidir `HeroAction` system (rama `feature/hero-cta-audit` ya documentó la dirección).
 - Consolidar variantes del `Button` shared con la tabla de la fase 13.1 de `product-roadmap.md`.
 - Mobile-first de Fase 13b con validación visual en Stitch.
@@ -499,16 +505,18 @@ No es implementación. Es documentación de una tarea futura de pulido UI/SCSS.
 **Alcance futuro (no ahora):**
 
 1. **Auditoría de implementaciones actuales de Hero:**
-   - Identificar todas las variantes usadas en Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin.
+   - Identificar las variantes simples que puedan compartir un shell sin forzar una abstracción global.
    - Documentar qué tienen en común y qué varía por contexto.
 
 2. **Definición de patrón/base compartidos:**
-   - Posibles componentes/patrones base: `PageHero`, `HeroAction`, `CtaGroup`, `Button`, `ActionLink`, `IconAction`.
+   - `PageHero`: shell editorial/comunidad/admin.
+   - `SearchHero`: shell de búsqueda para Home + `#/buscador`.
+   - `HeroAction`, `CtaGroup`, `Button`, `ActionLink`, `IconAction` siguen como futuras piezas posibles si hay una necesidad real.
    - Permitir variantes contextuales sin replicar estructuras completas.
-   - Ejemplo: un mismo `PageHero` base con slots para badge, título, descripción, acciones y imagen de fondo.
+   - No ampliar `PageHero` para cubrir casos que no encajan naturalmente.
 
 3. **Normalización de grupos de CTA por página:**
-   - Home, Buscador, Comunidad, Rankings, Reviews, BikeDetailPage, Cuenta y Admin donde aplique.
+   - Home, Buscador, Comunidad, Rankings, Reviews, Cuenta y Admin donde aplique.
    - Mantener flexibilidad para diferencias contextuales legítimas.
 
 4. **Sistema de variantes de botón/acción a documentar:**
