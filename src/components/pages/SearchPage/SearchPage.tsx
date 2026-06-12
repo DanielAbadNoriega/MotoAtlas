@@ -35,6 +35,7 @@ import {
 } from '../../../shared/filters/motorcycleFilterOptions';
 import { getComparatorHashFromBikes, getCommunityCanonicalPath, getSearchTextFromRoute } from '../../../shared/routing/routeUtils';
 import { getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
+import { SearchControl } from '../../../shared/ui/search';
 import { MotorcycleGarageCard, MotorcycleGarageCardAction } from '../../motorcycles/MotorcycleGarageCard';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { SearchHero } from '../../sections/SearchHero';
@@ -143,20 +144,15 @@ function getGarageReviewCount(bike: Bike) {
 
 function SearchField({ filters, onChange }: { filters: SearchFilters; onChange: (next: Partial<SearchFilters>) => void }) {
   return (
-    <div className="search-page__search-field">
-      <span className="material-symbols-outlined" aria-hidden="true">
-        search
-      </span>
-      <input
-        aria-label="Buscar por marca o modelo"
-        id="motorcycle-search-text"
-        name="motorcycle-search-text"
-        placeholder="Busca por marca o modelo..."
-        type="search"
-        value={filters.text}
-        onChange={(event) => onChange({ text: event.target.value })}
-      />
-    </div>
+    <SearchControl
+      className="search-page__search-field"
+      id="motorcycle-search-text"
+      label="Buscar por marca o modelo"
+      name="motorcycle-search-text"
+      placeholder="Busca por marca o modelo..."
+      value={filters.text}
+      onChange={(event) => onChange({ text: event.target.value })}
+    />
   );
 }
 

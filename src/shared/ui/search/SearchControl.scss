@@ -1,0 +1,31 @@
+.search-control {
+  display: block;
+  width: 100%;
+
+  &__label {
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  &__field {
+    align-items: center;
+    display: flex;
+    min-width: 0;
+    width: 100%;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+  }
+
+  &__input {
+    min-width: 0;
+    width: 100%;
+  }
+}

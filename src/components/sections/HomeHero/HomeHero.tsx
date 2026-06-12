@@ -3,10 +3,10 @@ import heroMotorcycle from '../../../assets/Hero Motorcycle.png';
 import { heroContent } from '../../../data/home';
 import { getSearchHashWithText } from '../../../shared/routing/routeUtils';
 import { SearchHero } from '../SearchHero';
-import './Hero.scss';
+import './HomeHero.scss';
 import { HeroSearch } from './HeroSearch';
 
-export function Hero() {
+export function HomeHero() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);

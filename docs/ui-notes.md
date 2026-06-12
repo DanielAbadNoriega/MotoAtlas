@@ -54,7 +54,13 @@ Bloque `Reviews recientes` en esta página:
 
 La ruta `#/buscador` pagina el listado a 9 motos por página. La paginación se calcula después de aplicar búsqueda, filtros y ordenación, mientras el contador conserva el total filtrado.
 
-El hero de Home y el hero de `#/buscador` comparten el shell reutilizable `SearchHero` (`src/components/sections/SearchHero/`), pero la lógica de búsqueda sigue siendo de cada página: Home conserva `HeroSearch` y su submit hacia `#/buscador?q=...`, mientras `SearchPage` mantiene su input de filtro en vivo y su sync con `routeHash`. `SearchHero` no es una variante de `PageHero`; son shells distintos para necesidades distintas.
+El hero de Home y el hero de `#/buscador` comparten el shell reutilizable `SearchHero` (`src/components/sections/SearchHero/`), pero la lógica de búsqueda sigue siendo de cada página: Home conserva `HeroSearch` y su submit hacia `#/buscador?q=...`, mientras `SearchPage` mantiene su input de filtro en vivo y su sync con `routeHash`. `SearchHero` no es una variante de `PageHero`; son shells distintos para necesidades distintas y no owning submit, navegación ni filtros.
+
+El wrapper concreto de Home ahora se llama `HomeHero` (`src/components/sections/HomeHero/`) para evitar la ambigüedad del antiguo `Hero`. `HeroSearch` sigue siendo el adapter de comportamiento de Home y reutiliza `SearchControl` (`src/shared/ui/search/`) como input presentacional compartido con `SearchPage`.
+
+`SearchControl` es solo el input visual compartido: soporta uso controlado y no controlado mediante props estándar del `<input>`, pero no conoce `routeHash`, filtros ni navegación. En Home, `HeroSearch` sigue envolviéndolo dentro de un `<form>`; en SearchPage, `SearchField` sigue actuando como adapter controlado del texto de búsqueda.
+
+Dentro de Home se completó además el cleanup de naming local: las clases `hero__search*` del viejo `Hero` pasan a `home-hero__search*`. Al buscar residuos documentales o de CSS, no hay que confundir `search-hero__search` con las clases legacy del Home hero.
 
 Los filtros de segmento y carnet comparten labels/iconos con `#/comunidad/reviews`: segmentos principales con Material Symbols y carnet en orden `Carnet A2`, `Carnet A`, `A2 limitable`.
 

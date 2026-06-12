@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1119` tests passing (72 files).
+- `1121` tests passing (73 files).
 
 ## Stack actual
 
@@ -300,9 +300,14 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
+- Baseline validado actual del proyecto: `73` files / `1121` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
 - `SearchPage` valida el shell compartido `SearchHero` de forma observable: el hero renderiza la imagen `comparison-hero.png`, mantiene el heading/description visibles y el filtro de texto sigue siendo page-owned. Evitar tests que dependan del SCSS como fuente de verdad.
+- `SearchControl` ya tiene tests unitarios dedicados: input accesible por label y compatibilidad con props estándar controladas/no controladas. `HeroSearch` y `SearchField` deben seguir probándose por comportamiento, no por detalles internos ni clases del input compartido.
+- El contrato del Home hero sigue siendo de comportamiento: submit desde `HeroSearch` → navegación a `#/buscador?q=...`. El contrato del buscador sigue siendo de comportamiento: `SearchField` controlado + live filtering + sync con `routeHash`.
+- En checks de residuos, evitar grep broad por `hero__search` sin contexto porque `search-hero__search` puede dar falsos positivos aunque el cleanup de `home-hero__search*` esté correcto.
 - `BikeDetailPage` y `MotorcycleCommunityPage` quedan fuera de la unificación de hero: no forman parte de la matriz de pruebas de `PageHero` ni `SearchHero` porque sus heroes son exclusivos por decisión de producto.
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
 - `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
