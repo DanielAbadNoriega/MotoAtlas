@@ -305,10 +305,14 @@ describe('SearchPage', () => {
     expect(screen.queryByRole('dialog', { name: /Filtros avanzados/i })).not.toBeInTheDocument();
   });
 
-  it('uses the comparison hero asset as search hero background', () => {
-    const styles = readFileSync('src/components/pages/SearchPage/SearchPage.scss', 'utf8');
+  it('renders the comparison hero asset in the search hero', () => {
+    const { container } = renderSearchPage();
 
-    expect(styles).toContain("url('../../../assets/comparison-hero.png')");
+    expect(container.querySelector('img[src*="comparison-hero.png"]')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Encuentra tu próxima moto/i })).toBeInTheDocument();
+    expect(
+      screen.getByText(/Filtra por estilo, motor, carnet, uso real y características técnicas/i),
+    ).toBeInTheDocument();
   });
 
   it('hides desktop range sliders in responsive filter panels', () => {

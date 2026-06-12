@@ -1305,7 +1305,7 @@ Al cerrar funcionalidades principales:
 
 ### 13.1 Backlog: Unificación de Hero, CTAs y Button System
 
-Estado: **Fases A/B implementadas** (ramas `feature/page-hero-community-base` y `feature/page-hero-community-reviews`). Fases C/D pendientes.
+Estado: **Fases A/B implementadas** (ramas `feature/page-hero-community-base` y `feature/page-hero-community-reviews`) y `SearchHero` ya extraído como shell paralelo para Home + `#/buscador`. Fase C/D siguen como backlog, pero ya no significan “migrar todos los heroes”.
 
 No es implementación. Es una tarea de documentación y planificación futura.
 
@@ -1331,9 +1331,15 @@ No es implementación. Es una tarea de documentación y planificación futura.
 - Se eliminan los CTAs `Explorar reviews` y `Buscar moto para opinar`; la navegación comunitaria vivirá en una futura navbar/subnav.
 - Sin cambios en otros heroes, bloques editoriales, filtros, garaje, insights, acciones de reviews, schema/RLS/auth/routes.
 
-**Fase C — pendiente:**
-- Migrar los heroes de `BikeDetailPage`, `MotorcycleCommunityPage`, `AccountPage` y las páginas estáticas. Cada uno tiene detalles decorativos únicos (badge chip, spec grid, grid de puntos, layout 2-col para form) que requerirán parametrizar `PageHero` con slots adicionales o aceptar children con sus propios layouts.
-- Resolver el reuso cross-page de clases de hero (deuda actual: `AccountMotorcycleReviewsPage` y `AdminMotorcycleReviewsPage` reusan clases de `MotorcycleCommunityPage`).
+**Nota de implementación actual:**
+- `SearchHero` (`src/components/sections/SearchHero/`) se extrajo como shell reusable para Home y `#/buscador`, separado de `PageHero`. Comparte estructura visual de hero orientado a búsqueda, pero no contiene submit, route hash, filtros ni navegación: la lógica de búsqueda sigue siendo page-owned.
+
+**Fase C — revisión acotada / no forzar migraciones:**
+- Revisar solo heroes simples que encajen naturalmente en un shell compartido existente, sin forzar a todas las páginas a `PageHero`.
+- `PageHero` queda como shell de comunidad/admin donde el patrón encaja; `SearchHero` ya cubre Home + `#/buscador`.
+- `BikeDetailPage` y `MotorcycleCommunityPage` quedan fuera por decisión de producto: sus heroes son específicos y no deben convertirse en objetivos de migración en este backlog.
+- `AccountPage` y páginas estáticas solo quedan como candidatos de auditoría futura si el producto reabre ese alcance; no son migraciones obligatorias en esta fase.
+- Si aparece deuda cross-page de clases de hero, resolverla solo cuando haya un shell compartido natural; no abrir una abstracción más grande por adelantado.
 
 **Fase D — pendiente:**
 - Decidir `HeroAction` system con tipos de acción diferenciados (anchor, button, `AuthRequiredAction`-aware).

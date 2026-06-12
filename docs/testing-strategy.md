@@ -302,6 +302,8 @@ Cobertura actual relevante:
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
+- `SearchPage` valida el shell compartido `SearchHero` de forma observable: el hero renderiza la imagen `comparison-hero.png`, mantiene el heading/description visibles y el filtro de texto sigue siendo page-owned. Evitar tests que dependan del SCSS como fuente de verdad.
+- `BikeDetailPage` y `MotorcycleCommunityPage` quedan fuera de la unificación de hero: no forman parte de la matriz de pruebas de `PageHero` ni `SearchHero` porque sus heroes son exclusivos por decisión de producto.
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
 - `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
 - `ReviewModal.test.tsx` mockea como exitoso el envío no-auth, pero producción llama a una RPC que exige `auth.uid()`; es un gap de integración P1, no evidencia de soporte anónimo efectivo.
