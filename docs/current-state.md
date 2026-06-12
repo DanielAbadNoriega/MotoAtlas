@@ -2,7 +2,7 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/auth-fixtures-migration-batch-6`
+- Rama actual: `test/auth-fixtures-migration-batch-7-admin-page`
 - Último bloque validado: **auth fixtures migration batch 7** con Quality Gate aprobado. `src/components/pages/AdminPage/AdminPage.test.tsx` ya usa fixtures auth centrales desde `src/test/fixtures/auth.ts`, manteniendo el boundary mockeado de `useAuth` mientras crea el estado con `createAuthState`, `createAuthUser`, `createSession`, `createUserProfile` y `mockAdminAuthState`.
 - Alcance validado: se preservaron la forma admin legacy por defecto y los overrides parciales más sensibles de `AdminPage.test.tsx` (`user`, `session`, `profile`, `profile.role`, `isAuthenticated`, `isAdmin`, `isLoading`, estados de loading/error y spies locales). Aprendizaje validado: la migración admin ya incluye `AdminMotorcycleReviewsPage.test.tsx` y `AdminPage.test.tsx`; en suites admin amplias no hay que “mejorar” el shape por conveniencia, y los defaults de fixture no deben pisar spies locales (`signIn`, `signUp`, `signOut`, `refreshProfile`). El área conocida de paginación/flaky de `AdminPage` no se tocó y no mostró regresiones. No se tocaron product code, `AuthProvider`, schema/RLS/Supabase policies ni docs fuera del bloque de auth/testing.
 - Tests: 1142 passed (74 files)
