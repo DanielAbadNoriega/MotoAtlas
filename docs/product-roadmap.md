@@ -591,7 +591,7 @@ Gaps detectados antes de social/gamificación:
 - **P2:** `onAuthStateChange` no representa con `isLoading` la resolución asíncrona de perfil; puede haber estado transitorio `profile=null`/`isAdmin=false`.
 - **P2:** el alias de review autenticada se pasa como `p_user_name` desde cliente; antes de identidad pública/reputación debe derivarse o validarse server-side.
 - **P2:** smoke E2E/RLS real en staging y auditoría de privilegios efectivos de funciones `security definer`.
-- **P2:** migración incremental de 5 áreas con `mockAuth` local o mocks equivalentes de `useAuth` hacia fixtures centrales.
+- **P2:** migración incremental de 4 áreas con `mockAuth` local o mocks equivalentes de `useAuth` hacia fixtures centrales.
 - **P3 polish:** armonizar no-auth pasivo entre páginas; `MotorcycleCommunityPage` conserva acciones clicables con tooltip y bloqueo antes de red.
 
 Plan recomendado:
@@ -683,9 +683,10 @@ Implementado (base):
 - batch 4 completado en `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx`, preservando el estado autenticado por defecto, el caso no-auth con `user/session/profile = null` e `isAuthenticated = false`, y el caso autenticado sin `user/profile` pero con sesión presente. Aprendizaje clave: en suites account-level, el estado autenticado por defecto también forma parte del contrato legacy y debe mantenerse al migrar a fixtures.
 - batch 5 completado en `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx`, preservando el estado autenticado por defecto, el caso no-auth con `user/session/profile = null` e `isAuthenticated = false`, y el caso autenticado sin `user/profile` pero con sesión presente. Con este bloque, la migración account-level queda completa.
 - batch 6 completado en `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx`, preservando la forma admin legacy por defecto y los overrides puntuales de no-auth / non-admin sin introducir `profile/session/admin role` por conveniencia. Aprendizaje clave: la migración account-level ya quedó cerrada y la migración admin arranca aquí; en suites admin hay que preservar `isAdmin`, `profile.role`, `user`, `session`, `isAuthenticated`, loading/error states y spies locales (`signIn`, `signUp`, `signOut`, `refreshProfile`) sin que los defaults de fixture los pisen.
+- batch 7 completado en `src/components/pages/AdminPage/AdminPage.test.tsx`, preservando la forma admin legacy por defecto y los overrides parciales más sensibles sin introducir `profile/session/admin role` por conveniencia. Aprendizaje clave: la migración admin ya incluye `AdminMotorcycleReviewsPage.test.tsx` y `AdminPage.test.tsx`; `AdminPage.test.tsx` es más amplia, exige preservar exactamente `user`, `session`, `profile`, `profile.role`, `isAuthenticated`, `isAdmin`, `isLoading`, loading/error states y spies locales, y no requirió tocar el área conocida de paginación/flaky porque no mostró regresiones.
 
 Pendiente residual:
-- la base sigue parcial/incremental: quedan por migrar de forma incremental mocks `useAuth` repetidos en áreas de mayor riesgo (`AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`), sin refactor masivo.
+- la base sigue parcial/incremental: quedan por migrar de forma incremental mocks `useAuth` repetidos en áreas de mayor riesgo (`CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`), sin refactor masivo.
 
 Debe seguir cubriendo fixtures para:
 - usuario autenticado normal;

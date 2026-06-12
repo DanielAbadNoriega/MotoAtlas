@@ -136,12 +136,12 @@ Implementado (base):
 - Capa central de fixtures/mocks en `src/test/fixtures/auth.ts` para `user`/`profile`/`session` y estado auth.
 - Factories con overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`).
 - Cobertura base de fixtures en `src/test/fixtures/auth.test.ts`.
-- Migración incremental ya aplicada en `src/components/pages/AuthPage/AuthPage.test.tsx`, `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx`, `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx`, `src/components/pages/AccountPage/AccountPage.test.tsx`, `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx`, `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx` y `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx`.
-- Adopción actual: 7 suites usan fixtures auth centrales; la migración account-level ya quedó completa y la migración admin comenzó. Quedan 5 áreas con mocks locales por migrar: `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`.
+- Migración incremental ya aplicada en `src/components/pages/AuthPage/AuthPage.test.tsx`, `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx`, `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx`, `src/components/pages/AccountPage/AccountPage.test.tsx`, `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx`, `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx`, `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx` y `src/components/pages/AdminPage/AdminPage.test.tsx`.
+- Adopción actual: 8 suites usan fixtures auth centrales; la migración account-level ya quedó completa y la migración admin ya incluye `AdminMotorcycleReviewsPage.test.tsx` y `AdminPage.test.tsx`. Quedan 4 áreas con mocks locales por migrar: `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`.
 - Cobertura de rama `feature/review-auth-only-contract`: el test `abre ReviewModal desde "Escribir review" cuando hay sesión` prueba el camino autenticado, y `muestra el hint de login al pulsar "Escribir review" sin sesión y no abre el modal` cubre el camino no-auth con `aria-disabled="true"`, visibilidad del hint y aserción de que `createReview` no se llama.
 
 Pendiente residual (migración incremental):
-- Reducir `mockAuth` locales repetidos en las 5 áreas pendientes (AdminPage, CommunityReviewsPage, MotorcycleCommunityPage, ReviewModal y AuthProvider).
+- Reducir `mockAuth` locales repetidos en las 4 áreas pendientes (CommunityReviewsPage, MotorcycleCommunityPage, ReviewModal y AuthProvider).
 - Mantener estrategia incremental por archivo para no romper cobertura existente.
 - Añadir cobertura de transición `onAuthStateChange` mientras el perfil aún se resuelve.
 - Validar auth/RLS real con smoke E2E controlado en staging; Vitest solo valida mocks y texto de schema.

@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
   getReviewReports,
   resolveReportWithReviewStatus,
@@ -26,6 +26,7 @@ import {
   type ModelRequest,
   type ModelRequestStatus,
 } from '../../../services/modelRequestService';
+import { createAuthState, createAuthUser, createSession, createUserProfile, mockAdminAuthState } from '../../../test/fixtures/auth';
 
 vi.mock('../../../features/auth', () => ({
   useAuth: vi.fn(),
@@ -65,19 +66,17 @@ const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
 const updateReviewReplyStatusMock = vi.mocked(updateReviewReplyStatus);
 const getAllModelRequestsMock = vi.mocked(getAllModelRequests);
 const updateModelRequestStatusMock = vi.mocked(updateModelRequestStatus);
-
-const adminAuth = {
-  user: { id: 'admin-1', email: 'admin@motoatlas.com' },
-  session: { access_token: 'admin-token' },
-  profile: { id: 'admin-1', displayName: 'Admin Rider', avatarUrl: null, role: 'admin' },
-  isAuthenticated: true,
-  isAdmin: true,
-  isLoading: false,
-  signIn: vi.fn(),
-  signUp: vi.fn(),
-  signOut: vi.fn(),
-  refreshProfile: vi.fn(),
-};
+const signInMock = vi.fn();
+const signUpMock = vi.fn();
+const signOutMock = vi.fn();
+const refreshProfileMock = vi.fn();
+const {
+  signIn: _adminSignIn,
+  signUp: _adminSignUp,
+  signOut: _adminSignOut,
+  refreshProfile: _adminRefreshProfile,
+  ...adminAuthState
+} = mockAdminAuthState;
 
 const reports: readonly AdminReviewReport[] = [
   {
@@ -158,13 +157,85 @@ function buildReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleRevie
   };
 }
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({ ...adminAuth, ...overrides } as never);
+type MockAuthOverrides = Partial<AuthContextValue> & {
+  user?: Partial<NonNullable<AuthContextValue['user']>> | null;
+  session?: Partial<NonNullable<AuthContextValue['session']>> | null;
+  profile?: Partial<NonNullable<AuthContextValue['profile']>> | null;
+};
+
+function mockAuth(overrides: MockAuthOverrides = {}) {
+  const {
+    user: userOverrides,
+    session: sessionOverrides,
+    profile: profileOverrides,
+    signIn,
+    signUp,
+    signOut,
+    refreshProfile,
+    ...stateOverrides
+  } = overrides;
+
+  const adminUser = createAuthUser({
+    id: 'admin-1',
+    email: 'admin@motoatlas.com',
+    user_metadata: {
+      display_name: 'Admin Rider',
+      avatar_url: null,
+    },
+  });
+  const adminProfile = createUserProfile({
+    id: 'admin-1',
+    displayName: 'Admin Rider',
+    avatarUrl: null,
+    role: 'admin',
+  });
+  const adminSession = createSession({ access_token: 'admin-token', user: adminUser });
+
+  const resolvedUser = userOverrides === null
+    ? null
+    : createAuthUser({
+        ...adminUser,
+        ...(userOverrides ?? {}),
+      });
+
+  const resolvedProfile = profileOverrides === null
+    ? null
+    : createUserProfile({
+        ...adminProfile,
+        ...(profileOverrides ?? {}),
+      });
+
+  const resolvedSession = sessionOverrides === null
+    ? null
+    : createSession({
+        ...adminSession,
+        ...(sessionOverrides ?? {}),
+        user: sessionOverrides?.user ?? resolvedUser ?? adminUser,
+      });
+
+  useAuthMock.mockReturnValue(createAuthState({
+    ...adminAuthState,
+    ...stateOverrides,
+    user: resolvedUser,
+    session: resolvedSession,
+    profile: resolvedProfile,
+    isAuthenticated: stateOverrides.isAuthenticated ?? true,
+    isAdmin: stateOverrides.isAdmin ?? true,
+    isLoading: stateOverrides.isLoading ?? false,
+    signIn: signIn ?? signInMock,
+    signUp: signUp ?? signUpMock,
+    signOut: signOut ?? signOutMock,
+    refreshProfile: refreshProfile ?? refreshProfileMock,
+  }) as never);
 }
 
 describe('AdminPage', () => {
   beforeEach(() => {
     useAuthMock.mockReset();
+    signInMock.mockReset();
+    signUpMock.mockReset();
+    signOutMock.mockReset().mockResolvedValue(undefined);
+    refreshProfileMock.mockReset();
     getReviewReportsMock.mockReset().mockResolvedValue(reports);
     getAllReviewsMock.mockReset().mockResolvedValue([]);
     resolveReportWithReviewStatusMock.mockReset().mockResolvedValue(undefined);
