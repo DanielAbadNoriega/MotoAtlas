@@ -74,10 +74,13 @@ Implementado (base):
 - nuevo uso migrado en batch 1: `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx`.
 - nuevo uso migrado en batch 2: `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx`.
 - nuevo uso migrado en batch 3: `src/components/pages/AccountPage/AccountPage.test.tsx`.
-- adopción auditada: 4 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx`, `AccountRequestsPage.test.tsx` y `AccountPage.test.tsx`); quedan 8 áreas con `mockAuth`/mocks locales de `useAuth`.
+- nuevo uso migrado en batch 4: `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx`.
+- nuevo uso migrado en batch 5: `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx`.
+- nuevo uso migrado en batch 6: `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx`.
+- adopción auditada: 7 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AccountMotorcycleReviewsPage.test.tsx` y `AdminMotorcycleReviewsPage.test.tsx`); la migración account-level quedó completa en batch 5, la migración admin ya empezó y quedan 5 áreas con `mockAuth`/mocks locales de `useAuth`.
 
 Pendiente residual (no bloqueante):
-- migración incremental de `mockAuth` repetidos en otras áreas (`AccountMotorcycleReviewsPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`).
+- migración incremental de `mockAuth` repetidos en áreas de mayor riesgo (`AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`).
 - integración realista que detecte el conflicto `ReviewModal` no-auth → RPC autenticada.
 - transición `onAuthStateChange` mientras el perfil/rol todavía se resuelve.
 - smoke E2E de RLS/roles y privilegios efectivos de funciones `security definer` en staging.
@@ -356,9 +359,14 @@ Cobertura actual relevante:
 - Focused Quality Gate del batch 1 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx` → `2` files / `16` tests passing.
 - Focused Quality Gate del batch 2 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx` → `2` files / `19` tests passing.
 - Focused Quality Gate del batch 3 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/AccountPage/AccountPage.test.tsx` → `2` files / `21` tests passing.
+- Focused Quality Gate del batch 4 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` → `2` files / `14` tests passing.
+- Focused Quality Gate del batch 5 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx` → `2` files / `16` tests passing.
+- Focused Quality Gate del batch 6 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx` → `2` files / `29` tests passing.
 - Aprendizaje de migración: mover una suite a fixtures centrales no debe alterar la forma del escenario original; si el test legacy tenía `profile: null`, no hay que introducir un `profile` por comodidad porque cambia el `authContext` derivado.
 - `createUserProfile()` solo debe entrar cuando la suite legacy ya tenía profile real; no se usa para “mejorar” un escenario que antes validaba `profile: null`.
 - Los defaults de fixture no deben pisar mocks de función específicos del test: por ejemplo, `signOutMock` debe seguir siendo el spy efectivo cuando el caso cubre logout.
+- En suites account-level, el estado autenticado por defecto también es parte del contrato legacy: si la suite arrancaba autenticada, la migración a fixtures debe conservar eso exactamente.
+- En suites admin, el cuidado extra es preservar `isAdmin`, `profile.role`, `user`, `session`, `isAuthenticated`, estados de loading/error y los spies locales (`signIn`, `signUp`, `signOut`, `refreshProfile`) sin que los defaults de fixture “mejoren” el escenario legacy.
 - Regla complementaria: `createUserProfile()` solo debe entrar cuando el test legacy ya tenía un perfil real; en suites account-level como `AccountRequestsPage`, eso preserva el contrato original sin reintroducir objetos inline.
 - `src/shared/reviews/useReviewReports.test.tsx` cubre el hook compartido de reportes:
   - hidratación con auth + ids normalizados

@@ -1,8 +1,9 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
 import { getReviewsByUserId, type MotorcycleReview, type MotorcycleReviewRidingStyle, type MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
+import { createAuthState, createAuthUser, createSession, createUserProfile, mockAuthenticatedAuthState } from '../../../test/fixtures/auth';
 import { AccountReviewsPage } from './AccountReviewsPage';
 
 vi.mock('../../../features/auth', () => ({
@@ -16,6 +17,7 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
 const useAuthMock = vi.mocked(useAuth);
 const getReviewsByUserIdMock = vi.mocked(getReviewsByUserId);
 const signOutMock = vi.fn();
+const { signIn: _authenticatedSignIn, signUp: _authenticatedSignUp, signOut: _authenticatedSignOut, refreshProfile: _authenticatedRefreshProfile, ...authenticatedAuthState } = mockAuthenticatedAuthState;
 
 function createReview(overrides: Partial<MotorcycleReview> = {}): MotorcycleReview {
   const id = overrides.id ?? 'review-1';
@@ -72,20 +74,23 @@ function buildReviewSet(count: number) {
   }));
 }
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({
-    user: { id: 'user-1', email: 'rider@motoatlas.com' },
-    session: { access_token: 'session-token' },
-    profile: { id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+function mockAuth(overrides: Partial<AuthContextValue> = {}) {
+  const authenticatedUser = createAuthUser({ id: 'user-1', email: 'rider@motoatlas.com' });
+
+  useAuthMock.mockReturnValue(createAuthState({
+    ...authenticatedAuthState,
+    user: authenticatedUser,
+    session: createSession({ access_token: 'session-token', user: authenticatedUser }),
+    profile: createUserProfile({ id: 'user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' }),
     isAuthenticated: true,
     isAdmin: false,
     isLoading: false,
-    signIn: vi.fn(),
-    signUp: vi.fn(),
-    signOut: signOutMock,
-    refreshProfile: vi.fn(),
     ...overrides,
-  } as never);
+    signIn: overrides.signIn ?? vi.fn(),
+    signUp: overrides.signUp ?? vi.fn(),
+    signOut: overrides.signOut ?? signOutMock,
+    refreshProfile: overrides.refreshProfile ?? vi.fn(),
+  }) as never);
 }
 
 async function renderWithReviews(reviews: readonly MotorcycleReview[]) {
