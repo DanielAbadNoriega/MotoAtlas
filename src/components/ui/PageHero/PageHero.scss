@@ -1,10 +1,9 @@
 @use '../../../styles/variables' as *;
 @use '../../../styles/mixins' as *;
 
-// PageHero es la base normalizada del patrón `CommunityHero` (rama
-// feature/page-hero-community-base). Mantiene las mismas clases CSS para
-// preservar el visual y mantener compatibilidad con overrides existentes
-// en AdminPage y otras páginas consumidoras.
+// PageHero es la base normalizada del patrón `CommunityHero`. Este archivo
+// debe contener únicamente estructura y estilos genéricos del componente;
+// cualquier tratamiento contextual vive en el SCSS de la página consumidora.
 
 .page-hero {
   align-items: center;
@@ -14,23 +13,27 @@
   padding: 8rem max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
   position: relative;
   text-align: left;
+}
 
-  > img {
-    filter: grayscale(0.32) contrast(1.1);
-    height: 100%;
-    inset: 0;
-    object-fit: cover;
-    opacity: 0.64;
-    position: absolute;
-    width: 100%;
-  }
+.page-hero__media {
+  inset: 0;
+  position: absolute;
+}
 
-  &::after {
-    background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0) 48%, transparent 100%);
-    content: '';
-    inset: 0;
-    position: absolute;
-  }
+.page-hero__image {
+  filter: grayscale(0.32) contrast(1.1);
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0.64;
+  position: absolute;
+  width: 100%;
+}
+
+.page-hero__overlay {
+  background: linear-gradient(to top, $color-surface 0%, rgba($color-surface, 0) 48%, transparent 100%);
+  inset: 0;
+  position: absolute;
 }
 
 .page-hero__content {

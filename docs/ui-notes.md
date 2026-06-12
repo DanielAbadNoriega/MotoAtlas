@@ -261,7 +261,7 @@ Nota: el score de rankings (0–10 con icono `analytics`) es independiente del r
 
 La ruta `#/comunidad/reviews` funciona como entrada pública a reviews `approved`: los bloques editoriales superiores muestran reviews individuales, mientras `Garaje de la comunidad` agrupa reviews por moto y pagina 9 modelos por página.
 
-El hero de `#/comunidad/reviews` replica el patrón visual del hero oficial de Home: imagen full-bleed con overlay/degradado, texto centrado y CTAs. Usa `src/assets/hero-community.png`. **Este hero local queda intacto en la rama `feature/page-hero-community-base` y queda pendiente para Fase B** (no se normaliza a `PageHero` en esta fase porque su estructura con doble gradient, `fade-in` y overlay decorativo no encaja en el patrón base).
+El hero de `#/comunidad/reviews` usa el shared `PageHero` desde la rama `feature/page-hero-community-reviews` (Fase B), y la rama `feature/page-hero-purity-cleanup` limpia su implementación para mantener `PageHero.scss` puro. La página pasa `className="community-reviews-page__hero"` sin añadir props nuevas a la API TypeScript; `CommunityReviewsPage.scss` es dueña del full-bleed, doble gradient, filtro local, contenido centrado y `fade-in`. Se conserva `src/assets/hero-community.png`. Ya no muestra los CTAs `Explorar reviews` ni `Buscar moto para opinar`, porque la navegación comunitaria vivirá en una futura navbar/subnav.
 
 Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews destacadas`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Garaje de la comunidad`, que agrupa por `motorcycleId` y calcula rating medio (sobre 5 con estrella), número de reviews, última review en formato corto DD.MM.YY, y uso más repetido. El panel de filtros es apply-on-change en tiempo real; el botón "Aplicar" cierra el panel en mobile. El aside `Insights en vivo` (kicker "Pulso de la comunidad · Actividad reciente") muestra 4 signals comunitarios con copy conservadora: "Moto más comentada" (moto con más reviews), "Review más útil" (mayor `helpfulCount`), "Segmento más activo" (label friendly de `segmentLabels`) y "Uso más activo" (label friendly de `accountReviewRidingStyleLabels`). Subtítulo: "Señales según reviews aprobadas, no en tiempo real." Polling suave cada 60 segundos, footer "Datos aproximados · {refreshLabel} · Según reviews aprobadas". No se renderizan: review con más kilómetros, rating medio global, ni datos sensibles de usuario. Si en el futuro product copy decide renombrar el h2 a "Pulso de la comunidad", será un cambio puntual con su propio test. Las cards del garaje usan `MotorcycleGarageCard` (componente extraído en `src/components/motorcycles/MotorcycleGarageCard/`), con shield de confianza junto al rating /5 con estrella, tooltip visual (Alta/Media/Baja confianza) y CTAs reducidos "Reviews" y "Ficha técnica". `MotorcycleGarageCard` también se reutiliza en `#/buscador` con acciones compactas para comparar.
 
@@ -466,17 +466,18 @@ Componente compartido `src/components/ui/PageHero/PageHero.tsx` introducido en l
 - `children?` (opcional): slot para contenido extra al final del `__content`. Las páginas admin inyectan el chip de admin activo.
 - `actions?` (opcional): array de `PageHeroAction` (`{ href?, onClick?, label }`) que renderiza un grupo de CTAs con estilo `:first-child` como primary auto-aplicado.
 
-Migraciones ya completadas en la rama `feature/page-hero-community-base`:
+Migraciones ya completadas en Fases A/B:
 - 4 páginas admin (Dashboard, Reviews, Requests, Moderation): reemplazan `CommunityHero` por `PageHero` sin cambio visual.
 - `CommunityRankingsPage` (`#/comunidad/rankings`): migra a `PageHero` y **quita las CTAs del hero** (`Explorar rankings`, `Ver comunidad`).
 - `TopRatedMotorcyclesPage` (renderiza `#/comunidad` y `#/motos-mejor-valoradas`): nueva prop opcional `variant?: 'community' | 'topRated'`. En `variant="community"` el hero queda sin CTAs; en `variant="topRated"` se preservan `Explorar comunidades` y `Comparar motos`. `App.tsx` pasa `variant` según la ruta activa.
+- `CommunityReviewsPage` (`#/comunidad/reviews`, rama `feature/page-hero-community-reviews`, Fase B): reemplaza el hero local por `PageHero` y elimina sus CTAs.
 
 `CommunityHero` (`src/components/ui/CommunityHero/CommunityHero.tsx`) se reconvirtió en **thin wrapper deprecated** de `PageHero` para mantener compatibilidad con importadores externos. Su SCSS (`CommunityHero.scss`) queda en el repo pero ya no es referenciado por el wrapper ni por consumidores activos; se eliminará cuando se complete la migración de consumidores externos (si los hubiera).
 
-`CommunityReviewsPage` (`#/comunidad/reviews`) **no se migra en esta fase**. Su hero local tiene detalles decorativos únicos (doble gradient, `fade-in`, overlay con imagen `hero-community.png` filtrada con `grayscale(0.45) contrast(1.1)`) que no encajan en el patrón base de `PageHero`. Queda pendiente para Fase B cuando se decida cómo tratar heroes con gradient personalizado o cómo parametrizar el SCSS de `PageHero` para aceptar `imageFilter`, `gradient`, `align` y `overlay` por variante.
+La limpieza post-Fase B no amplía la API TypeScript de `PageHero`: el `className` existente permite que el styling contextual viva en la página consumidora (`.community-reviews-page__hero`) sin dejar selectores page-specific dentro de `PageHero.scss`. Así se preservan doble gradient, `fade-in`, filtro de imagen y alineación centrada sin generalizar props visuales.
 
-Pendiente para Fase B (no incluido en este cambio):
-- Migrar `CommunityReviewsPage` y, eventualmente, los heroes de `BikeDetailPage`, `MotorcycleCommunityPage`, `AccountPage` y las páginas estáticas.
+Pendiente para Fases C/D (no incluido en este cambio):
+- Migrar los heroes de `BikeDetailPage`, `MotorcycleCommunityPage`, `AccountPage` y las páginas estáticas.
 - Decidir `HeroAction` system (rama `feature/hero-cta-audit` ya documentó la dirección).
 - Consolidar variantes del `Button` shared con la tabla de la fase 13.1 de `product-roadmap.md`.
 - Mobile-first de Fase 13b con validación visual en Stitch.

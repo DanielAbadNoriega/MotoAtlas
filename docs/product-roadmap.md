@@ -1305,7 +1305,7 @@ Al cerrar funcionalidades principales:
 
 ### 13.1 Backlog: Unificación de Hero, CTAs y Button System
 
-Estado: **Fase A implementada** (rama `feature/page-hero-community-base`). Fases B/C/D pendientes.
+Estado: **Fases A/B implementadas** (ramas `feature/page-hero-community-base` y `feature/page-hero-community-reviews`). Fases C/D pendientes.
 
 No es implementación. Es una tarea de documentación y planificación futura.
 
@@ -1325,15 +1325,18 @@ No es implementación. Es una tarea de documentación y planificación futura.
 - `CommunityHero` reusado como thin wrapper deprecated de `PageHero` para mantener compatibilidad con importadores externos.
 - Sin cambios de schema/RLS/auth/routes.
 
-**Fase B — pendiente (próximo paso natural):**
-- Migrar `CommunityReviewsPage` (hero local con doble gradient, `fade-in`, overlay con `hero-community.png`) a `PageHero` con nuevas variantes de SCSS (`imageFilter`, `gradient`, `align`, `overlay`).
-- Decidir `HeroAction` system con tipos de acción diferenciados (anchor, button, `AuthRequiredAction`-aware).
+**Fase B — implementada** (rama `feature/page-hero-community-reviews`):
+- `CommunityReviewsPage` (`#/comunidad/reviews`) migra su hero local a `PageHero`.
+- No se amplía la API TypeScript: la fase inicial reutiliza `className`, y la limpieza posterior en `feature/page-hero-purity-cleanup` deja `PageHero.scss` sin selectores page-specific. El tratamiento visual queda movido a `CommunityReviewsPage.scss` bajo `className="community-reviews-page__hero"` para conservar `hero-community.png`, full-bleed, doble gradient, filtro, `fade-in` y contenido centrado.
+- Se eliminan los CTAs `Explorar reviews` y `Buscar moto para opinar`; la navegación comunitaria vivirá en una futura navbar/subnav.
+- Sin cambios en otros heroes, bloques editoriales, filtros, garaje, insights, acciones de reviews, schema/RLS/auth/routes.
 
 **Fase C — pendiente:**
 - Migrar los heroes de `BikeDetailPage`, `MotorcycleCommunityPage`, `AccountPage` y las páginas estáticas. Cada uno tiene detalles decorativos únicos (badge chip, spec grid, grid de puntos, layout 2-col para form) que requerirán parametrizar `PageHero` con slots adicionales o aceptar children con sus propios layouts.
 - Resolver el reuso cross-page de clases de hero (deuda actual: `AccountMotorcycleReviewsPage` y `AdminMotorcycleReviewsPage` reusan clases de `MotorcycleCommunityPage`).
 
 **Fase D — pendiente:**
+- Decidir `HeroAction` system con tipos de acción diferenciados (anchor, button, `AuthRequiredAction`-aware).
 - Sistema de variantes de botón/acción a documentar:
   - `primary`, `secondary`, `ghost`, `glass`, `glass-primary`, `glass-secondary`, `danger`, `success`, `link`.
   - Definir la semántica de cada variante y cuándo usar cada una.

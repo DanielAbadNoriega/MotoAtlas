@@ -35,7 +35,15 @@ export function PageHero({
   return (
     <section className={heroClassName}>
       {imageSrc ? (
-        <img src={imageSrc} alt={imageAlt ?? ''} aria-hidden={imageAlt ? undefined : 'true'} />
+        <div className="page-hero__media" aria-hidden={imageAlt ? undefined : 'true'}>
+          <img
+            className="page-hero__image"
+            src={imageSrc}
+            alt={imageAlt ?? ''}
+            aria-hidden={imageAlt ? undefined : 'true'}
+          />
+          <span className="page-hero__overlay" />
+        </div>
       ) : null}
       <div className="page-hero__content">
         {eyebrow ? <span className="page-hero__eyebrow">{eyebrow}</span> : null}

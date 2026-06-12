@@ -169,11 +169,12 @@ describe('CommunityReviewsPage', () => {
   it('renderiza la landing pública y usa filtros responsive', async () => {
     await renderPage([createCommunityReview({ id: 'community-review-1' })]);
 
-    expect(screen.getByRole('heading', { name: /Reviews de la comunidad/i })).toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveAttribute('aria-labelledby', 'community-reviews-title');
+    expect(screen.getByRole('heading', { name: /Reviews de la comunidad/i })).toHaveAttribute('id', 'community-reviews-title');
     expect(screen.getByText('Opiniones reales de propietarios: kilómetros, uso, pros, contras y experiencias para elegir mejor tu próxima moto.')).toBeInTheDocument();
-    expect(screen.getByTestId('community-reviews-hero-image').getAttribute('src')).toContain('hero-community.png');
-    expect(screen.getByRole('button', { name: 'Explorar reviews' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Buscar moto para opinar' })).toHaveAttribute('href', '#community-reviews-garage-header');
+    expect(document.querySelector('img[src*="hero-community.png"]')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Explorar reviews' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Buscar moto para opinar' })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Bloque editorial de reviews' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Reviews destacadas' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Últimos reportes' })).toBeInTheDocument();

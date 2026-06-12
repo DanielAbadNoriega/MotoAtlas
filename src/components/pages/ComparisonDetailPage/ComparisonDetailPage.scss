@@ -26,9 +26,7 @@
   width: 100%;
 
   &::before {
-    background:
-      linear-gradient(180deg, rgba($color-surface-lowest, 0.46), rgba($color-surface, 0.92) 76%, $color-surface 100%),
-      radial-gradient(circle at 50% 18%, rgba($color-accent, 0.22), transparent 30rem);
+    background: linear-gradient(to top, $color-surface-lowest 0%, rgba($color-surface, 0) 48%, transparent 100%);
     content: '';
     inset: 0;
     pointer-events: none;
@@ -327,7 +325,6 @@
   align-items: center;
   gap: 4rem;
   padding: 6rem max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop));
-  border-block: 1px solid rgba($color-outline-variant, 0.1);
   background: $color-surface-lowest;
 
   h2 {
