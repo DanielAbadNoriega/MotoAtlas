@@ -173,7 +173,8 @@
 - `src/test/fixtures/auth.test.ts` valida contrato base de fixtures.
 - `src/components/pages/AuthPage/AuthPage.test.tsx` migrado a fixtures centrales (sin Supabase real).
 - `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx` migrado en batch 1 a fixtures centrales, preservando el escenario autenticado original con `profile: null`.
-- Adopción actual: 2 suites ya usan fixtures centrales (`AuthPage.test.tsx` y `StaticInfoPages.test.tsx`); quedan 10 áreas con mocks locales detectadas: `AccountMotorcycleReviewsPage.test.tsx`, `AccountPage.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`.
+- `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx` migrado en batch 2 a fixtures centrales, preservando el escenario legacy no-auth con `user: null`, `session: null`, `profile: null` e `isAuthenticated: false`, y manteniendo el perfil del escenario autenticado porque la suite original ya lo tenía.
+- Adopción actual: 3 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx` y `AccountRequestsPage.test.tsx`); quedan 9 áreas con mocks locales detectadas: `AccountMotorcycleReviewsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`.
 
 ### Catálogo / imágenes
 - Pipeline base de imágenes operativo: assets locales por `motorcycle.id` en `public/images/motorcycles/*.webp`.
