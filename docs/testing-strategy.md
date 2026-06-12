@@ -71,10 +71,11 @@ Implementado (base):
   - sesión mock
 - cobertura base en `src/test/fixtures/auth.test.ts`.
 - primer uso migrado en `src/components/pages/AuthPage/AuthPage.test.tsx`.
-- adopción auditada: 11 suites mockean `useAuth`; solo `AuthPage.test.tsx` usa la fixture central y quedan 10 suites con `mockAuth` local.
+- nuevo uso migrado en batch 1: `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx`.
+- adopción auditada: 2 suites ya usan fixtures centrales (`AuthPage.test.tsx` y `StaticInfoPages.test.tsx`); quedan 10 áreas con `mockAuth`/mocks locales de `useAuth`.
 
 Pendiente residual (no bloqueante):
-- migración incremental de `mockAuth` repetidos en otros tests (Account*, Community*, ReviewModal, StaticInfoPages, Admin*).
+- migración incremental de `mockAuth` repetidos en otros tests (Account*, Community*, ReviewModal, Admin* y `AuthProvider.test.tsx`).
 - integración realista que detecte el conflicto `ReviewModal` no-auth → RPC autenticada.
 - transición `onAuthStateChange` mientras el perfil/rol todavía se resuelve.
 - smoke E2E de RLS/roles y privilegios efectivos de funciones `security definer` en staging.
@@ -350,6 +351,8 @@ Cobertura actual relevante:
   - blocked (`unauthenticated`, `own_review`, `reported`, `pending`)
   - success/error de Helpful y NotHelpful
   - pending entra/sale y evita doble request durante la request
+- Focused Quality Gate del batch 1 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/StaticInfoPages/StaticInfoPages.test.tsx` → `2` files / `16` tests passing.
+- Aprendizaje de migración: mover una suite a fixtures centrales no debe alterar la forma del escenario original; si el test legacy tenía `profile: null`, no hay que introducir un `profile` por comodidad porque cambia el `authContext` derivado.
 - `src/shared/reviews/useReviewReports.test.tsx` cubre el hook compartido de reportes:
   - hidratación con auth + ids normalizados
   - guards (`unauthenticated`, `own_review`, `already_reported`)

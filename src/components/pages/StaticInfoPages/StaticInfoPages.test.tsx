@@ -2,8 +2,15 @@ import { readFileSync } from 'node:fs';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAuth } from '../../../features/auth';
+import { type AuthContextValue, useAuth } from '../../../features/auth';
 import { createModelRequest } from '../../../services/modelRequestService';
+import {
+  createAuthState,
+  createAuthUser,
+  createSession,
+  mockAuthenticatedAuthState,
+  mockUnauthenticatedAuthState,
+} from '../../../test/fixtures/auth';
 import {
   DataMethodologyPage,
   DataSourcesPage,
@@ -23,20 +30,15 @@ vi.mock('../../../services/modelRequestService', () => ({
 const useAuthMock = vi.mocked(useAuth);
 const createModelRequestMock = vi.mocked(createModelRequest);
 
-function mockAuth(overrides = {}) {
-  useAuthMock.mockReturnValue({
-    user: null,
-    session: null,
-    profile: null,
-    isAuthenticated: false,
-    isAdmin: false,
-    isLoading: false,
+function mockAuth(overrides: Partial<AuthContextValue> = {}) {
+  useAuthMock.mockReturnValue(createAuthState({
+    ...mockUnauthenticatedAuthState,
     signIn: vi.fn(),
     signUp: vi.fn(),
     signOut: vi.fn(),
     refreshProfile: vi.fn(),
     ...overrides,
-  } as never);
+  }) as never);
 }
 
 describe('StaticInfoPages', () => {
@@ -241,10 +243,14 @@ describe('StaticInfoPages', () => {
   });
 
   it('pasa authContext al service cuando el usuario está autenticado', async () => {
+    const authenticatedUser = createAuthUser({ id: 'user-123', email: 'rider@motoatlas.com' });
+
     mockAuth({
+      ...mockAuthenticatedAuthState,
       isAuthenticated: true,
-      session: { access_token: 'session-token' },
-      user: { id: 'user-123', email: 'rider@motoatlas.com' },
+      profile: null,
+      session: createSession({ access_token: 'session-token', user: authenticatedUser }),
+      user: authenticatedUser,
     });
     const user = userEvent.setup();
     render(<RequestModelPage />);
