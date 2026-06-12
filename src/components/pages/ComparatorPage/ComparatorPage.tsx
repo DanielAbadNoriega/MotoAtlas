@@ -55,6 +55,11 @@ function persistAndNavigateToComparison(ids: readonly Bike['id'][], motorcycles:
   navigateToHash(getCompareHashForIds(ids, motorcycles));
 }
 
+function clearComparisonAndNavigateToEmpty() {
+  saveCompareQueue([]);
+  navigateToHash('#/comparador');
+}
+
 function ComparatorSetupHero({ children, description, title }: ComparatorSetupHeroProps) {
   return (
     <main className="comparison-detail comparison-detail--empty" aria-labelledby="comparison-empty-title">
@@ -135,25 +140,62 @@ export function ComparatorPage({ bikes, ignoredBikeCount = 0, missingBikeCount =
         title="Añade otra moto para comparar"
         description={`${displayName} ya está en la cola. Añade una segunda moto para activar el comparador dinámico.`}
       >
-        {addableBike ? (
-          <div className="comparison-detail__empty-actions">
-            <button
-              className="button button--primary"
-              type="button"
-              onClick={() => persistAndNavigateToComparison([bike.id, addableBike.id], motorcycles)}
-              aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
-            >
-              Añadir {getSafeBikeDisplayName(addableBike)}
-            </button>
-            <a className="button button--secondary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
-              Buscar otra moto
-            </a>
+        <>
+          <div className="comparison-detail__empty-selection" aria-label="Moto seleccionada para comparar">
+            <article className="comparison-detail__hero-bike comparison-detail__hero-bike--center">
+              <MotorcycleImage motorcycle={bike} />
+              <div>
+                <span>
+                  {getBikeBrandLabel(bike)} · {getBikeSegmentLabel(bike)} · {getBikeA2Label(bike)}
+                </span>
+                <h2>{displayName}</h2>
+
+                <div className="comparison-detail__data-notes" aria-label={`Calidad de datos de ${displayName}`}>
+                  {getBikeDataQualityNotes(bike).map((note) => (
+                    <small key={note.id} title={note.description}>
+                      {note.label}
+                    </small>
+                  ))}
+                </div>
+
+                <div className="comparison-detail__hero-bike-actions">
+                  <a href={getBikeDetailHash(bike)} aria-label={`Ver ficha de ${displayName}`}>
+                    Ver ficha
+                  </a>
+                  <button
+                    type="button"
+                    onClick={clearComparisonAndNavigateToEmpty}
+                    aria-label={`Quitar ${displayName} de la comparativa`}
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </div>
+            </article>
           </div>
-        ) : (
-          <a className="button button--primary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
-            Buscar otra moto
-          </a>
-        )}
+
+          <div className="comparison-detail__empty-actions">
+            {addableBike ? (
+              <>
+                <button
+                  className="button button--primary"
+                  type="button"
+                  onClick={() => persistAndNavigateToComparison([bike.id, addableBike.id], motorcycles)}
+                  aria-label={`Añadir ${getSafeBikeDisplayName(addableBike)} a la comparativa`}
+                >
+                  Añadir {getSafeBikeDisplayName(addableBike)}
+                </button>
+                <a className="button button--secondary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
+                  Buscar otra moto
+                </a>
+              </>
+            ) : (
+              <a className="button button--primary" href={getModifyComparisonSearchHash()} onClick={() => saveCompareQueue([bike.id])}>
+                Buscar otra moto
+              </a>
+            )}
+          </div>
+        </>
       </ComparatorSetupHero>
     );
   }
