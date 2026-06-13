@@ -85,6 +85,7 @@ RLS:
 - Las reviews `approved` son públicas; las no aprobadas solo son visibles para su propietario.
 - El formulario usa la RPC atómica `create_motorcycle_review_with_aspects`, que inserta review + aspectos y obtiene `user_id` desde `auth.uid()`.
 - **Escribir review es auth-only** (rama `feature/review-auth-only-contract`): el CTA en `BikeDetailPage` (Comunidad tab) y `MotorcycleCommunityPage` (hero + empty) está cerrado para anónimos. Los usuarios autenticados abren `ReviewModal` con flujo normal; los anónimos ven el botón con `aria-disabled="true"`, focus/click disponibles, y al pulsarlo aparece el hint `Inicia sesión para escribir una review.` durante ~4s sin abrir el modal ni llamar a la RPC. No se ha introducido un CTA a `#/login` para mantener el cambio mínimo: el hint textual ya dirige al usuario, y el patrón real de cross-link a login se consolidará en la fase global de unificación de Hero/CTAs.
+- `ReviewModal` ahora añade una defensa local coherente con ese contrato: si el modal se abriese inesperadamente sin `reviewAuthContext`, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. Esto NO habilita reviews anónimas ni cambia RPC/RLS/schema/Supabase; la prevención normal sigue en `AuthRequiredAction` y wrappers equivalentes.
 - El alias mostrado sale del `display_name` del perfil y no es editable en UI, pero la RPC acepta `p_user_name` del cliente. Antes de perfiles públicos/reputación debe derivarse o validarse server-side para evitar suplantación de alias.
 
 ## Aspectos técnicos
@@ -147,7 +148,7 @@ Pendiente residual (post-migración):
 
 ## Plan recomendado
 
-1. **Fase 1 — cerrar gaps docs/tests:** rama `feature/review-auth-only-contract` ya cerró el contrato de `Escribir review` (auth-only con hint no-auth) y el hardening de `AuthProvider` ya cerró la transición de perfil/loading. Pendiente: identidad/alias server-side.
-2. **Fase 2 — fixtures/hardening:** migración incremental ya cerrada; siguiente paso técnico asociado es añadir smoke de RLS/roles en staging.
+1. **Fase 1 — contrato auth local cerrado:** `feature/review-auth-only-contract` cerró el CTA auth-only con hint no-auth, `fix/review-modal-auth-contract` cerró el contrato local UI/test del modal y el hardening de `AuthProvider` ya cerró la transición de perfil/loading. Pendiente: identidad/alias server-side.
+2. **Fase 2 — validación/hardening:** siguiente paso técnico recomendado es derivar/validar `p_user_name` server-side; el smoke de RLS/roles en staging queda como tarea separada de validación.
 3. **Fase 3 — foundation de cuenta/social:** recuperación de cuenta, identidad/alias server-side y privacidad.
 4. **Fase 4 — recién entonces:** perfiles públicos, gamificación y notificaciones.
