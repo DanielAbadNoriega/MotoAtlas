@@ -270,40 +270,14 @@ drop policy if exists "Public can insert pending motorcycle reviews" on public.m
 drop policy if exists "Public motorcycle reviews can be created" on public.motorcycle_reviews;
 drop policy if exists "Anonymous motorcycle reviews can be created" on public.motorcycle_reviews;
 drop policy if exists "Authenticated motorcycle reviews can be created" on public.motorcycle_reviews;
-create policy "Anonymous motorcycle reviews can be created"
-on public.motorcycle_reviews
-for insert
-to anon
-with check (
-  status = 'pending'
-  and motorcycle_id is not null
-  and user_id is null
-  and length(trim(user_name)) > 0
-  and rating between 1 and 5
-  and riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')
-  and length(trim(comment)) > 0
-  and verified = false
-  and source = 'user'
-);
-
-create policy "Authenticated motorcycle reviews can be created"
-on public.motorcycle_reviews
-for insert
-to authenticated
-with check (
-  status = 'pending'
-  and motorcycle_id is not null
-  and user_id = auth.uid()
-  and length(trim(user_name)) > 0
-  and rating between 1 and 5
-  and riding_style in ('ciudad', 'viaje', 'offroad', 'deportivo', 'pasajero', 'diario')
-  and length(trim(comment)) > 0
-  and verified = false
-  and source = 'user'
-);
 
 grant select on public.motorcycle_reviews to anon, authenticated;
-grant insert on public.motorcycle_reviews to anon, authenticated;
+revoke insert, update, delete, truncate, references, trigger
+on public.motorcycle_reviews
+from anon;
+revoke insert, update, delete, truncate, references, trigger
+on public.motorcycle_reviews
+from authenticated;
 grant update (status) on public.motorcycle_reviews to authenticated;
 
 create table if not exists public.motorcycle_review_aspects (
@@ -989,6 +963,8 @@ declare
   v_user_id uuid;
   v_review_id uuid;
   v_aspect jsonb;
+  v_profile_display_name text;
+  v_review_user_name text;
   v_review public.motorcycle_reviews;
 begin
   if not exists (select 1 from public.motorcycles where id = p_motorcycle_id) then
@@ -997,10 +973,6 @@ begin
 
   if p_motorcycle_id is null or length(trim(p_motorcycle_id)) = 0 then
     raise exception 'motorcycle_id es obligatorio.';
-  end if;
-
-  if p_user_name is null or length(trim(p_user_name)) = 0 then
-    raise exception 'user_name es obligatorio.';
   end if;
 
   if p_rating is null or p_rating < 1 or p_rating > 5 then
@@ -1029,6 +1001,16 @@ begin
     raise exception 'Authentication required.';
   end if;
 
+  select display_name
+  into v_profile_display_name
+  from public.user_profiles
+  where id = v_user_id;
+
+  v_review_user_name := coalesce(
+    nullif(trim(v_profile_display_name), ''),
+    'Usuario MotoAtlas'
+  );
+
   insert into public.motorcycle_reviews (
     motorcycle_id,
     user_id,
@@ -1046,7 +1028,7 @@ begin
   ) values (
     p_motorcycle_id,
     v_user_id,
-    trim(p_user_name),
+    v_review_user_name,
     p_rating,
     p_riding_style,
     case when p_ownership_months is null then null else p_ownership_months end,
@@ -1101,6 +1083,12 @@ begin
 end;
 $$;
 
+revoke execute on function public.create_motorcycle_review_with_aspects(
+  text, text, integer, text, integer, integer, text, text[], text[], jsonb
+) from public;
+revoke execute on function public.create_motorcycle_review_with_aspects(
+  text, text, integer, text, integer, integer, text, text[], text[], jsonb
+) from anon;
 grant execute on function public.create_motorcycle_review_with_aspects(
   text, text, integer, text, integer, integer, text, text[], text[], jsonb
 ) to authenticated;

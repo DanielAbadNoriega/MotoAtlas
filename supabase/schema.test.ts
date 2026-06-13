@@ -56,37 +56,15 @@ describe('Supabase motorcycle_reviews RLS schema', () => {
     expect(schemaSql).toContain('create index if not exists motorcycle_reviews_user_id_idx');
   });
 
-  it('contiene una policy de INSERT anónima estricta para reviews pending sin user_id', () => {
+  it('elimina cualquier policy de INSERT directo a motorcycle_reviews', () => {
     expect(schemaSql).toContain('drop policy if exists "Public can insert pending motorcycle reviews" on public.motorcycle_reviews;');
     expect(schemaSql).toContain('drop policy if exists "Public motorcycle reviews can be created" on public.motorcycle_reviews;');
     expect(schemaSql).toContain('drop policy if exists "Anonymous motorcycle reviews can be created" on public.motorcycle_reviews;');
-    expect(schemaSql).toContain('create policy "Anonymous motorcycle reviews can be created"');
-    expect(schemaSql).toContain('for insert');
-    expect(schemaSql).toContain('to anon');
-    expect(schemaSql).toContain("status = 'pending'");
-    expect(schemaSql).toContain('motorcycle_id is not null');
-    expect(schemaSql).toContain('user_id is null');
-    expect(schemaSql).toContain('length(trim(user_name)) > 0');
-    expect(schemaSql).toContain('rating between 1 and 5');
-    expect(schemaSql).toContain('length(trim(comment)) > 0');
-    expect(schemaSql).toContain('verified = false');
-    expect(schemaSql).toContain("source = 'user'");
     expect(schemaSql).not.toContain('create policy "Public can insert pending motorcycle reviews"');
-  });
-
-  it('contiene una policy de INSERT autenticada estricta con user_id = auth.uid()', () => {
     expect(schemaSql).toContain('drop policy if exists "Authenticated motorcycle reviews can be created" on public.motorcycle_reviews;');
-    expect(schemaSql).toContain('create policy "Authenticated motorcycle reviews can be created"');
-    expect(schemaSql).toContain('for insert');
-    expect(schemaSql).toContain('to authenticated');
-    expect(schemaSql).toContain("status = 'pending'");
-    expect(schemaSql).toContain('motorcycle_id is not null');
-    expect(schemaSql).toContain('user_id = auth.uid()');
-    expect(schemaSql).toContain('length(trim(user_name)) > 0');
-    expect(schemaSql).toContain('rating between 1 and 5');
-    expect(schemaSql).toContain('length(trim(comment)) > 0');
-    expect(schemaSql).toContain('verified = false');
-    expect(schemaSql).toContain("source = 'user'");
+    expect(normalizedSchemaSql).not.toMatch(/create policy\s+"Anonymous motorcycle reviews can be created"\s+on public\.motorcycle_reviews\s+for insert/i);
+    expect(normalizedSchemaSql).not.toMatch(/create policy\s+"Authenticated motorcycle reviews can be created"\s+on public\.motorcycle_reviews\s+for insert/i);
+    expect(normalizedSchemaSql).not.toMatch(/create policy\s+"Public motorcycle reviews can be created"\s+on public\.motorcycle_reviews\s+for insert/i);
   });
 
   it('contiene una policy de SELECT pública solo para reviews approved', () => {
@@ -124,11 +102,18 @@ describe('Supabase motorcycle_reviews RLS schema', () => {
 
     expect(grants).toEqual([
       'grant select on public.motorcycle_reviews to anon, authenticated;',
-      'grant insert on public.motorcycle_reviews to anon, authenticated;',
       'grant update (status) on public.motorcycle_reviews to authenticated;',
     ]);
 
+    expect(normalizedSchemaSql).toContain('revoke insert, update, delete, truncate, references, trigger on public.motorcycle_reviews from anon;');
+    expect(normalizedSchemaSql).toContain('revoke insert, update, delete, truncate, references, trigger on public.motorcycle_reviews from authenticated;');
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+insert\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+anon\b/);
     expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+truncate\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+references\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+trigger\s+on\s+(?:table\s+)?public\.motorcycle_reviews\s+to\s+(anon|authenticated)/);
     expect(normalizedSchemaSql).not.toContain('grant update (comment) on public.motorcycle_reviews to authenticated;');
   });
 
@@ -744,13 +729,21 @@ describe('Supabase create_motorcycle_review_with_aspects RPC function', () => {
     expect(schemaSql).toContain("raise exception 'Authentication required.'");
   });
 
+  it('deriva user_name desde user_profiles.display_name del auth.uid()', () => {
+    expect(schemaSql).toMatch(/select\s+display_name\s+into\s+v_profile_display_name\s+from\s+public\.user_profiles\s+where\s+id\s*=\s*v_user_id;/);
+    expect(schemaSql).toMatch(/v_review_user_name\s*:=\s*coalesce\(\s*nullif\(trim\(v_profile_display_name\),\s*''\),\s*'Usuario MotoAtlas'\s*\)/);
+  });
+
+  it('no confía en p_user_name como identidad visible final', () => {
+    expect(schemaSql).toContain('p_user_name text');
+    expect(schemaSql).not.toContain("raise exception 'user_name es obligatorio.'");
+    expect(schemaSql).not.toMatch(/insert into public\.motorcycle_reviews[\s\S]*trim\(p_user_name\)/);
+    expect(schemaSql).toMatch(/insert\s+into\s+public\.motorcycle_reviews[\s\S]*user_name[\s\S]*values\s*\([\s\S]*v_review_user_name,/);
+  });
+
   it('valida motorcycle_id obligatorio y que existe', () => {
     expect(schemaSql).toContain("raise exception 'motorcycle_id es obligatorio.'");
     expect(schemaSql).toContain("raise exception 'Motocicleta no encontrada.'");
-  });
-
-  it('valida user_name no vacío', () => {
-    expect(schemaSql).toContain("raise exception 'user_name es obligatorio.'");
   });
 
   it('valida rating entre 1 y 5', () => {
@@ -787,16 +780,17 @@ describe('Supabase create_motorcycle_review_with_aspects RPC function', () => {
     expect(schemaSql).not.toMatch(/return query select/);
   });
 
-  it('concede execute solo a authenticated', () => {
+  it('concede execute solo a authenticated con revokes explícitos previos', () => {
+    expect(schemaSql).toContain('revoke execute on function public.create_motorcycle_review_with_aspects(');
+    expect(schemaSql).toMatch(/revoke execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) from public;/);
+    expect(schemaSql).toMatch(/revoke execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) from anon;/);
     expect(schemaSql).toContain('grant execute on function public.create_motorcycle_review_with_aspects(');
     expect(schemaSql).toMatch(/grant execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) to authenticated;/);
     expect(schemaSql).not.toMatch(/grant execute on function public\.create_motorcycle_review_with_aspects\([^)]+\) to anon;/);
   });
 
   it('inserta review con status pending y source user', () => {
-    expect(schemaSql).toMatch(/status\s*=\s*'pending'/);
-    expect(schemaSql).toMatch(/source\s*=\s*'user'/);
-    expect(schemaSql).toMatch(/verified\s*=\s*false/);
+    expect(schemaSql).toMatch(/'user',\s*false,\s*'pending'/);
   });
 });
 
