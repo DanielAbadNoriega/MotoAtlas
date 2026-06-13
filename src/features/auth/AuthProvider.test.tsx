@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSupabaseClient } from '../../shared/supabase/supabaseClient';
+import { createAuthUser, createSession, createUserProfile } from '../../test/fixtures/auth';
 import { AuthProvider, useAuth } from './AuthProvider';
 
 vi.mock('../../shared/supabase/supabaseClient', () => ({
@@ -21,11 +22,30 @@ function Consumer() {
 
 function createClientWithSession() {
   const unsubscribe = vi.fn();
+  const user = createAuthUser({
+    id: 'user-1',
+    email: 'rider@motoatlas.com',
+  });
+  const session = createSession({
+    access_token: 'token',
+    user,
+  });
+  const profile = createUserProfile({
+    id: user.id,
+    avatarUrl: null,
+    displayName: 'Rider Zero',
+    role: 'user',
+  });
   const profileQuery = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn().mockResolvedValue({
-      data: { id: 'user-1', display_name: 'Rider Zero', avatar_url: null, role: 'user' },
+      data: {
+        id: profile.id,
+        display_name: profile.displayName,
+        avatar_url: profile.avatarUrl,
+        role: profile.role,
+      },
       error: null,
     }),
   };
@@ -33,7 +53,7 @@ function createClientWithSession() {
   return {
     auth: {
       getSession: vi.fn().mockResolvedValue({
-        data: { session: { access_token: 'token', user: { id: 'user-1', email: 'rider@motoatlas.com' } } },
+        data: { session },
         error: null,
       }),
       onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe } } })),
