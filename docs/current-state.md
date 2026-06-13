@@ -285,7 +285,7 @@
 
 ## Siguiente paso
 
-- ...
+- **ReviewModal auth contract cleanup** (`fix/review-modal-auth-contract`): alinear `ReviewModal` y su suite local con el contrato auth-only vigente, auditando tests y comportamiento defensivo sin tocar schema/RLS/Supabase. El gap sigue abierto hasta que exista implementación + Quality Gate aprobado + cierre documental.
 
 ## Decisiones importantes
 

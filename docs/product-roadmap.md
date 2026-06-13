@@ -588,6 +588,7 @@ Base verificada:
 
 Gaps detectados antes de social/gamificación:
 - **P1:** `ReviewModal` siempre usa `create_motorcycle_review_with_aspects`, RPC autenticada; el envío anónimo efectivo falla aunque schema, `createReview` y el test mockeado sugieren que está permitido. Requiere decisión sobre aspectos anónimos antes de tocar código/schema.
+  - Próximo paso planificado: rama `fix/review-modal-auth-contract` para cleanup/auditoría local de `ReviewModal`, su suite y su comportamiento defensivo, alineándolos con el contrato auth-only vigente. Este paso NO habilita reviews anónimas, NO toca RPC/RLS/schema/Supabase y debe cerrarse con Quality Gate antes de re-documentar el gap.
 - Hardening cerrado: `AuthProvider` ya representa con `isLoading` la resolución asíncrona de perfil durante `onAuthStateChange`, no expone el nuevo snapshot autenticado antes de que perfil/rol queden settleados y descarta resoluciones async obsoletas con `authTransitionRef`.
 - **P2:** el alias de review autenticada se pasa como `p_user_name` desde cliente; antes de identidad pública/reputación debe derivarse o validarse server-side.
 - **P2:** smoke E2E/RLS real en staging y auditoría de privilegios efectivos de funciones `security definer`.
@@ -595,8 +596,8 @@ Gaps detectados antes de social/gamificación:
 - **P3 polish:** armonizar no-auth pasivo entre páginas; `MotorcycleCommunityPage` conserva acciones clicables con tooltip y bloqueo antes de red.
 
 Plan recomendado:
-1. cerrar decisión/tests de review anónima y hardening server-side de identidad visible;
-2. mantener la base de fixtures y el hardening de `AuthProvider` ya cerrados, y añadir smoke staging;
+1. ejecutar el cleanup/audit local de `ReviewModal` en `fix/review-modal-auth-contract`, alineando tests y comportamiento defensivo con el contrato auth-only actual sin tocar RPC/RLS/schema ni habilitar reviews anónimas;
+2. mantener la base de fixtures y el hardening de `AuthProvider` ya cerrados, y luego añadir smoke staging + hardening server-side de identidad visible;
 3. preparar recuperación de cuenta, identidad y privacidad;
 4. solo después habilitar capa social/gamificación/notificaciones.
 
