@@ -16,9 +16,10 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Baseline validado actual: `74 files / 1145 tests passing`.
+- `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
+- Baseline validado actual: `75 files / 1148 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `fix/review-user-name-server-side`, con seguimiento runtime/security aprobado en `chore/staging-rls-smoke` para confirmar el comportamiento desplegado de creación de reviews.
+- Último bloque estable validado: `feature/shared-radar-state`, sobre la base ya aprobada de `fix/review-user-name-server-side` + `chore/staging-rls-smoke`.
 
 ## 3. Foco inmediato recomendado
 
@@ -1372,14 +1373,19 @@ Estas convenciones son **dirección futura**, no implementación actual. Los ico
 
 ### 13a. Backlog futuro — estados compartidos de sistema
 
-Estado: futuro / no implementado.
+Estado: parcialmente implementado.
 
-Idea de backlog UI para una fase posterior, sin plan de implementación cerrado todavía:
+Estado actual:
+- `RadarState` **ya quedó implementado** en `src/shared/ui/states/RadarState/`, extraído directamente desde el patrón visual previo de `AccountReviewsEmptyState` sin rediseño adicional.
+- En esta primera fase, el consumidor real sigue siendo `AccountReviewsEmptyState` como wrapper fino y `AccountReviewsPage` como primer uso documentado.
+- La migración de más consumidores queda explícitamente fuera de esta fase.
+
+Pendiente / futuro:
 - `FullPageLoading` para auth/profile/account/admin loading de página completa.
-- `RadarState` generalizado desde `AccountReviewsEmptyState` para empty/loading states en rankings, filtros, reviews y garaje.
 - `ErrorState` para errores recuperables de carga.
+- migrar consumidores adicionales de empty state a `RadarState` de forma deliberada, una página por vez, sin asumir que rankings, garaje, reviews u otras vistas ya quedaron cubiertas.
 
-Regla: documentar esto solo como dirección futura de UI compartida; no está implementado ni forma parte del hardening actual de `AuthProvider`.
+Regla: `RadarState` ya forma parte de la base UI compartida, pero `FullPageLoading`, `ErrorState` y las migraciones adicionales siguen siendo dirección futura; no forman parte del hardening actual de `AuthProvider`.
 
 ## 13b. P3/P4 — Fase mobile-first (futura)
 

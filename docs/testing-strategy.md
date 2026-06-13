@@ -3,8 +3,9 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1145` tests passing (74 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1148` tests passing (75 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
+  - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsEmptyState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` → `3` files / `15` tests passing.
   - `supabase/schema.test.ts` → `1` file / `66` tests passing.
   - `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
 
@@ -370,7 +371,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `74` files / `1145` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused checks más recientes: `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
+- Baseline validado actual del proyecto: `75` files / `1148` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused checks más recientes: `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsEmptyState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` → `3` files / `15` tests passing.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
@@ -382,6 +383,8 @@ Cobertura actual relevante:
 - `CommunityReviewsPage` cubre explícitamente el branch de reporte duplicado (`"Ya has reportado esta review."`) y verifica bloqueo posterior + cleanup de reacción.
 - `MotorcycleCommunityPage` mantiene cobertura de reportes con UX propia: tooltip no-auth, success/duplicate, cleanup de reacción y bloqueo posterior de Helpful/NotHelpful.
 - `ReviewModal.test.tsx` ya NO trata el submit no-auth como camino exitoso soportado: el modal conserva el flujo autenticado como camino principal y, si se abre inesperadamente sin sesión, bloquea el submit antes del servicio y muestra el error `Inicia sesión para escribir una review.` sin llamar a `createReviewWithAspects`.
+- `src/shared/ui/states/RadarState/RadarState.test.tsx` cubre el contrato base del estado compartido: defaults, props custom (`title`, `description`, `actionLabel`, `icon`), ausencia de acción sin `onAction`, callback al pulsar la acción, `aria-labelledby` mediante `titleId` y los test ids del radar (`reviews-empty-radar`, rings, sweep y markers).
+- `AccountReviewsEmptyState.test.tsx` conserva la cobertura del wrapper de compatibilidad sobre `RadarState` y `AccountReviewsPage.test.tsx` mantiene el contrato observable del primer consumidor sin tocar la lógica de filtros/datos.
 - `src/shared/env/runtimeEnvironment.test.ts` valida el guard central de entorno/demo data: producción nunca habilita demo data, `VITE_ENABLE_DEMO_DATA='true'` no rompe esa protección, preview/development solo habilitan demo cuando corresponde y un `VITE_APP_ENV` inválido cae a comportamiento production-safe.
 - `src/shared/reviews/reviewSourcePolicy.test.ts` valida el contrato delegado al guard central: producción devuelve solo `user`; demo habilitado devuelve `user/seed/mock`; demo deshabilitado vuelve a solo `user`; el contrato ya no depende directamente de `import.meta.env.PROD`.
 - `src/components/pages/AdminPage/AdminPage.test.tsx` cubre el toggle admin de datos demo: solo se renderiza cuando el runtime lo permite, el click persiste `motoatlas.includeDemoData`, la preferencia local se hidrata al volver a montar y producción oculta el control aunque exista `localStorage` o `VITE_ENABLE_DEMO_DATA='true'`.

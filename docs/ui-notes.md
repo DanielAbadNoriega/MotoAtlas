@@ -455,8 +455,10 @@ En `#/cuenta`, el bloque “Mis reviews” agrupa las reviews propias por moto, 
 - filtra en cliente por marca/modelo, estado y uso principal.
 - ordena por fecha, rating o kilómetros.
 - pagina en frontend a 5 reviews por página.
-- usa `AccountReviewsEmptyState` para el estado “sin resultados” con radar CSS y soporte `prefers-reduced-motion`.
+- usa `AccountReviewsEmptyState` como wrapper de compatibilidad sobre `RadarState` para el estado “sin resultados”.
 - edición, borrado/retirada y panel admin quedan pendientes.
+
+`RadarState` vive en `src/shared/ui/states/RadarState/` y es el estado vacío reutilizable canónico para el patrón visual tipo radar. En esta primera implementación se extrajo desde el diseño existente de `AccountReviewsEmptyState`, sin rediseño, y el consumidor real documentado sigue siendo `AccountReviewsPage` a través de ese wrapper. Futuras migraciones deben hacerse una página por vez, preservando copy, acciones y accesibilidad; no existen todavía variantes compartidas de loading/error ni una migración masiva de empty states.
 
 ## Auth y envío de reviews
 
