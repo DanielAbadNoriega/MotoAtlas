@@ -16,9 +16,9 @@ Implementado (baseline actual):
 - `FeaturedReviewCard` reutilizada en comunidad y modo visual.
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
-- Tests de referencia: `1117 passed`.
+- Baseline validado actual: `74 files / 1145 tests passing`.
 - Typecheck: clean.
-- Rama estable más reciente: `feature/auth-baseline-audit` (auditoría de cierre Auth, solo documentación; sin cambios de schema/RLS/auth).
+- Último bloque estable validado: `fix/review-modal-auth-contract` (cierre del contrato auth-only local de `ReviewModal`, sin cambios de RPC/RLS/schema/Supabase).
 
 ## 3. Foco inmediato recomendado
 
@@ -587,7 +587,7 @@ Base verificada:
 - roles `user/admin` confirmados; `isAdmin` deriva de perfil y RLS usa `public.is_admin()`.
 
 Gaps detectados antes de social/gamificación:
-- **P1:** `ReviewModal` siempre usa `create_motorcycle_review_with_aspects`, RPC autenticada; el envío anónimo efectivo falla aunque schema, `createReview` y el test mockeado sugieren que está permitido. Requiere decisión sobre aspectos anónimos antes de tocar código/schema.
+- **P1 cerrado a nivel UI/test contract:** `ReviewModal` ya quedó alineado con la RPC autenticada. Si se abre inesperadamente sin `reviewAuthContext`, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. Esto NO habilita reviews anónimas, NO cambia RPC/RLS/schema/Supabase y no sustituye la prevención normal que sigue en los CTA/wrappers auth-only.
 - Hardening cerrado: `AuthProvider` ya representa con `isLoading` la resolución asíncrona de perfil durante `onAuthStateChange`, no expone el nuevo snapshot autenticado antes de que perfil/rol queden settleados y descarta resoluciones async obsoletas con `authTransitionRef`.
 - **P2:** el alias de review autenticada se pasa como `p_user_name` desde cliente; antes de identidad pública/reputación debe derivarse o validarse server-side.
 - **P2:** smoke E2E/RLS real en staging y auditoría de privilegios efectivos de funciones `security definer`.
@@ -595,8 +595,8 @@ Gaps detectados antes de social/gamificación:
 - **P3 polish:** armonizar no-auth pasivo entre páginas; `MotorcycleCommunityPage` conserva acciones clicables con tooltip y bloqueo antes de red.
 
 Plan recomendado:
-1. cerrar decisión/tests de review anónima y hardening server-side de identidad visible;
-2. mantener la base de fixtures y el hardening de `AuthProvider` ya cerrados, y añadir smoke staging;
+1. mantener la base de fixtures, el hardening de `AuthProvider` y el cleanup local de `ReviewModal` ya cerrados, y tomar como siguiente implementación el hardening server-side de identidad visible (`p_user_name`);
+2. ejecutar después smoke staging/RLS + auditoría de privilegios efectivos como tarea separada de validación;
 3. preparar recuperación de cuenta, identidad y privacidad;
 4. solo después habilitar capa social/gamificación/notificaciones.
 
@@ -691,7 +691,7 @@ Implementado (base):
 
 Estado residual:
 - la base central de fixtures ya quedó implantada y la migración incremental se considera completa: account-level, admin, community, modal y `AuthProvider` ya usan fixtures centrales.
-- seguimiento pendiente fuera de esta migración: smoke de staging/RLS, gap `ReviewModal` no-auth → RPC autenticada y validación/derivación server-side del alias visible en reviews autenticadas.
+- seguimiento pendiente fuera de esta migración: smoke de staging/RLS y validación/derivación server-side del alias visible en reviews autenticadas.
 
 Debe seguir cubriendo fixtures para:
 - usuario autenticado normal;
@@ -1413,7 +1413,7 @@ Reglas actuales para mobile:
 - literal de reporte duplicado.
 - quedan `FilterOptionButton` y `FilterRatingStars` locales en algunas páginas de cuenta/comunidad/motorcycle community; el wrapper `FilterGroup` y el `FilterOptionButton` compartido ya están normalizados, pero la unificación completa de SCSS entre páginas es polish futuro opcional.
 - futura ejecución de scripts desde admin requiere backend seguro.
-- el formulario `ReviewModal` no cumple hoy el contrato anónimo que permiten schema/servicio REST: la RPC usada exige autenticación.
+- el formulario `ReviewModal` ya no presenta el submit no-auth como camino válido a nivel UI/test; si en el futuro se quisieran reviews anónimas reales, haría falta una decisión separada de producto + RPC/RLS/schema.
 - El hardening de `AuthProvider` ya evita exponer como settleado el nuevo estado autenticado mientras perfil/rol siguen resolviéndose; la deuda restante de auth pasa por smoke real de staging y alias server-side.
 - identidad visible de reviews autenticadas todavía depende de `p_user_name` enviado por cliente.
 - los tests estáticos de schema no prueban privilegios efectivos ni RLS real desplegada; falta smoke controlado de staging.
@@ -1440,7 +1440,7 @@ Reglas actuales para mobile:
 - Tarjeta incorporada y cerrada: mejora de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables** y resuelta en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Tarjeta incorporada y cerrada: “Mejorar generador de reviews mock realistas” quedó resuelta como mejora técnica de **P2 Datos demo / QA visual** para soporte de maquetación y validación visual, sin cambiar source policy ni tocar UI productiva.
 - Tarjeta reclasificada y actualizada: “Controlar datos demo por entorno en comunidad” queda con **source policy + guard runtime + toggle admin implementados**. Siguen fuera de alcance una persistencia backend/global settings y un refetch global automático.
-- Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **implementada** (base central + migración incremental cerrada) dentro de **P2 Auth baseline / Testing / Fixtures**. El trabajo restante asociado ya no es de fixtures, sino de hardening: smoke de staging/RLS, gap `ReviewModal` no-auth → RPC autenticada y validación/derivación server-side del alias visible en reviews autenticadas.
+- Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **implementada** (base central + migración incremental cerrada) dentro de **P2 Auth baseline / Testing / Fixtures**. El trabajo restante asociado ya no es de fixtures, sino de hardening: smoke de staging/RLS y validación/derivación server-side del alias visible en reviews autenticadas.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
 - Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).
