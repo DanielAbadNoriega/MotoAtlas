@@ -114,7 +114,7 @@ Cada aspecto puede incluir un comentario opcional. Se muestran en la review via 
 - La carga inicial es segura: `AuthProvider` mantiene `isLoading=true` hasta resolver sesión + perfil.
 - Cuenta/admin muestran estados controlados mientras `isLoading`.
 - Las páginas privadas no consultan servicios sin `user.id` y `session.access_token`.
-- **Gap P2:** `onAuthStateChange` actualiza sesión/usuario antes de terminar `getUserProfile()` sin volver a activar `isLoading`; puede existir un estado transitorio autenticado con `profile=null`/`isAdmin=false`.
+- Hardening aplicado: `onAuthStateChange` ya representa la resolución de perfil como loading; `AuthProvider` no expone el nuevo snapshot autenticado antes de que `getUserProfile()` termine, `isAdmin` sigue derivando del `profile.role` resuelto y `authTransitionRef` ignora resoluciones async obsoletas.
 
 ## Alineación RLS
 
@@ -142,12 +142,12 @@ Implementado (base):
 
 Pendiente residual (post-migración):
 - Mantener la cobertura incremental ya cerrada sin volver a introducir objetos auth inline repetidos.
-- Añadir cobertura de transición `onAuthStateChange` mientras el perfil aún se resuelve.
+- Mantener y extender la cobertura añadida sobre transición `onAuthStateChange`, loading de perfil y protección contra resoluciones async obsoletas cuando aparezcan nuevas ramas de auth.
 - Validar auth/RLS real con smoke E2E controlado en staging; Vitest solo valida mocks y texto de schema.
 
 ## Plan recomendado
 
-1. **Fase 1 — cerrar gaps docs/tests:** rama `feature/review-auth-only-contract` ya cerró el contrato de `Escribir review` (auth-only con hint no-auth) y dejó la regresión cubierta. Pendiente: identidad/alias server-side y transición de perfil.
-2. **Fase 2 — fixtures:** migración incremental ya cerrada; siguiente paso técnico asociado es añadir smoke de RLS/roles en staging.
+1. **Fase 1 — cerrar gaps docs/tests:** rama `feature/review-auth-only-contract` ya cerró el contrato de `Escribir review` (auth-only con hint no-auth) y el hardening de `AuthProvider` ya cerró la transición de perfil/loading. Pendiente: identidad/alias server-side.
+2. **Fase 2 — fixtures/hardening:** migración incremental ya cerrada; siguiente paso técnico asociado es añadir smoke de RLS/roles en staging.
 3. **Fase 3 — foundation de cuenta/social:** recuperación de cuenta, identidad/alias server-side y privacidad.
 4. **Fase 4 — recién entonces:** perfiles públicos, gamificación y notificaciones.
