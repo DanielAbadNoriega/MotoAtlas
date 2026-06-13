@@ -81,10 +81,10 @@ Implementado (base):
 - nuevo uso migrado en batch 8: `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx`.
 - nuevo uso migrado en batch 9: `src/components/pages/MotorcycleCommunityPage/MotorcycleCommunityPage.test.tsx`.
 - nuevo uso migrado en batch 10: `src/components/reviews/ReviewModal/ReviewModal.test.tsx`.
-- adopción auditada: 11 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AccountMotorcycleReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx` y `ReviewModal.test.tsx`); la migración account-level quedó completa en batch 5, la migración admin ya incluye dos suites, la migración community ya incluye dos suites, el modal ya quedó cubierto y queda 1 área con `mockAuth`/mocks locales de `useAuth`.
+- nuevo uso migrado en batch 11: `src/features/auth/AuthProvider.test.tsx`.
+- adopción auditada: 12 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AccountMotorcycleReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`); la migración account-level quedó completa en batch 5, la migración admin quedó cubierta en sus dos suites, la migración community quedó cubierta en sus dos suites, el modal ya quedó cubierto y la migración total de auth fixtures quedó cerrada, sin áreas pendientes con `mockAuth`/mocks locales de `useAuth`.
 
 Pendiente residual (no bloqueante):
-- migración incremental de `mockAuth` repetidos en el área restante (`AuthProvider.test.tsx`).
 - integración realista que detecte el conflicto `ReviewModal` no-auth → RPC autenticada.
 - transición `onAuthStateChange` mientras el perfil/rol todavía se resuelve.
 - smoke E2E de RLS/roles y privilegios efectivos de funciones `security definer` en staging.
@@ -370,6 +370,7 @@ Cobertura actual relevante:
 - Focused Quality Gate del batch 8 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `2` files / `80` tests passing.
 - Focused Quality Gate del batch 9 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/pages/MotorcycleCommunityPage/MotorcycleCommunityPage.test.tsx` → `2` files / `52` tests passing.
 - Focused Quality Gate del batch 10 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `37` tests passing.
+- Focused Quality Gate del batch 11 de auth fixtures: `src/test/fixtures/auth.test.ts` + `src/features/auth/AuthProvider.test.tsx` → `2` files / `7` tests passing.
 - Aprendizaje de migración: mover una suite a fixtures centrales no debe alterar la forma del escenario original; si el test legacy tenía `profile: null`, no hay que introducir un `profile` por comodidad porque cambia el `authContext` derivado.
 - `createUserProfile()` solo debe entrar cuando la suite legacy ya tenía profile real; no se usa para “mejorar” un escenario que antes validaba `profile: null`.
 - Los defaults de fixture no deben pisar mocks de función específicos del test: por ejemplo, `signOutMock` debe seguir siendo el spy efectivo cuando el caso cubre logout.
@@ -379,6 +380,7 @@ Cobertura actual relevante:
 - En suites community como `CommunityReviewsPage.test.tsx`, el estado no-auth por defecto también forma parte del contrato legacy: `Útil N` debe seguir siendo pasivo, no deben aparecer acciones falsas sin sesión, y las ramas de own review / reported review / duplicate report / cleanup de report-reaction y orden editorial no deben variar por la migración.
 - En `MotorcycleCommunityPage.test.tsx`, la migración a fixtures también debe respetar que la UX no-auth es DIFERENTE: las acciones pueden seguir siendo clicables para mostrar tooltip de login mientras los hooks bloquean antes de red; no hay que forzar el patrón pasivo de `CommunityReviewsPage`, y deben conservarse own review, reported review, duplicate report, cleanup, pending states y reaction notice/tooltips.
 - En `ReviewModal.test.tsx`, la migración a fixtures no debe reinterpretar el gap conocido entre el modal no-auth y la RPC autenticada: hay que preservar envío autenticado, validaciones, aspectos técnicos, comportamiento no-auth ya documentado, accesibilidad del modal, close/cancel y mocks de `createReviewWithAspects` tal como estaban en la suite legacy.
+- En `AuthProvider.test.tsx`, los fixtures centrales deben usarse solo como data factories de `user/session/profile`: `AuthProvider` sigue siendo la implementación bajo test, `createAuthState` no entra en esta suite y no se inyecta ningún estado tipo `AuthContext` para bypass de bootstrap, profile resolution o cleanup de `onAuthStateChange`.
 - Regla complementaria: `createUserProfile()` solo debe entrar cuando el test legacy ya tenía un perfil real; en suites account-level como `AccountRequestsPage`, eso preserva el contrato original sin reintroducir objetos inline.
 - `src/shared/reviews/useReviewReports.test.tsx` cubre el hook compartido de reportes:
   - hidratación con auth + ids normalizados
