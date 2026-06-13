@@ -591,12 +591,12 @@ Gaps detectados antes de social/gamificación:
 - **P2:** `onAuthStateChange` no representa con `isLoading` la resolución asíncrona de perfil; puede haber estado transitorio `profile=null`/`isAdmin=false`.
 - **P2:** el alias de review autenticada se pasa como `p_user_name` desde cliente; antes de identidad pública/reputación debe derivarse o validarse server-side.
 - **P2:** smoke E2E/RLS real en staging y auditoría de privilegios efectivos de funciones `security definer`.
-- **P2:** migración incremental de 1 área con `mockAuth` local o mocks equivalentes de `useAuth` hacia fixtures centrales.
+- **P2:** migración incremental de mocks auth hacia fixtures centrales completada; queda como seguimiento solo el mantenimiento de la base central y smoke de staging/RLS.
 - **P3 polish:** armonizar no-auth pasivo entre páginas; `MotorcycleCommunityPage` conserva acciones clicables con tooltip y bloqueo antes de red.
 
 Plan recomendado:
 1. cerrar decisión/tests de review anónima, transición de perfil y hardening verificable;
-2. migrar fixtures + smoke staging;
+2. mantener la base de fixtures ya cerrada y añadir smoke staging;
 3. preparar recuperación de cuenta, identidad y privacidad;
 4. solo después habilitar capa social/gamificación/notificaciones.
 
@@ -657,7 +657,7 @@ Criterios de aceptación futuros:
 ### Fixtures de usuarios y perfiles para tests de auth
 
 Estado:
-- implementado parcialmente / base de fixtures central implementada.
+- implementado / migración incremental cerrada.
 
 Objetivo:
 Crear fixtures y mocks locales para testear autenticación, roles, perfiles, Mi cuenta y acciones asociadas a usuario sin depender de Supabase real.
@@ -687,9 +687,11 @@ Implementado (base):
 - batch 8 completado en `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx`, preservando el estado no-auth por defecto (`user/session/profile = null`, `isAuthenticated = false`, `isAdmin = false`, `isLoading = false`) y los overrides autenticados mínimos usados por la suite. Aprendizaje clave: la migración community comienza aquí y debe mantener intactos los contratos públicos de comunidad (`Útil N` pasivo en no-auth, ausencia de acciones falsas, ramas de own review / reported review / duplicate report, cleanup de report/reaction y orden editorial), sin que los defaults de fixture pisen spies locales.
 - batch 9 completado en `src/components/pages/MotorcycleCommunityPage/MotorcycleCommunityPage.test.tsx`, preservando el estado no-auth por defecto y la UX legacy propia de la página: acciones no-auth clicables con tooltip de login, hooks bloqueando reacciones/reportes antes de red y ramas de own review / reported review / duplicate report / cleanup / pending states sin cambios. Aprendizaje clave: la migración community ya incluye `CommunityReviewsPage.test.tsx` y `MotorcycleCommunityPage.test.tsx`, pero no se debe forzar el patrón no-auth pasivo de una sobre la otra; los defaults de fixture tampoco deben pisar spies locales.
 - batch 10 completado en `src/components/reviews/ReviewModal/ReviewModal.test.tsx`, preservando el estado no-auth por defecto y los escenarios autenticados con `profile.displayName`, sin reinterpretar el gap conocido entre el modal no-auth y la RPC autenticada. Aprendizaje clave: `ReviewModal` sigue siendo sensible por formar parte del flujo de creación de reviews; la migración no debe cambiar envío autenticado, validaciones, aspectos técnicos, accesibilidad del modal, close/cancel ni mocks de `createReviewWithAspects`, y los defaults de fixture tampoco deben pisar spies locales.
+- batch 11 completado en `src/features/auth/AuthProvider.test.tsx`, cerrando la última área pendiente con datos auth repetidos. Aprendizaje clave: al migrar la suite más sensible, los fixtures deben usarse solo como data factories de `user/session/profile`; `AuthProvider` sigue siendo la implementación bajo test, `createAuthState` no entra aquí, no se inyecta ningún estado tipo `AuthContext` y los mocks de Supabase/authService siguen marcando el boundary conductual.
 
-Pendiente residual:
-- la base sigue parcial/incremental: la migración account-level ya quedó completa, la migración admin ya arrancó, la migración community ya incluye sus dos suites iniciales y `ReviewModal` ya quedó cubierto; queda por migrar de forma incremental el área de mayor riesgo restante (`AuthProvider.test.tsx`), sin refactor masivo.
+Estado residual:
+- la base central de fixtures ya quedó implantada y la migración incremental se considera completa: account-level, admin, community, modal y `AuthProvider` ya usan fixtures centrales.
+- seguimiento pendiente fuera de esta migración: smoke de staging/RLS, gap `ReviewModal` no-auth → RPC autenticada y gap transitorio de `profile/loading` en `onAuthStateChange`.
 
 Debe seguir cubriendo fixtures para:
 - usuario autenticado normal;
