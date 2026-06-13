@@ -2,9 +2,9 @@
 
 ## Último estado estable
 
-- Rama actual: `fix/review-user-name-server-side`
-- Último bloque validado: **server-side review alias hardening + least-privilege grants en `motorcycle_reviews`** con Quality Gate aprobado. `create_motorcycle_review_with_aspects` sigue siendo la ruta auth-only de creación, deriva `user_id` desde `auth.uid()` y ahora deriva `user_name` desde `public.user_profiles.display_name`, con fallback `Usuario MotoAtlas`.
-- Alcance validado: el alias visible de reviews autenticadas ya no depende del `p_user_name` enviado por cliente. `p_user_name` queda solo como parámetro backward-compatible ignorado a nivel de identidad final. Además, `public.motorcycle_reviews` quedó sin INSERT directo para `anon`/`authenticated`, con grants mínimos (`anon`: `SELECT`; `authenticated`: `SELECT` + `UPDATE(status)`) y `EXECUTE` de la RPC restringido a `authenticated`.
+- Rama actual: `chore/staging-rls-smoke`
+- Último bloque validado: **staging/RLS smoke de creación de reviews** aprobado sobre la base del hardening server-side ya implementado. El comportamiento desplegado confirmó que `create_motorcycle_review_with_aspects` sigue siendo la ruta auth-only de creación, deriva `user_id` desde `auth.uid()` y deriva `user_name` desde `public.user_profiles.display_name`, con fallback `Usuario MotoAtlas`.
+- Alcance validado: el despliegue ya confirma por comportamiento efectivo que no hay INSERT directo en `public.motorcycle_reviews` para `anon`/`authenticated`, que `p_user_name` no puede spoofear la identidad visible, que el público no ve la review mientras siga `pending`, que el owner sí puede leer su review no aprobada y que la moderación mantiene `UPDATE(status)` acotado al flujo admin. Limitación conocida: la introspección SQL directa vía `information_schema`/`pg_policies` no estuvo disponible sobre el surface HTTP expuesto; esta validación quedó cerrada como smoke de comportamiento desplegado.
 - Tests: 1145 passed (74 files)
 - Typecheck: clean
 - `git diff --check`: clean
@@ -166,7 +166,7 @@
 - Reviews autenticadas obtienen `user_id` desde `auth.uid()` en la RPC; solicitudes, reacciones y reportes usan token + `user_id` y RLS valida ownership.
 - Cuenta carga reviews/solicitudes propias con token y mantiene estados controlados sin sesión, durante carga o con auth incompleto.
 - Gap P1 cerrado (rama `feature/review-auth-only-contract`): `Escribir review` queda auth-only. El CTA sigue visible con `aria-disabled="true"` para anónimos; al pulsarlo se muestra un hint en vez de abrir `ReviewModal` o llamar a la RPC. `Útil N` y replies siguen visibles y pasivos.
-- Gaps P2 restantes: smoke RLS/privilegios efectivos en staging y verificación más amplia de funciones `security definer`.
+- Gaps P2 restantes: verificación más amplia de privilegios efectivos de funciones `security definer` fuera de la RPC de creación de reviews.
 - Base de fixtures de auth/perfiles/sesión implementada en `src/test/fixtures/auth.ts`.
 - Fuente central con factories y overrides (`createAuthUser`, `createUserProfile`, `createSession`, `createAuthSnapshot`, `createAuthState`).
 - Cubre presets de user/admin/no-auth/perfil incompleto/avatar-display_name faltantes.
@@ -258,9 +258,9 @@
 - Deduplicación editorial↔garaje.
 - Backlog P1/P2 (cerrado): mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`). Implementado en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Backlog P1/P2: refactor admin focal — completado como parte de la normalización al shared `FilterGroup` + `FilterOptionButton` (rama `feature/admin-filtergroup-normalization`). Los wrappers `AdminFilterGroup` y `FilterChipButton` fueron eliminados y el HTML crudo duplicado de `AdminMotorcycleReviewsPage` quedó consolidado al usar `FilterGroup` + `FilterOptionButton` compartidos.
-- Backlog P2 Auth/testing (hardening): migración incremental de mocks `useAuth` ya cerrada sobre la base central de fixtures; el seguimiento restante pasa a smoke de staging/RLS y verificación más amplia de privilegios efectivos.
+- Backlog P2 Auth/testing (hardening): migración incremental de mocks `useAuth` ya cerrada sobre la base central de fixtures; el seguimiento restante pasa a verificación más amplia de privilegios efectivos y smoke complementario sobre otras superficies sensibles si producto/seguridad lo pide.
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
-- Backlog P2 Auth: ejecutar smoke real de RLS/privilegios en staging y revisar privilegios efectivos de funciones `security definer`.
+- Backlog P2 Auth: revisar privilegios efectivos de otras funciones `security definer` y, si hace falta, definir un patrón de auditoría SQL remota más profundo para staging.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
@@ -285,7 +285,7 @@
 
 ## Siguiente paso
 
-- **Smoke de staging/RLS y verificación de privilegios efectivos**: comprobar en entorno controlado que `create_motorcycle_review_with_aspects` mantiene `EXECUTE` solo para `authenticated`, que `public.motorcycle_reviews` conserva el contrato least-privilege (`anon`: `SELECT`; `authenticated`: `SELECT` + `UPDATE(status)`) y que no reaparecen paths directos de creación fuera de la RPC auth-only.
+- **Verificación ampliada de funciones `security definer`**: extender la auditoría más allá de `create_motorcycle_review_with_aspects`, idealmente con un patrón de revisión SQL/privilegios más profundo para staging cuando exista una vía segura de introspección, sin mezclarlo con cambios de producto ni con soporte de reviews anónimas.
 
 ## Decisiones importantes
 
@@ -299,7 +299,7 @@
 - La mejora de quick specs de `BikeDetailPage` (clasificación original **P1/P2 UX pública + componentes reutilizables**) queda **cerrada** en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard`.
 - La mejora del generador de mocks se clasifica como **P2 Datos demo / QA visual** (soporte técnico de maquetación, no feature pública directa).
 - “Controlar datos demo por entorno en comunidad” queda cerrada en su base técnica actual: source policy, guard runtime y toggle admin ya están implementados; queda pendiente solo una posible evolución futura de settings/refetch si producto la reabre.
-- Fixtures de usuarios/perfiles para auth quedan como **P2 Auth baseline / Testing / Fixtures** con base central implementada y migración incremental cerrada. El trabajo restante asociado ya no es de fixtures, sino de hardening/validación: smoke de staging/RLS y verificación de privilegios efectivos.
+- Fixtures de usuarios/perfiles para auth quedan como **P2 Auth baseline / Testing / Fixtures** con base central implementada y migración incremental cerrada. El trabajo restante asociado ya no es de fixtures: el smoke de staging sobre creación de reviews quedó validado y el seguimiento pasa a verificación más amplia de privilegios efectivos.
 - “Fase 2.5 moderación/admin de respuestas” queda reclasificada como base mayoritariamente implementada con pendientes residuales auditables.
 - La rama `feature/admin-requests-audit` queda registrada como **auditoría funcional de `#/admin/solicitudes`** sin diffs.
 - La rama `feature/admin-requests-phase-1` queda registrada como **cierre funcional Fase 1** sobre la base auditada: multi-select de `Estado` y `Origen`, filtro por rango de fechas (`createdFrom`/`createdTo` con interpretación de día completo), paginación 10/página con `AccountPagination`, summary de pendientes y validación defensiva de `segment` en `createModelRequest`. Sin cambios de schema/RLS. Fase 2 (vincular a admin catálogo), Fase 3 (notificaciones) y Fase 4 (duplicados/analítica) permanecen como fases futuras con dependencia explícita de decisión de schema.
@@ -330,9 +330,9 @@
 - En buscador, `rating` y `reviewCount` son proxies derivados de `fiabilidad`/`reportCount`, no señal comunitaria real. Riesgo de confusión semántica si se renormalizan sin contrato de producto claro.
 - `useReviewReactions` no tiene test explícito para doble toggle en el mismo tick exacto; hay cobertura de pending en request y guard por ref interno.
 - `ReviewModal` ya no es invocable por anónimos: el CTA en `BikeDetailPage` Comunidad tab y en `MotorcycleCommunityPage` (hero + empty) usa `AuthRequiredAction` con `aria-disabled="true"` cuando no hay sesión. La regresión queda cubierta por el test `muestra el hint de login al pulsar "Escribir review" sin sesión y no abre el modal`.
-- `ReviewModal` ya endureció su contrato local: si se abre de forma inesperada sin sesión, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. El riesgo auth restante pasa por smoke de staging/RLS y verificación más amplia de privilegios efectivos.
+- `ReviewModal` ya endureció su contrato local: si se abre de forma inesperada sin sesión, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. El smoke desplegado ya confirmó compatibilidad con la RPC auth-only; el riesgo auth restante pasa por verificación más amplia de privilegios efectivos.
 - El alias público de una review autenticada ya no depende del payload cliente: la RPC `create_motorcycle_review_with_aspects` deriva `user_name` desde `public.user_profiles.display_name`, conserva `p_user_name` solo por compatibilidad y usa fallback `Usuario MotoAtlas` cuando el perfil no tiene alias usable.
-- Falta smoke controlado contra staging para verificar RLS y privilegios efectivos de funciones `security definer`.
+- La validación desplegada de creación de reviews ya quedó cerrada como smoke de comportamiento; sigue pendiente una auditoría más amplia de privilegios efectivos de funciones `security definer`.
 
 ## Referencias de contratos
 

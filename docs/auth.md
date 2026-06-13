@@ -87,6 +87,7 @@ RLS:
 - **Escribir review es auth-only** (rama `feature/review-auth-only-contract`): el CTA en `BikeDetailPage` (Comunidad tab) y `MotorcycleCommunityPage` (hero + empty) está cerrado para anónimos. Los usuarios autenticados abren `ReviewModal` con flujo normal; los anónimos ven el botón con `aria-disabled="true"`, focus/click disponibles, y al pulsarlo aparece el hint `Inicia sesión para escribir una review.` durante ~4s sin abrir el modal ni llamar a la RPC. No se ha introducido un CTA a `#/login` para mantener el cambio mínimo: el hint textual ya dirige al usuario, y el patrón real de cross-link a login se consolidará en la fase global de unificación de Hero/CTAs.
 - `ReviewModal` ahora añade una defensa local coherente con ese contrato: si el modal se abriese inesperadamente sin `reviewAuthContext`, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. Esto NO habilita reviews anónimas ni cambia RPC/RLS/schema/Supabase; la prevención normal sigue en `AuthRequiredAction` y wrappers equivalentes.
 - El alias mostrado sigue saliendo del `display_name` del perfil y no es editable en UI. A nivel server-side, `p_user_name` se mantiene en la firma de la RPC solo por compatibilidad, pero ya no controla la identidad visible final: la RPC deriva el alias desde `public.user_profiles.display_name` y usa fallback `Usuario MotoAtlas` si el valor es nulo o blanco.
+- Smoke desplegado aprobado: el comportamiento efectivo en staging confirmó que `anon` no puede hacer INSERT directo ni ejecutar la RPC, que `authenticated` sí puede crear la review por la RPC, que el spoof de `p_user_name` no gana, que el owner puede leer su review `pending` y que la review solo pasa a lectura pública tras aprobación admin.
 
 ## Aspectos técnicos
 
@@ -125,7 +126,8 @@ Cada aspecto puede incluir un comentario opcional. Se muestran en la review via 
 - La creación de reviews autenticadas ya no admite INSERT directo en `public.motorcycle_reviews` para `anon`/`authenticated`: la ruta de creación es la RPC `create_motorcycle_review_with_aspects`.
 - `public.motorcycle_reviews` sigue least-privilege: `anon` conserva `SELECT` público, `authenticated` conserva `SELECT` y `UPDATE(status)` para el flujo de moderación protegido por RLS/admin, y no hay grants amplios de `INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER` para roles cliente.
 - `EXECUTE` sobre `create_motorcycle_review_with_aspects` quedó restringido a `authenticated`; `public` y `anon` quedan revocados explícitamente.
-- **Hardening pendiente:** verificar privilegios efectivos en staging para funciones `security definer`. Los tests estáticos ya cubren los `REVOKE/GRANT` esperados, pero falta la comprobación desplegada de privilegios efectivos.
+- El smoke de staging ya confirmó el contrato de creación de reviews por comportamiento desplegado. Limitación aceptada: la introspección SQL directa vía `information_schema` / `pg_policies` no estuvo disponible sobre el surface HTTP expuesto, así que esta validación quedó cerrada por flujos `anon` / `authenticated` / `admin`, no por auditoría SQL remota.
+- **Hardening pendiente:** verificar privilegios efectivos de otras funciones `security definer` y, si se necesita un nivel más profundo, abrir un patrón separado de auditoría SQL remota segura para staging.
 
 ## No implementado todavía
 
@@ -147,11 +149,11 @@ Implementado (base):
 Pendiente residual (post-migración):
 - Mantener la cobertura incremental ya cerrada sin volver a introducir objetos auth inline repetidos.
 - Mantener y extender la cobertura añadida sobre transición `onAuthStateChange`, loading de perfil y protección contra resoluciones async obsoletas cuando aparezcan nuevas ramas de auth.
-- Validar auth/RLS real con smoke E2E controlado en staging; Vitest solo valida mocks y texto de schema.
+- Mantener como pendiente solo la validación más amplia de otras superficies sensibles de auth/RLS y de privilegios efectivos de otras funciones `security definer`; la creación de reviews ya quedó validada por smoke de comportamiento en staging.
 
 ## Plan recomendado
 
 1. **Fase 1 — contrato auth local cerrado:** `feature/review-auth-only-contract` cerró el CTA auth-only con hint no-auth, `fix/review-modal-auth-contract` cerró el contrato local UI/test del modal, el hardening de `AuthProvider` cerró la transición de perfil/loading y el hardening server-side ya cerró la identidad visible de reviews autenticadas.
-2. **Fase 2 — validación/hardening:** siguiente paso técnico recomendado es el smoke de RLS/roles en staging y la verificación más amplia de privilegios efectivos de funciones `security definer`.
+2. **Fase 2 — validación/hardening:** el smoke de RLS/roles para creación de reviews ya quedó aprobado; el siguiente paso técnico recomendado es la verificación más amplia de privilegios efectivos de funciones `security definer`.
 3. **Fase 3 — foundation de cuenta/social:** recuperación de cuenta, privacidad y contratos de identidad pública posteriores.
 4. **Fase 4 — recién entonces:** perfiles públicos, gamificación y notificaciones.
