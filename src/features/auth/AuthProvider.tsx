@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { getSupabaseClient } from '../../shared/supabase/supabaseClient';
 import {
   getCurrentAuthSnapshot,
@@ -50,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const authTransitionRef = useRef(0);
 
   const applySnapshot = useCallback((snapshot: AuthStateSnapshot) => {
     setSession(snapshot.session);
@@ -94,42 +95,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return undefined;
     }
 
+    const resolveBootstrap = ++authTransitionRef.current;
+
     getCurrentAuthSnapshot()
       .then((snapshot) => {
-        if (isMounted) {
+        if (isMounted && resolveBootstrap === authTransitionRef.current) {
           applySnapshot(snapshot);
         }
       })
       .catch(() => {
-        if (isMounted) {
+        if (isMounted && resolveBootstrap === authTransitionRef.current) {
           applySnapshot({ session: null, user: null, profile: null });
         }
       })
       .finally(() => {
-        if (isMounted) {
+        if (isMounted && resolveBootstrap === authTransitionRef.current) {
           setIsLoading(false);
         }
       });
 
     const { data } = client.auth.onAuthStateChange((_event, nextSession) => {
       const nextUser = nextSession?.user ?? null;
-      setSession(nextSession);
-      setUser(nextUser);
+      const resolveTransition = ++authTransitionRef.current;
 
       if (!nextUser) {
-        setProfile(null);
+        applySnapshot({ session: null, user: null, profile: null });
+        setIsLoading(false);
         return;
       }
 
+      setIsLoading(true);
+
       getUserProfile(nextUser.id)
         .then((nextProfile) => {
-          if (isMounted) {
-            setProfile(nextProfile);
+          if (isMounted && resolveTransition === authTransitionRef.current) {
+            applySnapshot({ session: nextSession, user: nextUser, profile: nextProfile });
           }
         })
         .catch(() => {
-          if (isMounted) {
-            setProfile(null);
+          if (isMounted && resolveTransition === authTransitionRef.current) {
+            applySnapshot({ session: nextSession, user: nextUser, profile: null });
+          }
+        })
+        .finally(() => {
+          if (isMounted && resolveTransition === authTransitionRef.current) {
+            setIsLoading(false);
           }
         });
     });
