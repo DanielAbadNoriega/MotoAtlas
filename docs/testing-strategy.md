@@ -4,6 +4,9 @@ MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni 
 
 Estado actual de suite:
 - `1145` tests passing (74 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- Focused checks validados más recientes:
+  - `supabase/schema.test.ts` → `1` file / `66` tests passing.
+  - `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
 
 ## Stack actual
 
@@ -86,6 +89,16 @@ Implementado (base):
 
 Pendiente residual (no bloqueante):
 - smoke E2E de RLS/roles y privilegios efectivos de funciones `security definer` en staging.
+
+### Cobertura de schema/RLS para reviews autenticadas
+
+`supabase/schema.test.ts` ya cubre el hardening server-side de creación de reviews:
+
+- ausencia de policies/grants de INSERT directo sobre `public.motorcycle_reviews` para `anon`/`authenticated`;
+- contrato least-privilege de `public.motorcycle_reviews` (`anon`: `SELECT`; `authenticated`: `SELECT` + `UPDATE(status)` solo por grant de columna);
+- derivación server-side de `user_name` desde `public.user_profiles.display_name` con fallback `Usuario MotoAtlas`;
+- `p_user_name` preservado en la firma de la RPC solo por compatibilidad, sin capacidad de spoofear la identidad visible;
+- `EXECUTE` de `create_motorcycle_review_with_aspects` revocado a `public`/`anon` y concedido solo a `authenticated`.
 
 Al crear fixtures:
 
