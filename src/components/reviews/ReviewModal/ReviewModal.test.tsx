@@ -258,8 +258,14 @@ describe('ReviewModal', () => {
     expect(createReviewWithAspectsMock).not.toHaveBeenCalled();
   });
 
-  it('envía una review válida con motorcycle_id correcto y muestra éxito', async () => {
+  it('envía una review válida autenticada con motorcycle_id correcto y muestra éxito', async () => {
     const user = userEvent.setup();
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'auth-user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      profile: { id: 'auth-user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
@@ -276,7 +282,7 @@ describe('ReviewModal', () => {
     }, { timeout: 3000 });
     expect(createReviewWithAspectsMock.mock.calls[0][0]).toMatchObject({
       motorcycleId: bikeFixtures[0].id,
-      userName: 'Usuario MotoAtlas',
+      userName: 'Rider Zero',
       rating: 4,
       ridingStyle: 'viaje',
       ownershipMonths: 12,
@@ -286,10 +292,27 @@ describe('ReviewModal', () => {
       cons: ['Precio alto'],
     });
     expect(createReviewWithAspectsMock.mock.calls[0][1]).toEqual([]);
-    expect(createReviewWithAspectsMock.mock.calls[0][2]).toBeUndefined();
+    expect(createReviewWithAspectsMock.mock.calls[0][2]).toEqual({
+      accessToken: 'session-token',
+      userId: 'auth-user-1',
+    });
     expect(createReviewWithAspectsMock.mock.calls[0][0]).not.toHaveProperty('verified');
     expect(await screen.findByRole('heading', { name: /Review enviada/i }, { timeout: 3000 })).toBeInTheDocument();
     expect(screen.getByText(/Gracias. Tu opinión se revisará antes de publicarse/i)).toBeInTheDocument();
+  });
+
+  it('no trata el envío sin sesión como un camino soportado de éxito', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));
+    await user.click(screen.getByRole('button', { name: 'Viaje' }));
+    await user.type(screen.getByLabelText(/Tu experiencia/i), 'Intento local sin sesión.');
+    await user.click(screen.getByRole('button', { name: /Registrar y continuar/i }));
+
+    expect(createReviewWithAspectsMock).not.toHaveBeenCalled();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Inicia sesión para escribir una review.');
+    expect(screen.queryByRole('heading', { name: /Review enviada/i })).not.toBeInTheDocument();
   });
 
   it('funciona con usuario autenticado y pasa user_id correcto al servicio', async () => {
@@ -323,6 +346,12 @@ describe('ReviewModal', () => {
   it('muestra error si falla el servicio', async () => {
     const user = userEvent.setup();
     createReviewWithAspectsMock.mockRejectedValue(new Error('Servicio no disponible'));
+    mockAuth({
+      isAuthenticated: true,
+      user: { id: 'auth-user-1', email: 'rider@motoatlas.com' },
+      session: { access_token: 'session-token' },
+      profile: { id: 'auth-user-1', displayName: 'Rider Zero', avatarUrl: null, role: 'user' },
+    });
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /4 estrellas de 5/i }));

@@ -206,6 +206,12 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
       return;
     }
 
+    if (!reviewAuthContext) {
+      setStatus('service-error');
+      setServiceError('Inicia sesión para escribir una review.');
+      return;
+    }
+
     setStatus('submitting');
 
     const aspectsToSend = technicalAspects
