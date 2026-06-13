@@ -2,10 +2,10 @@
 
 ## Último estado estable
 
-- Rama actual: `chore/staging-rls-smoke`
-- Último bloque validado: **staging/RLS smoke de creación de reviews** aprobado sobre la base del hardening server-side ya implementado. El comportamiento desplegado confirmó que `create_motorcycle_review_with_aspects` sigue siendo la ruta auth-only de creación, deriva `user_id` desde `auth.uid()` y deriva `user_name` desde `public.user_profiles.display_name`, con fallback `Usuario MotoAtlas`.
-- Alcance validado: el despliegue ya confirma por comportamiento efectivo que no hay INSERT directo en `public.motorcycle_reviews` para `anon`/`authenticated`, que `p_user_name` no puede spoofear la identidad visible, que el público no ve la review mientras siga `pending`, que el owner sí puede leer su review no aprobada y que la moderación mantiene `UPDATE(status)` acotado al flujo admin. Limitación conocida: la introspección SQL directa vía `information_schema`/`pg_policies` no estuvo disponible sobre el surface HTTP expuesto; esta validación quedó cerrada como smoke de comportamiento desplegado.
-- Tests: 1145 passed (74 files)
+- Rama actual: `feature/shared-radar-state`
+- Último bloque validado: **extracción compartida de `RadarState`** aprobada sobre la base UI ya existente de `AccountReviewsEmptyState`, sin rediseño visual.
+- Alcance validado: `RadarState` quedó implementado en `src/shared/ui/states/RadarState/` como estado vacío reutilizable con glow, rings, sweep, markers, icono Material Symbols, soporte `prefers-reduced-motion` y comportamiento mobile. `AccountReviewsEmptyState` quedó como wrapper fino de compatibilidad y, en esta primera pasada, solo `AccountReviewsPage` usa ese contrato extraído. No se migraron otros empty/loading/error states.
+- Tests: 1148 passed (75 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Último commit:
@@ -333,6 +333,7 @@
 - `ReviewModal` ya endureció su contrato local: si se abre de forma inesperada sin sesión, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. El smoke desplegado ya confirmó compatibilidad con la RPC auth-only; el riesgo auth restante pasa por verificación más amplia de privilegios efectivos.
 - El alias público de una review autenticada ya no depende del payload cliente: la RPC `create_motorcycle_review_with_aspects` deriva `user_name` desde `public.user_profiles.display_name`, conserva `p_user_name` solo por compatibilidad y usa fallback `Usuario MotoAtlas` cuando el perfil no tiene alias usable.
 - La validación desplegada de creación de reviews ya quedó cerrada como smoke de comportamiento; sigue pendiente una auditoría más amplia de privilegios efectivos de funciones `security definer`.
+- `RadarState` ya existe como componente compartido bajo `src/shared/ui/states/RadarState/`, extraído desde el radar visual de `AccountReviewsEmptyState` sin cambio de diseño. `AccountReviewsEmptyState` mantiene el wrapper de compatibilidad y futuras migraciones a otros estados quedan como fases separadas.
 
 ## Referencias de contratos
 
