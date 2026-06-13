@@ -88,7 +88,7 @@ Implementado (base):
 - adopción auditada: 12 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AccountMotorcycleReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`); la migración account-level quedó completa en batch 5, la migración admin quedó cubierta en sus dos suites, la migración community quedó cubierta en sus dos suites, el modal ya quedó cubierto y la migración total de auth fixtures quedó cerrada, sin áreas pendientes con `mockAuth`/mocks locales de `useAuth`.
 
 Pendiente residual (no bloqueante):
-- smoke E2E de RLS/roles y privilegios efectivos de funciones `security definer` en staging.
+- smoke/auditoría más amplia de otras superficies RLS/roles y de privilegios efectivos de funciones `security definer` en staging; la creación de reviews ya quedó aprobada en el smoke desplegado.
 
 ### Cobertura de schema/RLS para reviews autenticadas
 
@@ -99,6 +99,25 @@ Pendiente residual (no bloqueante):
 - derivación server-side de `user_name` desde `public.user_profiles.display_name` con fallback `Usuario MotoAtlas`;
 - `p_user_name` preservado en la firma de la RPC solo por compatibilidad, sin capacidad de spoofear la identidad visible;
 - `EXECUTE` de `create_motorcycle_review_with_aspects` revocado a `public`/`anon` y concedido solo a `authenticated`.
+
+### Validación de staging / comportamiento desplegado
+
+Smoke aprobado para creación de reviews en staging:
+
+- `anon` no pudo hacer `INSERT` directo sobre `public.motorcycle_reviews`;
+- `authenticated` no pudo hacer `INSERT` directo sobre `public.motorcycle_reviews`;
+- `anon` no pudo ejecutar `create_motorcycle_review_with_aspects`;
+- `authenticated` sí pudo crear la review por RPC;
+- la review creada tomó `user_id` desde `auth.uid()`, `user_name` desde `public.user_profiles.display_name`, usó fallback `Usuario MotoAtlas` cuando correspondía y mantuvo `status='pending'`, `source='user'`, `verified=false`;
+- el owner pudo leer su review `pending`;
+- el público no vio la review hasta aprobación admin;
+- un no-admin no pudo aprobar su propia review;
+- un admin sí pudo hacer `UPDATE(status)`, pero no un patch amplio de `comment`.
+
+Limitación documentada:
+- no se añadió cobertura Playwright/E2E automatizada nueva;
+- `Vitest` sigue cubriendo el contrato SQL local en `supabase/schema.test.ts`;
+- el smoke de staging validó comportamiento desplegado por flujos HTTP `anon` / `authenticated` / `admin`, porque la introspección directa de `information_schema` / `pg_policies` no estaba disponible sobre el surface HTTP expuesto.
 
 Al crear fixtures:
 
