@@ -1377,13 +1377,15 @@ Estado: parcialmente implementado.
 
 Estado actual:
 - `RadarState` **ya quedó implementado** en `src/shared/ui/states/RadarState/`, extraído directamente desde el patrón visual previo de `AccountReviewsEmptyState` sin rediseño adicional.
-- En esta primera fase, el consumidor real sigue siendo `AccountReviewsEmptyState` como wrapper fino y `AccountReviewsPage` como primer uso documentado.
+- Consumidores documentados hasta ahora:
+  - `AccountReviewsEmptyState` / `AccountReviewsPage` como primer uso vía wrapper de compatibilidad.
+  - `TopRatedMotorcyclesPage` solo para el empty state de podio / no-results, preservando los links secundarios fuera de `RadarState`.
 - La migración de más consumidores queda explícitamente fuera de esta fase.
 
 Pendiente / futuro:
 - `FullPageLoading` para auth/profile/account/admin loading de página completa.
 - `ErrorState` para errores recuperables de carga.
-- migrar consumidores adicionales de empty state a `RadarState` de forma deliberada, una página por vez, sin asumir que rankings, garaje, reviews u otras vistas ya quedaron cubiertas.
+- migrar consumidores adicionales de empty state a `RadarState` de forma deliberada, una página por vez, sin asumir que `CommunityReviewsPage`, `CommunityRankingsPage`, `AccountMotorcycleReviewsPage`, rankings, garaje u otras vistas ya quedaron cubiertas.
 
 Regla: `RadarState` ya forma parte de la base UI compartida, pero `FullPageLoading`, `ErrorState` y las migraciones adicionales siguen siendo dirección futura; no forman parte del hardening actual de `AuthProvider`.
 

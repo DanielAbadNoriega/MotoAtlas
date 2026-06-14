@@ -165,11 +165,16 @@ describe('TopRatedMotorcyclesPage', () => {
     await user.selectOptions(screen.getByLabelText('Reviews mínimas'), '5');
 
     expect(await screen.findByRole('heading', { name: /Aún no hay suficientes datos de comunidad/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Limpiar filtros/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ir al buscador/i })).toHaveAttribute('href', '#/buscador');
     expect(screen.getByRole('link', { name: /^Explorar comunidad$/i })).toHaveAttribute('href', '#/comunidad');
     expect(screen.queryByRole('heading', { name: /Top Rated/i })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Trending/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Reviews recientes/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Limpiar filtros/i }));
+
+    expect(await screen.findByRole('article', { name: /Puesto 1: Aprilia Tuareg 660/i })).toBeInTheDocument();
   });
 
   it('renderiza empty state global si no hay reviews aprobadas', async () => {
