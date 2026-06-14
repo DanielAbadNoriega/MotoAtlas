@@ -71,21 +71,26 @@ type CommunityReviewFilters = Readonly<{
 }>;
 
 type CommunityInsights = Readonly<{
+  totalReviews: number;
   mostHelpfulReview?: Readonly<{
     helpfulCount: number;
     motorcycleName: string;
+    rating: number;
   }>;
   mostReviewedMotorcycle?: Readonly<{
     count: number;
     name: string;
+    sharePercent: number;
   }>;
   topSegment?: Readonly<{
     count: number;
     label: string;
+    sharePercent: number;
   }>;
   topRidingStyle?: Readonly<{
     count: number;
     label: string;
+    sharePercent: number;
   }>;
 }>;
 
@@ -141,6 +146,8 @@ const sortOptions = [
   { label: 'Más reviews', value: 'reviews-desc' },
   { label: 'Más kilómetros', value: 'kilometers-desc' },
 ] satisfies readonly { label: string; value: SortOption }[];
+
+const COMMUNITY_INSIGHTS_TOOLTIP_TEXT = 'Estas señales se calculan con reviews aprobadas y datos cargados recientemente. No representan actividad en tiempo real segundo a segundo.';
 
 function getTimestamp(value: string) {
   const timestamp = new Date(value).getTime();
@@ -282,7 +289,7 @@ function getCommunityInsights(
   helpfulCountByReviewId: ReadonlyMap<string, number>,
 ): CommunityInsights {
   if (reviews.length === 0) {
-    return {};
+    return { totalReviews: 0 };
   }
 
   const motorcycleCounts = new Map<string, { count: number; latestTimestamp: number; name: string }>();
@@ -339,19 +346,38 @@ function getCommunityInsights(
     right.count - left.count ||
     left.label.localeCompare(right.label)
   ))[0];
+  const totalReviews = reviews.length;
+  const getSharePercent = (count: number) => Math.max(1, Math.round((count / totalReviews) * 100));
 
   return {
+    totalReviews,
     mostHelpfulReview: mostHelpfulReviewEntry
-      ? { helpfulCount: mostHelpfulReviewEntry.helpfulCount, motorcycleName: mostHelpfulReviewEntry.motorcycleName }
+      ? {
+          helpfulCount: mostHelpfulReviewEntry.helpfulCount,
+          motorcycleName: mostHelpfulReviewEntry.motorcycleName,
+          rating: mostHelpfulReviewEntry.rating,
+        }
       : undefined,
     mostReviewedMotorcycle: mostReviewedMotorcycle
-      ? { count: mostReviewedMotorcycle.count, name: mostReviewedMotorcycle.name }
+      ? {
+          count: mostReviewedMotorcycle.count,
+          name: mostReviewedMotorcycle.name,
+          sharePercent: getSharePercent(mostReviewedMotorcycle.count),
+        }
       : undefined,
     topSegment: topSegmentEntry
-      ? { count: topSegmentEntry.count, label: topSegmentEntry.label }
+      ? {
+          count: topSegmentEntry.count,
+          label: topSegmentEntry.label,
+          sharePercent: getSharePercent(topSegmentEntry.count),
+        }
       : undefined,
     topRidingStyle: topRidingStyleEntry
-      ? { count: topRidingStyleEntry[1], label: accountReviewRidingStyleLabels[topRidingStyleEntry[0]] }
+      ? {
+          count: topRidingStyleEntry[1],
+          label: accountReviewRidingStyleLabels[topRidingStyleEntry[0]],
+          sharePercent: getSharePercent(topRidingStyleEntry[1]),
+        }
       : undefined,
   };
 }
@@ -612,38 +638,71 @@ function CommunityInsightItem({
   icon,
   label,
   meta,
+  metricLabel,
+  metricValue,
+  statusLabel,
   value,
+  variant,
 }: Readonly<{
   icon: string;
   label: string;
   meta: string;
+  metricLabel?: string;
+  metricValue?: string | null;
+  statusLabel?: string;
   value?: ReactNode;
+  variant: 'most-reviewed' | 'most-helpful' | 'top-segment' | 'top-use';
 }>) {
   return (
-    <article className="community-reviews-page__insight-item">
+    <article className={`community-reviews-page__insight-item community-reviews-page__insight-item--${variant}`}>
       <span className="community-reviews-page__insight-icon material-symbols-outlined" aria-hidden="true">{icon}</span>
+      <span className="community-reviews-page__insight-corner community-reviews-page__insight-corner-top-left" aria-hidden="true" />
       <div className="community-reviews-page__insight-content">
         <span className="community-reviews-page__insight-label">{label}</span>
         <InsightValue>{value}</InsightValue>
-        <p>{meta}</p>
+        <div className="community-reviews-page__insight-metric-row">
+          <span className="community-reviews-page__insight-metric">
+            {metricValue ?? '—'}
+            {metricLabel ? <span className="community-reviews-page__insight-metric-label">{metricLabel}</span> : null}
+          </span>
+          {statusLabel ? <span className="community-reviews-page__insight-chip">{statusLabel}</span> : null}
+        </div>
+        <div className="community-reviews-page__insight-meta">
+          <p>{meta}</p>
+        </div>
+        <div className="community-reviews-page__insight-telemetry" aria-hidden="true">
+          {Array.from({ length: variant === 'top-segment' ? 12 : 5 }, (_, index) => (
+            <span className="community-reviews-page__insight-telemetry-tick" key={index} />
+          ))}
+        </div>
       </div>
+      <span className="community-reviews-page__insight-corner community-reviews-page__insight-corner-bottom-right" aria-hidden="true" />
     </article>
   );
 }
 
-function formatLastRefreshed(timestamp: number): string {
+function formatLastRefreshed(timestamp: number, now = Date.now()): string {
   if (!timestamp) {
-    return '';
+    return 'Actualizado recientemente';
   }
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+  const elapsed = Math.max(0, now - timestamp);
+  const seconds = Math.floor(elapsed / 1000);
+
   if (seconds < 5) {
     return 'Actualizado ahora';
   }
+
   if (seconds < 60) {
-    return `Actualizado hace ${seconds}s`;
+    return 'Actualizado hace menos de 1 min';
   }
+
   const minutes = Math.floor(seconds / 60);
-  return `Actualizado hace ${minutes}min`;
+  if (minutes < 60) {
+    return `Actualizado hace ${minutes} min`;
+  }
+
+  return 'Actualizado recientemente';
 }
 
 function getMostReviewedInsightMeta(mostReviewedMotorcycle: CommunityInsights['mostReviewedMotorcycle']) {
@@ -678,26 +737,73 @@ function getTopRidingStyleInsightMeta(topRidingStyle: CommunityInsights['topRidi
   return `${numberFormatter.format(topRidingStyle.count)} reviews`;
 }
 
+function formatSharePercent(value?: number) {
+  if (value === undefined) {
+    return null;
+  }
+
+  return `${numberFormatter.format(value)}%`;
+}
+
+function formatReviewRating(value?: number) {
+  if (value === undefined) {
+    return null;
+  }
+
+  return `${value.toFixed(1).replace('.0', '')}/5`;
+}
+
 function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insights: CommunityInsights; lastRefreshedAt: number }>) {
-  const refreshLabel = formatLastRefreshed(lastRefreshedAt);
+  const tooltipId = 'community-reviews-insights-tooltip';
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    setNow(Date.now());
+
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+    }, 30_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [lastRefreshedAt]);
+
+  const refreshLabel = formatLastRefreshed(lastRefreshedAt, now);
 
   return (
-    <aside className="community-reviews-page__insights" aria-labelledby="community-reviews-insights-title">
+    <section className="community-reviews-page__insights" aria-labelledby="community-reviews-insights-title">
       <header className="community-reviews-page__insights-header">
-        <span className="community-reviews-page__insights-kicker">Pulso de la comunidad · Actividad reciente</span>
-        <h2 id="community-reviews-insights-title">
-          <span className="material-symbols-outlined" aria-hidden="true">monitoring</span>
-          Insights en vivo
+        <span className="community-reviews-page__insights-kicker">MotoAtlas Live Pulse</span>
+        <h2 className="community-reviews-page__insights-title" id="community-reviews-insights-title">
+          Pulso de la <span className="community-reviews-page__insights-title-gradient">Comunidad</span>
         </h2>
-        <p className="community-reviews-page__insights-subtitle">
-          Señales según reviews aprobadas, no en tiempo real.
-        </p>
+        <div className="community-reviews-page__insights-copy-row">
+          <p className="community-reviews-page__insights-subtitle">
+            Lo que se mueve entre moteros, sin humo: solo reviews aprobadas.
+          </p>
+          <span className="community-reviews-page__insights-tooltip">
+            <button
+              aria-describedby={tooltipId}
+              aria-label="Más información sobre estas señales"
+              className="community-reviews-page__insights-tooltip-trigger"
+              type="button"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">info</span>
+            </button>
+            <span className="community-reviews-page__insights-tooltip-content" id={tooltipId} role="tooltip">
+              {COMMUNITY_INSIGHTS_TOOLTIP_TEXT}
+            </span>
+          </span>
+        </div>
       </header>
 
       <div className="community-reviews-page__insight-list">
         <CommunityInsightItem
           icon="forum"
           label="Moto más comentada"
+          metricLabel="% del pulso"
+          metricValue={formatSharePercent(insights.mostReviewedMotorcycle?.sharePercent)}
+          statusLabel={insights.mostReviewedMotorcycle ? 'MÁS CITADA' : undefined}
+          variant="most-reviewed"
           value={insights.mostReviewedMotorcycle?.name}
           meta={getMostReviewedInsightMeta(insights.mostReviewedMotorcycle)}
         />
@@ -705,13 +811,21 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
         <CommunityInsightItem
           icon="thumb_up"
           label="Review más útil"
+          metricLabel={insights.mostHelpfulReview ? 'rating' : undefined}
+          metricValue={formatReviewRating(insights.mostHelpfulReview?.rating)}
+          statusLabel={insights.mostHelpfulReview ? 'MÁS VOTADA' : undefined}
+          variant="most-helpful"
           value={insights.mostHelpfulReview?.motorcycleName}
           meta={getMostHelpfulInsightMeta(insights.mostHelpfulReview)}
         />
 
         <CommunityInsightItem
-          icon="category"
+          icon="monitoring"
           label="Segmento más activo"
+          metricLabel="% de reviews"
+          metricValue={formatSharePercent(insights.topSegment?.sharePercent)}
+          statusLabel={insights.topSegment ? 'BLOQUE LÍDER' : undefined}
+          variant="top-segment"
           value={insights.topSegment?.label}
           meta={getTopSegmentInsightMeta(insights.topSegment)}
         />
@@ -719,17 +833,21 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
         <CommunityInsightItem
           icon="route"
           label="Uso más activo"
+          metricLabel="% del bloque"
+          metricValue={formatSharePercent(insights.topRidingStyle?.sharePercent)}
+          statusLabel={insights.topRidingStyle ? 'USO DOMINANTE' : undefined}
+          variant="top-use"
           value={insights.topRidingStyle?.label}
           meta={getTopRidingStyleInsightMeta(insights.topRidingStyle)}
         />
       </div>
 
-      {refreshLabel ? (
-        <footer className="community-reviews-page__insights-refresh">
-          <span>Datos aproximados · {refreshLabel} · Según reviews aprobadas</span>
-        </footer>
-      ) : null}
-    </aside>
+      <footer className="community-reviews-page__insights-refresh">
+        <span>Datos aproximados</span>
+        <span>{refreshLabel}</span>
+        <span>Según reviews aprobadas</span>
+      </footer>
+    </section>
   );
 }
 
@@ -1347,78 +1465,73 @@ export function CommunityReviewsPage() {
       />
 
       <section className="community-reviews-page__editorial" aria-label="Bloque editorial de reviews">
-        <div className="community-reviews-page__editorial-grid">
-          <div className="community-reviews-page__editorial-main">
-            <EditorialReviewSection
-              aspectsByReviewId={aspectByReviewId}
-              emptyMessage="Todavía no hay reviews destacadas."
-              hasReactionAuth={Boolean(reactionAuthContext)}
-              id="community-featured-reviews-title"
-              onToggleHelpful={toggleHelpful}
-              onToggleNotHelpful={toggleNotHelpful}
-              reactionPendingIds={reactionPendingIds}
-              reactionSummaryByReviewId={reactionSummaryByReviewId}
-              reportedReviewIds={reportedReviewIds}
-              reportForm={reportForm}
-              reportPendingIds={reportPendingIds}
-              reviews={featuredReviews}
-              title="Reviews destacadas"
-              tone="featured"
-              userId={user?.id ?? null}
-              onOpenReport={openReportForm}
-              onCancelReport={cancelReportForm}
-              onChangeReportReason={updateReportFormReason}
-              onChangeReportComment={updateReportFormComment}
-              onSubmitReport={submitReport}
-              replies={replies}
-              replyForm={replyForm}
-              replyToast={replyToast}
-              expandedReplyReviewIds={expandedReplyReviewIds}
-              user={user}
-              onOpenReply={openReplyForm}
-              onCancelReply={cancelReplyForm}
-              onChangeReplyComment={updateReplyComment}
-              onSubmitReply={submitReply}
-              onToggleReplyVisibility={toggleReplyVisibility}
-              visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
-            />
-            <EditorialReviewSection
-              aspectsByReviewId={aspectByReviewId}
-              emptyMessage="Todavía no hay actividad reciente."
-              hasReactionAuth={Boolean(reactionAuthContext)}
-              id="community-latest-reviews-title"
-              onToggleHelpful={toggleHelpful}
-              onToggleNotHelpful={toggleNotHelpful}
-              reactionPendingIds={reactionPendingIds}
-              reactionSummaryByReviewId={reactionSummaryByReviewId}
-              reportedReviewIds={reportedReviewIds}
-              reportForm={reportForm}
-              reportPendingIds={reportPendingIds}
-              reviews={latestReviews}
-              title="Últimos reportes"
-              tone="latest"
-              userId={user?.id ?? null}
-              onOpenReport={openReportForm}
-              onCancelReport={cancelReportForm}
-              onChangeReportReason={updateReportFormReason}
-              onChangeReportComment={updateReportFormComment}
-              onSubmitReport={submitReport}
-              replies={replies}
-              replyForm={replyForm}
-              replyToast={replyToast}
-              expandedReplyReviewIds={expandedReplyReviewIds}
-              user={user}
-              onOpenReply={openReplyForm}
-              onCancelReply={cancelReplyForm}
-              onChangeReplyComment={updateReplyComment}
-              onSubmitReply={submitReply}
-              onToggleReplyVisibility={toggleReplyVisibility}
-              visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
-            />
-          </div>
-
-          <CommunityInsightsPanel insights={communityInsights} lastRefreshedAt={lastRefreshedAt} />
-        </div>
+        <CommunityInsightsPanel insights={communityInsights} lastRefreshedAt={lastRefreshedAt} />
+        <EditorialReviewSection
+          aspectsByReviewId={aspectByReviewId}
+          emptyMessage="Todavía no hay reviews destacadas."
+          hasReactionAuth={Boolean(reactionAuthContext)}
+          id="community-featured-reviews-title"
+          onToggleHelpful={toggleHelpful}
+          onToggleNotHelpful={toggleNotHelpful}
+          reactionPendingIds={reactionPendingIds}
+          reactionSummaryByReviewId={reactionSummaryByReviewId}
+          reportedReviewIds={reportedReviewIds}
+          reportForm={reportForm}
+          reportPendingIds={reportPendingIds}
+          reviews={featuredReviews}
+          title="Reviews destacadas"
+          tone="featured"
+          userId={user?.id ?? null}
+          onOpenReport={openReportForm}
+          onCancelReport={cancelReportForm}
+          onChangeReportReason={updateReportFormReason}
+          onChangeReportComment={updateReportFormComment}
+          onSubmitReport={submitReport}
+          replies={replies}
+          replyForm={replyForm}
+          replyToast={replyToast}
+          expandedReplyReviewIds={expandedReplyReviewIds}
+          user={user}
+          onOpenReply={openReplyForm}
+          onCancelReply={cancelReplyForm}
+          onChangeReplyComment={updateReplyComment}
+          onSubmitReply={submitReply}
+          onToggleReplyVisibility={toggleReplyVisibility}
+          visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
+        />
+        <EditorialReviewSection
+          aspectsByReviewId={aspectByReviewId}
+          emptyMessage="Todavía no hay actividad reciente."
+          hasReactionAuth={Boolean(reactionAuthContext)}
+          id="community-latest-reviews-title"
+          onToggleHelpful={toggleHelpful}
+          onToggleNotHelpful={toggleNotHelpful}
+          reactionPendingIds={reactionPendingIds}
+          reactionSummaryByReviewId={reactionSummaryByReviewId}
+          reportedReviewIds={reportedReviewIds}
+          reportForm={reportForm}
+          reportPendingIds={reportPendingIds}
+          reviews={latestReviews}
+          title="Últimos reportes"
+          tone="latest"
+          userId={user?.id ?? null}
+          onOpenReport={openReportForm}
+          onCancelReport={cancelReportForm}
+          onChangeReportReason={updateReportFormReason}
+          onChangeReportComment={updateReportFormComment}
+          onSubmitReport={submitReport}
+          replies={replies}
+          replyForm={replyForm}
+          replyToast={replyToast}
+          expandedReplyReviewIds={expandedReplyReviewIds}
+          user={user}
+          onOpenReply={openReplyForm}
+          onCancelReply={cancelReplyForm}
+          onChangeReplyComment={updateReplyComment}
+          onSubmitReply={submitReply}
+          onToggleReplyVisibility={toggleReplyVisibility}
+          visibleRepliesCount={Object.fromEntries(visibleRepliesCountByReviewId)}
+        />
       </section>
 
       <div className="community-reviews-page__mobile-filter-trigger">

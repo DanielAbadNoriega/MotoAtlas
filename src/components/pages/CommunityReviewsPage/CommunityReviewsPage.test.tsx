@@ -224,12 +224,23 @@ describe('CommunityReviewsPage', () => {
     expect(screen.queryByRole('button', { name: 'Explorar reviews' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Buscar moto para opinar' })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Bloque editorial de reviews' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Pulso de la Comunidad' })).toBeInTheDocument();
+    expect(screen.getByText('Comunidad')).toBeInTheDocument();
+    expect(screen.getByText('Lo que se mueve entre moteros, sin humo: solo reviews aprobadas.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Más información sobre estas señales' })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('region', { name: 'Pulso de la Comunidad' })).getByRole('tooltip'),
+    ).toHaveTextContent('Estas señales se calculan con reviews aprobadas y datos cargados recientemente. No representan actividad en tiempo real segundo a segundo.');
     expect(screen.getByRole('heading', { name: 'Reviews destacadas' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Últimos reportes' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Insights en vivo' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Insights en vivo' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Garaje de la comunidad' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Garaje de la comunidad' }).closest('header')).toHaveAttribute('id', 'community-reviews-garage-header');
     expect(screen.queryByRole('heading', { name: 'Explorar todas las reviews' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Ver todas las métricas' })).not.toBeInTheDocument();
+    expect(screen.getByText('Datos aproximados')).toBeInTheDocument();
+    expect(screen.getByText('Según reviews aprobadas')).toBeInTheDocument();
+    expect(screen.getByText(/Actualizado/)).toBeInTheDocument();
     expect(screen.getByText('Explora los modelos con opiniones reales de propietarios y entra en cada comunidad para leer todas sus reviews.')).toBeInTheDocument();
     expect(getGarageSection()).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filtros de reviews' })).toBeInTheDocument();
@@ -907,12 +918,14 @@ describe('CommunityReviewsPage', () => {
       ],
     );
 
-    const insights = screen.getByRole('complementary', { name: 'Insights en vivo' });
+    const insights = screen.getByRole('region', { name: 'Pulso de la Comunidad' });
     const insightIcons = insights.querySelectorAll('.material-symbols-outlined[aria-hidden="true"]');
 
     expect(within(insights).getByText('Moto más comentada')).toBeInTheDocument();
     expect(within(insights).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
     expect(within(insights).getByText('2 reviews')).toBeInTheDocument();
+    expect(within(insights).getByText('50%')).toBeInTheDocument();
+    expect(within(insights).getByText('% del pulso')).toBeInTheDocument();
     expect(within(insights).getByText('Review más útil')).toBeInTheDocument();
     expect(within(insights).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
     expect(within(insights).getByText('12 votos útiles')).toBeInTheDocument();
@@ -923,7 +936,7 @@ describe('CommunityReviewsPage', () => {
     expect(within(insights).getByText('Viaje')).toBeInTheDocument();
     expect(within(insights).queryByText('Review con más kilómetros')).not.toBeInTheDocument();
     expect(within(insights).queryByText('Rating medio global')).not.toBeInTheDocument();
-    expect([...insightIcons].map((icon) => icon.textContent)).toEqual(['monitoring', 'forum', 'thumb_up', 'category', 'route']);
+    expect([...insightIcons].map((icon) => icon.textContent)).toEqual(['info', 'forum', 'thumb_up', 'category', 'route']);
     expect(insights).not.toHaveTextContent(/null|undefined/i);
     expect(insights).not.toHaveTextContent(/neumáticos|fallos/i);
   });
@@ -944,7 +957,7 @@ describe('CommunityReviewsPage', () => {
       }),
     ]);
 
-    const insights = screen.getByRole('complementary', { name: 'Insights en vivo' });
+    const insights = screen.getByRole('region', { name: 'Pulso de la Comunidad' });
 
     expect(within(insights).getByText('Moto más comentada')).toBeInTheDocument();
     expect(within(insights).getByText('BMW R 1300 GS 2024')).toBeInTheDocument();
@@ -1317,8 +1330,10 @@ describe('CommunityReviewsPage', () => {
 
     await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
-    const insights = screen.getByRole('complementary', { name: 'Insights en vivo' });
-    expect(within(insights).getByText('Datos aproximados · Actualizado ahora · Según reviews aprobadas')).toBeInTheDocument();
+    const insights = screen.getByRole('region', { name: 'Pulso de la Comunidad' });
+    expect(within(insights).getByText('Datos aproximados')).toBeInTheDocument();
+    expect(within(insights).getByText('Actualizado ahora')).toBeInTheDocument();
+    expect(within(insights).getByText('Según reviews aprobadas')).toBeInTheDocument();
   });
 
   describe('HelpfulReviewAction y NotHelpfulReviewAction en FeaturedReviewCard', () => {
