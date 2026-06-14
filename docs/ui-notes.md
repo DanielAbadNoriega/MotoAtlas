@@ -308,7 +308,24 @@ La ruta `#/comunidad/reviews` funciona como entrada pública a reviews `approved
 
 El hero de `#/comunidad/reviews` usa el shared `PageHero` desde la rama `feature/page-hero-community-reviews` (Fase B), y la rama `feature/page-hero-purity-cleanup` limpia su implementación para mantener `PageHero.scss` puro. La página pasa `className="community-reviews-page__hero"` sin añadir props nuevas a la API TypeScript; `CommunityReviewsPage.scss` es dueña del full-bleed, doble gradient, filtro local, contenido centrado y `fade-in`. Se conserva `src/assets/hero-community.png`. Ya no muestra los CTAs `Explorar reviews` ni `Buscar moto para opinar`, porque la navegación comunitaria vivirá en una futura navbar/subnav.
 
-Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews destacadas`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Garaje de la comunidad`, que agrupa por `motorcycleId` y calcula rating medio (sobre 5 con estrella), número de reviews, última review en formato corto DD.MM.YY, y uso más repetido. El panel de filtros es apply-on-change en tiempo real; el botón "Aplicar" cierra el panel en mobile. El aside `Insights en vivo` (kicker "Pulso de la comunidad · Actividad reciente") muestra 4 signals comunitarios con copy conservadora: "Moto más comentada" (moto con más reviews), "Review más útil" (mayor `helpfulCount`), "Segmento más activo" (label friendly de `segmentLabels`) y "Uso más activo" (label friendly de `accountReviewRidingStyleLabels`). Subtítulo: "Señales según reviews aprobadas, no en tiempo real." Polling suave cada 60 segundos, footer "Datos aproximados · {refreshLabel} · Según reviews aprobadas". No se renderizan: review con más kilómetros, rating medio global, ni datos sensibles de usuario. Si en el futuro product copy decide renombrar el h2 a "Pulso de la comunidad", será un cambio puntual con su propio test. Las cards del garaje usan `MotorcycleGarageCard` (componente extraído en `src/components/motorcycles/MotorcycleGarageCard/`), con shield de confianza junto al rating /5 con estrella, tooltip visual (Alta/Media/Baja confianza) y CTAs reducidos "Reviews" y "Ficha técnica". `MotorcycleGarageCard` también se reutiliza en `#/buscador` con acciones compactas para comparar.
+Debajo del hero vive ahora `Pulso de la Comunidad` como **primera sección full-width** de la página, antes de `Reviews destacadas` y `Últimos reportes`. El layout legacy con `community-reviews-page__editorial-grid` y `community-reviews-page__editorial-main` ya no gobierna los insights; los bloques editoriales y el garaje siguen separados, pero los insights dejan de ser un aside estrecho.
+
+Contrato UI actual de `Pulso de la Comunidad`:
+- kicker mono/uppercase: `MotoAtlas Live Pulse` con línea de acento;
+- h2 visible `Pulso de la Comunidad`, con gradiente específico sobre la palabra `Comunidad`;
+- copy: `Lo que se mueve entre moteros, sin humo: solo reviews aprobadas.`;
+- tooltip accesible con trigger focusable (`Más información sobre estas señales`) y aclaración de que las señales usan reviews aprobadas y datos cargados recientemente, no actividad second-by-second;
+- 4 cards HUD/glass con responsive: desktop horizontal 4-up, tablet 2 columnas, mobile stacked;
+- footer compacto `Datos aproximados · {refreshLabel} · Según reviews aprobadas`;
+- sin CTA `Ver todas las métricas`.
+
+Señales activas del bloque:
+- `Moto más comentada` (card-link semántica a `#/comunidad/{motorcycleId}` cuando hay datos);
+- `Moto mejor valorada` (reemplaza a `Review más útil`; card-link semántica a `#/comunidad/{motorcycleId}` cuando hay datos, con rating veraz `/5`);
+- `Segmento más activo`;
+- `Uso más activo`.
+
+Las shares/porcentajes se calculan solo con el dataset aprobado cargado y no deben leerse como tendencia o crecimiento. El label relativo de actualización es texto local de UI; no implica realtime segundo a segundo. Las cards del garaje usan `MotorcycleGarageCard` (componente extraído en `src/components/motorcycles/MotorcycleGarageCard/`), con shield de confianza junto al rating /5 con estrella, tooltip visual (Alta/Media/Baja confianza) y CTAs reducidos "Reviews" y "Ficha técnica". `MotorcycleGarageCard` también se reutiliza en `#/buscador` con acciones compactas para comparar.
 
 El Podio rankings de `#/comunidad` ahora usa `PodiumCard` compartido con `#/comunidad/rankings`. Paridad visual garantizada: ambos podios usan el mismo componente self-styled con CSS propio. Estilos de layout de página (`.top-rated__podium`, `.rankings__podium-grid`, etc.) permanecen en las páginas; los estilos de card interna son responsabilidad del componente.
 
