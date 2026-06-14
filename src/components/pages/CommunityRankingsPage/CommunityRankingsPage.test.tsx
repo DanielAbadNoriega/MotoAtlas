@@ -459,6 +459,30 @@ describe('CommunityRankingsPage', () => {
     });
   });
 
+  it('muestra RadarState cuando los filtros dejan el listado técnico sin resultados', async () => {
+    getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
+    getApprovedCommunityReviewsMock.mockResolvedValue([]);
+
+    window.location.hash = '#/comunidad/rankings';
+    render(<CommunityRankingsPage motorcycles={bikeFixtures} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Listado técnico de rankings')).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByLabelText('Buscar modelo');
+    searchInput.focus();
+    await userEvent.type(searchInput, 'modelo-inexistente');
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Sin resultados' })).toBeInTheDocument();
+      expect(screen.getByText('No hay resultados para los filtros seleccionados.')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Listado técnico de rankings')).not.toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument();
+  });
+
   it('podium no refleja filtros de segmento', async () => {
     getReviewAspectsByReviewIdsMock.mockResolvedValue([]);
     getApprovedCommunityReviewsMock.mockResolvedValue([

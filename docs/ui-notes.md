@@ -289,6 +289,8 @@ Aspectos técnicos:
 
 **Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros. El componente `PodiumCard` es compartido entre `TopRatedMotorcyclesPage` (`#/motos-mejor-valoradas`) y `CommunityRankingsPage` (`#/comunidad/rankings`), lo que garantiza paridad visual entre ambas rutas. La prop `showConfidence` permite controlar la visibilidad del shield de confianza directamente; tiene tests unitarios dedicados.
 
+El empty state técnico filtrado sin resultados de `CommunityRankingsPage` ahora usa `RadarState` como base compartida. Mantiene el título `Sin resultados`, el texto `No hay resultados para los filtros seleccionados.`, no expone CTA de reset y no modifica el podio, que sigue fuera de este flujo.
+
 Nota de estrategia taxonómica:
 - esta vista puede exponer segmentos canónicos explícitos (`BIKE_SEGMENTS`) para análisis técnico;
 - convive con vistas públicas compactas (`primary + other`) respaldadas por contrato formal canónico vs visible;
@@ -462,7 +464,7 @@ En `#/cuenta`, el bloque “Mis reviews” agrupa las reviews propias por moto, 
 - usa `AccountReviewsEmptyState` como wrapper de compatibilidad sobre `RadarState` para el estado “sin resultados”.
 - edición, borrado/retirada y panel admin quedan pendientes.
 
-`RadarState` vive en `src/shared/ui/states/RadarState/` y es el estado vacío reutilizable canónico para el patrón visual tipo radar. Se extrajo desde el diseño existente de `AccountReviewsEmptyState`, sin rediseño, y sus consumidores documentados actuales son `AccountReviewsEmptyState`/`AccountReviewsPage` y el empty state de podio/no-results de `TopRatedMotorcyclesPage`. Futuras migraciones deben hacerse una página por vez, preservando copy, acciones y accesibilidad; no existen todavía variantes compartidas de loading/error ni una migración masiva de empty states.
+`RadarState` vive en `src/shared/ui/states/RadarState/` y es el estado vacío reutilizable canónico para el patrón visual tipo radar. Se extrajo desde el diseño existente de `AccountReviewsEmptyState`, sin rediseño, y sus consumidores documentados actuales son `AccountReviewsEmptyState`/`AccountReviewsPage`, el empty state de podio/no-results de `TopRatedMotorcyclesPage` y el empty state técnico filtrado sin resultados de `CommunityRankingsPage`. Futuras migraciones deben hacerse una página por vez, preservando copy, acciones y accesibilidad; no existen todavía variantes compartidas de loading/error ni una migración masiva de empty states.
 
 ## Auth y envío de reviews
 
