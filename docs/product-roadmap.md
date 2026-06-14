@@ -17,9 +17,9 @@ Implementado (baseline actual):
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
-- Baseline validado actual: `75 files / 1149 tests passing`.
+- Baseline validado actual: `75 files / 1146 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `feature/radar-state-community-rankings-empty`, sobre la base ya aprobada de `feature/shared-radar-state`.
+- Último bloque estable validado: `chore/remove-top-rated-route`, sobre la base ya aprobada de `feature/radar-state-community-rankings-empty`.
 
 ## 3. Foco inmediato recomendado
 
@@ -1313,7 +1313,7 @@ No es implementación. Es una tarea de documentación y planificación futura.
 **Fase A — implementada** (rama `feature/page-hero-community-base`):
 - Auditoría de implementaciones de Hero (rama `feature/hero-cta-audit`): inventario de 11 patrones distintos, 4 sistemas de botón, 2 reusos cross-page feos.
 - Componente compartido `PageHero` (`src/components/ui/PageHero/`) con API mínima: `titleId`, `title`, `eyebrow?`, `description?`, `imageSrc?`, `imageAlt?`, `className?`, `children?`, `actions?`. Replica la estructura del antiguo `CommunityHero`.
-- Migración de los 6 consumidores simples: 4 páginas admin (Dashboard, Reviews, Requests, Moderation) sin cambio visual; `CommunityRankingsPage` con remoción de CTAs del hero; `TopRatedMotorcyclesPage` con nueva prop `variant?: 'community' | 'topRated'` que quita CTAs en `#/comunidad` y las preserva en `#/motos-mejor-valoradas`.
+- Migración de los 6 consumidores simples: 4 páginas admin (Dashboard, Reviews, Requests, Moderation) sin cambio visual; `CommunityRankingsPage` con remoción de CTAs del hero; y la landing de comunidad implementada hoy por `TopRatedMotorcyclesPage`, ya sin CTAs de hero en `#/comunidad`. La antigua variante/ruta pública `#/motos-mejor-valoradas` quedó eliminada en una fase posterior de limpieza de routing.
 - Remoción de CTAs del hero en `#/comunidad` y `#/comunidad/rankings` porque la navegación vivirá en una futura navbar/subnav.
 - `CommunityHero` reusado como thin wrapper deprecated de `PageHero` para mantener compatibilidad con importadores externos.
 - Sin cambios de schema/RLS/auth/routes.
@@ -1379,9 +1379,10 @@ Estado actual:
 - `RadarState` **ya quedó implementado** en `src/shared/ui/states/RadarState/`, extraído directamente desde el patrón visual previo de `AccountReviewsEmptyState` sin rediseño adicional.
 - Consumidores documentados hasta ahora:
   - `AccountReviewsEmptyState` / `AccountReviewsPage` como primer uso vía wrapper de compatibilidad.
-  - `TopRatedMotorcyclesPage` solo para el empty state de podio / no-results, preservando los links secundarios fuera de `RadarState`.
+  - `TopRatedMotorcyclesPage` como nombre de implementación actual de `#/comunidad`, solo para el empty state de podio / no-results y preservando los links secundarios fuera de `RadarState`.
   - `CommunityRankingsPage` solo para el empty state técnico filtrado sin resultados, sin CTA de reset y con el podio intacto.
 - La migración de más consumidores queda explícitamente fuera de esta fase.
+- Cleanup futuro opcional: renombrar o dividir `TopRatedMotorcyclesPage` hacia `CommunityLandingPage` en una refactor dedicada de naming, sin reabrir la ruta eliminada ni asumir redirects SEO.
 
 Pendiente / futuro:
 - `FullPageLoading` para auth/profile/account/admin loading de página completa.

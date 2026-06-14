@@ -13,7 +13,7 @@ El footer vive en `src/components/layout/Footer/` y toma su contenido de `src/da
 Estructura actual:
 
 - bloque de marca con descripción y copyright.
-- columna `Explorar`: buscador, comparador, comunidad y motos mejor valoradas.
+- columna `Explorar`: buscador, comparador y comunidad.
 - columna `Datos`: metodología, fuentes de datos y solicitar modelo.
 - columna `Legal`: privacidad y términos.
 - columna `Social`: enlaces externos placeholder a TikTok, Instagram, YouTube y Facebook.
@@ -21,18 +21,20 @@ Estructura actual:
 Las redes sociales son placeholders seguros por ahora y abren en nueva pestaña con `rel="noopener noreferrer"`.
 
 
-## Landing “Motos mejor valoradas”
+## Landing de comunidad (implementación actual)
 
-La ruta `#/motos-mejor-valoradas` vive en `src/components/pages/TopRatedMotorcyclesPage/`.
+La ruta pública de entrada es `#/comunidad` y hoy sigue implementada en `src/components/pages/TopRatedMotorcyclesPage/`. La antigua ruta `#/motos-mejor-valoradas` fue eliminada; si se visita ese hash, el router cae al fallback público actual (home), sin redirect dedicado.
 
-Criterio actual del ranking:
+Criterio actual del ranking visible en la landing:
 
 - solo cuenta reviews con `status = approved`.
 - calcula `averageRating` y `reviewCount` por moto.
 - por defecto exige al menos 1 review aprobada.
 - si no hay reviews suficientes o los filtros dejan el ranking vacío, muestra empty state técnico.
 
-El empty state del podio/no-results ahora usa `RadarState` como base compartida. Mantiene el copy `Aún no hay suficientes datos de comunidad.`, el CTA primario `Limpiar filtros` cuando hay filtros activos y conserva los links secundarios `Ir al buscador` + `Explorar comunidad` como acciones propias de página fuera del componente compartido.
+El empty state del podio/no-results usa `RadarState` como base compartida. Mantiene el copy `Aún no hay suficientes datos de comunidad.`, el CTA primario `Limpiar filtros` cuando hay filtros activos y conserva los links secundarios `Ir al buscador` + `Explorar comunidad` como acciones propias de página fuera del componente compartido.
+
+`TopRatedMotorcyclesPage` quedó community-only en el código actual. El posible rename/split a `CommunityLandingPage` queda como refactor opcional posterior, fuera de esta fase.
 
 Podio visual: componente `PodiumCard` compartido extraído en `src/components/rankings/PodiumCard/`. Self-styled con CSS propio (`.podium-card*`), presentacional sin fetch ni auth. API: `bike`, `rank`, `variant`, `scoreLabel`, `confidence`, `confidenceTooltip`, `stats`, `statsAriaLabel`, `meta`, `href`, `ctaLabel`, `loading`, `showConfidence`. El componente es la fuente de estilo de los podios en ambas páginas — los estilos de layout de página (`.top-rated__podium`, `.top-rated__podium-cta`, `.rankings__podium-section`, `.rankings__podium-grid`) permanecen en sus SCSS respectivos.
 
@@ -249,7 +251,7 @@ Estado actual del generador:
 
 La ruta `#/comunidad` se organiza en hero, Podium rankings, Trending, bloque de dos columnas con Comunidades activas + Reviews recientes y CTAs finales para solicitar modelo o buscar una moto para opinar. El Podium rankings replica visualmente el podio de `#/comunidad/rankings` (mismo lenguaje de cards, shield de confianza y tooltip). `Top Rated` ya no aparece como bloque separado en esta landing. En `Reviews recientes` se usa `FeaturedReviewCard` con acciones comunitarias seguras (Fase 4.4): Helpful/NotHelpful reales en auth, Útil N pasivo en no-auth, Report/Reply no cableados.
 
-El hero de `#/comunidad` usa el componente compartido `PageHero` (rama `feature/page-hero-community-base`, Fase A de la unificación de heroes). A partir de esa rama, el hero **ya no muestra CTAs** (`Explorar comunidades`, `Comparar motos`) porque la navegación vivirá en una futura navbar/subnav. La misma prop opcional `variant?: 'community' | 'topRated'` distingue en `TopRatedMotorcyclesPage` entre la renderización de `#/comunidad` (sin CTAs) y `#/motos-mejor-valoradas` (con CTAs preservados). La subnav de comunidad y los enlaces a `#/comunidad/rankings` y `#/comunidad/reviews` se consolidarán en una fase posterior.
+El hero de `#/comunidad` usa el componente compartido `PageHero` (rama `feature/page-hero-community-base`, Fase A de la unificación de heroes). El hero **ya no muestra CTAs** (`Explorar comunidades`, `Comparar motos`) porque la navegación vivirá en una futura navbar/subnav. `TopRatedMotorcyclesPage` sigue siendo el nombre de implementación actual de esta landing, pero ya no existe una variante pública `topRated`. La subnav de comunidad y los enlaces a `#/comunidad/rankings` y `#/comunidad/reviews` se consolidarán en una fase posterior.
 
 Paridad resuelta:
 - en `#/comunidad`, las cards de podio en posiciones 2 y 3 ya muestran el mismo span de metadatos que `#/comunidad/rankings`.
@@ -287,7 +289,7 @@ Aspectos técnicos:
 - Pesos por categoría definidos en `RANKING_ASPECT_WEIGHTS`.
 - Ajuste escalonado por confianza: 35% (<3), 70% (3-9), 100% (≥10).
 
-**Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros. El componente `PodiumCard` es compartido entre `TopRatedMotorcyclesPage` (`#/motos-mejor-valoradas`) y `CommunityRankingsPage` (`#/comunidad/rankings`), lo que garantiza paridad visual entre ambas rutas. La prop `showConfidence` permite controlar la visibilidad del shield de confianza directamente; tiene tests unitarios dedicados.
+**Filtros:** afectan SOLO al listado técnico (segment, license, use, search). El podio permanece siempre global y sin filtros. El componente `PodiumCard` es compartido entre la landing de `#/comunidad` (implementada hoy por `TopRatedMotorcyclesPage`) y `CommunityRankingsPage` (`#/comunidad/rankings`), lo que garantiza paridad visual entre ambas rutas activas. La prop `showConfidence` permite controlar la visibilidad del shield de confianza directamente; tiene tests unitarios dedicados.
 
 El empty state técnico filtrado sin resultados de `CommunityRankingsPage` ahora usa `RadarState` como base compartida. Mantiene el título `Sin resultados`, el texto `No hay resultados para los filtros seleccionados.`, no expone CTA de reset y no modifica el podio, que sigue fuera de este flujo.
 
@@ -308,7 +310,7 @@ El hero de `#/comunidad/reviews` usa el shared `PageHero` desde la rama `feature
 
 Debajo del hero hay un bloque editorial separado del garaje filtrable: `Reviews destacadas`, `Últimos reportes` e `Insights en vivo` se calculan desde reviews `approved` cargadas y no dependen de los filtros. Los filtros solo afectan a `Garaje de la comunidad`, que agrupa por `motorcycleId` y calcula rating medio (sobre 5 con estrella), número de reviews, última review en formato corto DD.MM.YY, y uso más repetido. El panel de filtros es apply-on-change en tiempo real; el botón "Aplicar" cierra el panel en mobile. El aside `Insights en vivo` (kicker "Pulso de la comunidad · Actividad reciente") muestra 4 signals comunitarios con copy conservadora: "Moto más comentada" (moto con más reviews), "Review más útil" (mayor `helpfulCount`), "Segmento más activo" (label friendly de `segmentLabels`) y "Uso más activo" (label friendly de `accountReviewRidingStyleLabels`). Subtítulo: "Señales según reviews aprobadas, no en tiempo real." Polling suave cada 60 segundos, footer "Datos aproximados · {refreshLabel} · Según reviews aprobadas". No se renderizan: review con más kilómetros, rating medio global, ni datos sensibles de usuario. Si en el futuro product copy decide renombrar el h2 a "Pulso de la comunidad", será un cambio puntual con su propio test. Las cards del garaje usan `MotorcycleGarageCard` (componente extraído en `src/components/motorcycles/MotorcycleGarageCard/`), con shield de confianza junto al rating /5 con estrella, tooltip visual (Alta/Media/Baja confianza) y CTAs reducidos "Reviews" y "Ficha técnica". `MotorcycleGarageCard` también se reutiliza en `#/buscador` con acciones compactas para comparar.
 
-El Podio rankings de `#/comunidad` ahora usa `PodiumCard` compartido con `#/comunidad/rankings` y `#/motos-mejor-valoradas`. Paridad visual garantizada: ambos podios usan el mismo componente self-styled con CSS propio. Estilos de layout de página (`.top-rated__podium`, `.rankings__podium-grid`, etc.) permanecen en las páginas; los estilos de card interna son responsabilidad del componente.
+El Podio rankings de `#/comunidad` ahora usa `PodiumCard` compartido con `#/comunidad/rankings`. Paridad visual garantizada: ambos podios usan el mismo componente self-styled con CSS propio. Estilos de layout de página (`.top-rated__podium`, `.rankings__podium-grid`, etc.) permanecen en las páginas; los estilos de card interna son responsabilidad del componente.
 
 **Criterio `Reviews destacadas`:** prioriza utilidad comunitaria (votos `Útil`). Criterio: 1) `helpfulCount` desc, 2) rating desc, 3) comentario más largo, 4) más reciente. Si no hay votos útiles (o fallan las reactions), usa fallback por rating/fecha/completitud — nunca queda vacío. **Los kilómetros declarados NO son criterio** para destacar. `Últimos reportes` es cronológico puro (fecha desc), no usa helpfulCount. Cada bloque editorial deduplica internamente por `motorcycleId`; no hay deduplicación editorial↔garaje.
 
@@ -514,7 +516,7 @@ Componente compartido `src/components/ui/PageHero/PageHero.tsx` introducido en l
 Migraciones ya completadas en Fases A/B:
 - 4 páginas admin (Dashboard, Reviews, Requests, Moderation): reemplazan `CommunityHero` por `PageHero` sin cambio visual.
 - `CommunityRankingsPage` (`#/comunidad/rankings`): migra a `PageHero` y **quita las CTAs del hero** (`Explorar rankings`, `Ver comunidad`).
-- `TopRatedMotorcyclesPage` (renderiza `#/comunidad` y `#/motos-mejor-valoradas`): nueva prop opcional `variant?: 'community' | 'topRated'`. En `variant="community"` el hero queda sin CTAs; en `variant="topRated"` se preservan `Explorar comunidades` y `Comparar motos`. `App.tsx` pasa `variant` según la ruta activa.
+- `TopRatedMotorcyclesPage` (implementación actual de `#/comunidad`): mantiene el hero sin CTAs y ya no expone la variante `topRated` ni una ruta pública alternativa. Un posible rename/split a `CommunityLandingPage` queda para una refactor de naming posterior.
 - `CommunityReviewsPage` (`#/comunidad/reviews`, rama `feature/page-hero-community-reviews`, Fase B): reemplaza el hero local por `PageHero` y elimina sus CTAs.
 
 `PageHero` cubre los heroes editoriales/comunidad/admin donde el patrón encaja; `SearchHero` cubre el shell de búsqueda de Home + `#/buscador`. Son componentes distintos y no deben mezclarse en una sola abstracción.
