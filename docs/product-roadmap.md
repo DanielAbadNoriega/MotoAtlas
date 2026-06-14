@@ -19,7 +19,7 @@ Implementado (baseline actual):
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - Baseline validado actual: `75 files / 1146 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `refactor/community-landing-page-name`, sobre la base ya aprobada de `chore/remove-top-rated-route`.
+- Último bloque estable validado: `fix/security-definer-privileges`, sobre la base ya aprobada de `refactor/community-landing-page-name`.
 
 ## 3. Foco inmediato recomendado
 
@@ -593,13 +593,13 @@ Gaps detectados antes de social/gamificación:
 - Hardening cerrado: `create_motorcycle_review_with_aspects` ya deriva `user_name` desde `public.user_profiles.display_name`, usa fallback `Usuario MotoAtlas`, mantiene `p_user_name` solo por compatibilidad y deja la creación auth-only concentrada en la RPC.
 - Hardening cerrado: `public.motorcycle_reviews` ya no permite INSERT directo de `anon`/`authenticated`, revoca grants cliente amplios y conserva solo el contrato mínimo (`anon`: `SELECT`; `authenticated`: `SELECT` + `UPDATE(status)` protegido por RLS/admin).
 - **P2 cerrado para review creation smoke:** el smoke de staging ya confirmó la creación auth-only por RPC, la ausencia de INSERT directo para `anon`/`authenticated`, la derivación server-side de `user_name`, el fallback `Usuario MotoAtlas`, la imposibilidad de spoof vía `p_user_name` y el comportamiento least-privilege de `UPDATE(status)` para moderación.
-- **P2 pendiente:** auditoría más amplia de privilegios efectivos de funciones `security definer`.
-- **P2:** migración incremental de mocks auth hacia fixtures centrales completada; queda como seguimiento solo el mantenimiento de la base central y la auditoría más amplia de privilegios efectivos.
+- **P2 cerrado para funciones conocidas:** la auditoría/hardening de `SECURITY DEFINER` ya quedó aplicada y validada para `public.is_admin()` y `public.handle_new_user_profile()`; `create_motorcycle_review_with_aspects(...)` se mantuvo sin cambios y con contrato auth-only cerrado.
+- **P2:** migración incremental de mocks auth hacia fixtures centrales completada; queda como seguimiento solo el mantenimiento de la base central, el re-check opcional del signup público cuando cese el `429` de email y auditorías periódicas si se agregan nuevas funciones `SECURITY DEFINER`.
 - **P3 polish:** armonizar no-auth pasivo entre páginas; `MotorcycleCommunityPage` conserva acciones clicables con tooltip y bloqueo antes de red.
 
 Plan recomendado:
 1. mantener la base de fixtures, el hardening de `AuthProvider`, el cleanup local de `ReviewModal` y el hardening server-side del alias visible ya cerrados;
-2. ejecutar como siguiente paso la auditoría más amplia de privilegios efectivos de funciones `security definer` como tarea separada de validación;
+2. repetir opcionalmente el smoke del signup público directo cuando cese el rate limit `429` de Supabase email y mantener auditorías periódicas si se agregan nuevas funciones `SECURITY DEFINER`;
 3. preparar recuperación de cuenta, identidad pública futura y privacidad;
 4. solo después habilitar capa social/gamificación/notificaciones.
 
@@ -694,7 +694,7 @@ Implementado (base):
 
 Estado residual:
 - la base central de fixtures ya quedó implantada y la migración incremental se considera completa: account-level, admin, community, modal y `AuthProvider` ya usan fixtures centrales.
-- seguimiento pendiente fuera de esta migración: auditoría más amplia de privilegios efectivos de funciones `security definer`.
+- seguimiento pendiente fuera de esta migración: re-check opcional del signup público directo cuando cese el rate limit `429` y auditoría periódica solo si se agregan nuevas funciones `SECURITY DEFINER`.
 
 Debe seguir cubriendo fixtures para:
 - usuario autenticado normal;
@@ -1426,9 +1426,9 @@ Reglas actuales para mobile:
 - quedan `FilterOptionButton` y `FilterRatingStars` locales en algunas páginas de cuenta/comunidad/motorcycle community; el wrapper `FilterGroup` y el `FilterOptionButton` compartido ya están normalizados, pero la unificación completa de SCSS entre páginas es polish futuro opcional.
 - futura ejecución de scripts desde admin requiere backend seguro.
 - el formulario `ReviewModal` ya no presenta el submit no-auth como camino válido a nivel UI/test; si en el futuro se quisieran reviews anónimas reales, haría falta una decisión separada de producto + RPC/RLS/schema.
-- El hardening de `AuthProvider` ya evita exponer como settleado el nuevo estado autenticado mientras perfil/rol siguen resolviéndose; la deuda restante de auth pasa por validación más amplia de privilegios efectivos.
+- El hardening de `AuthProvider` ya evita exponer como settleado el nuevo estado autenticado mientras perfil/rol siguen resolviéndose. La deuda auth restante queda limitada al re-check opcional del signup público directo cuando cese el rate limit 429 y a auditorías periódicas si se agregan nuevas funciones SECURITY DEFINER.
 - La identidad visible de reviews autenticadas ya se deriva server-side desde `public.user_profiles.display_name`; `p_user_name` queda solo como parámetro backward-compatible ignorado para la identidad final.
-- los tests estáticos de schema no prueban privilegios efectivos ni RLS real desplegada completa; el smoke de staging para creación de reviews ya quedó aprobado, pero sigue faltando una auditoría más amplia de privilegios efectivos.
+- los tests estáticos de schema no prueban toda la RLS/privilegios desplegada por sí solos; el smoke de staging para creación de reviews y el hardening `SECURITY DEFINER` conocido ya quedaron aprobados. Queda solo como follow-up opcional repetir el signup público directo cuando se libere el rate limit `429`.
 
 ## 15. Qué NO hacer todavía
 
@@ -1452,7 +1452,7 @@ Reglas actuales para mobile:
 - Tarjeta incorporada y cerrada: mejora de `bike-detail__quick-specs` clasificada como **P1/P2 UX pública + componentes reutilizables** y resuelta en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Tarjeta incorporada y cerrada: “Mejorar generador de reviews mock realistas” quedó resuelta como mejora técnica de **P2 Datos demo / QA visual** para soporte de maquetación y validación visual, sin cambiar source policy ni tocar UI productiva.
 - Tarjeta reclasificada y actualizada: “Controlar datos demo por entorno en comunidad” queda con **source policy + guard runtime + toggle admin implementados**. Siguen fuera de alcance una persistencia backend/global settings y un refetch global automático.
-- Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **implementada** (base central + migración incremental cerrada) dentro de **P2 Auth baseline / Testing / Fixtures**. El trabajo restante asociado ya no es de fixtures ni de alias server-side; el smoke de staging para creación de reviews ya quedó aprobado y el seguimiento pasa a verificación más amplia de privilegios efectivos.
+- Tarjeta actualizada: “Crear fixtures de usuarios y perfiles para tests de auth” queda **implementada** (base central + migración incremental cerrada) dentro de **P2 Auth baseline / Testing / Fixtures**. El trabajo restante asociado ya no es de fixtures ni de alias server-side; el smoke de staging para creación de reviews ya quedó aprobado y el seguimiento pasa a re-check opcional del signup público directo cuando cese el rate limit 429 y auditorías periódicas si se agregan nuevas funciones SECURITY DEFINER.
 - Tarjeta reclasificada: “Fase 2.5 moderación/admin de respuestas” queda como **admin/moderación base mayoritariamente cerrada** con auditoría residual.
 - Tarjeta incorporada: “Automatización avanzada de imágenes” clasificada como evolución **P2/P3 Plataforma/Admin** del pipeline actual (no greenfield).
 - Idea histórica incorporada: “Noticias dinámicas y artículos generados desde datos MotoAtlas” clasificada como **P3/P4 Contenido dinámico / SEO / IA futura** (backlog estratégico, no implementación inmediata).

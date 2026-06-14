@@ -714,6 +714,9 @@ begin
 end;
 $$;
 
+revoke execute on function public.handle_new_user_profile() from public;
+revoke execute on function public.handle_new_user_profile() from anon;
+
 drop trigger if exists on_auth_user_created_profile on auth.users;
 create trigger on_auth_user_created_profile
 after insert on auth.users
@@ -741,6 +744,8 @@ as $$
   );
 $$;
 
+revoke execute on function public.is_admin() from public;
+revoke execute on function public.is_admin() from anon;
 grant execute on function public.is_admin() to authenticated;
 
 drop policy if exists "Users can read own profile" on public.user_profiles;

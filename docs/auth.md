@@ -127,7 +127,24 @@ Cada aspecto puede incluir un comentario opcional. Se muestran en la review via 
 - `public.motorcycle_reviews` sigue least-privilege: `anon` conserva `SELECT` público, `authenticated` conserva `SELECT` y `UPDATE(status)` para el flujo de moderación protegido por RLS/admin, y no hay grants amplios de `INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER` para roles cliente.
 - `EXECUTE` sobre `create_motorcycle_review_with_aspects` quedó restringido a `authenticated`; `public` y `anon` quedan revocados explícitamente.
 - El smoke de staging ya confirmó el contrato de creación de reviews por comportamiento desplegado. Limitación aceptada: la introspección SQL directa vía `information_schema` / `pg_policies` no estuvo disponible sobre el surface HTTP expuesto, así que esta validación quedó cerrada por flujos `anon` / `authenticated` / `admin`, no por auditoría SQL remota.
-- **Hardening pendiente:** verificar privilegios efectivos de otras funciones `security definer` y, si se necesita un nivel más profundo, abrir un patrón separado de auditoría SQL remota segura para staging.
+- Hardening `SECURITY DEFINER` conocido ya validado: `public.is_admin()` tiene `REVOKE EXECUTE` explícito para `public`/`anon` y `GRANT EXECUTE` solo para `authenticated`; `public.handle_new_user_profile()` sigue trigger-driven, también revoca `EXECUTE` a `public`/`anon`, no expone grant cliente directo y fija `role='user'` sin confiar `role` desde metadata. `create_motorcycle_review_with_aspects(...)` permanece auth-only y sin cambios en este bloque.
+
+## Smoke de staging reciente
+
+Validación aprobada por superficie de privilegios/endpoints, no por navegación browser completa:
+
+- creación controlada de usuario en `auth.users` vía Admin API disparó `public.handle_new_user_profile()` y creó la fila correspondiente en `public.user_profiles`;
+- `role` quedó fijado en `user` y un intento de spoof con metadata `role='admin'` no elevó privilegios;
+- `display_name` y `avatar_url` se preservaron según el contrato actual del trigger;
+- `rpc/is_admin` devolvió `401` para `anon`, `false` para auth no-admin y `true` para admin;
+- las superficies equivalentes a admin (`user_profiles`, `review_reports`, reviews no aprobadas, `model_requests`) siguieron visibles para admin y negadas para non-admin;
+- `handle_new_user_profile()` no apareció expuesta como RPC PostgREST normal para `anon`/`authenticated` (surface observada: `404`);
+- `create_motorcycle_review_with_aspects(...)` no mostró señales de regresión y siguió cerrada a `authenticated`.
+
+Limitación aceptada:
+- el flujo exacto de signup público no se pudo repetir durante este smoke por rate limit `429` de Supabase email;
+- la validación del trigger quedó cerrada mediante creación controlada en staging vía Admin API;
+- si producto/seguridad quiere esa evidencia exacta, el único seguimiento pendiente es repetir ese signup público cuando el rate limit se libere.
 
 ## No implementado todavía
 
@@ -149,11 +166,11 @@ Implementado (base):
 Pendiente residual (post-migración):
 - Mantener la cobertura incremental ya cerrada sin volver a introducir objetos auth inline repetidos.
 - Mantener y extender la cobertura añadida sobre transición `onAuthStateChange`, loading de perfil y protección contra resoluciones async obsoletas cuando aparezcan nuevas ramas de auth.
-- Mantener como pendiente solo la validación más amplia de otras superficies sensibles de auth/RLS y de privilegios efectivos de otras funciones `security definer`; la creación de reviews ya quedó validada por smoke de comportamiento en staging.
+- Mantener como pendiente solo el re-check opcional del signup público directo cuando cese el rate limit `429` y futuras auditorías periódicas si aparecen nuevas superficies sensibles de auth/RLS o nuevas funciones `security definer`.
 
 ## Plan recomendado
 
 1. **Fase 1 — contrato auth local cerrado:** `feature/review-auth-only-contract` cerró el CTA auth-only con hint no-auth, `fix/review-modal-auth-contract` cerró el contrato local UI/test del modal, el hardening de `AuthProvider` cerró la transición de perfil/loading y el hardening server-side ya cerró la identidad visible de reviews autenticadas.
-2. **Fase 2 — validación/hardening:** el smoke de RLS/roles para creación de reviews ya quedó aprobado; el siguiente paso técnico recomendado es la verificación más amplia de privilegios efectivos de funciones `security definer`.
+2. **Fase 2 — validación/hardening:** el smoke de RLS/roles para creación de reviews y el hardening `SECURITY DEFINER` conocido ya quedaron aprobados; como follow-up opcional solo queda repetir el signup público directo cuando cese el rate limit `429` si producto/seguridad quiere esa evidencia exacta.
 3. **Fase 3 — foundation de cuenta/social:** recuperación de cuenta, privacidad y contratos de identidad pública posteriores.
 4. **Fase 4 — recién entonces:** perfiles públicos, gamificación y notificaciones.
