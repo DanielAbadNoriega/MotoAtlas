@@ -285,12 +285,25 @@
   gap: 0.75rem;
 }
 
-.rankings__technical-empty {
-  padding: 3rem;
-  text-align: center;
+.rankings__technical-empty-state {
+  background:
+    radial-gradient(circle at center, rgba($color-surface-container-high, 0.32), transparent 68%),
+    rgba($color-surface-lowest, 0.72);
+  border: 1px dashed rgba($color-outline-variant, 0.5);
+  border-radius: $radius-xl;
+  min-height: 24rem;
+  padding: clamp(2rem, 5vw, 3rem);
 
-  p {
-    color: $color-on-surface-variant;
+  .radar-state__content h2 {
+    @include headline-lg;
+  }
+
+  .radar-state__content p {
+    @include body-lg;
+  }
+
+  .radar-state__icon {
+    color: $color-outline;
   }
 }
 

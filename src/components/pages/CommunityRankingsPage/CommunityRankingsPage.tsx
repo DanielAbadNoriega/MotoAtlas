@@ -22,6 +22,7 @@ import type { Bike, BikeSegment } from '../../../types/bike';
 import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
+import { RadarState } from '../../../shared/ui/states/RadarState';
 import './CommunityRankingsPage.scss';
 
 type CommunityRankingsPageProps = Readonly<{
@@ -177,9 +178,12 @@ function TechnicalTable({ rankings, filters }: { rankings: readonly CategoryRank
 
   if (flatEntries.length === 0) {
     return (
-      <div className="rankings__technical-empty">
-        <p>No hay resultados para los filtros seleccionados.</p>
-      </div>
+      <RadarState
+        className="rankings__technical-empty-state"
+        description="No hay resultados para los filtros seleccionados."
+        title="Sin resultados"
+        titleId="community-rankings-empty-title"
+      />
     );
   }
 
