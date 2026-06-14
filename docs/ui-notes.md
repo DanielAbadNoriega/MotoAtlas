@@ -327,6 +327,10 @@ Señales activas del bloque:
 
 Las shares/porcentajes se calculan solo con el dataset aprobado cargado y no deben leerse como tendencia o crecimiento. El label relativo de actualización es texto local de UI; no implica realtime segundo a segundo. Las cards del garaje usan `MotorcycleGarageCard` (componente extraído en `src/components/motorcycles/MotorcycleGarageCard/`), con shield de confianza junto al rating /5 con estrella, tooltip visual (Alta/Media/Baja confianza) y CTAs reducidos "Reviews" y "Ficha técnica". `MotorcycleGarageCard` también se reutiliza en `#/buscador` con acciones compactas para comparar.
 
+Decisión de producto cerrada para esta página:
+- `Garaje de la comunidad` queda aceptado con su diseño actual; no se añadirán por ahora aspectos agregados en la card.
+- No existe pendiente de deduplicación editorial↔garaje: `Reviews destacadas`, `Últimos reportes` y `Garaje de la comunidad` son bloques independientes con finalidades distintas. Una misma moto puede aparecer en editorial y también en garaje sin considerarse duplicado erróneo.
+
 El Podio rankings de `#/comunidad` ahora usa `PodiumCard` compartido con `#/comunidad/rankings`. Paridad visual garantizada: ambos podios usan el mismo componente self-styled con CSS propio. Estilos de layout de página (`.top-rated__podium`, `.rankings__podium-grid`, etc.) permanecen en las páginas; los estilos de card interna son responsabilidad del componente.
 
 **Criterio `Reviews destacadas`:** prioriza utilidad comunitaria (votos `Útil`). Criterio: 1) `helpfulCount` desc, 2) rating desc, 3) comentario más largo, 4) más reciente. Si no hay votos útiles (o fallan las reactions), usa fallback por rating/fecha/completitud — nunca queda vacío. **Los kilómetros declarados NO son criterio** para destacar. `Últimos reportes` es cronológico puro (fecha desc), no usa helpfulCount. Cada bloque editorial deduplica internamente por `motorcycleId`; no hay deduplicación editorial↔garaje.
@@ -465,6 +469,15 @@ Limitaciones actuales (Fase 1 cerrada, pendientes para Fase 2/3/4 sin cambios es
 - sin notificaciones al solicitante (cualquier vía futura debe pasar por backend/edge/email, nunca con `service role key` en frontend).
 - sin detección de duplicados (`brand` + `model` + `year`).
 - sin acciones en lote sobre múltiples solicitudes.
+
+### Backlog futuro — Admin Models Studio / Estudio de modelos
+
+No implementado aún. Dirección documentada para una futura gestión interna del catálogo desde admin:
+- rutas previstas: `#/admin/modelos`, `#/admin/modelos/nuevo`, `#/admin/modelos/editar`, `#/admin/modelos/[motorcycleId]/editar`;
+- objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON;
+- visual: página admin full-size, dark premium technical form, inspiración base `ReviewModal` + Stitch, pero sin modal ni landing pública;
+- create/edit deben compartir la misma arquitectura visual y de formulario;
+- la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios.
 
 ## Mi cuenta — Reviews
 

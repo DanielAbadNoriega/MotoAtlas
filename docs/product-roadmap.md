@@ -59,7 +59,104 @@ Implementado:
 - Rating de `Moto mejor valorada` sigue siendo veraz en escala `/5`.
 - Los porcentajes mostrados son shares derivados del dataset aprobado cargado; no se introducen claims falsos de tendencia o crecimiento.
 - No existe CTA `Ver todas las métricas`: el bloque actual es compacto y no debe leerse como una página completa de métricas.
+- Decisión de producto cerrada para `#/comunidad/reviews`: el diseño actual de `Garaje de la comunidad` se acepta sin añadir aspectos agregados y sin deduplicación editorial↔garaje. `Reviews destacadas`, `Últimos reportes` y `Garaje de la comunidad` cumplen propósitos distintos; que una misma moto aparezca en editorial y también en el garaje es comportamiento esperado.
 - `Radar MotoAtlas / Pulso de la Comunidad` permanece como backlog P3/P4 (sección más ambiciosa con más señales y métricas). Este rediseño es el paso mínimo viable hacia esa dirección.
+
+### Admin Models Studio / Estudio de modelos
+
+Estado: **backlog estratégico / futuro**.
+
+Propósito:
+- evitar la edición manual de JSON como flujo principal a largo plazo;
+- permitir a perfiles admin crear, revisar y editar entradas del catálogo de motos desde la UI interna;
+- mantener separados UI, seguridad y persistencia real hasta que exista una revisión explícita de schema/RLS/servicios.
+
+No es:
+- una landing pública;
+- una nueva área de marketing;
+- una feature implementada ahora.
+
+Rutas propuestas:
+- `#/admin/modelos`
+- `#/admin/modelos/nuevo`
+- `#/admin/modelos/editar`
+- `#/admin/modelos/[motorcycleId]/editar`
+
+Dirección visual:
+- usar Stitch primero como base de exploración visual;
+- inspiración de lenguaje visual: `ReviewModal`, pero convertida en página admin full-size y no modal;
+- dark premium technical form;
+- HUD/glass grouped cards;
+- secciones técnicas claras;
+- UI estrictamente interna/admin.
+
+Fases propuestas:
+
+0. **Audit / planning**
+   - inspeccionar schema/modelo actual de motos;
+   - inspeccionar pipeline de importación y estructura JSON;
+   - inspeccionar patrones admin existentes;
+   - identificar campos requeridos, gaps de validación, implicaciones RLS/seguridad y necesidades de servicio;
+   - sin implementación.
+
+1. **Admin entry points + landing**
+   - añadir una nueva card/article en `.admin-page__dashboard-grid` para gestión de modelos;
+   - añadir quick link en los admin quick links (`.account-page__quick-links`);
+   - crear `#/admin/modelos` como landing de gestión;
+   - dos caminos principales: `Crear nuevo modelo` y `Editar modelo existente`;
+   - sin schema changes;
+   - sin persistencia real todavía salvo decisión posterior explícita.
+
+2. **Create model page UI**
+   - crear una página-form inspirada en `ReviewModal`, pero como página admin completa;
+   - secciones alineadas al contrato JSON/spec actual:
+     - identidad del modelo
+     - clasificación
+     - motor y rendimiento
+     - ergonomía y uso
+     - electrónica/equipamiento
+     - precio/mercado
+     - imagen/curación
+     - fuentes/notas internas
+   - en campos de texto, el admin escribe el contenido final directamente (sin controles tipo pros/contras de `ReviewModal`);
+   - puede arrancar como UI-only / draft-only según la decisión posterior de backend.
+
+3. **Edit model search/list page**
+   - crear una búsqueda/listado simplificado inspirado en `SearchPage`;
+   - search/filter de motos existentes para edición;
+   - resultados como cards admin simplificadas, no como cards públicas completas;
+   - mostrar solo info útil para edición:
+     - motorcycle name
+     - brand/model/year
+     - opcionalmente segment/status/completeness
+     - CTA `Editar`
+   - CTA hacia `#/admin/modelos/[motorcycleId]/editar`.
+
+4. **Edit model form**
+   - reutilizar la misma arquitectura visual/estructural que create;
+   - precargar campos desde la moto seleccionada;
+   - mantener create/edit alineados para evitar drift;
+   - añadir validación antes de persistencia.
+
+5. **Persistence / security**
+   - añadir create/update services solo tras revisión explícita de schema/RLS/seguridad;
+   - permisos admin-only;
+   - nunca `service role key` en frontend;
+   - decidir si las escrituras vivirán bajo RLS/policies admin directas o vía backend/edge functions protegidas;
+   - tests futuros para permisos, errores y paths de fallo.
+
+6. **Image workflow future**
+   - primero URL/preview de imagen;
+   - upload/normalización/`image_locked` como fase posterior;
+   - respetar el pipeline de imágenes existente y no sobrescribir assets curados/locked.
+
+Notas de testing futuro (no implementado ahora):
+- proteger rutas admin por rol;
+- validar render de la landing;
+- validar CTAs create/edit y sus rutas;
+- validar búsqueda simplificada de edición;
+- validar form validation;
+- validar ausencia de write paths no autorizados.
 
 ### Home — Reemplazo de `FeaturedBikes` / `BikeCard` (legacy temporal)
 
