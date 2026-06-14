@@ -49,9 +49,10 @@
 .community-reviews-page__editorial {
   @include container;
 
+  margin-bottom: 4rem;
+  padding-block: 3rem 0.75rem;
   display: grid;
   gap: 4.4rem;
-  padding-block: 3rem 0.75rem;
 }
 
 .community-reviews-page__editorial-section {
@@ -202,9 +203,9 @@
 }
 
 .community-reviews-page__insights-copy-row {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 1rem;
 }
 
@@ -296,23 +297,30 @@
     linear-gradient(180deg, rgba($color-surface-lowest, 0.68), rgba($color-surface-container, 0.78)),
     radial-gradient(circle at top right, rgba($color-accent, 0.06), transparent 8rem);
   border: 1px solid rgba($color-outline-variant, 0.5);
+  color: inherit;
   display: grid;
   gap: 1.1rem;
   padding: 1.25rem 1.1rem 1rem;
   position: relative;
+  text-decoration: none;
   transition:
     box-shadow $transition-base,
     border-color $transition-base,
     transform $transition-fast;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     border-color: rgba($color-accent, 0.6);
     box-shadow: inset 0 0 0 1px rgba($color-accent, 0.16);
     transform: translateY(-1px);
   }
 }
 
-span.community-reviews-page__insight-icon {
+.community-reviews-page__insight-item--interactive {
+  cursor: pointer;
+}
+
+.community-reviews-page__insight-icon {
   color: rgba($color-on-surface-variant, 0.42);
   font-size: 1.3rem;
   position: absolute;
@@ -325,17 +333,17 @@ span.community-reviews-page__insight-icon {
   opacity: 0.9;
   position: absolute;
   width: 0.5rem;
-  
+
   &-top-left {
     border-left: 2px solid rgba($color-accent, 0.88);
     border-top: 2px solid rgba($color-accent, 0.88);
-    top: -1px;
     left: -1px;
+    top: -1px;
   }
-  
+
   &-bottom-right {
-    border-right: 2px solid rgba($color-accent, 0.88);
     border-bottom: 2px solid rgba($color-accent, 0.88);
+    border-right: 2px solid rgba($color-accent, 0.88);
     bottom: -1px;
     right: -1px;
   }
@@ -393,14 +401,14 @@ span.community-reviews-page__insight-icon {
 .community-reviews-page__insight-meta {
   display: flex;
   min-height: 1rem;
+}
 
-  p {
-    @include label-caps;
+.community-reviews-page__insight-meta p {
+  @include label-caps;
 
-    color: rgba($color-on-surface-variant, 0.74);
-    font-size: 0.58rem;
-    margin: 0;
-  }
+  color: rgba($color-on-surface-variant, 0.74);
+  font-size: 0.58rem;
+  margin: 0;
 }
 
 .community-reviews-page__insight-chip {
@@ -433,33 +441,27 @@ span.community-reviews-page__insight-icon {
   }
 }
 
-.community-reviews-page__insight-item--most-helpful {
-  .community-reviews-page__insight-telemetry {
-    background: rgba($color-outline-variant, 0.2);
-    border-radius: 999px;
-    overflow: hidden;
-  }
+.community-reviews-page__insight-item--best-rated .community-reviews-page__insight-telemetry {
+  background: rgba($color-outline-variant, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
 
-  .community-reviews-page__insight-telemetry-tick {
-    height: 0.28rem;
-    min-width: 0;
+.community-reviews-page__insight-item--best-rated .community-reviews-page__insight-telemetry-tick {
+  height: 0.28rem;
+  min-width: 0;
 
-    &:nth-child(-n + 4) {
-      background: rgba($color-primary, 0.88);
-    }
+  &:nth-child(-n + 4) {
+    background: rgba($color-primary, 0.88);
   }
 }
 
-.community-reviews-page__insight-item--top-segment {
-  .community-reviews-page__insight-telemetry-tick {
-    height: 0.2rem;
-  }
+.community-reviews-page__insight-item--top-segment .community-reviews-page__insight-telemetry-tick {
+  height: 0.2rem;
 }
 
-.community-reviews-page__insight-item--top-use {
-  .community-reviews-page__insight-telemetry-tick:nth-child(-n + 3) {
-    background: rgba($color-accent, 0.6);
-  }
+.community-reviews-page__insight-item--top-use .community-reviews-page__insight-telemetry-tick:nth-child(-n + 3) {
+  background: rgba($color-accent, 0.6);
 }
 
 .community-reviews-page__insights-refresh {
@@ -474,17 +476,17 @@ span.community-reviews-page__insight-icon {
   font-size: 0.58rem;
   letter-spacing: 0.12em;
   padding-top: 0.75rem;
+}
 
-  span:first-child::before {
-    height: 0.4rem;
-    width: 0.4rem;
-    background: $color-accent-container;
-    border-radius: 999px;
-    content: '';
-    display: inline-block;
-    margin-right: 0.45rem;
-    vertical-align: middle;
-  }
+.community-reviews-page__insights-refresh span:first-child::before {
+  height: 0.4rem;
+  width: 0.4rem;
+  background: $color-accent-container;
+  border-radius: 999px;
+  content: '';
+  display: inline-block;
+  margin-right: 0.45rem;
+  vertical-align: middle;
 }
 
 @media (prefers-reduced-motion: reduce) {

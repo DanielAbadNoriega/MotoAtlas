@@ -72,13 +72,15 @@ type CommunityReviewFilters = Readonly<{
 
 type CommunityInsights = Readonly<{
   totalReviews: number;
-  mostHelpfulReview?: Readonly<{
-    helpfulCount: number;
-    motorcycleName: string;
-    rating: number;
+  bestRatedMotorcycle?: Readonly<{
+    averageRating: number;
+    motorcycleId: string;
+    name: string;
+    reviewCount: number;
   }>;
   mostReviewedMotorcycle?: Readonly<{
     count: number;
+    motorcycleId: string;
     name: string;
     sharePercent: number;
   }>;
@@ -284,27 +286,25 @@ function buildCommunityGarage(reviews: readonly MotorcycleReview[]): readonly Co
   });
 }
 
-function getCommunityInsights(
-  reviews: readonly MotorcycleReview[],
-  helpfulCountByReviewId: ReadonlyMap<string, number>,
-): CommunityInsights {
+function getCommunityInsights(reviews: readonly MotorcycleReview[]): CommunityInsights {
   if (reviews.length === 0) {
     return { totalReviews: 0 };
   }
 
-  const motorcycleCounts = new Map<string, { count: number; latestTimestamp: number; name: string }>();
+  const motorcycleStats = new Map<string, { count: number; latestTimestamp: number; name: string; totalRating: number }>();
   const ridingStyleCounts = new Map<MotorcycleReviewRidingStyle, number>();
   const segmentCounts = new Map<string, { count: number; label: string }>();
 
   reviews.forEach((review) => {
     const motorcycle = getAccountReviewMotorcycleDisplay(review);
-    const currentMotorcycle = motorcycleCounts.get(review.motorcycleId);
+    const currentMotorcycle = motorcycleStats.get(review.motorcycleId);
     const currentTimestamp = getTimestamp(review.createdAt);
 
-    motorcycleCounts.set(review.motorcycleId, {
+    motorcycleStats.set(review.motorcycleId, {
       count: (currentMotorcycle?.count ?? 0) + 1,
       latestTimestamp: Math.max(currentMotorcycle?.latestTimestamp ?? 0, currentTimestamp),
       name: currentMotorcycle?.name ?? motorcycle.name,
+      totalRating: (currentMotorcycle?.totalRating ?? 0) + review.rating,
     });
 
     ridingStyleCounts.set(review.ridingStyle, (ridingStyleCounts.get(review.ridingStyle) ?? 0) + 1);
@@ -319,29 +319,27 @@ function getCommunityInsights(
     }
   });
 
-  const mostReviewedMotorcycle = [...motorcycleCounts.values()].sort((left, right) => (
-    right.count - left.count ||
-    right.latestTimestamp - left.latestTimestamp ||
-    left.name.localeCompare(right.name)
+  const motorcycleEntries = [...motorcycleStats.entries()];
+  const mostReviewedMotorcycleEntry = [...motorcycleEntries].sort((left, right) => (
+    right[1].count - left[1].count ||
+    right[1].latestTimestamp - left[1].latestTimestamp ||
+    left[1].name.localeCompare(right[1].name)
   ))[0];
+  const bestRatedMotorcycleEntry = [...motorcycleEntries].sort((left, right) => {
+    const leftAverage = left[1].totalRating / left[1].count;
+    const rightAverage = right[1].totalRating / right[1].count;
+
+    return (
+      rightAverage - leftAverage ||
+      right[1].count - left[1].count ||
+      right[1].latestTimestamp - left[1].latestTimestamp ||
+      left[1].name.localeCompare(right[1].name)
+    );
+  })[0];
   const topRidingStyleEntry = [...ridingStyleCounts.entries()].sort((left, right) => (
     right[1] - left[1] ||
     accountReviewRidingStyleLabels[left[0]].localeCompare(accountReviewRidingStyleLabels[right[0]])
   ))[0];
-  const mostHelpfulReviewEntry = [...reviews]
-    .map((review) => ({
-      helpfulCount: helpfulCountByReviewId.get(review.id) ?? 0,
-      motorcycleName: getAccountReviewMotorcycleDisplay(review).name,
-      rating: review.rating,
-      timestamp: getTimestamp(review.createdAt),
-    }))
-    .filter((review) => review.helpfulCount > 0)
-    .sort((left, right) => (
-      right.helpfulCount - left.helpfulCount ||
-      right.rating - left.rating ||
-      right.timestamp - left.timestamp ||
-      left.motorcycleName.localeCompare(right.motorcycleName)
-    ))[0];
   const topSegmentEntry = [...segmentCounts.values()].sort((left, right) => (
     right.count - left.count ||
     left.label.localeCompare(right.label)
@@ -351,18 +349,20 @@ function getCommunityInsights(
 
   return {
     totalReviews,
-    mostHelpfulReview: mostHelpfulReviewEntry
+    bestRatedMotorcycle: bestRatedMotorcycleEntry
       ? {
-          helpfulCount: mostHelpfulReviewEntry.helpfulCount,
-          motorcycleName: mostHelpfulReviewEntry.motorcycleName,
-          rating: mostHelpfulReviewEntry.rating,
+          averageRating: bestRatedMotorcycleEntry[1].totalRating / bestRatedMotorcycleEntry[1].count,
+          motorcycleId: bestRatedMotorcycleEntry[0],
+          name: bestRatedMotorcycleEntry[1].name,
+          reviewCount: bestRatedMotorcycleEntry[1].count,
         }
       : undefined,
-    mostReviewedMotorcycle: mostReviewedMotorcycle
+    mostReviewedMotorcycle: mostReviewedMotorcycleEntry
       ? {
-          count: mostReviewedMotorcycle.count,
-          name: mostReviewedMotorcycle.name,
-          sharePercent: getSharePercent(mostReviewedMotorcycle.count),
+          count: mostReviewedMotorcycleEntry[1].count,
+          motorcycleId: mostReviewedMotorcycleEntry[0],
+          name: mostReviewedMotorcycleEntry[1].name,
+          sharePercent: getSharePercent(mostReviewedMotorcycleEntry[1].count),
         }
       : undefined,
     topSegment: topSegmentEntry
@@ -635,6 +635,8 @@ function InsightValue({ children }: Readonly<{ children?: ReactNode }>) {
 }
 
 function CommunityInsightItem({
+  ariaLabel,
+  href,
   icon,
   label,
   meta,
@@ -644,6 +646,8 @@ function CommunityInsightItem({
   value,
   variant,
 }: Readonly<{
+  ariaLabel?: string;
+  href?: string;
   icon: string;
   label: string;
   meta: string;
@@ -651,10 +655,16 @@ function CommunityInsightItem({
   metricValue?: string | null;
   statusLabel?: string;
   value?: ReactNode;
-  variant: 'most-reviewed' | 'most-helpful' | 'top-segment' | 'top-use';
+  variant: 'most-reviewed' | 'best-rated' | 'top-segment' | 'top-use';
 }>) {
-  return (
-    <article className={`community-reviews-page__insight-item community-reviews-page__insight-item--${variant}`}>
+  const className = [
+    'community-reviews-page__insight-item',
+    `community-reviews-page__insight-item--${variant}`,
+    href ? 'community-reviews-page__insight-item--interactive' : '',
+  ].filter(Boolean).join(' ');
+
+  const content = (
+    <>
       <span className="community-reviews-page__insight-icon material-symbols-outlined" aria-hidden="true">{icon}</span>
       <span className="community-reviews-page__insight-corner community-reviews-page__insight-corner-top-left" aria-hidden="true" />
       <div className="community-reviews-page__insight-content">
@@ -677,8 +687,18 @@ function CommunityInsightItem({
         </div>
       </div>
       <span className="community-reviews-page__insight-corner community-reviews-page__insight-corner-bottom-right" aria-hidden="true" />
-    </article>
+    </>
   );
+
+  if (href) {
+    return (
+      <a aria-label={ariaLabel} className={className} href={href}>
+        {content}
+      </a>
+    );
+  }
+
+  return <article className={className}>{content}</article>;
 }
 
 function formatLastRefreshed(timestamp: number, now = Date.now()): string {
@@ -713,12 +733,12 @@ function getMostReviewedInsightMeta(mostReviewedMotorcycle: CommunityInsights['m
   return `${numberFormatter.format(mostReviewedMotorcycle.count)} reviews`;
 }
 
-function getMostHelpfulInsightMeta(mostHelpfulReview: CommunityInsights['mostHelpfulReview']) {
-  if (!mostHelpfulReview) {
-    return 'Sin votos útiles todavía';
+function getBestRatedInsightMeta(bestRatedMotorcycle: CommunityInsights['bestRatedMotorcycle']) {
+  if (!bestRatedMotorcycle) {
+    return 'Sin datos suficientes';
   }
 
-  return `${numberFormatter.format(mostHelpfulReview.helpfulCount)} votos útiles`;
+  return `${numberFormatter.format(bestRatedMotorcycle.reviewCount)} reviews`;
 }
 
 function getTopSegmentInsightMeta(topSegment: CommunityInsights['topSegment']) {
@@ -750,7 +770,7 @@ function formatReviewRating(value?: number) {
     return null;
   }
 
-  return `${value.toFixed(1).replace('.0', '')}/5`;
+  return `${value.toFixed(1).replace('.', ',').replace(',0', '')}/5`;
 }
 
 function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insights: CommunityInsights; lastRefreshedAt: number }>) {
@@ -798,6 +818,8 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
 
       <div className="community-reviews-page__insight-list">
         <CommunityInsightItem
+          ariaLabel={insights.mostReviewedMotorcycle ? `Ver reviews de ${insights.mostReviewedMotorcycle.name}` : undefined}
+          href={insights.mostReviewedMotorcycle ? `#/comunidad/${insights.mostReviewedMotorcycle.motorcycleId}` : undefined}
           icon="forum"
           label="Moto más comentada"
           metricLabel="% del pulso"
@@ -809,14 +831,16 @@ function CommunityInsightsPanel({ insights, lastRefreshedAt }: Readonly<{ insigh
         />
 
         <CommunityInsightItem
-          icon="thumb_up"
-          label="Review más útil"
-          metricLabel={insights.mostHelpfulReview ? 'rating' : undefined}
-          metricValue={formatReviewRating(insights.mostHelpfulReview?.rating)}
-          statusLabel={insights.mostHelpfulReview ? 'MÁS VOTADA' : undefined}
-          variant="most-helpful"
-          value={insights.mostHelpfulReview?.motorcycleName}
-          meta={getMostHelpfulInsightMeta(insights.mostHelpfulReview)}
+          ariaLabel={insights.bestRatedMotorcycle ? `Ver reviews de ${insights.bestRatedMotorcycle.name}` : undefined}
+          href={insights.bestRatedMotorcycle ? `#/comunidad/${insights.bestRatedMotorcycle.motorcycleId}` : undefined}
+          icon="star"
+          label="Moto mejor valorada"
+          metricLabel={insights.bestRatedMotorcycle ? 'valoración media' : undefined}
+          metricValue={formatReviewRating(insights.bestRatedMotorcycle?.averageRating)}
+          statusLabel={insights.bestRatedMotorcycle ? 'MEJOR MEDIA' : undefined}
+          variant="best-rated"
+          value={insights.bestRatedMotorcycle?.name}
+          meta={getBestRatedInsightMeta(insights.bestRatedMotorcycle)}
         />
 
         <CommunityInsightItem
@@ -1215,10 +1239,7 @@ export function CommunityReviewsPage() {
   const editorialReviewIds = useMemo(() => {
     return Array.from(new Set([...featuredReviews, ...latestReviews].map((review) => review.id)));
   }, [featuredReviews, latestReviews]);
-  const communityInsights = useMemo(
-    () => getCommunityInsights(approvedReviews, helpfulCountByReviewId),
-    [approvedReviews, helpfulCountByReviewId],
-  );
+  const communityInsights = useMemo(() => getCommunityInsights(approvedReviews), [approvedReviews]);
   const garageMotorcycles = useMemo(() => buildCommunityGarage(approvedReviews), [approvedReviews]);
   const filteredGarageMotorcycles = useMemo(
     () => sortGarageMotorcycles(filterGarageMotorcycles(garageMotorcycles, filters), filters.sort),

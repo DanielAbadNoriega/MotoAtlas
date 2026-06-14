@@ -912,62 +912,71 @@ describe('CommunityReviewsPage', () => {
           motorcycle: { id: 'ducati-monster', brand: 'Ducati', model: 'Monster', year: 2024, imageUrl: '/ducati.webp', segment: 'trail', license: 'A' },
         }),
       ],
-      [
-        { reviewId: 'insight-1', helpfulCount: 2, hasReactedHelpful: false, hasReactedNotHelpful: false },
-        { reviewId: 'insight-3', helpfulCount: 12, hasReactedHelpful: false, hasReactedNotHelpful: false },
-      ],
+      [],
     );
 
     const insights = screen.getByRole('region', { name: 'Pulso de la Comunidad' });
-    const insightIcons = insights.querySelectorAll('.material-symbols-outlined[aria-hidden="true"]');
+    const mostReviewedLink = within(insights).getByRole('link', { name: 'Ver reviews de BMW F 900 GS 2024' });
+    const bestRatedLink = within(insights).getByRole('link', { name: 'Ver reviews de Ducati Monster 2024' });
 
     expect(within(insights).getByText('Moto más comentada')).toBeInTheDocument();
-    expect(within(insights).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
+    expect(mostReviewedLink).toHaveAttribute('href', '#/comunidad/bmw-f900');
+    expect(within(mostReviewedLink).getByText('BMW F 900 GS 2024')).toBeInTheDocument();
     expect(within(insights).getByText('2 reviews')).toBeInTheDocument();
     expect(within(insights).getByText('50%')).toBeInTheDocument();
     expect(within(insights).getByText('% del pulso')).toBeInTheDocument();
-    expect(within(insights).getByText('Review más útil')).toBeInTheDocument();
-    expect(within(insights).getByText('Yamaha MT-07 2024')).toBeInTheDocument();
-    expect(within(insights).getByText('12 votos útiles')).toBeInTheDocument();
+    expect(within(insights).getByText('Moto mejor valorada')).toBeInTheDocument();
+    expect(bestRatedLink).toHaveAttribute('href', '#/comunidad/ducati-monster');
+    expect(within(bestRatedLink).getByText('Ducati Monster 2024')).toBeInTheDocument();
+    expect(within(bestRatedLink).getByText('5/5')).toBeInTheDocument();
+    expect(within(bestRatedLink).getByText('valoración media')).toBeInTheDocument();
     expect(within(insights).getByText('Segmento más activo')).toBeInTheDocument();
     expect(within(insights).getByText('Trail')).toBeInTheDocument();
     expect(within(insights).getAllByText('3 reviews').length).toBeGreaterThanOrEqual(2);
     expect(within(insights).getByText('Uso más activo')).toBeInTheDocument();
     expect(within(insights).getByText('Viaje')).toBeInTheDocument();
+    expect(within(insights).queryByText('Review más útil')).not.toBeInTheDocument();
     expect(within(insights).queryByText('Review con más kilómetros')).not.toBeInTheDocument();
     expect(within(insights).queryByText('Rating medio global')).not.toBeInTheDocument();
-    expect([...insightIcons].map((icon) => icon.textContent)).toEqual(['info', 'forum', 'thumb_up', 'category', 'route']);
+    expect(insights).not.toHaveTextContent(/trending|peak|sube|crece/i);
     expect(insights).not.toHaveTextContent(/null|undefined/i);
     expect(insights).not.toHaveTextContent(/neumáticos|fallos/i);
   });
 
-  it('muestra fallback estable en insights cuando faltan votos útiles o segmento', async () => {
+  it('muestra fallback estable en insights cuando falta segmento y mantiene la mejor valorada accionable', async () => {
     await renderPage([
       createCommunityReview({
         id: 'insight-fallback-1',
         motorcycleId: 'fallback-bike',
+        rating: 4,
         ridingStyle: 'viaje',
         motorcycle: { id: 'fallback-bike', brand: 'BMW', model: 'R 1300 GS', year: 2024, imageUrl: '/bmw.webp', segment: null, license: 'A' },
       }),
       createCommunityReview({
         id: 'insight-fallback-2',
         motorcycleId: 'fallback-bike',
+        rating: 5,
         ridingStyle: 'viaje',
         motorcycle: { id: 'fallback-bike', brand: 'BMW', model: 'R 1300 GS', year: 2024, imageUrl: '/bmw.webp', segment: null, license: 'A' },
       }),
     ]);
 
     const insights = screen.getByRole('region', { name: 'Pulso de la Comunidad' });
+    const motorcycleLinks = within(insights).getAllByRole('link', { name: 'Ver reviews de BMW R 1300 GS 2024' });
 
     expect(within(insights).getByText('Moto más comentada')).toBeInTheDocument();
-    expect(within(insights).getByText('BMW R 1300 GS 2024')).toBeInTheDocument();
-    expect(within(insights).getByText('Review más útil')).toBeInTheDocument();
-    expect(within(insights).getByText('Sin votos útiles todavía')).toBeInTheDocument();
+    expect(motorcycleLinks).toHaveLength(2);
+    motorcycleLinks.forEach((link) => {
+      expect(link).toHaveAttribute('href', '#/comunidad/fallback-bike');
+    });
+    expect(within(insights).getByText('Moto mejor valorada')).toBeInTheDocument();
+    expect(within(insights).getByText('4,5/5')).toBeInTheDocument();
     expect(within(insights).getByText('Segmento más activo')).toBeInTheDocument();
     expect(within(insights).getAllByText('Sin datos suficientes').length).toBeGreaterThanOrEqual(2);
     expect(within(insights).getByText('Uso más activo')).toBeInTheDocument();
     expect(within(insights).getByText('Viaje')).toBeInTheDocument();
     expect(within(insights).getAllByText('2 reviews').length).toBeGreaterThanOrEqual(2);
+    expect(within(insights).queryByText('Review más útil')).not.toBeInTheDocument();
     expect(insights).not.toHaveTextContent(/null|undefined/i);
   });
 

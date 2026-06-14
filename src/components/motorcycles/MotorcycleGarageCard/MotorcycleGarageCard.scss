@@ -32,7 +32,7 @@
 .motorcycle-garage-card__overlay {
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba($color-surface, 0.6) 46%, rgba($color-surface-lowest, 0.96)),
-    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.16), transparent 13rem);
+    radial-gradient(circle at 100% 0%, rgba($color-on-surface, 0.16), transparent 13rem);
   inset: 0;
   position: absolute;
   z-index: 1;
