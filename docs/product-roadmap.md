@@ -17,9 +17,9 @@ Implementado (baseline actual):
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
-- Baseline validado actual: `75 files / 1148 tests passing`.
+- Baseline validado actual: `75 files / 1149 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `feature/shared-radar-state`, sobre la base ya aprobada de `fix/review-user-name-server-side` + `chore/staging-rls-smoke`.
+- Último bloque estable validado: `feature/radar-state-community-rankings-empty`, sobre la base ya aprobada de `feature/shared-radar-state`.
 
 ## 3. Foco inmediato recomendado
 
@@ -1380,12 +1380,13 @@ Estado actual:
 - Consumidores documentados hasta ahora:
   - `AccountReviewsEmptyState` / `AccountReviewsPage` como primer uso vía wrapper de compatibilidad.
   - `TopRatedMotorcyclesPage` solo para el empty state de podio / no-results, preservando los links secundarios fuera de `RadarState`.
+  - `CommunityRankingsPage` solo para el empty state técnico filtrado sin resultados, sin CTA de reset y con el podio intacto.
 - La migración de más consumidores queda explícitamente fuera de esta fase.
 
 Pendiente / futuro:
 - `FullPageLoading` para auth/profile/account/admin loading de página completa.
 - `ErrorState` para errores recuperables de carga.
-- migrar consumidores adicionales de empty state a `RadarState` de forma deliberada, una página por vez, sin asumir que `CommunityReviewsPage`, `CommunityRankingsPage`, `AccountMotorcycleReviewsPage`, rankings, garaje u otras vistas ya quedaron cubiertas.
+- migrar consumidores adicionales de empty state a `RadarState` de forma deliberada, una página por vez, sin asumir que `CommunityReviewsPage`, `AccountMotorcycleReviewsPage`, rankings, garaje u otras vistas ya quedaron cubiertas.
 
 Regla: `RadarState` ya forma parte de la base UI compartida, pero `FullPageLoading`, `ErrorState` y las migraciones adicionales siguen siendo dirección futura; no forman parte del hardening actual de `AuthProvider`.
 
