@@ -263,14 +263,15 @@
    - No se muestran suspensiones/frenos/neumáticos (no existen en modelo Bike).
    - QA visual pendiente: verificar gap vertical entre specs-tab y specs-extended en desktop. Si es excesivo, posible follow-up SCSS mínimo.
    - Refinado visual/global de layout pospuesto a fase futura (después de cerrar funcionalidad core).
-- Aspectos agregados en garaje de `#/comunidad/reviews`.
-- Deduplicación editorial↔garaje.
+- `#/comunidad/reviews` — decisión de producto cerrada: no se añadirán por ahora aspectos agregados a las cards de `Garaje de la comunidad`; el diseño actual queda aceptado como está.
+- `#/comunidad/reviews` — decisión de producto cerrada: no se hará deduplicación editorial↔garaje. `Reviews destacadas`, `Últimos reportes` y `Garaje de la comunidad` son bloques independientes; que una moto aparezca en editorial y también en el garaje es esperado, no un bug.
 - Backlog P1/P2 (cerrado): mejora de `bike-detail__quick-specs` con tarjetas técnicas reutilizables (sin acoplar CSS de `ReviewModal`). Implementado en rama `feature/bike-detail-technical-spec-cards` con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`.
 - Backlog P1/P2: refactor admin focal — completado como parte de la normalización al shared `FilterGroup` + `FilterOptionButton` (rama `feature/admin-filtergroup-normalization`). Los wrappers `AdminFilterGroup` y `FilterChipButton` fueron eliminados y el HTML crudo duplicado de `AdminMotorcycleReviewsPage` quedó consolidado al usar `FilterGroup` + `FilterOptionButton` compartidos.
 - Backlog P2 Auth/testing (hardening): migración incremental de mocks `useAuth` ya cerrada sobre la base central de fixtures; el seguimiento restante pasa solo a smoke complementario en otras superficies sensibles si producto/seguridad lo pide.
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
 - Backlog P2 Auth: repetir opcionalmente el smoke del signup público directo cuando se libere el rate limit `429` de Supabase email y mantener auditorías periódicas si en el futuro aparecen nuevas funciones `security definer`.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
+- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` queda documentado como iniciativa futura para crear/editar motos del catálogo desde UI admin (`#/admin/modelos`, `#/admin/modelos/nuevo`, `#/admin/modelos/editar`, `#/admin/modelos/[motorcycleId]/editar`). No implementado todavía; requiere fases separadas de auditoría, UI create/edit, búsqueda admin y revisión explícita de persistencia/seguridad.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
@@ -294,7 +295,7 @@
 
 ## Siguiente paso
 
-- **Signup smoke opcional cuando cese el rate limit `429`**: repetir solo el flujo público directo de registro si producto/seguridad quiere cerrar esa evidencia exacta; si no, continuar con la siguiente prioridad del roadmap usando como válidos el hardening aprobado y el smoke controlado por Admin API.
+- **Admin Models Studio — Fase 1**: entrada admin, quick links agrupados y landing #/admin/modelos, sin persistencia real.
 
 ## Decisiones importantes
 
