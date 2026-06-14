@@ -30,9 +30,9 @@ import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
 import { FeaturedReviewCard } from '../../reviews/FeaturedReviewCard';
 import { FeaturedReviewCardCommunityActions } from '../../reviews/FeaturedReviewCard/FeaturedReviewCardActions';
-import './TopRatedMotorcyclesPage.scss';
+import './CommunityLandingPage.scss';
 
-type TopRatedMotorcyclesPageProps = Readonly<{
+type CommunityLandingPageProps = Readonly<{
   motorcycles: readonly Bike[];
 }>;
 
@@ -341,7 +341,7 @@ function CommunityFeatureSections({
   );
 }
 
-export function TopRatedMotorcyclesPage({ motorcycles }: TopRatedMotorcyclesPageProps) {
+export function CommunityLandingPage({ motorcycles }: CommunityLandingPageProps) {
   const { session } = useAuth();
   const [reviewsByMotorcycleId, setReviewsByMotorcycleId] = useState<ReviewsByMotorcycleId>({});
   const [filters, setFilters] = useState<TopRatedFilters>(defaultTopRatedFilters);

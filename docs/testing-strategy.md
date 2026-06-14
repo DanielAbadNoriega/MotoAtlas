@@ -5,9 +5,10 @@ MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni 
 Estado actual de suite:
 - `1146` tests passing (75 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
-  - `src/App.test.tsx` + `src/components/layout/Footer/Footer.test.tsx` + `src/components/pages/TopRatedMotorcyclesPage/TopRatedMotorcyclesPage.test.tsx` + `src/shared/routing/routeUtils.test.ts` + `src/shared/seo/seoUtils.test.ts` → `5` files / `73` tests passing.
+  - `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing.
+  - `src/App.test.tsx` + `src/components/layout/Footer/Footer.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` + `src/shared/routing/routeUtils.test.ts` + `src/shared/seo/seoUtils.test.ts` → `5` files / `73` tests passing.
   - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/CommunityRankingsPage/CommunityRankingsPage.test.tsx` → `2` files / `31` tests passing.
-  - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/TopRatedMotorcyclesPage/TopRatedMotorcyclesPage.test.tsx` → `2` files / `22` tests passing.
+  - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `22` tests passing.
   - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsEmptyState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` → `3` files / `15` tests passing.
   - `supabase/schema.test.ts` → `1` file / `66` tests passing.
   - `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
@@ -267,7 +268,7 @@ Fase 5.3 — Cobertura implementada:
 
 Pendiente de cobertura (fases siguientes):
 - Cableado completo de Report/Reply en BikeDetailPage (futuro opcional).
-- RecentReviews en TopRatedMotorcyclesPage ahora con acciones seguras (Fase 4.4): Helpful/NotHelpful real en auth, `Útil N` pasivo en no-auth, Report/Reply no cableados.
+- RecentReviews en CommunityLandingPage (antes `TopRatedMotorcyclesPage`) ahora con acciones seguras (Fase 4.4): Helpful/NotHelpful real en auth, `Útil N` pasivo en no-auth, Report/Reply no cableados.
 
 Pendiente recomendado (post Fase 3.1):
 - añadir tests cross-page para evitar drift entre:
@@ -374,7 +375,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `75` files / `1146` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused checks más recientes: `src/App.test.tsx` + `src/components/layout/Footer/Footer.test.tsx` + `src/components/pages/TopRatedMotorcyclesPage/TopRatedMotorcyclesPage.test.tsx` + `src/shared/routing/routeUtils.test.ts` + `src/shared/seo/seoUtils.test.ts` → `5` files / `73` tests passing.
+- Baseline validado actual del proyecto: `75` files / `1146` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused checks más recientes: `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
@@ -388,8 +389,9 @@ Cobertura actual relevante:
 - `ReviewModal.test.tsx` ya NO trata el submit no-auth como camino exitoso soportado: el modal conserva el flujo autenticado como camino principal y, si se abre inesperadamente sin sesión, bloquea el submit antes del servicio y muestra el error `Inicia sesión para escribir una review.` sin llamar a `createReviewWithAspects`.
 - `src/shared/ui/states/RadarState/RadarState.test.tsx` cubre el contrato base del estado compartido: defaults, props custom (`title`, `description`, `actionLabel`, `icon`), ausencia de acción sin `onAction`, callback al pulsar la acción, `aria-labelledby` mediante `titleId` y los test ids del radar (`reviews-empty-radar`, rings, sweep y markers).
 - `AccountReviewsEmptyState.test.tsx` conserva la cobertura del wrapper de compatibilidad sobre `RadarState` y `AccountReviewsPage.test.tsx` mantiene el contrato observable del primer consumidor sin tocar la lógica de filtros/datos.
-- `TopRatedMotorcyclesPage.test.tsx` sigue cubriendo el segundo consumidor real de `RadarState`: preserva el copy `Aún no hay suficientes datos de comunidad.`, mantiene los links secundarios de página y valida que `Limpiar filtros` resetea el estado vacío y recupera el podio cuando había filtros activos dentro de `#/comunidad`.
+- `CommunityLandingPage.test.tsx` sigue cubriendo el segundo consumidor real de `RadarState`: preserva el copy `Aún no hay suficientes datos de comunidad.`, mantiene los links secundarios de página y valida que `Limpiar filtros` resetea el estado vacío y recupera el podio cuando había filtros activos dentro de `#/comunidad`.
 - El focused check de remoción de ruta documenta que `#/motos-mejor-valoradas` ya no resuelve a la landing de comunidad, que el hash eliminado cae al home público según el fallback actual del router, que el sitemap no incluye `/motos-mejor-valoradas` y que `#/comunidad` sigue cubierto como ruta activa.
+- El focused check de rename documenta que `#/comunidad` sigue renderizando la landing comunitaria bajo `CommunityLandingPage`, sin reintroducir `#/motos-mejor-valoradas` ni cambiar el comportamiento del hero, el podio o `RadarState`.
 - `CommunityRankingsPage.test.tsx` añade el tercer consumidor real de `RadarState` para el empty state técnico filtrado: valida `Sin resultados`, el texto `No hay resultados para los filtros seleccionados.`, la desaparición de `Listado técnico de rankings` y que no aparezca `Limpiar filtros`. El comportamiento sin acción sigue cubierto principalmente por el contrato compartido de `RadarState`, no por una duplicación page-level.
 - `src/shared/env/runtimeEnvironment.test.ts` valida el guard central de entorno/demo data: producción nunca habilita demo data, `VITE_ENABLE_DEMO_DATA='true'` no rompe esa protección, preview/development solo habilitan demo cuando corresponde y un `VITE_APP_ENV` inválido cae a comportamiento production-safe.
 - `src/shared/reviews/reviewSourcePolicy.test.ts` valida el contrato delegado al guard central: producción devuelve solo `user`; demo habilitado devuelve `user/seed/mock`; demo deshabilitado vuelve a solo `user`; el contrato ya no depende directamente de `import.meta.env.PROD`.
@@ -436,7 +438,7 @@ Cobertura actual relevante:
   - `markReportsByReviewId`
   - `upsertReactionSummaryInList`
   - `upsertReactionSummaryById`
-- `src/components/pages/TopRatedMotorcyclesPage/TopRatedMotorcyclesPage.test.tsx` cubre paridad de metadatos en podio de `#/comunidad`:
+- `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` cubre paridad de metadatos en podio de `#/comunidad`:
   - las cards compactas 2 y 3 mantienen visible en DOM el span `año · segmento · cilindrada`.
 
 Pendiente/riesgo menor:

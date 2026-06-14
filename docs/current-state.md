@@ -2,13 +2,13 @@
 
 ## Último estado estable
 
-- Rama actual: `chore/remove-top-rated-route`
-- Último bloque validado: **remoción de la ruta pública `#/motos-mejor-valoradas`** aprobada, manteniendo la comunidad concentrada en `#/comunidad`, `#/comunidad/rankings` y `#/comunidad/reviews`.
-- Alcance validado: `#/motos-mejor-valoradas` ya no existe como ruta pública. El hash eliminado ahora cae al fallback público actual (home), sin redirect dedicado. `TopRatedMotorcyclesPage` queda como implementación actual de `#/comunidad`, ya sin la variante `topRated`, mientras `#/comunidad/rankings` y `#/comunidad/reviews` permanecen intactas. `RadarState` mantiene su contrato compartido sin cambios y no se migraron otros empty/loading/error states.
+- Rama actual: `refactor/community-landing-page-name`
+- Último bloque validado: **rename de `TopRatedMotorcyclesPage` a `CommunityLandingPage`** aprobado, preservando `#/comunidad` como landing activa de comunidad y manteniendo removida la ruta pública `#/motos-mejor-valoradas`.
+- Alcance validado: `#/comunidad` ahora se implementa con `CommunityLandingPage`. `#/motos-mejor-valoradas` sigue sin existir como ruta pública y el hash eliminado continúa cayendo al fallback público actual (home), sin redirect dedicado. `#/comunidad/rankings` y `#/comunidad/reviews` permanecen intactas. Las clases `.top-rated__*` se preservan intencionalmente como nombres legacy de CSS/BEM por ahora. `RadarState` mantiene su contrato compartido sin cambios y no se migraron otros empty/loading/error states.
 - Tests: 1146 passed (75 files)
 - Typecheck: clean
 - `git diff --check`: clean
-- Focused check más reciente: `src/App.test.tsx` + `src/components/layout/Footer/Footer.test.tsx` + `src/components/pages/TopRatedMotorcyclesPage/TopRatedMotorcyclesPage.test.tsx` + `src/shared/routing/routeUtils.test.ts` + `src/shared/seo/seoUtils.test.ts` → `5` files / `73` tests passing
+- Focused check más reciente: `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing
 - Último commit:
 
 ## Implementado
@@ -40,7 +40,7 @@
 - Fase C de consolidación P1 cerrada: `src/shared/reviews/useReviewReactions.ts` centraliza mutaciones Helpful/NotHelpful con guards (`unauthenticated | own_review | reported | pending`), pending por `reviewId` y outcomes (`success | blocked | error`), sin fetch inicial de summaries y sin acoplar feedback/UI.
 - `CommunityReviewsPage` usa `useReviewReactions` con UX silenciosa: en success actualiza con `upsertReactionSummaryInList`; `Útil N` se mantiene como contador público visible (pasivo en no-auth/propia/reportada, interactivo solo con permiso real); mantiene orden editorial por `helpfulCount`.
 - `MotorcycleCommunityPage` usa `useReviewReactions` conservando UX propia: blocked unauthenticated/reported mapea a tooltip existente, errores a `reactionNotice`, success limpia tooltip/notice y actualiza con `upsertReactionSummaryById`; pending combinado sigue en `reactionPendingIds + reportPendingIds`.
-- `TopRatedMotorcyclesPage` (implementación actual de `#/comunidad`) reutiliza `FeaturedReviewCard` en `RecentReviews` como card visual común: reemplaza cards legacy cuando hay datos, mantiene orden cronológico (fecha desc), límite `slice(0, 3)` y empty state. Fase 4.4 conecta acciones seguras de comunidad: `FeaturedReviewCardCommunityActions` con Helpful/NotHelpful real, `Útil N` público pasivo en no-auth, chip "Propia" en own review, reported bloquea. Report/Reply no cableados en esta fase. La ruta pública `#/motos-mejor-valoradas` fue eliminada; un posible rename/split a `CommunityLandingPage` queda como follow-up opcional.
+- `CommunityLandingPage` (implementación actual de `#/comunidad`, antes `TopRatedMotorcyclesPage`) reutiliza `FeaturedReviewCard` en `RecentReviews` como card visual común: reemplaza cards legacy cuando hay datos, mantiene orden cronológico (fecha desc), límite `slice(0, 3)` y empty state. Fase 4.4 conecta acciones seguras de comunidad: `FeaturedReviewCardCommunityActions` con Helpful/NotHelpful real, `Útil N` público pasivo en no-auth, chip "Propia" en own review, reported bloquea. Report/Reply no cableados en esta fase. La ruta pública `#/motos-mejor-valoradas` sigue eliminada y las clases `.top-rated__*` quedan preservadas como legacy CSS/BEM.
 
 ### Admin
 - Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
@@ -334,7 +334,7 @@
 - `ReviewModal` ya endureció su contrato local: si se abre de forma inesperada sin sesión, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. El smoke desplegado ya confirmó compatibilidad con la RPC auth-only; el riesgo auth restante pasa por verificación más amplia de privilegios efectivos.
 - El alias público de una review autenticada ya no depende del payload cliente: la RPC `create_motorcycle_review_with_aspects` deriva `user_name` desde `public.user_profiles.display_name`, conserva `p_user_name` solo por compatibilidad y usa fallback `Usuario MotoAtlas` cuando el perfil no tiene alias usable.
 - La validación desplegada de creación de reviews ya quedó cerrada como smoke de comportamiento; sigue pendiente una auditoría más amplia de privilegios efectivos de funciones `security definer`.
-- `RadarState` ya existe como componente compartido bajo `src/shared/ui/states/RadarState/`, extraído desde el radar visual de `AccountReviewsEmptyState` sin cambio de diseño. `AccountReviewsEmptyState` mantiene el wrapper de compatibilidad, `TopRatedMotorcyclesPage` sigue como segundo consumidor en el empty state de podio/no-results de `#/comunidad` y `CommunityRankingsPage` agrega el tercer consumidor solo para el empty state técnico filtrado sin resultados; el podio de rankings sigue intacto. Futuras migraciones a otros estados quedan como fases separadas.
+- `RadarState` ya existe como componente compartido bajo `src/shared/ui/states/RadarState/`, extraído desde el radar visual de `AccountReviewsEmptyState` sin cambio de diseño. `AccountReviewsEmptyState` mantiene el wrapper de compatibilidad, `CommunityLandingPage` sigue como segundo consumidor en el empty state de podio/no-results de `#/comunidad` y `CommunityRankingsPage` agrega el tercer consumidor solo para el empty state técnico filtrado sin resultados; el podio de rankings sigue intacto. Futuras migraciones a otros estados quedan como fases separadas.
 
 ## Referencias de contratos
 

@@ -22,7 +22,7 @@ import {
   RequestModelPage,
   TermsPage,
 } from './components/pages/StaticInfoPages';
-import { TopRatedMotorcyclesPage } from './components/pages/TopRatedMotorcyclesPage';
+import { CommunityLandingPage } from './components/pages/CommunityLandingPage';
 import { FeaturedMachines } from './components/sections/FeaturedMachines';
 import { HomeHero } from './components/sections/HomeHero';
 import { LatestNews } from './components/sections/LatestNews';
@@ -310,7 +310,7 @@ export function App() {
           motorcycles={motorcycles}
         />
       ) : isCommunityLandingPage ? (
-        <TopRatedMotorcyclesPage motorcycles={motorcycles} />
+        <CommunityLandingPage motorcycles={motorcycles} />
       ) : isCommunityReviewsPage ? (
         <CommunityReviewsPage />
       ) : isCommunityRankingsPage ? (
