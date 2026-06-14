@@ -93,21 +93,24 @@ Implementado (base):
 - adopción auditada: 12 suites ya usan fixtures centrales (`AuthPage.test.tsx`, `StaticInfoPages.test.tsx`, `AccountRequestsPage.test.tsx`, `AccountPage.test.tsx`, `AccountReviewsPage.test.tsx`, `AccountMotorcycleReviewsPage.test.tsx`, `AdminMotorcycleReviewsPage.test.tsx`, `AdminPage.test.tsx`, `CommunityReviewsPage.test.tsx`, `MotorcycleCommunityPage.test.tsx`, `ReviewModal.test.tsx` y `AuthProvider.test.tsx`); la migración account-level quedó completa en batch 5, la migración admin quedó cubierta en sus dos suites, la migración community quedó cubierta en sus dos suites, el modal ya quedó cubierto y la migración total de auth fixtures quedó cerrada, sin áreas pendientes con `mockAuth`/mocks locales de `useAuth`.
 
 Pendiente residual (no bloqueante):
-- smoke/auditoría más amplia de otras superficies RLS/roles y de privilegios efectivos de funciones `security definer` en staging; la creación de reviews ya quedó aprobada en el smoke desplegado.
+- smoke complementario opcional del signup público directo cuando cese el rate limit `429` de Supabase email; la creación de reviews y el hardening `SECURITY DEFINER` conocido ya quedaron aprobados en staging.
 
-### Cobertura de schema/RLS para reviews autenticadas
+### Cobertura de schema/RLS y `SECURITY DEFINER`
 
-`supabase/schema.test.ts` ya cubre el hardening server-side de creación de reviews:
+`supabase/schema.test.ts` (`1` file / `66` tests passing) ya cubre el hardening server-side de creación de reviews y el endurecimiento de privilegios `EXECUTE` en funciones `SECURITY DEFINER` conocidas:
 
 - ausencia de policies/grants de INSERT directo sobre `public.motorcycle_reviews` para `anon`/`authenticated`;
 - contrato least-privilege de `public.motorcycle_reviews` (`anon`: `SELECT`; `authenticated`: `SELECT` + `UPDATE(status)` solo por grant de columna);
 - derivación server-side de `user_name` desde `public.user_profiles.display_name` con fallback `Usuario MotoAtlas`;
 - `p_user_name` preservado en la firma de la RPC solo por compatibilidad, sin capacidad de spoofear la identidad visible;
-- `EXECUTE` de `create_motorcycle_review_with_aspects` revocado a `public`/`anon` y concedido solo a `authenticated`.
+- `EXECUTE` de `create_motorcycle_review_with_aspects` revocado a `public`/`anon` y concedido solo a `authenticated`;
+- `public.is_admin()` con `SECURITY DEFINER`, `set search_path = public`, `REVOKE EXECUTE` explícito para `public` y `anon`, y `GRANT EXECUTE` solo para `authenticated`;
+- `public.handle_new_user_profile()` con `SECURITY DEFINER`, `set search_path = public`, `REVOKE EXECUTE` explícito para `public` y `anon`, sin grant cliente directo;
+- `public.handle_new_user_profile()` fija `role = 'user'` y no confía un `role` entrante desde metadata.
 
 ### Validación de staging / comportamiento desplegado
 
-Smoke aprobado para creación de reviews en staging:
+Smoke aprobado en staging para creación de reviews y para el hardening `SECURITY DEFINER` conocido:
 
 - `anon` no pudo hacer `INSERT` directo sobre `public.motorcycle_reviews`;
 - `authenticated` no pudo hacer `INSERT` directo sobre `public.motorcycle_reviews`;
@@ -117,12 +120,17 @@ Smoke aprobado para creación de reviews en staging:
 - el owner pudo leer su review `pending`;
 - el público no vio la review hasta aprobación admin;
 - un no-admin no pudo aprobar su propia review;
-- un admin sí pudo hacer `UPDATE(status)`, pero no un patch amplio de `comment`.
+- un admin sí pudo hacer `UPDATE(status)`, pero no un patch amplio de `comment`;
+- creación controlada de usuario en `auth.users` vía Admin API disparó correctamente `public.handle_new_user_profile()`, creó fila en `public.user_profiles`, conservó `display_name` / `avatar_url` y fijó `role='user'`;
+- el intento de spoofear `role='admin'` vía metadata quedó bloqueado;
+- `rpc/is_admin` devolvió `401` para `anon`, `false` para auth no-admin y `true` para admin;
+- `handle_new_user_profile()` no apareció expuesta como RPC PostgREST normal para `anon`/`authenticated` (surface observada: `404`).
 
 Limitación documentada:
 - no se añadió cobertura Playwright/E2E automatizada nueva;
 - `Vitest` sigue cubriendo el contrato SQL local en `supabase/schema.test.ts`;
-- el smoke de staging validó comportamiento desplegado por flujos HTTP `anon` / `authenticated` / `admin`, porque la introspección directa de `information_schema` / `pg_policies` no estaba disponible sobre el surface HTTP expuesto.
+- el smoke de staging validó comportamiento desplegado por flujos HTTP/privilegios y por creación controlada vía Admin API, porque la introspección directa de `information_schema` / `pg_policies` no estaba disponible sobre el surface HTTP expuesto;
+- el flujo exacto de signup público no se pudo repetir durante este smoke por rate limit `429` de Supabase email, así que queda solo como re-check opcional cuando ese límite se libere.
 
 Al crear fixtures:
 
