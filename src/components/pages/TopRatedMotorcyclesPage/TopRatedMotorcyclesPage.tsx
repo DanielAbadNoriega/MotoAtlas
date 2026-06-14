@@ -22,6 +22,7 @@ import { buildReviewAuthContext, isOwnReview } from '../../../shared/reviews/rev
 import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
 import { useReviewReports } from '../../../shared/reviews/useReviewReports';
 import { getRankingConfidence } from '../../../shared/reviews/communityRankings';
+import { RadarState } from '../../../shared/ui/states/RadarState';
 import type { Bike, BikeSegment } from '../../../types/bike';
 import { useAuth } from '../../../features/auth';
 import { PageHero, type PageHeroAction } from '../../ui/PageHero';
@@ -94,31 +95,25 @@ const CONFIDENCE_TOOLTIPS: Record<string, string> = {
 
 function TopRatedEmptyState({ hasActiveFilters, onReset }: { hasActiveFilters: boolean; onReset: () => void }) {
   return (
-    <section className="top-rated__empty" aria-labelledby="top-rated-empty-title">
-      <div className="top-rated__radar" aria-hidden="true">
-        <span className="material-symbols-outlined">bar_chart</span>
+    <div className="top-rated__empty-shell">
+      <RadarState
+        actionLabel="Limpiar filtros"
+        className="top-rated__empty"
+        description="El ranking solo utiliza reviews aprobadas. Ajusta los filtros o explora el catálogo mientras la comunidad genera más señales."
+        icon="bar_chart"
+        onAction={hasActiveFilters ? onReset : undefined}
+        title="Aún no hay suficientes datos de comunidad."
+        titleId="top-rated-empty-title"
+      />
+      <div className="top-rated__empty-actions">
+        <a className="button button--ghost" href="#/buscador">
+          Ir al buscador
+        </a>
+        <a className="button button--ghost" href="#/comunidad">
+          Explorar comunidad
+        </a>
       </div>
-      <div>
-        <span>Ranking en calibración</span>
-        <h2 id="top-rated-empty-title">Aún no hay suficientes datos de comunidad.</h2>
-        <p>
-          El ranking solo utiliza reviews aprobadas. Ajusta los filtros o explora el catálogo mientras la comunidad genera más señales.
-        </p>
-        <div className="top-rated__empty-actions">
-          {hasActiveFilters ? (
-            <button className="button button--primary" type="button" onClick={onReset}>
-              Limpiar filtros
-            </button>
-          ) : null}
-          <a className="button button--ghost" href="#/buscador">
-            Ir al buscador
-          </a>
-          <a className="button button--ghost" href="#/comunidad">
-            Explorar comunidad
-          </a>
-        </div>
-      </div>
-    </section>
+    </div>
   );
 }
 

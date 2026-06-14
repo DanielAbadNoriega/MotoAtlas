@@ -647,80 +647,34 @@
   }
 }
 
+.top-rated__empty-shell {
+  margin-block: 3rem;
+}
+
 .top-rated__empty {
-  align-items: center;
   background:
     radial-gradient(circle at center, rgba($color-surface-container-high, 0.36), transparent 68%),
     rgba($color-surface-lowest, 0.72);
   border: 1px dashed rgba($color-outline-variant, 0.55);
   border-radius: $radius-xl;
-  display: grid;
-  gap: 2.5rem;
-  grid-template-columns: auto minmax(0, 34rem);
-  justify-content: center;
-  margin-block: 3rem;
   min-height: 26rem;
   padding: clamp(2rem, 6vw, 4rem);
-  text-align: left;
 
-  > div:last-child > span {
-    @include label-caps;
-
-    color: $color-accent;
+  .radar-state__content {
+    justify-items: start;
+    text-align: left;
   }
 
-  h2 {
+  .radar-state__content h2 {
     @include headline-lg;
-
-    margin: 0.75rem 0 1rem;
-    text-transform: uppercase;
   }
 
-  p {
+  .radar-state__content p {
     @include body-lg;
-
-    color: $color-on-surface-variant;
-  }
-}
-
-.top-rated__radar {
-  align-items: center;
-  aspect-ratio: 1;
-  background:
-    radial-gradient(circle, rgba($color-accent, 0.12), transparent 28%),
-    repeating-radial-gradient(circle, transparent 0 2.2rem, rgba($color-outline-variant, 0.3) 2.25rem 2.3rem);
-  border: 1px solid rgba($color-outline-variant, 0.32);
-  border-radius: 50%;
-  display: grid;
-  justify-items: center;
-  position: relative;
-  width: min(16rem, 46vw);
-
-  &::before,
-  &::after {
-    background: rgba($color-outline-variant, 0.28);
-    content: '';
-    position: absolute;
   }
 
-  &::before {
-    height: 1px;
-    width: 100%;
-  }
-
-  &::after {
-    height: 100%;
-    width: 1px;
-  }
-
-  .material-symbols-outlined {
-    background: $color-surface;
-    border: 1px solid rgba($color-outline-variant, 0.45);
-    border-radius: 50%;
+  .radar-state__icon {
     color: $color-outline;
-    font-size: 3rem;
-    padding: 1rem;
-    z-index: 1;
   }
 }
 
@@ -728,6 +682,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  justify-content: center;
   margin-top: 1.8rem;
 }
 
@@ -849,12 +804,9 @@
   }
 
   .top-rated__empty {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    text-align: center;
-  }
-
-  .top-rated__empty-actions {
-    justify-content: center;
+    .radar-state__content {
+      justify-items: center;
+      text-align: center;
+    }
   }
 }
