@@ -58,9 +58,8 @@ import {
   isLoginRoute,
   isRegisterRoute,
   isSearchRoute,
-  isTopRatedRoute,
 } from './shared/routing/routeUtils';
-import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAdminSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityRankingsSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata, buildTopRatedSeoMetadata } from './shared/seo/seoUtils';
+import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAdminSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityRankingsSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata } from './shared/seo/seoUtils';
 
 const scrollToPageTop = () => {
   window.scrollTo({ left: 0, top: 0 });
@@ -121,7 +120,6 @@ export function App() {
   const isAdminRequestsPage = isAdminRequestsRoute(route);
   const isAdminReviewsPage = isAdminReviewsRoute(route);
   const isAdminMotorcycleReviewsPage = isAdminMotorcycleReviewsRoute(route);
-  const isTopRatedPage = isTopRatedRoute(route);
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
   const isCommunityReviewsPage = isCommunityReviewsRoute(route);
@@ -237,10 +235,6 @@ export function App() {
       return;
     }
 
-    if (isTopRatedPage) {
-      applySeoMetadata(buildTopRatedSeoMetadata());
-      return;
-    }
 
     if (isCommunityPage && communityBike) {
       applySeoMetadata(buildCommunitySeoMetadata(communityBike));
@@ -280,7 +274,7 @@ export function App() {
       description: 'Explora el catálogo técnico de motos, compara modelos y lee reviews reales de la comunidad motera. Decisiones informadas para moteros exigentes.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityRankingsPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, isTopRatedPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityRankingsPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -316,7 +310,7 @@ export function App() {
           motorcycles={motorcycles}
         />
       ) : isCommunityLandingPage ? (
-        <TopRatedMotorcyclesPage motorcycles={motorcycles} variant="community" />
+        <TopRatedMotorcyclesPage motorcycles={motorcycles} />
       ) : isCommunityReviewsPage ? (
         <CommunityReviewsPage />
       ) : isCommunityRankingsPage ? (
@@ -327,8 +321,6 @@ export function App() {
         <BikeDetailPage bike={detailBike} motorcycles={motorcycles} />
       ) : isSearchPage ? (
         <SearchPage motorcycles={motorcycles} routeHash={route} />
-      ) : isTopRatedPage ? (
-        <TopRatedMotorcyclesPage motorcycles={motorcycles} variant="topRated" />
       ) : staticInfoRouteKey === 'metodologia' ? (
         <DataMethodologyPage />
       ) : staticInfoRouteKey === 'fuentes-datos' ? (

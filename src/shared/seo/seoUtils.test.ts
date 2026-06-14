@@ -12,7 +12,6 @@ import {
   buildCommunitySeoMetadata,
   buildCompareSeoMetadata,
   buildStaticInfoSeoMetadata,
-  buildTopRatedSeoMetadata,
   buildRobotsTxt,
   buildSitemapXml,
   getSitemapUrls,
@@ -92,10 +91,6 @@ describe('seoUtils', () => {
       title: 'Reviews de la comunidad | MotoAtlas',
     });
     expect(metadata.jsonLd).toMatchObject({ '@type': 'CollectionPage' });
-  });
-
-  it('mantiene motos mejor valoradas como alias SEO de comunidad', () => {
-    expect(buildTopRatedSeoMetadata()).toMatchObject(buildCommunityLandingSeoMetadata());
   });
 
   it('genera meta SEO para login, registro y cuenta', () => {

@@ -241,10 +241,6 @@ export function buildCommunityRankingsSeoMetadata(): SeoMetadata {
   };
 }
 
-export function buildTopRatedSeoMetadata(): SeoMetadata {
-  return buildCommunityLandingSeoMetadata();
-}
-
 export function buildAuthSeoMetadata(route: 'login' | 'registro' | 'cuenta' | 'cuenta-reviews' | 'cuenta-solicitudes'): SeoMetadata {
   const content = {
     login: {

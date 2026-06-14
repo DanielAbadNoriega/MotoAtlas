@@ -29,7 +29,6 @@ import {
   isCommunityReviewsRoute,
   isLoginRoute,
   isRegisterRoute,
-  isTopRatedRoute,
 } from './routeUtils';
 
 describe('routeUtils SEO routes', () => {
@@ -92,12 +91,6 @@ describe('routeUtils SEO routes', () => {
     expect(isAdminReviewsRoute('#/admin/reviews')).toBe(true);
     expect(isAdminReviewsRoute('/admin/moderacion')).toBe(false);
     expect(isAdminModerationRoute('/admin')).toBe(false);
-  });
-
-  it('detecta la ruta de motos mejor valoradas', () => {
-    expect(isTopRatedRoute('#/motos-mejor-valoradas')).toBe(true);
-    expect(isTopRatedRoute('/motos-mejor-valoradas')).toBe(true);
-    expect(isTopRatedRoute('#/motos/test-bmw-f-900-gs')).toBe(false);
   });
 
   it('detecta el archivo público de reviews de comunidad sin tratarlo como moto', () => {

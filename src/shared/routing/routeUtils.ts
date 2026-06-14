@@ -228,11 +228,6 @@ export function isCommunityRankingsRoute(route: string) {
   return path === getCommunityRankingsCanonicalPath();
 }
 
-export function isTopRatedRoute(route: string) {
-  const { path } = routeToPathAndSearch(route);
-  return /^\/motos-mejor-valoradas(\/|$)/.test(path);
-}
-
 export function isLoginRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return path === '/login';
