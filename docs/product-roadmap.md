@@ -19,34 +19,46 @@ Implementado (baseline actual):
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - Baseline validado actual: `75 files / 1146 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `fix/security-definer-privileges`, sobre la base ya aprobada de `refactor/community-landing-page-name`.
+- Último bloque estable validado: `feature/community-insights-actionable-cards`.
 
 ## 3. Foco inmediato recomendado
 
-1. Rediseñar `Updates en vivo`.
+1. Cerrar commit/docs del bloque aprobado de `Pulso de la Comunidad` y pasar a la siguiente prioridad de comunidad o catálogo.
 2. Cerrar documentación/QA visual de filtros reutilizables y avanzar con la siguiente prioridad.
 3. Revisar y cerrar taxonomía de categorías/segmentos de motos como base de catálogo.
 
 ## 4. P1 — UX pública / comunidad
 
-### Insights en vivo
+### Pulso de la Comunidad (antes `Insights en vivo`)
 
-Estado: **implementado / cerrado** (rama `feature/live-insights-redesign`).
+Estado: **implementado / cerrado** (ramas `feature/live-insights-redesign` + `feature/community-insights-actionable-cards`).
 
-Objetivo cumplido: convertirlo en un bloque de descubrimiento comunitario.
+Objetivo cumplido: convertir `#/comunidad/reviews` en un bloque de descubrimiento comunitario compacto, visible como primera sección bajo el hero, sin crear una nueva ruta ni una landing separada.
 
 Implementado:
 - Quitados los weak metrics que proponía la lista de cambios:
   - `review con más kilómetros` (estaba en `SortOption` de garaje, no en insights; ya no se renderiza como insight).
   - `rating medio global` (nunca estuvo en insights; confirmado no presente).
-- Reemplazados por los 4 signals comunitarios:
+- El antiguo aside/editorial-grid de insights se promovió a una sección full-width inmediatamente debajo del hero. `community-reviews-page__editorial-grid` y `community-reviews-page__editorial-main` dejan de ser la estructura dueña de este bloque; `Reviews destacadas` y `Últimos reportes` quedan debajo como secciones editoriales full-width.
+- Señales activas:
   - **Moto más comentada**: moto con más reviews aprobadas en el dataset cargado (orden secundario por `latestReviewAt` y nombre).
-  - **Review más útil**: review con mayor `helpfulCount` (orden secundario por `rating`, fecha y nombre).
+  - **Moto mejor valorada**: moto derivada localmente desde reviews aprobadas con desempate por `average rating` desc, `reviewCount` desc, review más reciente y nombre alfabético.
   - **Segmento más activo**: segmento canónico con más reviews, mostrado con label friendly de `segmentLabels`.
   - **Uso más activo**: `ridingStyle` con más reviews, mostrado con label friendly de `accountReviewRidingStyleLabels`.
-- Conservador de datos: solo se alimenta de reviews `approved` (no `pending`/`rejected`/`hidden`). Polling suave cada 60 segundos. Copy del footer: "Datos aproximados · {refreshLabel} · Según reviews aprobadas" (sin reclamar realtime).
-- Subtítulo/kicker reforzado: "Pulso de la comunidad · Actividad reciente" + subtítulo "Señales según reviews aprobadas, no en tiempo real".
-- Título h2 preservado como "Insights en vivo" (compatibilidad con tests y otros consumidores); si en el futuro product copy decide renombrar a "Pulso de la comunidad" como h2, será un cambio puntual con su propio test.
+- Título/copy visibles actuales:
+  - kicker: `MotoAtlas Live Pulse`
+  - h2: `Pulso de la Comunidad` (con gradiente sobre `Comunidad`)
+  - subtítulo: `Lo que se mueve entre moteros, sin humo: solo reviews aprobadas.`
+  - tooltip: explica que las señales usan reviews aprobadas y datos cargados recientemente, no actividad second-by-second.
+- Cards de insight con visual HUD/glass y comportamiento actual:
+  - `Moto más comentada` → card-link semántica a `#/comunidad/{motorcycleId}` cuando hay datos
+  - `Moto mejor valorada` → card-link semántica a `#/comunidad/{motorcycleId}` cuando hay datos
+  - `Segmento más activo` → card informativa no accionable
+  - `Uso más activo` → card informativa no accionable
+- Conservador de datos: solo se alimenta de reviews `approved` (no `pending`/`rejected`/`hidden`). Polling suave cada 60 segundos. Footer: `Datos aproximados · {refreshLabel} · Según reviews aprobadas` y label relativo local de UI, sin reclamar realtime.
+- Rating de `Moto mejor valorada` sigue siendo veraz en escala `/5`.
+- Los porcentajes mostrados son shares derivados del dataset aprobado cargado; no se introducen claims falsos de tendencia o crecimiento.
+- No existe CTA `Ver todas las métricas`: el bloque actual es compacto y no debe leerse como una página completa de métricas.
 - `Radar MotoAtlas / Pulso de la Comunidad` permanece como backlog P3/P4 (sección más ambiciosa con más señales y métricas). Este rediseño es el paso mínimo viable hacia esa dirección.
 
 ### Home — Reemplazo de `FeaturedBikes` / `BikeCard` (legacy temporal)
@@ -962,7 +974,7 @@ Evolución futura de los insights y actividad comunitaria:
 - “La Semana MotoAtlas”.
 
 Relación con el foco actual:
-- conecta con rediseño de `Insights en vivo`;
+- conecta con el bloque ya implementado `Pulso de la Comunidad`;
 - conecta con artículos dinámicos data-driven;
 - conecta con rankings y comunidad.
 
@@ -1024,7 +1036,7 @@ Reglas:
 - no implementar tracking invasivo.
 
 Relación con roadmap:
-- conecta con rediseño de `Insights en vivo`;
+- conecta con el bloque ya implementado `Pulso de la Comunidad`;
 - conecta con `Radar MotoAtlas / Pulso de la Comunidad`;
 - conecta con rankings;
 - conecta con artículos data-driven;

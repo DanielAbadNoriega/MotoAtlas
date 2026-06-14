@@ -5,6 +5,7 @@ MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni 
 Estado actual de suite:
 - `1146` tests passing (75 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
+  - `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing.
   - `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing.
   - `src/App.test.tsx` + `src/components/layout/Footer/Footer.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` + `src/shared/routing/routeUtils.test.ts` + `src/shared/seo/seoUtils.test.ts` → `5` files / `73` tests passing.
   - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/CommunityRankingsPage/CommunityRankingsPage.test.tsx` → `2` files / `31` tests passing.
@@ -383,10 +384,13 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `75` files / `1146` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused checks más recientes: `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing.
+- Baseline validado actual del proyecto: `75` files / `1146` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused check más reciente: `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
+- `CommunityReviewsPage` cubre el contrato actual de `Pulso de la Comunidad`: heading visible con `Comunidad`, tooltip accesible, footer `Datos aproximados · {refreshLabel} · Según reviews aprobadas` y ausencia del CTA `Ver todas las métricas`.
+- `CommunityReviewsPage` valida los insights accionables: `Moto más comentada` y `Moto mejor valorada` se renderizan como links semánticos a `#/comunidad/{motorcycleId}` con accessible name `Ver reviews de ...`.
+- `CommunityReviewsPage` documenta el reemplazo de `Review más útil` por `Moto mejor valorada`, asegura rating veraz en escala `/5` y verifica que no aparezcan claims falsos de tendencia o crecimiento (`trending`, `peak`, `sube`, `crece`).
 - `SearchPage` valida el shell compartido `SearchHero` de forma observable: el hero renderiza la imagen `comparison-hero.png`, mantiene el heading/description visibles y el filtro de texto sigue siendo page-owned. Evitar tests que dependan del SCSS como fuente de verdad.
 - `SearchControl` ya tiene tests unitarios dedicados: input accesible por label y compatibilidad con props estándar controladas/no controladas. `HeroSearch` y `SearchField` deben seguir probándose por comportamiento, no por detalles internos ni clases del input compartido.
 - El contrato del Home hero sigue siendo de comportamiento: submit desde `HeroSearch` → navegación a `#/buscador?q=...`. El contrato del buscador sigue siendo de comportamiento: `SearchField` controlado + live filtering + sync con `routeHash`.

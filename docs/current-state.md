@@ -2,13 +2,14 @@
 
 ## Último estado estable
 
-- Rama actual: `fix/security-definer-privileges`
-- Último bloque validado: **hardening de privilegios `EXECUTE` en funciones `SECURITY DEFINER` + staging smoke** aprobado.
-- Alcance validado: `public.is_admin()` y `public.handle_new_user_profile()` quedaron endurecidas con `REVOKE EXECUTE` explícito para `public` y `anon`; `public.is_admin()` conserva `GRANT EXECUTE` solo para `authenticated`; `public.handle_new_user_profile()` sigue siendo trigger-driven sin grant cliente directo. `create_motorcycle_review_with_aspects(...)` no cambió y su contrato auth-only quedó intacto.
+- Rama actual: `feature/community-insights-actionable-cards`
+- Último bloque validado: **rediseño de insights de `CommunityReviewsPage` + cards accionables** aprobado.
+- Alcance validado: `#/comunidad/reviews` promueve `Pulso de la Comunidad` como sección full-width bajo el hero, elimina el layout legacy de aside/editorial-grid para insights, sustituye `Review más útil` por `Moto mejor valorada` y deja `Moto más comentada` + `Moto mejor valorada` como cards-link semánticas hacia `#/comunidad/{motorcycleId}`. No hubo cambios de backend, auth, schema, RLS, rutas ni servicios.
 - Tests: 1146 passed (75 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Focused checks más recientes:
+  - `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing
   - `supabase/schema.test.ts` → `1` file / `66` tests passing
   - suite completa → `75` files / `1146` tests passing
 - Último commit:
@@ -29,6 +30,11 @@
 - Filtros afectan solo al listado técnico: segment, license, use, search.
 - El Podium rankings de `#/comunidad` ya está alineado con `#/comunidad/rankings` para cards compactas: las posiciones 2 y 3 muestran el mismo span de metadatos `año · segmento · cilindrada`.
 - `#/comunidad/reviews`: filtros apply-on-change en tiempo real; botón "Aplicar" cierra el panel en mobile; copy "Reviews destacadas" (antes "Destacadas del mes").
+- `#/comunidad/reviews` promueve el antiguo bloque de insights a una sección primaria full-width inmediatamente debajo del hero. El layout legacy con `community-reviews-page__editorial-grid` / `community-reviews-page__editorial-main` deja de gobernar los insights; `Reviews destacadas` y `Últimos reportes` continúan debajo como bloques editoriales full-width.
+- `#/comunidad/reviews` insights: h2 visible `Pulso de la Comunidad` con gradiente sobre `Comunidad`, kicker `MotoAtlas Live Pulse`, tooltip conservador sobre señales basadas en reviews aprobadas y datos cargados recientemente, footer compacto `Datos aproximados · {refreshLabel} · Según reviews aprobadas`, y sin CTA `Ver todas las métricas`.
+- `#/comunidad/reviews` señales activas: `Moto más comentada`, `Moto mejor valorada`, `Segmento más activo`, `Uso más activo`.
+- `Moto mejor valorada` reemplaza a `Review más útil` y se deriva localmente de las reviews aprobadas cargadas con desempate por: 1) average rating, 2) review count, 3) latest review, 4) nombre alfabético. El rating visible sigue siendo veraz en escala `/5`.
+- `Moto más comentada` y `Moto mejor valorada` son cards semánticas accionables (`<a>`) a `#/comunidad/{motorcycleId}` cuando hay datos. Los porcentajes mostrados en insights son shares derivados solo del dataset aprobado cargado; no se introducen claims de tendencia o crecimiento.
 - `#/comunidad/reviews` Garaje: `MotorcycleGarageCard` extraído a `src/components/motorcycles/MotorcycleGarageCard/`. Props planas reutilizables (title, imageSource, imageAlt, rating, reviewCount, primaryUseLabel, lastReviewDate, reviewsHref, detailHref). Presentacional sin fetch ni estado. Base para futura reutilización en `#/buscador`.
 - `#/comunidad/reviews` `Reviews destacadas`: criterio = utilidad comunitaria (`helpfulCount` desc). Desempates: rating, comentario más largo, más reciente. Kilómetros NO son criterio. Fallback si no hay útiles funciona por rating/fecha. `Últimos reportes`: cronológico puro. Deduplicación interna por `motorcycleId` en cada bloque editorial, sin deduplicación editorial↔garaje.
 - `MotorcycleGarageCard` reutilizada en `#/buscador` con `footerActions` para botón de comparar/seleccionada; mantiene presentacionalidad y usa `aria-label="Ver ficha técnica"` en enlace a ficha.
@@ -326,7 +332,7 @@
 ## Riesgos pendientes
 
 - Tendencia no usa serie temporal real.
-- Insights en vivo con polling cada 60s (sin Supabase Realtime).
+- `Pulso de la Comunidad` no usa datos second-by-second: el footer relativo es texto local de UI y el polling sigue siendo suave cada 60s (sin Supabase Realtime).
 - El branch de duplicado en reportes depende del literal `"Ya has reportado esta review."`; si cambia el mensaje backend, hay que ajustar la detección.
 - En fallo de hidratación de reportes (`getMyReviewReports`), `useReviewReports` absorbe el error de forma silenciosa; en `MotorcycleCommunityPage` puede perderse el notice específico de ese edge case.
 - Posible flaky test aislado en Admin (`no muestra paginación cuando hay 6 reportes o menos`), sin evidencia de relación con Fase C.

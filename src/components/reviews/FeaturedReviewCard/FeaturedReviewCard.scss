@@ -3,8 +3,8 @@
 
 .featured-review-card {
   background:
-    linear-gradient(135deg, rgba($color-surface-container-high, 0.72), rgba($color-surface-low, 0.92)),
-    radial-gradient(circle at 100% 0%, rgba($color-accent, 0.08), transparent 18rem);
+     linear-gradient(180deg, rgba($color-surface-lowest, 0.68), rgba($color-surface-container, 0.78)),
+    radial-gradient(circle at top right, rgba($color-accent, 0.06), transparent 8rem);
   border: 1px solid rgba($color-outline-variant, 0.28);
   border-radius: $radius-xl;
   box-shadow: $shadow-glass;
