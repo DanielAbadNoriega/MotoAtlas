@@ -64,8 +64,8 @@ describe('TopRatedMotorcyclesPage', () => {
 
     expect(screen.getByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Podium rankings/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Explorar comunidades/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Comparar motos/i })).toHaveAttribute('href', '#/comparador');
+    expect(screen.queryByRole('button', { name: /Explorar comunidades/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Comparar motos/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/TopAppBar/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Sign In/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/STATUS: ACQUIRING TELEMETRY/i)).not.toBeInTheDocument();
@@ -82,24 +82,9 @@ describe('TopRatedMotorcyclesPage', () => {
     expect(within(firstRank).getByRole('link', { name: /Ver reviews/i })).toBeInTheDocument();
   });
 
-  it('el botón Explorar comunidades hace scroll al podium en #/motos-mejor-valoradas', async () => {
-    const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
-    const scrollIntoView = vi.fn();
-    window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
-    window.location.hash = '#/motos-mejor-valoradas';
-    const user = userEvent.setup();
-
-    await renderPage();
-    await user.click(screen.getByRole('button', { name: /Explorar comunidades/i }));
-
-    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
-
-    window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
-  });
-
-  it('el hero de #/comunidad no muestra acciones porque la navegación vivirá en la navbar/subnav', async () => {
+  it('el hero de comunidad no muestra acciones porque la navegación vivirá en la navbar/subnav', async () => {
     window.location.hash = '#/comunidad';
-    render(<TopRatedMotorcyclesPage motorcycles={bikeFixtures} variant="community" />);
+    render(<TopRatedMotorcyclesPage motorcycles={bikeFixtures} />);
     await waitFor(() => expect(getApprovedReviewsMock).toHaveBeenCalledTimes(bikeFixtures.length));
 
     expect(screen.getByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();

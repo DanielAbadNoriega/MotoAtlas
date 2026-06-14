@@ -189,14 +189,14 @@ describe('App navigation with mocked motorcycleService', () => {
     expect(getApprovedReviewsMock).not.toHaveBeenCalledWith('reviews');
   });
 
-  it('mantiene #/motos-mejor-valoradas como alias sin SEO duplicado', async () => {
+  it('ya no resuelve #/motos-mejor-valoradas y cae al home público', async () => {
     window.location.hash = '#/motos-mejor-valoradas';
 
     await renderApp();
 
-    expect(await screen.findByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
-    expect(document.title).toBe('Comunidad MotoAtlas | Reviews y motos mejor valoradas');
-    expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://motoatlas.com/comunidad');
+    expect(await screen.findByRole('heading', { name: /La Enciclopedia del Motero Técnico/i })).toBeInTheDocument();
+    expect(document.title).toBe('MotoAtlas | Catálogo técnico de motos');
+    expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://motoatlas.com/');
   });
 
   it.each([
