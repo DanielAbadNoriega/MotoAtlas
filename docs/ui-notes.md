@@ -32,7 +32,11 @@ Criterio actual del ranking:
 - por defecto exige al menos 1 review aprobada.
 - si no hay reviews suficientes o los filtros dejan el ranking vacío, muestra empty state técnico.
 
+El empty state del podio/no-results ahora usa `RadarState` como base compartida. Mantiene el copy `Aún no hay suficientes datos de comunidad.`, el CTA primario `Limpiar filtros` cuando hay filtros activos y conserva los links secundarios `Ir al buscador` + `Explorar comunidad` como acciones propias de página fuera del componente compartido.
+
 Podio visual: componente `PodiumCard` compartido extraído en `src/components/rankings/PodiumCard/`. Self-styled con CSS propio (`.podium-card*`), presentacional sin fetch ni auth. API: `bike`, `rank`, `variant`, `scoreLabel`, `confidence`, `confidenceTooltip`, `stats`, `statsAriaLabel`, `meta`, `href`, `ctaLabel`, `loading`, `showConfidence`. El componente es la fuente de estilo de los podios en ambas páginas — los estilos de layout de página (`.top-rated__podium`, `.top-rated__podium-cta`, `.rankings__podium-section`, `.rankings__podium-grid`) permanecen en sus SCSS respectivos.
+
+Importante: los estilos `.top-rated__radar-panel` y `.top-rated__radar-signals` siguen siendo locales de `CommunityRadar` y no forman parte de la migración a `RadarState`.
 
 Filtros disponibles:
 
@@ -458,7 +462,7 @@ En `#/cuenta`, el bloque “Mis reviews” agrupa las reviews propias por moto, 
 - usa `AccountReviewsEmptyState` como wrapper de compatibilidad sobre `RadarState` para el estado “sin resultados”.
 - edición, borrado/retirada y panel admin quedan pendientes.
 
-`RadarState` vive en `src/shared/ui/states/RadarState/` y es el estado vacío reutilizable canónico para el patrón visual tipo radar. En esta primera implementación se extrajo desde el diseño existente de `AccountReviewsEmptyState`, sin rediseño, y el consumidor real documentado sigue siendo `AccountReviewsPage` a través de ese wrapper. Futuras migraciones deben hacerse una página por vez, preservando copy, acciones y accesibilidad; no existen todavía variantes compartidas de loading/error ni una migración masiva de empty states.
+`RadarState` vive en `src/shared/ui/states/RadarState/` y es el estado vacío reutilizable canónico para el patrón visual tipo radar. Se extrajo desde el diseño existente de `AccountReviewsEmptyState`, sin rediseño, y sus consumidores documentados actuales son `AccountReviewsEmptyState`/`AccountReviewsPage` y el empty state de podio/no-results de `TopRatedMotorcyclesPage`. Futuras migraciones deben hacerse una página por vez, preservando copy, acciones y accesibilidad; no existen todavía variantes compartidas de loading/error ni una migración masiva de empty states.
 
 ## Auth y envío de reviews
 

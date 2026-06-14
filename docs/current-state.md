@@ -2,12 +2,13 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/shared-radar-state`
-- Último bloque validado: **extracción compartida de `RadarState`** aprobada sobre la base UI ya existente de `AccountReviewsEmptyState`, sin rediseño visual.
-- Alcance validado: `RadarState` quedó implementado en `src/shared/ui/states/RadarState/` como estado vacío reutilizable con glow, rings, sweep, markers, icono Material Symbols, soporte `prefers-reduced-motion` y comportamiento mobile. `AccountReviewsEmptyState` quedó como wrapper fino de compatibilidad y, en esta primera pasada, solo `AccountReviewsPage` usa ese contrato extraído. No se migraron otros empty/loading/error states.
+- Rama actual: `feature/radar-state-top-rated-empty`
+- Último bloque validado: **segundo consumidor de `RadarState`** aprobado sobre la base UI ya existente, sin rediseño visual.
+- Alcance validado: `RadarState` mantiene su contrato compartido en `src/shared/ui/states/RadarState/` y `TopRatedMotorcyclesPage` ya lo usa en un único caso público controlado: el empty state del podio / no-results (`Aún no hay suficientes datos de comunidad.`). `AccountReviewsEmptyState` sigue como wrapper fino de compatibilidad y `AccountReviewsPage` se mantiene como primer consumidor vía wrapper. No se migraron otros empty/loading/error states.
 - Tests: 1148 passed (75 files)
 - Typecheck: clean
 - `git diff --check`: clean
+- Focused check más reciente: `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/TopRatedMotorcyclesPage/TopRatedMotorcyclesPage.test.tsx` → `2` files / `22` tests passing
 - Último commit:
 
 ## Implementado
@@ -333,7 +334,7 @@
 - `ReviewModal` ya endureció su contrato local: si se abre de forma inesperada sin sesión, el submit no llama `createReviewWithAspects` y muestra `Inicia sesión para escribir una review.`. El smoke desplegado ya confirmó compatibilidad con la RPC auth-only; el riesgo auth restante pasa por verificación más amplia de privilegios efectivos.
 - El alias público de una review autenticada ya no depende del payload cliente: la RPC `create_motorcycle_review_with_aspects` deriva `user_name` desde `public.user_profiles.display_name`, conserva `p_user_name` solo por compatibilidad y usa fallback `Usuario MotoAtlas` cuando el perfil no tiene alias usable.
 - La validación desplegada de creación de reviews ya quedó cerrada como smoke de comportamiento; sigue pendiente una auditoría más amplia de privilegios efectivos de funciones `security definer`.
-- `RadarState` ya existe como componente compartido bajo `src/shared/ui/states/RadarState/`, extraído desde el radar visual de `AccountReviewsEmptyState` sin cambio de diseño. `AccountReviewsEmptyState` mantiene el wrapper de compatibilidad y futuras migraciones a otros estados quedan como fases separadas.
+- `RadarState` ya existe como componente compartido bajo `src/shared/ui/states/RadarState/`, extraído desde el radar visual de `AccountReviewsEmptyState` sin cambio de diseño. `AccountReviewsEmptyState` mantiene el wrapper de compatibilidad y `TopRatedMotorcyclesPage` ya suma el segundo consumidor con su empty state de podio/no-results. Futuras migraciones a otros estados quedan como fases separadas.
 
 ## Referencias de contratos
 
