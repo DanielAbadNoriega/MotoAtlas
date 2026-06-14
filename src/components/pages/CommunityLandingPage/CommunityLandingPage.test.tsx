@@ -10,7 +10,7 @@ import {
   createPendingReviewFixture,
   createRejectedReviewFixture,
 } from '../../../test/fixtures/reviews';
-import { TopRatedMotorcyclesPage } from './TopRatedMotorcyclesPage';
+import { CommunityLandingPage } from './CommunityLandingPage';
 
 vi.mock('../../../services/motorcycleReviewService', () => ({
   getApprovedReviewsByMotorcycleId: vi.fn(),
@@ -46,11 +46,11 @@ function mockReviews(map: Record<string, unknown[]> = reviewsById) {
 }
 
 async function renderPage() {
-  render(<TopRatedMotorcyclesPage motorcycles={bikeFixtures} />);
+  render(<CommunityLandingPage motorcycles={bikeFixtures} />);
   await waitFor(() => expect(getApprovedReviewsMock).toHaveBeenCalledTimes(bikeFixtures.length));
 }
 
-describe('TopRatedMotorcyclesPage', () => {
+describe('CommunityLandingPage', () => {
   beforeEach(() => {
     window.history.pushState(null, '', '/');
     window.location.hash = '';
@@ -84,7 +84,7 @@ describe('TopRatedMotorcyclesPage', () => {
 
   it('el hero de comunidad no muestra acciones porque la navegación vivirá en la navbar/subnav', async () => {
     window.location.hash = '#/comunidad';
-    render(<TopRatedMotorcyclesPage motorcycles={bikeFixtures} />);
+    render(<CommunityLandingPage motorcycles={bikeFixtures} />);
     await waitFor(() => expect(getApprovedReviewsMock).toHaveBeenCalledTimes(bikeFixtures.length));
 
     expect(screen.getByRole('heading', { name: /Comunidad MotoAtlas/i })).toBeInTheDocument();
