@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>MOTOATLAS | Estudio de Modelos Admin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1b1b",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "secondary-fixed": "#ffdad8",
+                        "tertiary-container": "#181a1b",
+                        "surface-variant": "#353434",
+                        "on-background": "#e5e2e1",
+                        "on-primary-container": "#848283",
+                        "surface": "#141313",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#2f3132",
+                        "tertiary-fixed": "#e2e2e3",
+                        "outline": "#909094",
+                        "inverse-surface": "#e5e2e1",
+                        "secondary": "#ffb3b1",
+                        "primary-fixed-dim": "#c8c6c7",
+                        "surface-container": "#201f1f",
+                        "on-primary-fixed-variant": "#474647",
+                        "error": "#ffb4ab",
+                        "inverse-on-surface": "#313030",
+                        "secondary-container": "#d6042f",
+                        "on-surface": "#e5e2e1",
+                        "on-secondary-container": "#ffe7e5",
+                        "on-primary": "#303031",
+                        "on-surface-variant": "#c7c6ca",
+                        "on-secondary-fixed-variant": "#92001d",
+                        "surface-container-highest": "#353434",
+                        "tertiary": "#c6c6c7",
+                        "surface-container-lowest": "#0e0e0e",
+                        "secondary-fixed-dim": "#ffb3b1",
+                        "on-tertiary-container": "#818284",
+                        "surface-tint": "#c8c6c7",
+                        "primary": "#c8c6c7",
+                        "on-secondary-fixed": "#410007",
+                        "on-primary-fixed": "#1b1b1c",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#5f5e5f",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-error": "#690005",
+                        "primary-fixed": "#e5e2e3",
+                        "primary-container": "#1a1a1b",
+                        "surface-container-high": "#2b2a2a",
+                        "surface-bright": "#3a3939",
+                        "surface-dim": "#141313",
+                        "on-secondary": "#680011",
+                        "on-tertiary-fixed": "#1a1c1d",
+                        "outline-variant": "#46474a",
+                        "background": "#141313"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Hanken Grotesk"],
+                        "display": ["Hanken Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["JetBrains Mono"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-panel {
+            background: rgba(32, 31, 31, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(70, 71, 74, 0.3);
+        }
+
+        .hud-scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(200, 198, 199, 0.05) 50%);
+            background-size: 100% 4px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none !important;
+            border-color: #ffb3b1 !important;
+            box-shadow: 0 0 0 1px #ffb3b1 !important;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background font-body min-h-screen flex">
+    <!-- Main Content Canvas -->
+    <main class="ml-64 flex-grow flex flex-col min-h-screen bg-background relative overflow-x-hidden">
+        <!-- Header HUD -->
+        <header
+            class="fixed top-0 right-0 left-64 bg-surface/80 backdrop-blur-xl z-30 border-b border-outline-variant/30 px-8 py-4 flex justify-between items-center">
+            <div class="flex flex-col">
+                <h2 class="font-headline font-extrabold text-xl tracking-tighter text-on-surface">ESTUDIO DE
+                    MODELOS</h2>
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></div>
+                    <span class="font-label text-[10px] uppercase tracking-widest text-secondary">Draft Mode
+                        Active</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-6 mr-4">
+                    <a class="text-on-surface-variant font-label text-xs uppercase tracking-widest hover:text-secondary transition-colors"
+                        href="#">Models</a>
+                    <a class="text-on-surface-variant font-label text-xs uppercase tracking-widest hover:text-secondary transition-colors"
+                        href="#">Compare</a>
+                    <a class="text-on-surface-variant font-label text-xs uppercase tracking-widest hover:text-secondary transition-colors"
+                        href="#">Methodology</a>
+                </div>
+                <button
+                    class="bg-secondary-container text-on-secondary-container font-headline font-bold text-sm uppercase tracking-wider px-6 py-2 rounded-lg active:scale-95 transition-transform">
+                    Save Changes </button>
+            </div>
+        </header>
+        <div class="mt-20 p-8 w-full max-w-5xl mx-auto space-y-12 pb-32">
+            <!-- Summary Preview Panel (Top Placement) -->
+            <section class="glass-panel rounded-xl overflow-hidden relative">
+                <div class="hud-scanline absolute inset-0 pointer-events-none opacity-20"></div>
+                <div class="flex flex-col md:flex-row h-full">
+                    <div class="w-full md:w-2/5 aspect-[4/3] relative bg-surface-container-lowest">
+                        <img class="w-full h-full object-cover grayscale-[0.5] contrast-125"
+                            data-alt="A high-end studio photograph of a sleek, matte black superbike parked in a minimalist dark environment with sharp red rim lighting. The lighting emphasizes the aerodynamic carbon fiber fairings and the exposed mechanical precision of the engine components. The mood is professional and high-tech, aligning with a premium engineering brand aesthetic."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAAaA4zXNnkMotWF1cBZhutf4CpO_7aPpDhXviNQXHjuz0GC5ut60puwHv766LfxmPHFVYpR79pmrOVkt3b5CfkDJMprMr28rQGssH3zf2qYon6gIWv3lM472RsmHiPi1h9v05D8TK9SyNEeLjNX-OH46sxggrKJNyalSqs5TeKhGEHXEwx0zVrZaLd_vKCwsyvkzSC3fGNUmRpGG-eSMD_V9AaWUtt8Yrog4U-cpsVJUBkjkn9XK16DIdBaciw56b0E2oSh8kZdys" />
+                        <div class="absolute top-4 left-4 bg-secondary-container px-3 py-1 rounded-sm">
+                            <span
+                                class="font-label text-[10px] text-on-secondary-container font-black tracking-tighter">PREVIEW</span>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-3/5 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3
+                                    class="font-headline font-black text-4xl tracking-tighter text-on-surface leading-tight">
+                                    ATLAS V4-R</h3>
+                                <span
+                                    class="bg-surface-container-highest px-2 py-1 rounded text-[10px] font-label border border-outline-variant">ID:
+                                    MOD-772</span>
+                            </div>
+                            <p class="text-on-surface-variant font-body text-sm leading-relaxed max-w-md">
+                                Next-generation performance archetype for the 2024 season. Validated
+                                aero-package with integrated winglets. </p>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mt-8">
+                            <div class="flex flex-col">
+                                <span
+                                    class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Weight</span>
+                                <span class="font-label text-xl font-bold text-on-surface">168 <span
+                                        class="text-[10px] opacity-50">KG</span></span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Torque</span>
+                                <span class="font-label text-xl font-bold text-on-surface">122 <span
+                                        class="text-[10px] opacity-50">NM</span></span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span
+                                    class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Speed</span>
+                                <span class="font-label text-xl font-bold text-on-surface">299 <span
+                                        class="text-[10px] opacity-50">KPH</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Technical Data Form Sections -->
+            <form class="space-y-8">
+                <!-- Section: Engine -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                        <h4 class="font-label text-xs font-bold uppercase tracking-[0.3em] text-secondary">01.
+                            ENGINE_SPECS</h4>
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Cylinder
+                                Displacement (CC)</label>
+                            <input
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors"
+                                type="number" value="1103" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Max
+                                Power (BHP)</label>
+                            <input
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors"
+                                type="number" value="214" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Cooling
+                                System</label>
+                            <select
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors">
+                                <option>Liquid Cooled</option>
+                                <option>Air Cooled</option>
+                                <option>Oil/Air Cooled</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Compression
+                                Ratio</label>
+                            <input
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors"
+                                type="text" value="14.0:1" />
+                        </div>
+                    </div>
+                </div>
+                <!-- Section: Chassis -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                        <h4 class="font-label text-xs font-bold uppercase tracking-[0.3em] text-secondary">02.
+                            CHASSIS_GEOMETRY</h4>
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Frame
+                                Architecture</label>
+                            <input
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors"
+                                type="text" value="Aluminum Alloy Front Frame" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Wheelbase
+                                (MM)</label>
+                            <input
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors"
+                                type="number" value="1469" />
+                        </div>
+                        <div class="flex flex-col gap-2 md:col-span-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Front
+                                Suspension</label>
+                            <textarea
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors"
+                                rows="2">Öhlins NPX 25/30 pressurized 43 mm fully adjustable fork with TiN treatment.</textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- Section: Electronics -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                        <h4 class="font-label text-xs font-bold uppercase tracking-[0.3em] text-secondary">03.
+                            ELECTRONIC_INTERFACE</h4>
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                    </div>
+                    <div class="glass-panel p-6 rounded-lg grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <div
+                                class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-secondary transition-colors">
+                                <div
+                                    class="w-2 h-2 bg-secondary rounded-sm opacity-0 group-has-[:checked]:opacity-100">
+                                </div>
+                            </div>
+                            <input checked="" class="hidden" type="checkbox" />
+                            <span
+                                class="font-label text-[11px] uppercase tracking-wider text-on-surface">Cornering
+                                ABS</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <div
+                                class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-secondary transition-colors">
+                                <div
+                                    class="w-2 h-2 bg-secondary rounded-sm opacity-0 group-has-[:checked]:opacity-100">
+                                </div>
+                            </div>
+                            <input checked="" class="hidden" type="checkbox" />
+                            <span
+                                class="font-label text-[11px] uppercase tracking-wider text-on-surface">Slide
+                                Control</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <div
+                                class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-secondary transition-colors">
+                                <div
+                                    class="w-2 h-2 bg-secondary rounded-sm opacity-0 group-has-[:checked]:opacity-100">
+                                </div>
+                            </div>
+                            <input checked="" class="hidden" type="checkbox" />
+                            <span
+                                class="font-label text-[11px] uppercase tracking-wider text-on-surface">Wheelie
+                                Control</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <div
+                                class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-secondary transition-colors">
+                                <div
+                                    class="w-2 h-2 bg-secondary rounded-sm opacity-0 group-has-[:checked]:opacity-100">
+                                </div>
+                            </div>
+                            <input class="hidden" type="checkbox" />
+                            <span
+                                class="font-label text-[11px] uppercase tracking-wider text-on-surface">Heated
+                                Grips</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <div
+                                class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-secondary transition-colors">
+                                <div
+                                    class="w-2 h-2 bg-secondary rounded-sm opacity-0 group-has-[:checked]:opacity-100">
+                                </div>
+                            </div>
+                            <input checked="" class="hidden" type="checkbox" />
+                            <span
+                                class="font-label text-[11px] uppercase tracking-wider text-on-surface">Quick
+                                Shifter Evo 2</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <div
+                                class="w-5 h-5 rounded border-2 border-outline-variant flex items-center justify-center group-hover:border-secondary transition-colors">
+                                <div
+                                    class="w-2 h-2 bg-secondary rounded-sm opacity-0 group-has-[:checked]:opacity-100">
+                                </div>
+                            </div>
+                            <input checked="" class="hidden" type="checkbox" />
+                            <span class="font-label text-[11px] uppercase tracking-wider text-on-surface">GPS
+                                Module</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- Section: Price & Availability -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                        <h4 class="font-label text-xs font-bold uppercase tracking-[0.3em] text-secondary">04.
+                            MARKET_DATA</h4>
+                        <div class="h-px flex-grow bg-outline-variant opacity-30"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">MSRP
+                                (USD)</label>
+                            <div class="relative">
+                                <span
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-label">$</span>
+                                <input
+                                    class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-4 pl-8 font-label text-on-surface focus:ring-0 transition-colors"
+                                    type="number" value="32500" />
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label
+                                class="font-label text-[11px] text-on-surface-variant uppercase tracking-widest ml-1">Release
+                                Status</label>
+                            <select
+                                class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 font-label text-on-surface focus:ring-0 transition-colors">
+                                <option>In Production</option>
+                                <option>Pre-Order</option>
+                                <option>Discontinued</option>
+                                <option>Concept Only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Final Actions Cluster -->
+                <div class="pt-12 flex flex-col md:flex-row gap-4 justify-end">
+                    <button
+                        class="px-8 py-4 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-surface border border-outline-variant hover:bg-surface-variant transition-all active:scale-95"
+                        type="button"> Discard Changes </button>
+                    <button
+                        class="px-8 py-4 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-secondary bg-secondary-container hover:brightness-110 shadow-lg shadow-secondary-container/20 transition-all active:scale-95"
+                        type="button"> Authorize & Publish </button>
+                </div>
+            </form>
+        </div>
+        <!-- Footer -->
+        <footer
+            class="w-full mt-auto bg-surface-container-lowest border-t border-outline-variant/20 px-20 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <span class="font-headline font-black text-2xl text-on-surface">MOTOATLAS</span>
+                <p class="font-label text-[10px] text-on-surface-variant tracking-widest uppercase">© 2024
+                    MOTOATLAS ENGINEERING. ALL SPECIFICATIONS SUBJECT TO VERIFICATION.</p>
+            </div>
+            <div class="flex gap-8">
+                <a class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors"
+                    href="#">Hardware API</a>
+                <a class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors"
+                    href="#">Data Licensing</a>
+                <a class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors"
+                    href="#">Contact</a>
+            </div>
+        </footer>
+        <!-- Micro-interaction script -->
+        <script>
+            // Simple visual feedback for form inputs
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.querySelector('label')?.classList.add('text-secondary');
+                });
+                input.addEventListener('blur', () => {
+                    input.parentElement.querySelector('label')?.classList.remove('text-secondary');
+                });
+            });
+
+            // Handle custom checkbox visuals
+            document.querySelectorAll('label.cursor-pointer').forEach(label => {
+                label.addEventListener('click', (e) => {
+                    const checkbox = label.querySelector('input[type="checkbox"]');
+                    if (checkbox && e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        // Trigger a visual update if needed beyond CSS :has
+                    }
+                });
+            });
+        </script>
+    </main>
+    <!-- Floating Action Button for Tablet (Quick Save) -->
+    <button
+        class="fixed bottom-8 right-8 w-14 h-14 bg-secondary-container text-on-secondary-container rounded-full shadow-2xl flex items-center justify-center md:hidden z-50 active:scale-90 transition-transform">
+        <span class="material-symbols-outlined">save</span>
+    </button>
+</body>
+
+</html>

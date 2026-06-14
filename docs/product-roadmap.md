@@ -23,9 +23,9 @@ Implementado (baseline actual):
 
 ## 3. Foco inmediato recomendado
 
-1. Cerrar commit/docs del bloque aprobado de `Pulso de la Comunidad` y pasar a la siguiente prioridad de comunidad o catálogo.
-2. Cerrar documentación/QA visual de filtros reutilizables y avanzar con la siguiente prioridad.
-3. Revisar y cerrar taxonomía de categorías/segmentos de motos como base de catálogo.
+1. Admin Models Studio — Fase 1: entry points + landing.
+2. Después, UI de creación de modelo inspirada en Stitch/ReviewModal.
+3. Persistencia/schema/RLS quedan fuera hasta auditoría específica.
 
 ## 4. P1 — UX pública / comunidad
 

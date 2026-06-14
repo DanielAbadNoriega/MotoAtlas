@@ -295,7 +295,7 @@
 
 ## Siguiente paso
 
-- **Signup smoke opcional cuando cese el rate limit `429`**: repetir solo el flujo público directo de registro si producto/seguridad quiere cerrar esa evidencia exacta; si no, continuar con la siguiente prioridad del roadmap usando como válidos el hardening aprobado y el smoke controlado por Admin API.
+- **Admin Models Studio — Fase 1**: entrada admin, quick links agrupados y landing #/admin/modelos, sin persistencia real.
 
 ## Decisiones importantes
 
