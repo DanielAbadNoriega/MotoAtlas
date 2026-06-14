@@ -345,6 +345,14 @@ describe('Supabase user_profiles auth schema', () => {
   it('crea perfil automáticamente al registrarse un usuario', () => {
     expect(schemaSql).toContain('create or replace function public.handle_new_user_profile()');
     expect(schemaSql).toContain('security definer');
+    expect(schemaSql).toContain('set search_path = public');
+    expect(schemaSql).toContain("new.raw_user_meta_data ->> 'display_name'");
+    expect(schemaSql).toContain("new.raw_user_meta_data ->> 'avatar_url'");
+    expect(schemaSql).toContain("'user'");
+    expect(schemaSql).not.toContain("new.raw_user_meta_data ->> 'role'");
+    expect(schemaSql).toContain('revoke execute on function public.handle_new_user_profile() from public;');
+    expect(schemaSql).toContain('revoke execute on function public.handle_new_user_profile() from anon;');
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+execute\s+on\s+function\s+public\.handle_new_user_profile\(\)\s+to\s+(?:public|anon|authenticated)/i);
     expect(schemaSql).toContain('drop trigger if exists on_auth_user_created_profile on auth.users;');
     expect(schemaSql).toContain('create trigger on_auth_user_created_profile');
     expect(schemaSql).toContain('after insert on auth.users');
@@ -370,7 +378,12 @@ describe('Supabase user_profiles auth schema', () => {
     expect(schemaSql).toContain('create or replace function public.is_admin()');
     expect(schemaSql).toContain('returns boolean');
     expect(schemaSql).toContain('security definer');
+    expect(schemaSql).toContain('set search_path = public');
+    expect(schemaSql).toContain('revoke execute on function public.is_admin() from public;');
+    expect(schemaSql).toContain('revoke execute on function public.is_admin() from anon;');
     expect(schemaSql).toContain('grant execute on function public.is_admin() to authenticated;');
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+execute\s+on\s+function\s+public\.is_admin\(\)\s+to\s+anon/i);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+execute\s+on\s+function\s+public\.is_admin\(\)\s+to\s+public/i);
 
     expect(schemaSql).toContain('drop policy if exists "Admins can read all profiles" on public.user_profiles;');
     expect(schemaSql).toContain('create policy "Admins can read all profiles"');
