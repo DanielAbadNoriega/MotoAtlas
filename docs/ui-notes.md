@@ -471,13 +471,24 @@ Limitaciones actuales (Fase 1 cerrada, pendientes para Fase 2/3/4 sin cambios es
 - sin detección de duplicados (`brand` + `model` + `year`).
 - sin acciones en lote sobre múltiples solicitudes.
 
-### Backlog futuro — Admin Models Studio / Estudio de modelos
+### Admin Models Studio / Estudio de modelos
 
-No implementado aún. Dirección documentada para una futura gestión interna del catálogo desde admin:
-- rutas previstas: `#/admin/modelos`, `#/admin/modelos/nuevo`, `#/admin/modelos/editar`, `#/admin/modelos/[motorcycleId]/editar`;
+Estado actual: **Fase 1 mínima implementada**.
+- `#/admin/modelos` existe como hub admin-protegido de navegación;
+- `#/admin/modelos/nuevo` existe como placeholder admin-protegido para la futura alta de modelos;
+- `#/admin/modelos/editar` existe como placeholder admin-protegido para la futura búsqueda/edición del catálogo;
+- `Panel Admin` incluye el submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar catálogo`.
+
+Regla de UI vigente:
+- el hub `#/admin/modelos` debe mantenerse separado de los flujos de creación y edición;
+- no debe existir un create/edit combinado dentro de `#/admin/modelos`;
+- creación y edición vivirán en rutas separadas.
+
+Dirección futura (pendiente):
 - objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON;
 - visual: página admin full-size, dark premium technical form, inspiración base `ReviewModal` + Stitch, pero sin modal ni landing pública;
 - create/edit deben compartir la misma arquitectura visual y de formulario;
+- un preview hero inspirado en `BikeDetailPage` queda como fase UI-only posterior, no implementada ahora;
 - la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios.
 
 ## Mi cuenta — Reviews
@@ -485,6 +496,7 @@ No implementado aún. Dirección documentada para una futura gestión interna de
 Quick links / sidebar de cuenta-admin:
 - reutilizar el patrón agrupado de `.account-page__quick-links` en lugar de duplicar listas planas por página;
 - grupos actuales: `Mi cuenta` (`Resumen`, `Mis reviews`, `Mis solicitudes`) y `Panel Admin` (`Panel admin`, `Moderación`, `Reviews`, `Solicitudes`);
+- `Panel Admin` ahora soporta un subnivel `Modelos` con disclosure nativo y links `Vista general` (`#/admin/modelos`), `Nuevo modelo` (`#/admin/modelos/nuevo`) y `Editar catálogo` (`#/admin/modelos/editar`);
 - disclosure nativo con `<details>/<summary>` y links semánticos `<a>`;
 - el enlace activo debe seguir usando `aria-current="page"`;
 - el grupo `Panel Admin` solo aparece cuando la superficie recibe `isAdmin`, sin alterar guards ni acceso a datos.
