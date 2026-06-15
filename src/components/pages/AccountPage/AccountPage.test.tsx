@@ -149,7 +149,13 @@ describe('AccountPage', () => {
     expect(screen.getByText('rider@motoatlas.com')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Mis reviews/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Mis solicitudes/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('aria-current', 'page');
+    const accountNav = screen.getByRole('navigation', { name: 'Navegación de cuenta' });
+    expect(within(accountNav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Resumen',
+      'Mis reviews',
+      'Mis solicitudes',
+    ]);
+    expect(screen.getByRole('link', { name: 'Resumen' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Mis reviews' })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(screen.getByRole('link', { name: /Ver todas mis reviews/i })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toHaveAttribute('href', '#/cuenta/solicitudes');
@@ -369,6 +375,8 @@ describe('AccountPage', () => {
 
     render(<AccountPage />);
 
+    expect(screen.getByText('Mi cuenta')).toBeInTheDocument();
+    expect(screen.getByText('Panel Admin')).toBeInTheDocument();
     const adminLink = screen.getByRole('link', { name: 'Panel admin' });
     expect(adminLink).toBeInTheDocument();
     expect(adminLink).toHaveAttribute('href', '#/admin');

@@ -146,6 +146,12 @@ describe('AccountReviewsPage', () => {
     expect(screen.getByLabelText('Resumen de reviews')).toHaveTextContent(/Reviews\s*3/);
     expect(screen.getByLabelText('Resumen de reviews')).toHaveTextContent(/Motos\s*2/);
     expect(screen.getByLabelText('Resumen de reviews')).toHaveTextContent(/Publicadas\s*2/);
+    const accountNav = screen.getByRole('navigation', { name: 'Navegación de cuenta' });
+    expect(within(accountNav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Resumen',
+      'Mis reviews',
+      'Mis solicitudes',
+    ]);
     expect(screen.getByRole('link', { name: 'Mis reviews' })).toHaveAttribute('aria-current', 'page');
 
     const sidebar = screen.getByLabelText('Resumen de perfil');
