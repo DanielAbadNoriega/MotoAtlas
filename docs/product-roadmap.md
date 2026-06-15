@@ -17,9 +17,10 @@ Implementado (baseline actual):
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
+- quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
 - Baseline validado actual: `75 files / 1146 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `feature/community-insights-actionable-cards`.
+- Último bloque estable validado: `feature/account-admin-quick-links-nav`.
 
 ## 3. Foco inmediato recomendado
 
@@ -65,6 +66,11 @@ Implementado:
 ### Admin Models Studio / Estudio de modelos
 
 Estado: **backlog estratégico / futuro**.
+
+Nota de estado:
+- la navegación agrupada de quick links (`Mi cuenta` / `Panel Admin`) ya quedó implementada como polish interna reutilizable;
+- **no** implica que `Admin Models Studio` esté empezado;
+- `#/admin/modelos` y sus rutas hijas siguen sin implementarse.
 
 Propósito:
 - evitar la edición manual de JSON como flujo principal a largo plazo;
@@ -615,7 +621,7 @@ Implementado:
   - admin protegido por sesión + rol (`isAdmin`).
   - listado de solicitudes con `getAllModelRequests` (autenticado como admin).
   - filtros laterales `Estado` (Todas, Pendientes, Revisadas, Aprobadas, Rechazadas), `Origen` (Todas, Usuario, Admin, Import) y búsqueda libre por marca o modelo.
-  - sidebar admin con quick links a Panel admin, Moderación, Reviews, Solicitudes, Mi cuenta.
+  - sidebar admin ya alineado con la navegación agrupada compartida: `Mi cuenta` (`Resumen`, `Mis reviews`, `Mis solicitudes`) + `Panel Admin` (`Panel admin`, `Moderación`, `Reviews`, `Solicitudes`).
   - cards expandibles (`AdminRequestCard`) con detalle de Marca, Modelo, Año, Segmento, Origen, Usuario, Email de contacto, Página oficial/fuente y Comentario.
   - badge de estado (`Pendiente`, `Revisada`, `Aprobada`, `Rechazada`) y fecha en formato `DD MMM YYYY` (`es-ES`).
   - acciones admin: `Marcar revisada`, `Aprobar`, `Rechazar` (deshabilitadas si la solicitud ya está en ese estado o si hay una acción en curso).
