@@ -1637,12 +1637,12 @@ describe('AdminPage', () => {
       'Solicitudes',
       'Vista general',
       'Nuevo modelo',
-      'Editar catálogo',
+      'Editar modelo',
     ]);
     expect(within(nav).getByRole('link', { name: 'Resumen' })).toHaveAttribute('href', '#/cuenta');
     expect(within(nav).getByRole('link', { name: 'Vista general' })).toHaveAttribute('href', '#/admin/modelos');
     expect(within(nav).getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('href', '#/admin/modelos/nuevo');
-    expect(within(nav).getByRole('link', { name: 'Editar catálogo' })).toHaveAttribute('href', '#/admin/modelos/editar');
+    expect(within(nav).getByRole('link', { name: 'Editar modelo' })).toHaveAttribute('href', '#/admin/modelos/editar');
   });
 
   it('sidebar de solicitudes muestra enlace activo', () => {
@@ -1659,10 +1659,9 @@ describe('AdminPage', () => {
     expect(screen.getByRole('heading', { name: 'Estudio de modelos' })).toBeInTheDocument();
     expect(screen.getByText('Gestiona las fichas técnicas del catálogo MotoAtlas.')).toBeInTheDocument();
     expect(screen.getByText('Workspace futuro')).toBeInTheDocument();
+    expect(screen.getByText('Editar modelo existente')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Vista general' })).toHaveAttribute('aria-current', 'page');
-    const placeholderLinks = screen.getAllByRole('link', { name: 'Abrir placeholder' });
-    expect(placeholderLinks[0]).toHaveAttribute('href', '#/admin/modelos/nuevo');
-    expect(placeholderLinks[1]).toHaveAttribute('href', '#/admin/modelos/editar');
+    expect(screen.getByRole('link', { name: 'Seleccionar modelo' })).toHaveAttribute('href', '#/admin/modelos/editar');
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Marca/i)).not.toBeInTheDocument();
   });
@@ -1747,19 +1746,253 @@ describe('AdminPage', () => {
     expect(getAllModelRequestsMock).not.toHaveBeenCalled();
   });
 
-  it('renderiza el placeholder mínimo de Editar catálogo para admin', () => {
+  it('renderiza la página de selección de modelos para editar', () => {
     render(<AdminEditModelsPage />);
 
-    expect(screen.getByRole('heading', { name: 'Editar catálogo' })).toBeInTheDocument();
-    expect(screen.getByText('Aquí se preparará la búsqueda y edición de modelos existentes.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Editar catálogo' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.queryByText(/Buscar por marca o modelo/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Seleccionar modelo para editar' })).toBeInTheDocument();
+    expect(screen.getByText('Busca una moto del catálogo y abre su ficha interna de edición.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Editar modelo' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByPlaceholderText(/Buscar por marca o modelo/i)).toBeInTheDocument();
+    expect(screen.getByRole('searchbox', { name: /Buscar por marca o modelo/i })).toBeInTheDocument();
+  });
+
+  it('muestra al menos un resultado de catálogo en la página de edición', () => {
+    render(<AdminEditModelsPage />);
+
+    const cards = screen.getAllByRole('article');
+    expect(cards.length).toBeGreaterThan(0);
+    const editLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
+    expect(editLinks.length).toBeGreaterThan(0);
+  });
+
+  it('cada card Editar modelo enlaza a la ruta de edición interna', () => {
+    render(<AdminEditModelsPage />);
+
+    const editLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
+    editLinks.forEach((link) => {
+      expect(link).toHaveAttribute('href', expect.stringMatching(/^#\/admin\/modelos\/.+\/editar$/));
+    });
+  });
+
+  it('filtra resultados al escribir en la búsqueda', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditModelsPage />);
+
+    const initialLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
+    expect(initialLinks.length).toBeGreaterThan(1);
+
+    const searchInput = screen.getByRole('searchbox');
+    await user.type(searchInput, 'ZZZZ_NO_EXISTE');
+
+    expect(screen.queryByRole('link', { name: /^Editar modelo /i })).not.toBeInTheDocument();
+    expect(screen.getByText('No hay modelos que coincidan con los filtros.')).toBeInTheDocument();
+  });
+
+  it('muestra resumen de resultados con el total de modelos encontrados', () => {
+    render(<AdminEditModelsPage />);
+
+    expect(screen.getByText(/\d+ modelos encontrados/)).toBeInTheDocument();
+  });
+
+  it('muestra botón Limpiar filtros en el panel cuando hay filtros activos y restaura resultados', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditModelsPage />);
+
+    const searchInput = screen.getByRole('searchbox');
+    await user.type(searchInput, 'BMW');
+    const clearButtons = screen.getAllByRole('button', { name: 'Limpiar filtros' });
+    expect(clearButtons.length).toBeGreaterThan(0);
+
+    await user.click(clearButtons[0]);
+    expect(searchInput).toHaveValue('');
+    expect(screen.getByText(/\d+ modelos encontrados/)).toBeInTheDocument();
+  });
+
+  it('renderiza los filtros en el panel del sidebar, no como bloque full-width', () => {
+    render(<AdminEditModelsPage />);
+
+    const filterSection = screen.getByRole('region', { name: 'Filtros de modelos' });
+    expect(filterSection).toBeInTheDocument();
+    expect(filterSection).toHaveClass('admin-page__filters');
+    expect(within(filterSection).getByRole('heading', { name: 'Filtros' })).toBeInTheDocument();
+    expect(within(filterSection).getByRole('button', { name: 'Aplicar filtros' })).toBeInTheDocument();
+    expect(within(filterSection).getAllByRole('button', { name: 'Limpiar filtros' }).length).toBeGreaterThan(0);
+
+    const searchInput = within(filterSection).getByRole('searchbox');
+    expect(searchInput).toBeInTheDocument();
+    expect(within(filterSection).getByPlaceholderText(/Buscar por marca o modelo/i)).toBeInTheDocument();
+
+    const segmentGroup = within(filterSection).getByText('Segmento', { selector: '.filter-group__title' }).closest('details');
+    expect(segmentGroup).not.toBeNull();
+
+    const licenseGroup = within(filterSection).getByText('Carnet', { selector: '.filter-group__title' }).closest('details');
+    expect(licenseGroup).not.toBeNull();
+
+    expect(filterSection.querySelector('.admin-page__filters-header')).toBeInTheDocument();
+    expect(filterSection.querySelector('.admin-page__filters-body')).toBeInTheDocument();
+    expect(filterSection.querySelector('.admin-page__filters-footer')).toBeInTheDocument();
+  });
+
+  it('renderiza el trigger de filtros móvil en el contenido principal', () => {
+    render(<AdminEditModelsPage />);
+
+    const mobileTrigger = screen.getByRole('button', { name: 'Filtros' });
+    expect(mobileTrigger).toBeInTheDocument();
+    expect(mobileTrigger.querySelector('.material-symbols-outlined')).toHaveTextContent('tune');
+  });
+
+  describe('filtros extendidos de #/admin/modelos/editar', () => {
+    function getFilterPanel() {
+      return screen.getByRole('region', { name: 'Filtros de modelos' });
+    }
+
+    function getResultsHeading() {
+      return screen.getByText(/\d+ modelos encontrados/);
+    }
+
+    function countResults() {
+      return screen.getAllByRole('link', { name: /^Editar modelo /i }).length;
+    }
+
+    it('renderiza todos los grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos)', () => {
+      render(<AdminEditModelsPage />);
+
+      const filterPanel = getFilterPanel();
+      const titles = ['Marca', 'Segmento', 'Carnet', 'Precio', 'Potencia', 'Peso', 'Altura asiento', 'Electrónica', 'Uso recomendado', 'Calidad de datos'];
+      titles.forEach((title) => {
+        expect(within(filterPanel).getByText(title, { selector: '.filter-group__title' })).toBeInTheDocument();
+      });
+    });
+
+    it('filtrar por marca reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const yamahaBtn = within(filterPanel).getByRole('button', { name: 'Marca: Yamaha' });
+      await user.click(yamahaBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por segmento reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const nakedBtn = within(filterPanel).getByRole('button', { name: 'Segmento: Naked' });
+      await user.click(nakedBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por carnet reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const a2Btn = within(filterPanel).getByRole('button', { name: 'Carnet: Carnet A2' });
+      await user.click(a2Btn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por potencia reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const presetBtn = within(filterPanel).getByRole('button', { name: /Potencia: 116\+ CV/ });
+      await user.click(presetBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por equipo reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const heatedGripsBtn = within(filterPanel).getByRole('button', { name: 'Electrónica: Puños calefactables' });
+      await user.click(heatedGripsBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('combinar filtros de marca y segmento reduce aún más los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const bmwBtn = within(filterPanel).getByRole('button', { name: 'Marca: BMW' });
+      await user.click(bmwBtn);
+
+      const afterBrand = countResults();
+      expect(afterBrand).toBeLessThan(initialCount);
+
+      const trailBtn = within(filterPanel).getByRole('button', { name: 'Segmento: Trail' });
+      await user.click(trailBtn);
+
+      const combinedCount = countResults();
+      expect(combinedCount).toBeLessThanOrEqual(afterBrand);
+    });
+
+    it('Limpiar filtros restaura todos los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const filterPanel = getFilterPanel();
+
+      const initialCount = countResults();
+      const brandBtn = within(filterPanel).getByRole('button', { name: 'Marca: KTM' });
+      await user.click(brandBtn);
+
+      expect(countResults()).toBeLessThan(initialCount);
+
+      const clearButtons = within(filterPanel).getAllByRole('button', { name: 'Limpiar filtros' });
+      await user.click(clearButtons[0]);
+
+      expect(countResults()).toBe(initialCount);
+    });
+
+    it('muestra empty state cuando los filtros producen cero resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage />);
+
+      const searchInput = screen.getByRole('searchbox');
+      await user.type(searchInput, 'ZZZZ_NO_EXISTE');
+
+      expect(screen.getByText('No hay modelos que coincidan con los filtros.')).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: 'Limpiar filtros' }).length).toBeGreaterThan(0);
+    });
   });
 
   it.each([
     ['Estudio de modelos', <AdminModelsPage />],
     ['Nuevo modelo', <AdminNewModelPage />],
-    ['Editar catálogo', <AdminEditModelsPage />],
+    ['Seleccionar modelo para editar', <AdminEditModelsPage />],
   ])('mantiene el guard admin en %s para usuarios sin rol admin', (_title, page) => {
     mockAuth({ isAdmin: false });
 

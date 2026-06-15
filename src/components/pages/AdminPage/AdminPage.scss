@@ -1752,4 +1752,102 @@
   &__report-aspects {
     margin-top: 0.5rem;
   }
+
+  &__edit-models {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__edit-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  &__edit-card {
+    align-items: center;
+    background: $color-surface-lowest;
+    border: 1px solid $color-surface-low;
+    border-radius: $radius-sm;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 7.5rem 1fr;
+    padding: 0.75rem;
+    transition: border-color $transition-fast;
+
+    &:hover {
+      border-color: $color-accent;
+    }
+  }
+
+  &__edit-card-image {
+    aspect-ratio: 4 / 3;
+    border-radius: $radius-sm;
+    overflow: hidden;
+
+    .admin-page__edit-card-img {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+  }
+
+  &__edit-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  &__edit-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__edit-card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__edit-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  &__edit-card-meta-item {
+    align-items: center;
+    color: $color-on-surface-variant;
+    display: inline-flex;
+    font-size: 0.8rem;
+    gap: 0.3rem;
+
+    .material-symbols-outlined {
+      font-size: 1rem;
+    }
+  }
+
+  &__edit-card-actions {
+    margin-top: 0.25rem;
+
+    .account-page__button--glass {
+      font-size: 0.85rem;
+      padding: 0.35rem 0.75rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-page {
+    &__edit-card {
+      grid-template-columns: 5.5rem 1fr;
+      padding: 0.5rem;
+    }
+  }
 }

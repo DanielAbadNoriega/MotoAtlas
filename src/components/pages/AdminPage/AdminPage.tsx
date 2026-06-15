@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
 import adminHeroImage from '../../../assets/hero-admin.png';
 import { useAuth } from '../../../features/auth';
-import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { bikeCatalog, findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   getReviewReports,
   resolveReportWithReviewStatus,
@@ -41,9 +41,11 @@ import {
   motorcycleSegmentFilterOptions,
   type MotorcycleSegmentFilterValue,
 } from '../../../shared/filters/motorcycleFilterOptions';
-import { BIKE_LICENSES, BIKE_SEGMENTS, getBikeA2Status, segmentIcons, segmentLabels, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { BIKE_LICENSES, BIKE_SEGMENTS, getBikeA2Status, segmentIcons, segmentLabels, MOTORCYCLE_DATA_SOURCES, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { dataQualityLabels, getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { canUseDemoData, isDemoDataToggleAvailable, setDemoDataPreference } from '../../../shared/env/runtimeEnvironment';
 import { getMotorcycleTechnicalIcon } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
+import { normalizeText } from '../../../utils/motorcycleSearch';
 import { slugifyRoutePart } from '../../../shared/routing/routeUtils';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
@@ -54,7 +56,8 @@ import { AccountQuickLinksNav, type AdminQuickLinksModelsItem } from '../Account
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
-import type { BikeEngineType, BikeFeatures, BikeLicense, BikeSegment } from '../../../types/bike';
+import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../../types/bike';
+import {creatingBikeImg} from '../../../../public/images/placeholders/motorcycle-model-creating.jpg';
 
 type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
 
@@ -165,7 +168,7 @@ const emptyAdminModelDraft: AdminModelDraft = {
   },
 };
 
-const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-technical-pending.jpg';
+const adminModelPreviewPlaceholderImage = creatingBikeImg;
 
 function formatPreviewNumber(value: string, unit: string) {
   const parsed = Number(value);
@@ -733,12 +736,14 @@ function AdminModelsWorkspace({
   activeModelsItem,
   children,
   description,
+  sidebarContent,
   title,
   titleId,
 }: Readonly<{
   activeModelsItem: AdminQuickLinksModelsItem;
   children: ReactNode;
   description: string;
+  sidebarContent?: ReactNode;
   title: string;
   titleId: string;
 }>) {
@@ -765,6 +770,7 @@ function AdminModelsWorkspace({
       <main className="account-page admin-page" aria-labelledby={titleId}>
         <section className="account-page__dashboard admin-page__layout">
           <AdminSidebar active="models" activeModelsItem={activeModelsItem}>
+            {sidebarContent}
             <AdminDemoDataToggle />
           </AdminSidebar>
           <div className="account-page__main">{children}</div>
@@ -794,11 +800,11 @@ export function AdminModelsPage() {
           <p>Aquí arrancará el futuro flujo de alta interna del catálogo.</p>
           <a className="account-page__button account-page__button--glass" href="#/admin/modelos/nuevo">Abrir placeholder</a>
         </article>
-        <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
+        <article className="account-page__card admin-page__summary-card">
           <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
-          <h2>Editar catálogo</h2>
-          <p>Aquí arrancará el futuro flujo de búsqueda y edición de modelos existentes.</p>
-          <a className="account-page__button account-page__button--glass" href="#/admin/modelos/editar">Abrir placeholder</a>
+          <h2>Editar modelo existente</h2>
+          <p>Busca y selecciona una moto del catálogo para abrir su ficha interna de edición.</p>
+          <a className="account-page__button account-page__button--glass" href="#/admin/modelos/editar">Seleccionar modelo</a>
         </article>
       </section>
     </AdminModelsWorkspace>
@@ -1125,22 +1131,778 @@ export function AdminNewModelPage() {
   );
 }
 
+type RangeFilterPreset = {
+  key: string;
+  label: string;
+  min: string;
+  max: string;
+};
+
+const pricePresets: RangeFilterPreset[] = [
+  { key: 'price-1', label: 'Hasta 5.000 €', min: '', max: '5000' },
+  { key: 'price-2', label: '5.000 - 10.000 €', min: '5000', max: '10000' },
+  { key: 'price-3', label: '10.000 - 15.000 €', min: '10000', max: '15000' },
+  { key: 'price-4', label: '15.000 - 20.000 €', min: '15000', max: '20000' },
+  { key: 'price-5', label: 'Más de 20.000 €', min: '20000', max: '' },
+];
+
+const powerPresets: RangeFilterPreset[] = [
+  { key: 'power-1', label: 'Hasta 47 CV', min: '', max: '47' },
+  { key: 'power-2', label: '48 - 75 CV', min: '48', max: '75' },
+  { key: 'power-3', label: '76 - 115 CV', min: '76', max: '115' },
+  { key: 'power-4', label: '116+ CV', min: '116', max: '' },
+];
+
+const weightPresets: RangeFilterPreset[] = [
+  { key: 'weight-1', label: 'Menos de 180 kg', min: '', max: '180' },
+  { key: 'weight-2', label: '180 - 210 kg', min: '180', max: '210' },
+  { key: 'weight-3', label: '211 - 240 kg', min: '211', max: '240' },
+  { key: 'weight-4', label: 'Más de 240 kg', min: '240', max: '' },
+];
+
+const seatHeightPresets: RangeFilterPreset[] = [
+  { key: 'seat-1', label: 'Menos de 800 mm', min: '', max: '800' },
+  { key: 'seat-2', label: '800 - 850 mm', min: '800', max: '850' },
+  { key: 'seat-3', label: '851 - 900 mm', min: '851', max: '900' },
+  { key: 'seat-4', label: 'Más de 900 mm', min: '900', max: '' },
+];
+
+const featureLabels: Record<keyof BikeFeatures, string> = {
+  absCornering: 'ABS curva',
+  cruiseControl: 'Control crucero',
+  heatedGrips: 'Puños calefactables',
+  quickshifter: 'Quickshifter',
+  ridingModes: 'Modos conducción',
+  tractionControl: 'Control tracción',
+  tubelessWheels: 'Llantas tubeless',
+};
+
+const useLabels: Record<keyof BikeUseScores, string> = {
+  beginner: 'Principiante',
+  city: 'Ciudad',
+  funFactor: 'Diversión',
+  offroad: 'Off-road',
+  passenger: 'Pasajero',
+  sport: 'Deportivo',
+  touring: 'Viaje',
+};
+
+type AdminModelsEditFilters = {
+  searchText: string;
+  selectedBrands: string[];
+  selectedSegments: BikeSegment[];
+  selectedLicenses: BikeLicense[];
+  minPrice: string;
+  maxPrice: string;
+  minPower: string;
+  maxPower: string;
+  minWeight: string;
+  maxWeight: string;
+  minSeatHeight: string;
+  maxSeatHeight: string;
+  equipment: (keyof BikeFeatures)[];
+  recommendedUses: (keyof BikeUseScores)[];
+  dataSources: MotorcycleDataSource[];
+};
+
+function isRangePresetActive(min: string, max: string, preset: RangeFilterPreset): boolean {
+  return min === preset.min && max === preset.max;
+}
+
+function getBrandOptions(catalog: readonly Bike[]): string[] {
+  return [...new Set(catalog.map((b) => b.brand))].sort();
+}
+
+function AdminModelsEditFiltersPanel({
+  filters,
+  isOpen,
+  brandOptions,
+  onApplyFilters,
+  onChange,
+  onClearFilters,
+  onClose,
+}: Readonly<{
+  filters: AdminModelsEditFilters;
+  isOpen: boolean;
+  brandOptions: readonly string[];
+  onApplyFilters: () => void;
+  onChange: (next: Partial<AdminModelsEditFilters>) => void;
+  onClearFilters: () => void;
+  onClose: () => void;
+}>) {
+  const hasActiveFilters = filters.searchText.length > 0
+    || filters.selectedBrands.length > 0
+    || filters.selectedSegments.length > 0
+    || filters.selectedLicenses.length > 0
+    || filters.minPrice.length > 0
+    || filters.maxPrice.length > 0
+    || filters.minPower.length > 0
+    || filters.maxPower.length > 0
+    || filters.minWeight.length > 0
+    || filters.maxWeight.length > 0
+    || filters.minSeatHeight.length > 0
+    || filters.maxSeatHeight.length > 0
+    || filters.equipment.length > 0
+    || filters.recommendedUses.length > 0
+    || filters.dataSources.length > 0;
+  const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  return (
+    <>
+      {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros" /> : null}
+      <section
+        className={panelClasses}
+        aria-label="Filtros de modelos"
+        aria-modal={isOpen ? 'true' : undefined}
+        role={isOpen ? 'dialog' : undefined}
+      >
+        <div className="admin-page__sheet-handle" aria-hidden="true" />
+        <div className="admin-page__filters-header">
+          <h2 id="admin-edit-models-filters-title">Filtros</h2>
+          <button type="button" onClick={onClearFilters} disabled={!hasActiveFilters}>Limpiar filtros</button>
+          <button className="admin-page__filters-close" type="button" onClick={onClose} aria-label="Cerrar filtros">
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <div className="admin-page__filters-body">
+          <label className="admin-page__search" htmlFor="admin-edit-models-search">
+            Buscar por marca o modelo
+            <span className="material-symbols-outlined" aria-hidden="true">search</span>
+            <input
+              id="admin-edit-models-search"
+              type="search"
+              value={filters.searchText}
+              onChange={(event) => onChange({ searchText: event.target.value })}
+              placeholder="Buscar por marca o modelo…"
+            />
+          </label>
+
+          <FilterGroup title="Marca">
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.selectedBrands.length === 0}
+                ariaLabel="Marca: Todas"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todas"
+                onClick={() => onChange({ selectedBrands: [] })}
+              />
+              {brandOptions.map((brand) => (
+                <FilterOptionButton
+                  active={filters.selectedBrands.includes(brand)}
+                  ariaLabel={`Marca: ${brand}`}
+                  classPrefix="admin-page"
+                  key={brand}
+                  label={brand}
+                  onClick={() => {
+                    onChange({
+                      selectedBrands: filters.selectedBrands.includes(brand)
+                        ? filters.selectedBrands.filter((b) => b !== brand)
+                        : [...filters.selectedBrands, brand],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Segmento">
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.selectedSegments.length === 0}
+                ariaLabel="Segmento: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ selectedSegments: [] })}
+              />
+              {BIKE_SEGMENTS.map((segment) => (
+                <FilterOptionButton
+                  active={filters.selectedSegments.includes(segment)}
+                  ariaLabel={`Segmento: ${segmentLabels[segment]}`}
+                  classPrefix="admin-page"
+                  icon={segmentIcons[segment]}
+                  key={segment}
+                  label={segmentLabels[segment]}
+                  onClick={() => {
+                    onChange({
+                      selectedSegments: filters.selectedSegments.includes(segment)
+                        ? filters.selectedSegments.filter((s) => s !== segment)
+                        : [...filters.selectedSegments, segment],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Carnet" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.selectedLicenses.length === 0}
+                ariaLabel="Carnet: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ selectedLicenses: [] })}
+              />
+              <FilterOptionButton
+                active={filters.selectedLicenses.includes('A')}
+                ariaLabel="Carnet: Carnet A"
+                classPrefix="admin-page"
+                icon="workspace_premium"
+                label="Carnet A"
+                onClick={() => {
+                  onChange({
+                    selectedLicenses: filters.selectedLicenses.includes('A')
+                      ? filters.selectedLicenses.filter((l) => l !== 'A')
+                      : [...filters.selectedLicenses, 'A'],
+                  });
+                }}
+              />
+              <FilterOptionButton
+                active={filters.selectedLicenses.includes('A2')}
+                ariaLabel="Carnet: Carnet A2"
+                classPrefix="admin-page"
+                icon="license"
+                label="Carnet A2"
+                onClick={() => {
+                  onChange({
+                    selectedLicenses: filters.selectedLicenses.includes('A2')
+                      ? filters.selectedLicenses.filter((l) => l !== 'A2')
+                      : [...filters.selectedLicenses, 'A2'],
+                  });
+                }}
+              />
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Precio" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minPrice === '' && filters.maxPrice === ''}
+                ariaLabel="Precio: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ minPrice: '', maxPrice: '' })}
+              />
+              {pricePresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minPrice, filters.maxPrice, preset)}
+                  ariaLabel={`Precio: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minPrice, filters.maxPrice, preset)) {
+                      onChange({ minPrice: '', maxPrice: '' });
+                    } else {
+                      onChange({ minPrice: preset.min, maxPrice: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Potencia" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minPower === '' && filters.maxPower === ''}
+                ariaLabel="Potencia: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ minPower: '', maxPower: '' })}
+              />
+              {powerPresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minPower, filters.maxPower, preset)}
+                  ariaLabel={`Potencia: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minPower, filters.maxPower, preset)) {
+                      onChange({ minPower: '', maxPower: '' });
+                    } else {
+                      onChange({ minPower: preset.min, maxPower: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Peso" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minWeight === '' && filters.maxWeight === ''}
+                ariaLabel="Peso: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ minWeight: '', maxWeight: '' })}
+              />
+              {weightPresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minWeight, filters.maxWeight, preset)}
+                  ariaLabel={`Peso: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minWeight, filters.maxWeight, preset)) {
+                      onChange({ minWeight: '', maxWeight: '' });
+                    } else {
+                      onChange({ minWeight: preset.min, maxWeight: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Altura asiento" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minSeatHeight === '' && filters.maxSeatHeight === ''}
+                ariaLabel="Altura asiento: Todas"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todas"
+                onClick={() => onChange({ minSeatHeight: '', maxSeatHeight: '' })}
+              />
+              {seatHeightPresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minSeatHeight, filters.maxSeatHeight, preset)}
+                  ariaLabel={`Altura asiento: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minSeatHeight, filters.maxSeatHeight, preset)) {
+                      onChange({ minSeatHeight: '', maxSeatHeight: '' });
+                    } else {
+                      onChange({ minSeatHeight: preset.min, maxSeatHeight: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Electrónica" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {(Object.keys(featureLabels) as (keyof BikeFeatures)[]).map((feature) => (
+                <FilterOptionButton
+                  active={filters.equipment.includes(feature)}
+                  ariaLabel={`Electrónica: ${featureLabels[feature]}`}
+                  classPrefix="admin-page"
+                  icon="settings"
+                  key={feature}
+                  label={featureLabels[feature]}
+                  onClick={() => {
+                    onChange({
+                      equipment: filters.equipment.includes(feature)
+                        ? filters.equipment.filter((f) => f !== feature)
+                        : [...filters.equipment, feature],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Uso recomendado" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {(Object.keys(useLabels) as (keyof BikeUseScores)[]).map((use) => (
+                <FilterOptionButton
+                  active={filters.recommendedUses.includes(use)}
+                  ariaLabel={`Uso: ${useLabels[use]}`}
+                  classPrefix="admin-page"
+                  key={use}
+                  label={useLabels[use]}
+                  onClick={() => {
+                    onChange({
+                      recommendedUses: filters.recommendedUses.includes(use)
+                        ? filters.recommendedUses.filter((u) => u !== use)
+                        : [...filters.recommendedUses, use],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Calidad de datos" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {MOTORCYCLE_DATA_SOURCES.map((source) => (
+                <FilterOptionButton
+                  active={filters.dataSources.includes(source)}
+                  ariaLabel={`Calidad de datos: ${dataQualityLabels[source]}`}
+                  classPrefix="admin-page"
+                  icon="fact_check"
+                  key={source}
+                  label={dataQualityLabels[source]}
+                  onClick={() => {
+                    onChange({
+                      dataSources: filters.dataSources.includes(source)
+                        ? filters.dataSources.filter((s) => s !== source)
+                        : [...filters.dataSources, source],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+        </div>
+
+        <footer className="admin-page__filters-footer">
+          <button type="button" onClick={onClearFilters} disabled={!hasActiveFilters}>Limpiar filtros</button>
+          <button type="button" onClick={onApplyFilters}>Aplicar filtros</button>
+        </footer>
+      </section>
+    </>
+  );
+}
+
 export function AdminEditModelsPage() {
+  const [searchText, setSearchText] = useState('');
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedSegments, setSelectedSegments] = useState<BikeSegment[]>([]);
+  const [selectedLicenses, setSelectedLicenses] = useState<BikeLicense[]>([]);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [minPower, setMinPower] = useState('');
+  const [maxPower, setMaxPower] = useState('');
+  const [minWeight, setMinWeight] = useState('');
+  const [maxWeight, setMaxWeight] = useState('');
+  const [minSeatHeight, setMinSeatHeight] = useState('');
+  const [maxSeatHeight, setMaxSeatHeight] = useState('');
+  const [equipment, setEquipment] = useState<(keyof BikeFeatures)[]>([]);
+  const [recommendedUses, setRecommendedUses] = useState<(keyof BikeUseScores)[]>([]);
+  const [dataSources, setDataSources] = useState<MotorcycleDataSource[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const ITEMS_PER_PAGE = 12;
+
+  const brandOptions = useMemo(() => getBrandOptions(bikeCatalog), []);
+
+  const filters = useMemo<AdminModelsEditFilters>(() => ({
+    searchText,
+    selectedBrands,
+    selectedSegments,
+    selectedLicenses,
+    minPrice,
+    maxPrice,
+    minPower,
+    maxPower,
+    minWeight,
+    maxWeight,
+    minSeatHeight,
+    maxSeatHeight,
+    equipment,
+    recommendedUses,
+    dataSources,
+  }), [
+    searchText,
+    selectedBrands,
+    selectedSegments,
+    selectedLicenses,
+    minPrice,
+    maxPrice,
+    minPower,
+    maxPower,
+    minWeight,
+    maxWeight,
+    minSeatHeight,
+    maxSeatHeight,
+    equipment,
+    recommendedUses,
+    dataSources,
+  ]);
+
+  const filteredBikes = useMemo(() => {
+    const normalizedText = normalizeText(searchText);
+
+    return bikeCatalog.filter((bike) => {
+      if (normalizedText && !normalizeText(`${bike.brand} ${bike.model}`).includes(normalizedText)) {
+        return false;
+      }
+
+      if (selectedBrands.length > 0 && !selectedBrands.includes(bike.brand)) {
+        return false;
+      }
+
+      if (selectedSegments.length > 0 && !selectedSegments.includes(bike.segment)) {
+        return false;
+      }
+
+      if (selectedLicenses.length > 0 && !selectedLicenses.includes(bike.license)) {
+        return false;
+      }
+
+      if (minPrice !== '' || maxPrice !== '') {
+        const price = bike.priceEur;
+        if (minPrice !== '' && price < Number(minPrice)) return false;
+        if (maxPrice !== '' && price > Number(maxPrice)) return false;
+      }
+
+      if (minPower !== '' || maxPower !== '') {
+        const power = bike.powerHp;
+        if (minPower !== '' && power < Number(minPower)) return false;
+        if (maxPower !== '' && power > Number(maxPower)) return false;
+      }
+
+      if (minWeight !== '' || maxWeight !== '') {
+        const weight = bike.wetWeightKg;
+        if (minWeight !== '' && weight < Number(minWeight)) return false;
+        if (maxWeight !== '' && weight > Number(maxWeight)) return false;
+      }
+
+      if (minSeatHeight !== '' || maxSeatHeight !== '') {
+        const seatHeight = bike.seatHeightMm;
+        if (minSeatHeight !== '' && seatHeight < Number(minSeatHeight)) return false;
+        if (maxSeatHeight !== '' && seatHeight > Number(maxSeatHeight)) return false;
+      }
+
+      if (equipment.length > 0 && !equipment.every((feature) => bike.features[feature])) {
+        return false;
+      }
+
+      if (recommendedUses.length > 0 && !recommendedUses.some((use) => bike.useScores[use] >= 7)) {
+        return false;
+      }
+
+      if (dataSources.length > 0) {
+        const bikeDataSources: (MotorcycleDataSource | undefined)[] = [
+          bike.specsSource,
+          bike.priceSource,
+          bike.imageSource,
+          bike.scoresSource,
+          bike.prosConsSource,
+          bike.reliabilitySource,
+        ];
+        if (!dataSources.some((source) => bikeDataSources.includes(source))) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [
+    searchText,
+    selectedBrands,
+    selectedSegments,
+    selectedLicenses,
+    minPrice,
+    maxPrice,
+    minPower,
+    maxPower,
+    minWeight,
+    maxWeight,
+    minSeatHeight,
+    maxSeatHeight,
+    equipment,
+    recommendedUses,
+    dataSources,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredBikes.length / ITEMS_PER_PAGE));
+  const paginatedBikes = useMemo(
+    () => filteredBikes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
+    [currentPage, filteredBikes],
+  );
+
+  const hasActiveFilters = searchText.length > 0
+    || selectedBrands.length > 0
+    || selectedSegments.length > 0
+    || selectedLicenses.length > 0
+    || minPrice.length > 0
+    || maxPrice.length > 0
+    || minPower.length > 0
+    || maxPower.length > 0
+    || minWeight.length > 0
+    || maxWeight.length > 0
+    || minSeatHeight.length > 0
+    || maxSeatHeight.length > 0
+    || equipment.length > 0
+    || recommendedUses.length > 0
+    || dataSources.length > 0;
+
+  const clearFilters = useCallback(() => {
+    setSearchText('');
+    setSelectedBrands([]);
+    setSelectedSegments([]);
+    setSelectedLicenses([]);
+    setMinPrice('');
+    setMaxPrice('');
+    setMinPower('');
+    setMaxPower('');
+    setMinWeight('');
+    setMaxWeight('');
+    setMinSeatHeight('');
+    setMaxSeatHeight('');
+    setEquipment([]);
+    setRecommendedUses([]);
+    setDataSources([]);
+  }, []);
+
+  const updateFilters = useCallback((next: Partial<AdminModelsEditFilters>) => {
+    if (next.searchText !== undefined) setSearchText(next.searchText);
+    if (next.selectedBrands !== undefined) setSelectedBrands(next.selectedBrands);
+    if (next.selectedSegments !== undefined) setSelectedSegments(next.selectedSegments);
+    if (next.selectedLicenses !== undefined) setSelectedLicenses(next.selectedLicenses);
+    if (next.minPrice !== undefined) setMinPrice(next.minPrice);
+    if (next.maxPrice !== undefined) setMaxPrice(next.maxPrice);
+    if (next.minPower !== undefined) setMinPower(next.minPower);
+    if (next.maxPower !== undefined) setMaxPower(next.maxPower);
+    if (next.minWeight !== undefined) setMinWeight(next.minWeight);
+    if (next.maxWeight !== undefined) setMaxWeight(next.maxWeight);
+    if (next.minSeatHeight !== undefined) setMinSeatHeight(next.minSeatHeight);
+    if (next.maxSeatHeight !== undefined) setMaxSeatHeight(next.maxSeatHeight);
+    if (next.equipment !== undefined) setEquipment(next.equipment);
+    if (next.recommendedUses !== undefined) setRecommendedUses(next.recommendedUses);
+    if (next.dataSources !== undefined) setDataSources(next.dataSources);
+    setCurrentPage(1);
+  }, []);
+
   return (
     <AdminModelsWorkspace
       activeModelsItem="edit"
-      description="Crea, revisa y completa fichas técnicas del catálogo MotoAtlas."
-      title="Editar catálogo"
+      description="Busca una moto del catálogo y abre su ficha interna de edición."
+      title="Seleccionar modelo para editar"
       titleId="admin-models-edit-title"
+      sidebarContent={(
+        <AdminModelsEditFiltersPanel
+          brandOptions={brandOptions}
+          filters={filters}
+          isOpen={isFilterPanelOpen}
+          onApplyFilters={() => setIsFilterPanelOpen(false)}
+          onChange={updateFilters}
+          onClearFilters={clearFilters}
+          onClose={() => setIsFilterPanelOpen(false)}
+        />
+      )}
     >
-      <section className="admin-page__dashboard-grid" aria-labelledby="admin-models-edit-card-title">
-        <article className="account-page__card admin-page__summary-card">
-          <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
-          <h2 id="admin-models-edit-card-title">Placeholder inicial</h2>
-          <p>Aquí se preparará la búsqueda y edición de modelos existentes.</p>
-        </article>
-      </section>
+      <div className="admin-page__edit-models">
+        <div className="admin-page__mobile-filter-trigger">
+          <button type="button" onClick={() => setIsFilterPanelOpen(true)}>
+            <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+            Filtros
+          </button>
+        </div>
+
+        {filteredBikes.length > 0 ? (
+          <>
+            <p className="admin-page__results-summary" aria-live="polite">
+              {filteredBikes.length === 1
+                ? '1 modelo encontrado'
+                : `${filteredBikes.length} modelos encontrados`}
+            </p>
+
+            <div className="admin-page__edit-grid">
+              {paginatedBikes.map((bike) => (
+                <AdminModelEditCard bike={bike} key={bike.id} />
+              ))}
+            </div>
+
+            {totalPages > 1 ? (
+              <AccountPagination
+                ariaLabel="Paginación de edición de modelos"
+                className="admin-page__pagination"
+                currentClassName="admin-page__pagination-current"
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            ) : null}
+          </>
+        ) : (
+          <article className="account-page__empty-state">
+            <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">edit_note</span>
+            <h3>No hay modelos que coincidan con los filtros.</h3>
+            {hasActiveFilters ? (
+              <button className="account-page__button" type="button" onClick={clearFilters}>
+                Limpiar filtros
+              </button>
+            ) : (
+              <p>El catálogo no contiene modelos todavía.</p>
+            )}
+          </article>
+        )}
+      </div>
     </AdminModelsWorkspace>
+  );
+}
+
+type AdminModelEditCardProps = Readonly<{
+  bike: Bike;
+}>;
+
+function AdminModelEditCard({ bike }: AdminModelEditCardProps) {
+  const displayName = getBikeDisplayName(bike);
+  const editHref = `#/admin/modelos/${bike.id}/editar`;
+  const segmentLabel = segmentLabels[bike.segment];
+  const segmentIcon = segmentIcons[bike.segment];
+
+  return (
+    <article className="admin-page__edit-card" aria-label={displayName}>
+      <div className="admin-page__edit-card-image">
+        <MotorcycleImage
+          alt={displayName}
+          className="admin-page__edit-card-img"
+          decorative
+          motorcycle={bike}
+        />
+      </div>
+      <div className="admin-page__edit-card-body">
+        <header className="admin-page__edit-card-header">
+          <h3 className="admin-page__edit-card-title">{displayName}</h3>
+          <div className="admin-page__edit-card-meta">
+            <span className="admin-page__edit-card-meta-item">
+              <span className="material-symbols-outlined" aria-hidden="true">{segmentIcon}</span>
+              {segmentLabel}
+            </span>
+          </div>
+        </header>
+        <footer className="admin-page__edit-card-actions">
+          <a
+            className="account-page__button account-page__button--glass"
+            href={editHref}
+            aria-label={`Editar modelo ${displayName}`}
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+            Editar modelo
+          </a>
+        </footer>
+      </div>
+    </article>
   );
 }
 

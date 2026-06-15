@@ -34,7 +34,7 @@ const adminLinks = [
 const adminModelLinks = [
   { href: '#/admin/modelos', id: 'overview', label: 'Vista general' },
   { href: '#/admin/modelos/nuevo', id: 'new', label: 'Nuevo modelo' },
-  { href: '#/admin/modelos/editar', id: 'edit', label: 'Editar catálogo' },
+  { href: '#/admin/modelos/editar', id: 'edit', label: 'Editar modelo' },
 ] as const satisfies readonly QuickLinkItem[];
 
 function getLinkClassName(isActive: boolean) {
