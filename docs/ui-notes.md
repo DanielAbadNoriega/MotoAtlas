@@ -473,10 +473,11 @@ Limitaciones actuales (Fase 1 cerrada, pendientes para Fase 2/3/4 sin cambios es
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado actual: **Fase 1 (rutas/hub) + Fase 2 (UI create scaffold) + Fase 3 (UI edit selection) implementadas**.
+Estado actual: **Fase 1 (rutas/hub) + Fase 2 (UI create scaffold) + Fase 3 (UI edit selection) + Fase 4 (UI edit form) implementadas**.
 - `#/admin/modelos` existe como hub admin-protegido de navegación;
 - `#/admin/modelos/nuevo` tiene un scaffold UI completo de alta de modelo (hero preview, secciones Stitch, tooltips, footer de acciones locales);
-- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar con AccountReviewsPage-style sidebar, 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) y cards admin dedicadas;
+- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar con AccountReviewsPage-style sidebar, 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) y cards admin dedicadas. Las cards usan `motorcycles` resueltos desde App, con imágenes alineadas a SearchPage/MotorcycleGarageCard;
+- `#/admin/modelos/{motorcycleId}/editar` implementa el formulario de edición prefilled desde la moto seleccionada, reutilizando `AdminModelFormBody` (misma estructura que create). Footer con 4 acciones locales;
 - `Panel Admin` incluye el submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar modelo`.
 
 Regla de UI vigente:
@@ -495,8 +496,8 @@ Características del scaffold UI de `#/admin/modelos/nuevo`:
 
 Dirección futura (pendiente):
 - objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON;
-- create/edit deben compartir la misma arquitectura visual y de formulario;
-- Fase 4 (edit model form) es el siguiente paso;
+- create/edit comparten la misma arquitectura visual y de formulario (`AdminModelFormBody`);
+- Fase 5 (persistencia/seguridad) es el siguiente paso;
 - el set definitivo de filtros de Fase 3 puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación en esta pantalla de selección admin;
 - la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios;
 - el upload real de imágenes requiere backend/storage/security review y no debe implementarse desde frontend-only.

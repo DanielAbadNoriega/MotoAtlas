@@ -3,17 +3,20 @@
 ## Último estado estable
 
 - Rama actual: `feature/admin-models-studio`
-- Último bloque validado: **Admin Models create + edit selection UI** aprobado.
+- Último bloque validado: **Admin Models edit form route + image source alignment** aprobado.
 - Alcance validado:
   - `#/admin/modelos/nuevo`: scaffold completo de alta de modelo, UI-only sin persistencia. Incluye hero preview, secciones Stitch con tooltips, footer de 4 acciones locales.
-  - `#/admin/modelos/editar`: UI-only de selección/búsqueda de modelos existentes para editar. Incluye AccountReviewsPage-style sidebar con 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) alineados con los contratos compartidos de iconos, y cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard`. **No** incluye formulario de edición real, ni persistencia, ni servicios, ni create/update, ni upload de imágenes, ni cambios en schema/RLS/Supabase.
+  - `#/admin/modelos/editar`: UI-only de selección/búsqueda de modelos existentes para editar. Incluye AccountReviewsPage-style sidebar con 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) alineados con los contratos compartidos de iconos, y cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard`.
+  - `#/admin/modelos/{motorcycleId}/editar`: formulario de edición de modelo UI-only que reutiliza `AdminModelFormBody` (misma estructura que create). Prefilla los campos desde la moto seleccionada vía `motorcycles` resueltos desde App. Footer con 4 acciones locales.
+  - Imágenes de edit selection alineadas con SearchPage/MotorcycleGarageCard: `AdminEditModelsPage` recibe `motorcycles` desde App, `AdminModelEditCard` pasa el bike directo a `MotorcycleImage` sin forzar `getMotorcycleLocalImageUrl`.
   - Filtros alineados con contratos compartidos: segmento usa iconos de `motorcycleSegmentFilterOptions`, carnet sin iconos inventados, electrónica usa `getMotorcycleTechnicalIcon('electronics')`.
-- Tests: 1179 passed
+  - Sin persistencia, servicios, upload de imágenes ni cambios en schema/RLS/Supabase.
+- Tests: 1189 passed
 - Typecheck: clean
 - `git diff --check`: clean
 - Focused checks más recientes:
-  - `src/components/pages/AdminPage/AdminPage.test.tsx` → `105` tests passing (filtros + iconos + cards)
-  - suite completa → `1179` tests passing
+  - `src/shared/routing/routeUtils.test.ts` + `src/App.test.tsx` + `src/components/pages/AdminPage/AdminPage.test.tsx` → `157` tests passing (rutas + edit form + image alignment)
+  - suite completa → `1189` tests passing
 - Último commit:
 
 ## Implementado
@@ -56,7 +59,7 @@
 - Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
 - Admin protegido por sesión + rol (`user_profiles.role = admin`).
 - quick links de cuenta/admin ya no se documentan como listas planas aisladas: `.account-page__quick-links` soporta grupos `Mi cuenta` y `Panel Admin`, con disclosure nativo `<details>/<summary>`, anchors semánticos y el mismo orden en superficies de cuenta y admin. El plumbing extra de `isAdmin` en páginas de cuenta solo habilita la visibilidad del grupo compartido, sin cambiar guards ni acceso a datos.
-- Admin Models Studio — **Fase 1 (rutas/hub) + Fase 2 (create UI-only) + Fase 3 (edit selection UI-only) implementadas**. `#/admin/modelos` (hub), `#/admin/modelos/nuevo` (create scaffold con hero preview, secciones Stitch, footer de acciones locales), `#/admin/modelos/editar` (edit selection/search con filtros y cards). El link `Editar modelo` (antes `Editar catálogo`) navega a `#/admin/modelos/editar`. Sin persistencia, servicios, schema/RLS/Supabase ni upload de imágenes.
+- Admin Models Studio — **Fase 1 (rutas/hub) + Fase 2 (create UI-only) + Fase 3 (edit selection UI-only) + Fase 4 (edit model form UI-only) implementadas**. `#/admin/modelos` (hub), `#/admin/modelos/nuevo` (create scaffold con hero preview, secciones Stitch, footer de acciones locales), `#/admin/modelos/editar` (edit selection/search con filtros y cards), `#/admin/modelos/{motorcycleId}/editar` (edit form que reutiliza `AdminModelFormBody`, prefilla desde la moto seleccionada). Las cards de edit selection ahora usan los mismos motos resueltos que SearchPage (`motorcycles` desde App), alineando las imágenes con `MotorcycleGarageCard`. El link `Editar modelo` (antes `Editar catálogo`) navega a `#/admin/modelos/editar`. Sin persistencia, servicios, schema/RLS/Supabase ni upload de imágenes.
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - `#/admin/solicitudes` **Fase 1 implementada** (rama `feature/admin-requests-phase-1`, sin cambios de schema/RLS) sobre la base auditada en `feature/admin-requests-audit`. Capacidades verificadas:
@@ -275,7 +278,7 @@
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
 - Backlog P2 Auth: repetir opcionalmente el smoke del signup público directo cuando se libere el rate limit `429` de Supabase email y mantener auditorías periódicas si en el futuro aparecen nuevas funciones `security definer`.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
-- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fase 1 (rutas/hub), Fase 2 (create UI-only) y Fase 3 (edit selection UI-only) implementadas**. Quedan pendientes: formulario de edición por `motorcycleId` (Fase 4), persistencia/seguridad (Fase 5) y workflow de imágenes (Fase 6).
+- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fase 1 (rutas/hub), Fase 2 (create UI-only), Fase 3 (edit selection UI-only) y Fase 4 (edit form UI-only) implementadas**. Las cards de edit selection usan los mismos `motorcycles` resueltos desde App, alineando imágenes con SearchPage. Quedan pendientes: persistencia/seguridad (Fase 5) y workflow de imágenes (Fase 6).
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
@@ -299,7 +302,7 @@
 
 ## Siguiente paso
 
-- **Admin Models Studio**: Fase 3 (UI-only edit selection/search) completada. Siguiente fase recomendada = Fase 4 (edit model form). Persistencia, seguridad, schema/RLS, servicios y upload de imágenes siguen como fases posteriores explícitas con auditoría dedicada.
+- **Admin Models Studio**: Fase 4 (UI-only edit model form) completada. Siguiente fase recomendada = Fase 5 (persistencia/seguridad). Schema/RLS, servicios y upload de imágenes siguen como fases posteriores explícitas con auditoría dedicada.
 
 ## Decisiones importantes
 

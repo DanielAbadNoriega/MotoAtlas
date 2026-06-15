@@ -11,7 +11,7 @@
 | `#/admin/modelos` | Hub de gestión de modelos |
 | `#/admin/modelos/nuevo` | Creación de nuevo modelo (UI-only scaffold) |
 | `#/admin/modelos/editar` | Búsqueda/selección de modelos para editar (UI-only) |
-| `#/admin/modelos/[motorcycleId]/editar` | Formulario de edición (rutero futuro, no implementado) |
+| `#/admin/modelos/[motorcycleId]/editar` | Formulario de edición de modelo (UI-only, prefilled desde la moto seleccionada) |
 
 Protección:
 - Acceso restringido a usuarios con `user_profiles.role === 'admin'` (comprobado por `useAuth` y RLS en backend).
@@ -49,7 +49,7 @@ Scaffold UI-only de alta de modelo. Hero preview estilo `BikeDetailPage`, seccio
 
 ### `#/admin/modelos/editar` (UI-only)
 
-Selección y búsqueda de modelos existentes para editar. **No incluye formulario de edición real, ni persistencia, ni servicios.**
+Selección y búsqueda de modelos existentes para editar. **Sin persistencia, ni servicios.**
 
 **Layout:**
 - AccountReviewsPage-style sidebar con panel de filtros responsive (sheet/drawer en mobile, permanente en desktop)
@@ -66,16 +66,32 @@ Selección y búsqueda de modelos existentes para editar. **No incluye formulari
 - Búsqueda libre por marca o modelo
 
 **Cards:**
-- `AdminModelEditCard`: estructuralmente alineada con `AccountReviewMotorcycleSummaryCard` (imagen, overlay, h2, brand/year metadata). CTA `Editar modelo` hacia `#/admin/modelos/{motorcycleId}/editar` (rutero futuro).
+- `AdminModelEditCard`: estructuralmente alineada con `AccountReviewMotorcycleSummaryCard` (imagen, overlay, h2, brand/year metadata). CTA `Editar modelo` hacia `#/admin/modelos/{motorcycleId}/editar`.
+- Las cards reciben `motorcycles` resueltos desde App (`AdminEditModelsPage({ motorcycles })`), alineando imágenes con SearchPage/MotorcycleGarageCard.
+- `MotorcycleImage` recibe el bike directamente sin forzar `getMotorcycleLocalImageUrl`.
+
+### `#/admin/modelos/[motorcycleId]/editar` (UI-only)
+
+Formulario de edición de modelo que reutiliza `AdminModelFormBody` (misma estructura visual/estructural que `#/admin/modelos/nuevo`). Campos prefilled desde la moto seleccionada vía `motorcycles.find()` (resueltos desde App).
+
+**Copy del edit mode:**
+- title: `Editar modelo`
+- description: `Actualiza los datos disponibles de este modelo.`
+- status/kicker: `Editando {brand} {model} {year}`
+- heading interno: `Workspace de edición`
+
+**Footer (4 acciones locales):**
+- Descartar cambios (resetea al draft original)
+- Guardar borrador (local)
+- Vista previa (local)
+- Publicar modelo (local)
 
 **Sin:**
-- formulario de edición real
 - create/update services
 - schema/RLS/Supabase changes
 - upload/storage
-- filtros de comunidad/reviews
 
-**Futuro:** Fase 4 (edit model form), Fase 5 (persistencia/seguridad), Fase 6 (image workflow). El set de filtros puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** Fase 5 (persistencia/seguridad), Fase 6 (image workflow). El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 

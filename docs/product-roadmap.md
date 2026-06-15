@@ -18,15 +18,15 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1179 tests passing`.
+- Baseline validado actual: `1189 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models create + edit selection UI (Quality Gate aprobado: 1179 tests, typecheck clean).
+- Último bloque estable validado: Admin Models edit form route + image source alignment (Quality Gate aprobado: 1189 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
-1. Admin Models Studio — Fase 4: edit model form (`#/admin/modelos/{motorcycleId}/editar`).
+1. Admin Models Studio — Fase 5: persistencia/seguridad. Fase 4 (edit model form) UI-only ya implementada.
 2. Después, refinado visual del hub `#/admin/modelos`.
-3. Persistencia/schema/RLS quedan fuera hasta auditoría específica.
+3. Schema/RLS quedan fuera hasta auditoría específica.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -65,12 +65,13 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fase 1, 2 y 3 implementadas (UI-only) / Fase 4+ pendientes**.
+Estado: **Fase 1, 2, 3 y 4 implementadas (UI-only) / Fases 5+ pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
 - `#/admin/modelos/nuevo` tiene un scaffold UI completo de alta de modelo (hero preview, secciones Stitch, tooltips, footer de acciones locales);
-- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar: AccountReviewsPage-style sidebar con 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos), filtros alineados con contratos compartidos de iconos, cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard`. **UI-only**: sin formulario de edición real, sin persistencia, sin servicios;
+- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar: AccountReviewsPage-style sidebar con 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos), filtros alineados con contratos compartidos de iconos, cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard`. Las cards usan los mismos `motorcycles` resueltos desde App, alineando imágenes con SearchPage/MotorcycleGarageCard. **UI-only**: sin persistencia, sin servicios;
+- `#/admin/modelos/{motorcycleId}/editar` implementa el formulario de edición prefilled desde la moto seleccionada, reutilizando `AdminModelFormBody` (misma estructura que create). Footer con 4 acciones locales. **UI-only**: sin persistencia, sin servicios;
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
 Propósito:
@@ -130,14 +131,16 @@ Fases propuestas:
    - búsqueda/listado con AccountReviewsPage-style sidebar y 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos);
    - filtros alineados con contratos compartidos: segmento usa iconos de `motorcycleSegmentFilterOptions`, carnet no inventa iconos, electrónica usa `getMotorcycleTechnicalIcon('electronics')`;
    - resultados como cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard` (imagen, overlay, h2, brand/year, CTA `Editar modelo`);
-   - CTA hacia `#/admin/modelos/{motorcycleId}/editar` (ruta destino aún no implementada);
+   - CTA hacia `#/admin/modelos/{motorcycleId}/editar`;
+   - cards usan los mismos `motorcycles` resueltos desde App, alineando imágenes con SearchPage/MotorcycleGarageCard;
    - sin persistencia real, sin servicios, sin schema/RLS/Supabase.
 
-4. **Edit model form** — pendiente
-   - reutilizar la misma arquitectura visual/estructural que create;
-   - precargar campos desde la moto seleccionada;
-   - mantener create/edit alineados para evitar drift;
-   - añadir validación antes de persistencia.
+4. **Edit model form** — **implementada como UI-only**
+   - reutiliza `AdminModelFormBody` (misma arquitectura visual/estructural que create);
+   - campos precargados desde la moto seleccionada vía `motorcycles.find()` (resueltos desde App);
+   - create/edit alineados sin drift;
+   - footer con 4 acciones locales: Descartar cambios, Guardar borrador, Vista previa, Publicar modelo;
+   - sin persistencia real, sin servicios, sin schema/RLS/Supabase.
 
 5. **Persistence / security** — pendiente
    - añadir create/update services solo tras revisión explícita de schema/RLS/seguridad;

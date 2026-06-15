@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1179` tests passing. Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1189` tests passing. Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
   - `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing.
   - `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing.
@@ -13,9 +13,9 @@ Estado actual de suite:
   - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsEmptyState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` → `3` files / `15` tests passing.
   - `supabase/schema.test.ts` → `1` file / `66` tests passing.
    - `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
-- Validación Admin Models edit selection UI (Quality Gate):
-   - `src/components/pages/AdminPage/AdminPage.test.tsx` → `105` tests passing (filtros, iconos, cards, paginación).
-   - suite completa → `1179` tests passing.
+- Validación Admin Models edit form route + image alignment (Quality Gate):
+   - `src/shared/routing/routeUtils.test.ts` + `src/App.test.tsx` + `src/components/pages/AdminPage/AdminPage.test.tsx` → `157` tests passing (rutas, edit form prefilled, filtros, cards, image source alignment, footer local actions).
+   - suite completa → `1189` tests passing.
 
 ## Stack actual
 
@@ -387,7 +387,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1179` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused check más reciente: `src/components/pages/AdminPage/AdminPage.test.tsx` → `105` tests passing.
+- Baseline validado actual del proyecto: `1189` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused check más reciente: `src/shared/routing/routeUtils.test.ts` + `src/App.test.tsx` + `src/components/pages/AdminPage/AdminPage.test.tsx` → `157` tests passing (rutas, edit form prefilled, filtros, cards, image source alignment).
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
