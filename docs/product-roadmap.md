@@ -18,14 +18,14 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `75 files / 1155 tests passing`.
+- Baseline validado actual: `75 files / 1160 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `feature/admin-models-minimal-route`.
+- Último bloque estable validado: `feature/admin-models-studio` (Admin Models create UI-only scaffold).
 
 ## 3. Foco inmediato recomendado
 
-1. Admin Models Studio — Fase 2: UI de `Nuevo modelo` inspirada en Stitch/ReviewModal.
-2. Después, refinado visual del hub `#/admin/modelos` o placeholder de edición.
+1. Admin Models Studio — Fase 3: búsqueda/listado para editar catálogo (`#/admin/modelos/editar`).
+2. Después, refinado visual del hub `#/admin/modelos`.
 3. Persistencia/schema/RLS quedan fuera hasta auditoría específica.
 
 ## 4. P1 — UX pública / comunidad
@@ -70,7 +70,8 @@ Estado: **Fase 1 mínima implementada / resto futuro**.
 Nota de estado:
 - ya existen las rutas admin-protegidas `#/admin/modelos`, `#/admin/modelos/nuevo` y `#/admin/modelos/editar`;
 - `#/admin/modelos` funciona solo como hub pequeño de navegación;
-- `#/admin/modelos/nuevo` y `#/admin/modelos/editar` son placeholders sin forms, búsqueda real ni persistencia;
+- `#/admin/modelos/nuevo` tiene un scaffold UI completo de alta de modelo (hero preview, secciones Stitch, tooltips, footer de acciones locales);
+- `#/admin/modelos/editar` sigue siendo placeholder sin forms, búsqueda real ni persistencia;
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`.
 
 Propósito:
@@ -113,19 +114,16 @@ Fases propuestas:
    - sin schema changes;
    - sin persistencia real, forms ni búsqueda todavía.
 
-2. **Create model page UI** — pendiente
-   - crear una página-form inspirada en `ReviewModal`, pero como página admin completa;
-   - secciones alineadas al contrato JSON/spec actual:
-     - identidad del modelo
-     - clasificación
-     - motor y rendimiento
-     - ergonomía y uso
-     - electrónica/equipamiento
-     - precio/mercado
-     - imagen/curación
-     - fuentes/notas internas
-   - en campos de texto, el admin escribe el contenido final directamente (sin controles tipo pros/contras de `ReviewModal`);
-   - puede arrancar como UI-only / draft-only según la decisión posterior de backend.
+2. **Create model page UI** — **implementada como UI-only scaffold**
+   - `#/admin/modelos/nuevo` tiene un formulario completo de alta de modelo, UI-only;
+   - hero preview live al estilo `BikeDetailPage` sin CTAs ni `Borrador sin guardar`;
+   - secciones Stitch con título técnico centrado, líneas horizontales y tooltips accesibles `(i)`;
+   - field-level tooltips para copy auxiliar (ej. `ID sugerido`);
+   - secciones colapsables con `<details open>` / `<summary>` nativo;
+   - footer de 4 acciones locales: Descartar cambios, Guardar borrador, Vista previa, Publicar modelo;
+   - todas las acciones son locales (solo actualizan estado local o resetean draft);
+   - `Imagen bloqueada / curada` con tooltip explicativo;
+   - sin persistencia real, sin servicios, sin schema/RLS/Supabase, sin upload de imágenes.
 
 3. **Edit model search/list page** — pendiente
    - crear una búsqueda/listado simplificado inspirado en `SearchPage`;

@@ -202,7 +202,7 @@ export function App() {
     if (isAdminNewModelPage) {
       applySeoMetadata({
         canonicalUrl: 'https://motoatlas.com/admin/modelos/nuevo',
-        description: 'Placeholder privado para el futuro flujo de alta de modelos en MotoAtlas.',
+        description: 'Workspace privado de borrador local para preparar el alta de modelos en MotoAtlas.',
         title: 'Nuevo modelo | MotoAtlas',
       });
       return;

@@ -90,6 +90,518 @@
     opacity: 0.74;
   }
 
+  &__model-studio {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  &__model-toolbar {
+
+    h2 {
+      color: $color-on-surface;
+      font-family: $font-headline;
+      font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+      text-transform: uppercase;
+    }
+  }
+
+  &__model-toolbar-kicker {
+    @include label-caps;
+
+    align-items: center;
+    color: $color-accent;
+    display: inline-flex;
+    gap: 0.55rem;
+
+    &::before {
+      background: rgba($color-accent, 0.72);
+      border-radius: 999px;
+      content: '';
+      display: block;
+      height: 1px;
+      width: 2.75rem;
+    }
+  }
+
+  &__model-status {
+    @include label-caps;
+
+    align-items: center;
+    background: rgba($color-accent, 0.12);
+    border: 1px solid rgba($color-accent, 0.28);
+    border-radius: $radius-lg;
+    color: $color-on-surface;
+    display: inline-flex;
+    margin: 0;
+    padding: 0.8rem 1rem;
+    width: fit-content;
+  }
+
+  &__model-preview {
+    overflow: hidden;
+    border-radius: $radius-xl;
+  }
+
+  &__model-preview-hero {
+    min-height: min(720px, 72vh);
+    overflow: hidden;
+    position: relative;
+  }
+
+  &__model-preview-media {
+    inset: 0;
+    position: absolute;
+
+    &::after {
+      background:
+        linear-gradient(180deg, rgba($color-surface-lowest, 0.24), rgba($color-surface, 0.92)),
+        linear-gradient(90deg, rgba($color-surface-lowest, 0.92), rgba($color-surface-lowest, 0.34), rgba($color-surface-lowest, 0.76));
+      content: '';
+      inset: 0;
+      position: absolute;
+    }
+
+    img {
+      display: block;
+      height: 100%;
+      inset: 0;
+      object-fit: cover;
+      position: absolute;
+      width: 100%;
+    }
+  }
+
+  &__model-preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: flex-end;
+    min-height: min(720px, 72vh);
+    padding: 3rem clamp(1.25rem, 4vw, 2.4rem) 3.5rem;
+    position: relative;
+    z-index: 1;
+
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h2 {
+      color: $color-on-surface;
+      font-family: $font-headline;
+      font-size: clamp(2.8rem, 7vw, 5.75rem);
+      letter-spacing: -0.06em;
+      line-height: 0.95;
+      max-width: 980px;
+      text-transform: uppercase;
+
+      strong {
+        display: block;
+        font-size: 1.02em;
+        font-weight: 900;
+      }
+    }
+
+    p {
+      color: rgba($color-on-surface-variant, 0.9);
+      line-height: 1.65;
+      margin-bottom: 0.5rem;
+      max-width: 760px;
+    }
+  }
+
+  &__model-preview-badges {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  &__model-preview-chip,
+  &__model-preview-badge {
+    @include label-caps;
+
+    align-items: center;
+    background: rgba($color-surface-lowest, 0.58);
+    border: 1px solid rgba($color-outline-variant, 0.42);
+    border-radius: $radius-sm;
+    color: $color-on-surface;
+    display: inline-flex;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem;
+  }
+
+  &__model-preview-chip {
+    background: rgba($color-accent, 0.16);
+    border-color: rgba($color-accent, 0.4);
+    margin-bottom: 0.4rem;
+    width: fit-content;
+  }
+
+  &__model-preview-badge-text {
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+    text-transform: inherit;
+  }
+
+  &__model-preview-badge .material-symbols-outlined,
+  &__model-preview-chip .material-symbols-outlined,
+  &__model-label .material-symbols-outlined {
+    color: $color-accent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Material Symbols Outlined';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1rem;
+    letter-spacing: normal;
+    line-height: 1;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  &__model-preview-specs {
+    border-left: 2px solid $color-accent;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    margin-top: 0.25rem;
+    padding: 0.4rem 0 0.4rem 1.25rem;
+
+    div {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    span {
+      @include label-caps;
+
+      color: rgba($color-on-surface-variant, 0.84);
+    }
+
+    strong {
+      color: $color-on-surface;
+      font-family: $font-headline;
+      font-size: clamp(1.4rem, 3vw, 2.3rem);
+      font-weight: 800;
+      line-height: 1;
+    }
+  }
+
+  &__model-form {
+    display: grid;
+    gap: 2rem;
+  }
+
+  &__model-section {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  &__model-section > summary {
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::marker {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgba($color-accent, 0.5);
+      outline-offset: 2px;
+    }
+  }
+
+  &__model-section[open] > &__model-section-body {
+    padding-top: 1.2rem;
+  }
+
+  &__model-section-expand-icon {
+    align-items: center;
+    display: inline-flex;
+
+    .material-symbols-outlined {
+      font-size: 0.85rem;
+      transition: transform $transition-base;
+    }
+  }
+
+  .admin-page__model-section[open] &__model-section-expand-icon .material-symbols-outlined {
+    transform: rotate(180deg);
+  }
+
+  &__model-section-header {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  &__model-section-heading {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+
+    h2 {
+      @include label-caps;
+
+      color: rgba($color-accent, 0.92);
+      flex: 0 0 auto;
+      font-family: $font-mono;
+      font-size: 0.78rem;
+      letter-spacing: 0.3em;
+      margin: 0;
+      text-align: center;
+      text-transform: uppercase;
+    }
+  }
+
+  &__model-section-line {
+    background: rgba($color-outline-variant, 0.42);
+    display: block;
+    flex: 1 1 auto;
+    height: 1px;
+  }
+
+  &__model-section-title-group {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.35rem;
+  }
+
+  &__model-section-tooltip-wrapper,
+  &__model-field-tooltip-wrapper {
+    position: relative;
+  }
+
+  &__model-section-info-btn {
+    height: 1.05rem;
+    width: 1.05rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    bottom: 2px;
+    background: transparent;
+    border: 1px solid rgba($color-accent, 0.36);
+    border-radius: 50%;
+    color: rgba($color-accent, 0.7);
+    cursor: pointer;
+    font-family: $font-mono;
+    font-size: 0.55rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: border-color $transition-base, color $transition-base, background $transition-base;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-accent, 0.12);
+      border-color: $color-accent;
+      color: $color-accent;
+      outline: 0;
+    }
+
+    span {
+      display: inline-flex;
+    }
+  }
+
+  &__model-section-tooltip {
+    background: $color-surface-lowest;
+    border: 1px solid rgba($color-outline-variant, 0.42);
+    border-radius: $radius-lg;
+    color: rgba($color-on-surface-variant, 0.9);
+    font-family: $font-body;
+    font-size: 0.78rem;
+    left: 50%;
+    line-height: 1.55;
+    max-width: min(300px, 80vw);
+    opacity: 0;
+    padding: 0.55rem 0.7rem;
+    pointer-events: none;
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    transform: translateX(-50%);
+    transition: opacity $transition-fast, visibility $transition-fast;
+    visibility: hidden;
+    white-space: normal;
+    width: max-content;
+    z-index: 10;
+
+    .admin-page__model-section-info-btn:is(:hover, :focus, :focus-visible) + &,
+    &:hover {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  &__model-section-body {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  &__model-field-grid {
+    display: grid;
+    gap: 1rem 1.1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__model-field {
+    display: grid;
+    gap: 0.55rem;
+
+    input,
+    select,
+    textarea {
+      background: $color-surface-lowest;
+      border: 1px solid rgba($color-outline-variant, 0.44);
+      border-radius: $radius-md;
+      color: $color-on-surface;
+      font-family: $font-body;
+      min-height: 3rem;
+      padding: 0.85rem 0.9rem;
+      transition: border-color $transition-base, box-shadow $transition-base, background $transition-base;
+      width: 100%;
+
+      &::placeholder {
+        color: rgba($color-on-surface-variant, 0.54);
+      }
+
+      &:hover {
+        border-color: rgba($color-outline, 0.34);
+      }
+
+      &:focus-visible {
+        background: rgba($color-surface-lowest, 0.98);
+        border-color: rgba($color-accent, 0.44);
+        box-shadow: 0 0 0 2px rgba($color-accent, 0.12);
+        outline: 0;
+      }
+    }
+
+    textarea {
+      min-height: 8rem;
+      resize: vertical;
+    }
+  }
+
+  &__model-field--full {
+    grid-column: 1 / -1;
+  }
+
+  &__model-label {
+    @include label-caps;
+
+    align-items: center;
+    color: rgba($color-on-surface-variant, 0.92);
+    display: inline-flex;
+    gap: 0.55rem;
+
+    .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 1rem;
+    }
+  }
+
+  &__model-checkbox-grid {
+    display: grid;
+    gap: 0.85rem 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-top: 0.2rem;
+  }
+
+  &__model-checkbox {
+    align-items: center;
+    background: rgba($color-surface-lowest, 0.92);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-md;
+    color: $color-on-surface;
+    display: flex;
+    gap: 0.75rem;
+    min-height: 3rem;
+    padding: 0.85rem 0.95rem;
+    transition: border-color $transition-base, background $transition-base;
+
+    &:hover {
+      background: rgba($color-surface-lowest, 0.96);
+      border-color: rgba($color-outline, 0.32);
+    }
+
+    &:focus-within {
+      border-color: rgba($color-accent, 0.34);
+      box-shadow: 0 0 0 1px rgba($color-accent, 0.12);
+    }
+
+    input {
+      accent-color: $color-accent;
+      flex: 0 0 auto;
+      height: 1rem;
+      margin: 0;
+      width: 1rem;
+    }
+
+    span {
+      font-weight: 600;
+      line-height: 1.5;
+
+      &.content > span{
+        margin-left: 1.5rem;
+      }
+    }
+  }
+
+  &__model-checkbox--inline {
+    align-self: end;
+    min-height: 3rem;
+  }
+
+  &__model-actions {
+    align-items: center;
+    border-top: 1px solid rgba($color-outline-variant, 0.22);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    padding-top: 1.4rem;
+  }
+
+  &__model-action-button {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.55rem;
+    justify-content: center;
+
+    .material-symbols-outlined {
+      color: currentcolor;
+      display: inline-flex;
+      font-family: 'Material Symbols Outlined';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      letter-spacing: normal;
+      line-height: 1;
+      text-transform: none;
+      white-space: nowrap;
+    }
+  }
+
+  &__model-action-button--discard {
+    margin-right: auto;
+  }
+
+  &__model-action-button--primary {
+    box-shadow: 0 10px 24px rgba($color-accent, 0.18);
+  }
+
   &__demo-data-toggle {
     align-items: start;
   }
@@ -1047,6 +1559,24 @@
       grid-template-columns: 1fr;
     }
 
+    &__model-field-grid,
+    &__model-checkbox-grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__model-section-heading {
+      gap: 0.65rem;
+
+      h2 {
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+      }
+    }
+
+    &__model-preview-specs {
+      gap: 1.25rem;
+    }
+
     &__mobile-filter-trigger {
       display: block;
       width: 100%;
@@ -1102,6 +1632,44 @@
 
 @media (max-width: $breakpoint-mobile) {
   .admin-page {
+    &__model-form {
+      gap: 1.65rem;
+    }
+
+    &__model-actions {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    &__model-action-button,
+    &__model-action-button--discard {
+      margin-right: 0;
+      width: 100%;
+    }
+
+    &__model-section-heading h2 {
+      font-size: 0.66rem;
+      letter-spacing: 0.14em;
+    }
+
+    &__model-toolbar-actions {
+      display: grid;
+      width: 100%;
+
+      .account-page__button {
+        justify-content: center;
+        width: 100%;
+      }
+    }
+
+    &__model-preview-content {
+      min-height: min(620px, 72vh);
+
+      h2 {
+        font-size: clamp(2.2rem, 10vw, 3.4rem);
+      }
+    }
+
     &__filters {
       border-radius: 28px 28px 0 0;
       bottom: 0;

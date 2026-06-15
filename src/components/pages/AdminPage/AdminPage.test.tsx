@@ -1667,13 +1667,84 @@ describe('AdminPage', () => {
     expect(screen.queryByLabelText(/Marca/i)).not.toBeInTheDocument();
   });
 
-  it('renderiza el placeholder mínimo de Nuevo modelo para admin', () => {
+  it('renderiza el scaffold UI-only de Nuevo modelo para admin', () => {
     render(<AdminNewModelPage />);
 
     expect(screen.getByRole('heading', { name: 'Nuevo modelo' })).toBeInTheDocument();
-    expect(screen.getByText('Aquí se preparará el flujo de alta de modelos.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Workspace de creación' })).toBeInTheDocument();
+    expect(screen.getByRole('form', { name: 'Formulario de nuevo modelo' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '01. IDENTIDAD_MODELO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '03. MOTOR_RENDIMIENTO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '04. ELECTRONICA_EQUIPAMIENTO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '05. PRECIO_MERCADO' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Publicar modelo' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.queryByRole('form')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Más información sobre 01\. IDENTIDAD_MODELO/i })).toBeInTheDocument();
+    expect(screen.getByText('Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Más información sobre ID sugerido/i })).toBeInTheDocument();
+    expect(screen.getByText(/^Sugerencia automática:/)).toBeInTheDocument();
+  });
+
+  it('muestra fallbacks en el preview local al iniciar', () => {
+    render(<AdminNewModelPage />);
+
+    expect(screen.getByRole('heading', { name: 'Marca Modelo' })).toBeInTheDocument();
+    expect(screen.getByText('Segmento pendiente')).toBeInTheDocument();
+    expect(screen.getByText('Carnet pendiente')).toBeInTheDocument();
+    expect(screen.getByText('Descripción pendiente de completar')).toBeInTheDocument();
+    expect(screen.getByText('Precio pendiente')).toBeInTheDocument();
+    expect(screen.getByText('Preview local')).toBeInTheDocument();
+    expect(screen.queryByText('Borrador sin guardar')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
+  });
+
+  it('actualiza el preview local al cambiar campos del formulario', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Descripción'), 'Trail travel preparada para enlazar asfalto y tierra.');
+    await user.type(screen.getByLabelText('Image URL'), 'https://cdn.motoatlas.test/desertx.webp');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+
+    const previewHeading = screen.getByRole('heading', { name: 'Ducati DesertX' });
+    const previewSection = previewHeading.closest('section');
+
+    expect(previewHeading).toBeInTheDocument();
+    expect(previewSection).not.toBeNull();
+    expect(within(previewSection as HTMLElement).getByText('Trail travel preparada para enlazar asfalto y tierra.')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Preview local de Ducati DesertX' })).toHaveAttribute('src', 'https://cdn.motoatlas.test/desertx.webp');
+    expect(within(previewSection as HTMLElement).getByText('110 CV')).toBeInTheDocument();
+  });
+
+  it('mantiene las acciones del footer como locales sin llamar servicios', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Borrador local actualizado.');
+
+    await user.type(screen.getByLabelText('Marca'), 'Honda');
+    expect(screen.getByLabelText('Marca')).toHaveValue('Honda');
+
+    await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Cambios descartados.');
+    expect(screen.getByLabelText('Marca')).toHaveValue('');
+
+    await user.click(screen.getByRole('button', { name: 'Vista previa' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
+    expect(getReviewReportsMock).not.toHaveBeenCalled();
+    expect(getAllReviewsMock).not.toHaveBeenCalled();
+    expect(getAllModelRequestsMock).not.toHaveBeenCalled();
   });
 
   it('renderiza el placeholder mínimo de Editar catálogo para admin', () => {
@@ -1802,5 +1873,27 @@ describe('AdminPage', () => {
     await user.click(within(card).getByRole('button', { name: 'Marcar revisada' }));
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('No se pudo completar la acción sobre la solicitud.'));
+  });
+
+  it('las secciones del formulario son expandibles y están abiertas por defecto', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    const section = screen.getByText('01. IDENTIDAD_MODELO').closest('details');
+    expect(section).not.toBeNull();
+    expect(section).toHaveAttribute('open');
+
+    await user.click(screen.getByText('01. IDENTIDAD_MODELO'));
+    expect(section).not.toHaveAttribute('open');
+
+    await user.click(screen.getByText('01. IDENTIDAD_MODELO'));
+    expect(section).toHaveAttribute('open');
+  });
+
+  it('muestra el tooltip de imagen bloqueada / curada', () => {
+    render(<AdminNewModelPage />);
+
+    expect(screen.getByRole('button', { name: /Más información sobre imagen bloqueada/i })).toBeInTheDocument();
+    expect(screen.getByText('Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.')).toBeInTheDocument();
   });
 });
