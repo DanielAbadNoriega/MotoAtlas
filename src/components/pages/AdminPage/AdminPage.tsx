@@ -48,6 +48,7 @@ import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButto
 import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
+import { AccountQuickLinksNav } from '../AccountPage/AccountQuickLinksNav';
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
@@ -373,23 +374,11 @@ export function AdminSidebar({ active, children }: Readonly<{ active: AdminSideb
         </div>
       </article>
 
-      <nav className="account-page__quick-links" aria-label="Navegación de administración">
-        <a className={active === 'dashboard' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin" aria-current={active === 'dashboard' ? 'page' : undefined}>
-          Panel admin
-        </a>
-        <a className={active === 'moderation' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/moderacion" aria-current={active === 'moderation' ? 'page' : undefined}>
-          Moderación
-        </a>
-        <a className={active === 'reviews' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/reviews" aria-current={active === 'reviews' ? 'page' : undefined}>
-          Reviews
-        </a>
-        <a className={active === 'requests' ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link'} href="#/admin/solicitudes" aria-current={active === 'requests' ? 'page' : undefined}>
-          Solicitudes
-        </a>
-        <a className="account-page__quick-link" href="#/cuenta">
-          Mi cuenta
-        </a>
-      </nav>
+      <AccountQuickLinksNav
+        activeAdminItem={active}
+        ariaLabel="Navegación de administración"
+        includeAdmin
+      />
       {children}
     </aside>
   );
@@ -508,13 +497,11 @@ function AdminModerationSidebar({
 
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de moderación">
-      <nav className="account-page__quick-links" aria-label="Navegación de administración">
-        <a className="account-page__quick-link" href="#/admin">Panel admin</a>
-        <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/moderacion" aria-current="page">Moderación</a>
-        <a className="account-page__quick-link" href="#/admin/reviews">Reviews</a>
-        <a className="account-page__quick-link" href="#/admin/solicitudes">Solicitudes</a>
-        <a className="account-page__quick-link" href="#/cuenta">Mi cuenta</a>
-      </nav>
+      <AccountQuickLinksNav
+        activeAdminItem="moderation"
+        ariaLabel="Navegación de administración"
+        includeAdmin
+      />
 
       {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de moderación" /> : null}
 
@@ -628,12 +615,11 @@ function AdminReviewsSidebar({
 
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de reviews">
-      <nav className="account-page__quick-links" aria-label="Navegación de administración">
-        <a className="account-page__quick-link" href="#/admin">Panel admin</a>
-        <a className="account-page__quick-link" href="#/admin/moderacion">Moderación</a>
-        <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/reviews" aria-current="page">Reviews</a>
-        <a className="account-page__quick-link" href="#/cuenta">Mi cuenta</a>
-      </nav>
+      <AccountQuickLinksNav
+        activeAdminItem="reviews"
+        ariaLabel="Navegación de administración"
+        includeAdmin
+      />
 
       {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de reviews" /> : null}
 
@@ -1434,13 +1420,11 @@ function AdminRequestsFilterSidebar({
 
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Filtros de solicitudes">
-      <nav className="account-page__quick-links" aria-label="Navegación de administración">
-        <a className="account-page__quick-link" href="#/admin">Panel admin</a>
-        <a className="account-page__quick-link" href="#/admin/moderacion">Moderación</a>
-        <a className="account-page__quick-link" href="#/admin/reviews">Reviews</a>
-        <a className="account-page__quick-link account-page__quick-link--active" href="#/admin/solicitudes" aria-current="page">Solicitudes</a>
-        <a className="account-page__quick-link" href="#/cuenta">Mi cuenta</a>
-      </nav>
+      <AccountQuickLinksNav
+        activeAdminItem="requests"
+        ariaLabel="Navegación de administración"
+        includeAdmin
+      />
 
       {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros de solicitudes" /> : null}
 

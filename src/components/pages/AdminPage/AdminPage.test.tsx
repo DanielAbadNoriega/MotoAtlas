@@ -1624,9 +1624,18 @@ describe('AdminPage', () => {
     render(<AdminDashboardPage />);
 
     const nav = screen.getByRole('navigation', { name: /Navegación de administración/i });
-    const miCuentaLink = within(nav).getByRole('link', { name: 'Mi cuenta' });
-    expect(miCuentaLink).toHaveAttribute('href', '#/cuenta');
-    expect(miCuentaLink).not.toHaveAttribute('aria-current');
+    expect(screen.getByText('Mi cuenta')).toBeInTheDocument();
+    expect(screen.getByText('Panel Admin')).toBeInTheDocument();
+    expect(within(nav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Resumen',
+      'Mis reviews',
+      'Mis solicitudes',
+      'Panel admin',
+      'Moderación',
+      'Reviews',
+      'Solicitudes',
+    ]);
+    expect(within(nav).getByRole('link', { name: 'Resumen' })).toHaveAttribute('href', '#/cuenta');
   });
 
   it('sidebar de solicitudes muestra enlace activo', () => {
