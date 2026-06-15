@@ -6,7 +6,7 @@ import { AccountPage } from './components/pages/AccountPage';
 import { AccountMotorcycleReviewsPage } from './components/pages/AccountMotorcycleReviewsPage';
 import { AccountReviewsPage } from './components/pages/AccountReviewsPage';
 import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
-import { AdminDashboardPage, AdminModerationPage, AdminRequestsPage, AdminReviewsPage } from './components/pages/AdminPage';
+import { AdminDashboardPage, AdminEditModelsPage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './components/pages/AdminPage';
 import { AdminMotorcycleReviewsPage } from './components/pages/AdminMotorcycleReviewsPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
@@ -57,6 +57,7 @@ import {
   isComparatorRoute,
   isLoginRoute,
   isRegisterRoute,
+  routeToPathAndSearch,
   isSearchRoute,
 } from './shared/routing/routeUtils';
 import { applySeoMetadata, buildAccountMotorcycleReviewsSeoMetadata, buildAdminSeoMetadata, buildAuthSeoMetadata, buildBikeSeoMetadata, buildCommunityLandingSeoMetadata, buildCommunityRankingsSeoMetadata, buildCommunityReviewsSeoMetadata, buildCommunitySeoMetadata, buildCompareSeoMetadata, buildStaticInfoSeoMetadata } from './shared/seo/seoUtils';
@@ -120,6 +121,10 @@ export function App() {
   const isAdminRequestsPage = isAdminRequestsRoute(route);
   const isAdminReviewsPage = isAdminReviewsRoute(route);
   const isAdminMotorcycleReviewsPage = isAdminMotorcycleReviewsRoute(route);
+  const appPath = routeToPathAndSearch(route).path;
+  const isAdminModelsPage = appPath === '/admin/modelos';
+  const isAdminNewModelPage = appPath === '/admin/modelos/nuevo';
+  const isAdminEditModelsPage = appPath === '/admin/modelos/editar';
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
   const isCommunityReviewsPage = isCommunityReviewsRoute(route);
@@ -182,6 +187,33 @@ export function App() {
 
     if (isAdminRequestsPage) {
       applySeoMetadata(buildAdminSeoMetadata('solicitudes'));
+      return;
+    }
+
+    if (isAdminModelsPage) {
+      applySeoMetadata({
+        canonicalUrl: 'https://motoatlas.com/admin/modelos',
+        description: 'Gestiona las fichas técnicas del catálogo MotoAtlas.',
+        title: 'Estudio de modelos | MotoAtlas',
+      });
+      return;
+    }
+
+    if (isAdminNewModelPage) {
+      applySeoMetadata({
+        canonicalUrl: 'https://motoatlas.com/admin/modelos/nuevo',
+        description: 'Placeholder privado para el futuro flujo de alta de modelos en MotoAtlas.',
+        title: 'Nuevo modelo | MotoAtlas',
+      });
+      return;
+    }
+
+    if (isAdminEditModelsPage) {
+      applySeoMetadata({
+        canonicalUrl: 'https://motoatlas.com/admin/modelos/editar',
+        description: 'Placeholder privado para la futura búsqueda y edición del catálogo MotoAtlas.',
+        title: 'Editar catálogo | MotoAtlas',
+      });
       return;
     }
 
@@ -274,7 +306,7 @@ export function App() {
       description: 'Explora el catálogo técnico de motos, compara modelos y lee reviews reales de la comunidad motera. Decisiones informadas para moteros exigentes.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminModerationPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityRankingsPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminEditModelsPage, isAdminModelsPage, isAdminModerationPage, isAdminNewModelPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityRankingsPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -292,6 +324,12 @@ export function App() {
         <AdminMotorcycleReviewsPage bike={adminMotorcycleId ? findMotorcycleById(adminMotorcycleId) : undefined} motorcycleId={adminMotorcycleId} />
       ) : isAdminReviewsPage ? (
         <AdminReviewsPage />
+      ) : isAdminModelsPage ? (
+        <AdminModelsPage />
+      ) : isAdminNewModelPage ? (
+        <AdminNewModelPage />
+      ) : isAdminEditModelsPage ? (
+        <AdminEditModelsPage />
       ) : isAdminPage ? (
         <AdminDashboardPage />
       ) : isAccountMotorcycleReviewsPage ? (
