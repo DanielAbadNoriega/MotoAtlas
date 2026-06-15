@@ -57,7 +57,7 @@ function RequestCtaCard() {
 }
 
 export function AccountRequestsPage() {
-  const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
+  const { isAdmin, isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
   const [error, setError] = useState('');
   const [requests, setRequests] = useState<readonly ModelRequest[]>([]);
   const [requestsError, setRequestsError] = useState('');
@@ -167,6 +167,7 @@ export function AccountRequestsPage() {
           activeItem="requests"
           displayName={displayName}
           email={email}
+          isAdmin={isAdmin}
           onSignOut={handleSignOut}
           notice={{
             body: 'Las solicitudes autenticadas quedan asociadas a tu cuenta y solo vos podés ver su estado completo.',

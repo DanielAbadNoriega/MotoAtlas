@@ -401,7 +401,8 @@ Ruta y layout:
 - body con `account-page admin-page` y `admin-page__layout` (sidebar + main).
 
 Sidebar admin (reutilizado, `AdminRequestsFilterSidebar`):
-- quick links a Panel admin (`#/admin`), Moderación (`#/admin/moderacion`), Reviews (`#/admin/reviews`), Solicitudes (`#/admin/solicitudes`, marcada como activa) y Mi cuenta (`#/cuenta`).
+- `.account-page__quick-links` ya soporta grupos desplegables compartidos para cuenta/admin. Se renderizan como `Mi cuenta` y `Panel Admin`, usando `nav` semántico, `<details>/<summary>` nativo y anchors reales; el link activo conserva `aria-current="page"`.
+- en admin el orden compartido es: `Resumen`, `Mis reviews`, `Mis solicitudes`, `Panel admin`, `Moderación`, `Reviews`, `Solicitudes`.
 - header de filtros con título `Filtros`, botón `Limpiar filtros` (deshabilitado cuando no hay filtros activos; al activarlo resetea a página 1) y botón `close` accesible (`Cerrar filtros de solicitudes`).
 - cuerpo de filtros con búsqueda `Buscar por marca o modelo` (input `type="search"`, icono `search` Material Symbols), grupo `Estado` (abierto por defecto), grupo `Origen` y grupo `Fecha de creación` (cerrados por defecto).
 - footer con `Limpiar filtros` y `Aplicar filtros` (este último cierra el panel/drawer en mobile).
@@ -470,16 +471,35 @@ Limitaciones actuales (Fase 1 cerrada, pendientes para Fase 2/3/4 sin cambios es
 - sin detección de duplicados (`brand` + `model` + `year`).
 - sin acciones en lote sobre múltiples solicitudes.
 
-### Backlog futuro — Admin Models Studio / Estudio de modelos
+### Admin Models Studio / Estudio de modelos
 
-No implementado aún. Dirección documentada para una futura gestión interna del catálogo desde admin:
-- rutas previstas: `#/admin/modelos`, `#/admin/modelos/nuevo`, `#/admin/modelos/editar`, `#/admin/modelos/[motorcycleId]/editar`;
+Estado actual: **Fase 1 mínima implementada**.
+- `#/admin/modelos` existe como hub admin-protegido de navegación;
+- `#/admin/modelos/nuevo` existe como placeholder admin-protegido para la futura alta de modelos;
+- `#/admin/modelos/editar` existe como placeholder admin-protegido para la futura búsqueda/edición del catálogo;
+- `Panel Admin` incluye el submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar catálogo`.
+
+Regla de UI vigente:
+- el hub `#/admin/modelos` debe mantenerse separado de los flujos de creación y edición;
+- no debe existir un create/edit combinado dentro de `#/admin/modelos`;
+- creación y edición vivirán en rutas separadas.
+
+Dirección futura (pendiente):
 - objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON;
 - visual: página admin full-size, dark premium technical form, inspiración base `ReviewModal` + Stitch, pero sin modal ni landing pública;
 - create/edit deben compartir la misma arquitectura visual y de formulario;
+- un preview hero inspirado en `BikeDetailPage` queda como fase UI-only posterior, no implementada ahora;
 - la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios.
 
 ## Mi cuenta — Reviews
+
+Quick links / sidebar de cuenta-admin:
+- reutilizar el patrón agrupado de `.account-page__quick-links` en lugar de duplicar listas planas por página;
+- grupos actuales: `Mi cuenta` (`Resumen`, `Mis reviews`, `Mis solicitudes`) y `Panel Admin` (`Panel admin`, `Moderación`, `Reviews`, `Solicitudes`);
+- `Panel Admin` ahora soporta un subnivel `Modelos` con disclosure nativo y links `Vista general` (`#/admin/modelos`), `Nuevo modelo` (`#/admin/modelos/nuevo`) y `Editar catálogo` (`#/admin/modelos/editar`);
+- disclosure nativo con `<details>/<summary>` y links semánticos `<a>`;
+- el enlace activo debe seguir usando `aria-current="page"`;
+- el grupo `Panel Admin` solo aparece cuando la superficie recibe `isAdmin`, sin alterar guards ni acceso a datos.
 
 La ruta `#/cuenta/reviews` funciona como “Mi garaje de reviews”: agrupa las reviews del usuario autenticado por moto, pagina modelos agrupados y aplica filtros sobre marca/modelo, segmento, carnet, rating medio, uso principal y orden. Los filtros usan el componente compartido `FilterGroup` (`src/shared/ui/filters/FilterGroup.tsx`) que importa sus propios estilos (`./FilterGroup.scss`); no requiere que la página cargue sus estilos. Los filtros replican el patrón visual de `#/comunidad/reviews` con header/body/footer y botones/chips sin selects; en desktop viven dentro del sidebar de cuenta antes del notice y en tablet/mobile usan panel responsive. El CTA `Ver mis reviews` de cada moto apunta al detalle privado `#/cuenta/reviews/[motorcycleId]`.
 

@@ -17,14 +17,15 @@ Implementado (baseline actual):
 - `MotorcycleGarageCard` extraída.
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
-- Baseline validado actual: `75 files / 1146 tests passing`.
+- quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
+- Baseline validado actual: `75 files / 1155 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `feature/community-insights-actionable-cards`.
+- Último bloque estable validado: `feature/admin-models-minimal-route`.
 
 ## 3. Foco inmediato recomendado
 
-1. Admin Models Studio — Fase 1: entry points + landing.
-2. Después, UI de creación de modelo inspirada en Stitch/ReviewModal.
+1. Admin Models Studio — Fase 2: UI de `Nuevo modelo` inspirada en Stitch/ReviewModal.
+2. Después, refinado visual del hub `#/admin/modelos` o placeholder de edición.
 3. Persistencia/schema/RLS quedan fuera hasta auditoría específica.
 
 ## 4. P1 — UX pública / comunidad
@@ -64,7 +65,13 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **backlog estratégico / futuro**.
+Estado: **Fase 1 mínima implementada / resto futuro**.
+
+Nota de estado:
+- ya existen las rutas admin-protegidas `#/admin/modelos`, `#/admin/modelos/nuevo` y `#/admin/modelos/editar`;
+- `#/admin/modelos` funciona solo como hub pequeño de navegación;
+- `#/admin/modelos/nuevo` y `#/admin/modelos/editar` son placeholders sin forms, búsqueda real ni persistencia;
+- la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`.
 
 Propósito:
 - evitar la edición manual de JSON como flujo principal a largo plazo;
@@ -74,7 +81,7 @@ Propósito:
 No es:
 - una landing pública;
 - una nueva área de marketing;
-- una feature implementada ahora.
+- una feature funcional completa ahora mismo (solo existe la base mínima de rutas y navegación).
 
 Rutas propuestas:
 - `#/admin/modelos`
@@ -99,15 +106,14 @@ Fases propuestas:
    - identificar campos requeridos, gaps de validación, implicaciones RLS/seguridad y necesidades de servicio;
    - sin implementación.
 
-1. **Admin entry points + landing**
-   - añadir una nueva card/article en `.admin-page__dashboard-grid` para gestión de modelos;
-   - añadir quick link en los admin quick links (`.account-page__quick-links`);
-   - crear `#/admin/modelos` como landing de gestión;
-   - dos caminos principales: `Crear nuevo modelo` y `Editar modelo existente`;
+1. **Admin entry points + minimal placeholders** — **implementado**
+   - existe `#/admin/modelos` como hub de gestión mínimo;
+   - existen `#/admin/modelos/nuevo` y `#/admin/modelos/editar` como placeholders protegidos;
+   - los admin quick links exponen el submenú `Modelos`;
    - sin schema changes;
-   - sin persistencia real todavía salvo decisión posterior explícita.
+   - sin persistencia real, forms ni búsqueda todavía.
 
-2. **Create model page UI**
+2. **Create model page UI** — pendiente
    - crear una página-form inspirada en `ReviewModal`, pero como página admin completa;
    - secciones alineadas al contrato JSON/spec actual:
      - identidad del modelo
@@ -121,7 +127,7 @@ Fases propuestas:
    - en campos de texto, el admin escribe el contenido final directamente (sin controles tipo pros/contras de `ReviewModal`);
    - puede arrancar como UI-only / draft-only según la decisión posterior de backend.
 
-3. **Edit model search/list page**
+3. **Edit model search/list page** — pendiente
    - crear una búsqueda/listado simplificado inspirado en `SearchPage`;
    - search/filter de motos existentes para edición;
    - resultados como cards admin simplificadas, no como cards públicas completas;
@@ -132,20 +138,20 @@ Fases propuestas:
      - CTA `Editar`
    - CTA hacia `#/admin/modelos/[motorcycleId]/editar`.
 
-4. **Edit model form**
+4. **Edit model form** — pendiente
    - reutilizar la misma arquitectura visual/estructural que create;
    - precargar campos desde la moto seleccionada;
    - mantener create/edit alineados para evitar drift;
    - añadir validación antes de persistencia.
 
-5. **Persistence / security**
+5. **Persistence / security** — pendiente
    - añadir create/update services solo tras revisión explícita de schema/RLS/seguridad;
    - permisos admin-only;
    - nunca `service role key` en frontend;
    - decidir si las escrituras vivirán bajo RLS/policies admin directas o vía backend/edge functions protegidas;
    - tests futuros para permisos, errores y paths de fallo.
 
-6. **Image workflow future**
+6. **Image workflow future** — pendiente
    - primero URL/preview de imagen;
    - upload/normalización/`image_locked` como fase posterior;
    - respetar el pipeline de imágenes existente y no sobrescribir assets curados/locked.
@@ -615,7 +621,7 @@ Implementado:
   - admin protegido por sesión + rol (`isAdmin`).
   - listado de solicitudes con `getAllModelRequests` (autenticado como admin).
   - filtros laterales `Estado` (Todas, Pendientes, Revisadas, Aprobadas, Rechazadas), `Origen` (Todas, Usuario, Admin, Import) y búsqueda libre por marca o modelo.
-  - sidebar admin con quick links a Panel admin, Moderación, Reviews, Solicitudes, Mi cuenta.
+  - sidebar admin ya alineado con la navegación agrupada compartida: `Mi cuenta` (`Resumen`, `Mis reviews`, `Mis solicitudes`) + `Panel Admin` (`Panel admin`, `Moderación`, `Reviews`, `Solicitudes`).
   - cards expandibles (`AdminRequestCard`) con detalle de Marca, Modelo, Año, Segmento, Origen, Usuario, Email de contacto, Página oficial/fuente y Comentario.
   - badge de estado (`Pendiente`, `Revisada`, `Aprobada`, `Rechazada`) y fecha en formato `DD MMM YYYY` (`es-ES`).
   - acciones admin: `Marcar revisada`, `Aprobar`, `Rechazar` (deshabilitadas si la solicitud ya está en ese estado o si hay una acción en curso).

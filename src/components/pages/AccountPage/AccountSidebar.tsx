@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AccountQuickLinksNav } from './AccountQuickLinksNav';
 
 export type AccountSidebarActiveItem = 'overview' | 'reviews' | 'requests';
 
@@ -14,10 +15,6 @@ type AccountSidebarProps = Readonly<{
     strong?: string;
   }>;
 }>;
-
-function getNavLinkClassName(item: AccountSidebarActiveItem, activeItem: AccountSidebarActiveItem) {
-  return item === activeItem ? 'account-page__quick-link account-page__quick-link--active' : 'account-page__quick-link';
-}
 
 export function AccountSidebar({ activeItem, beforeNotice, displayName, email, isAdmin, notice, onSignOut }: AccountSidebarProps) {
   return (
@@ -46,22 +43,11 @@ export function AccountSidebar({ activeItem, beforeNotice, displayName, email, i
         </div>
       </article>
 
-      <nav className="account-page__quick-links" aria-label="Navegación de cuenta">
-        <a className={getNavLinkClassName('overview', activeItem)} href="#/cuenta" aria-current={activeItem === 'overview' ? 'page' : undefined}>
-          Mi cuenta
-        </a>
-        <a className={getNavLinkClassName('reviews', activeItem)} href="#/cuenta/reviews" aria-current={activeItem === 'reviews' ? 'page' : undefined}>
-          Mis reviews
-        </a>
-        <a className={getNavLinkClassName('requests', activeItem)} href="#/cuenta/solicitudes" aria-current={activeItem === 'requests' ? 'page' : undefined}>
-          Mis solicitudes
-        </a>
-        {isAdmin ? (
-          <a className="account-page__quick-link" href="#/admin">
-            Panel admin
-          </a>
-        ) : null}
-      </nav>
+      <AccountQuickLinksNav
+        activeAccountItem={activeItem}
+        ariaLabel="Navegación de cuenta"
+        includeAdmin={isAdmin}
+      />
 
       {beforeNotice}
 

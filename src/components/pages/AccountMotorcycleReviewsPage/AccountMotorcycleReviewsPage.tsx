@@ -32,6 +32,7 @@ import { ReviewModal } from '../../reviews/ReviewModal';
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
+import { AccountQuickLinksNav } from '../AccountPage/AccountQuickLinksNav';
 import '../AccountPage/AccountPage.scss';
 import '../AccountReviewsPage/AccountReviewsPage.scss';
 import '../MotorcycleCommunityPage/MotorcycleCommunityPage.scss';
@@ -339,6 +340,7 @@ function AccountPrivateSidebar({
   displayName,
   email,
   filters,
+  isAdmin,
   isFilterPanelOpen,
   onApplyFilters,
   onChangeFilters,
@@ -350,6 +352,7 @@ function AccountPrivateSidebar({
   displayName: string;
   email: string;
   filters: ReviewFilters;
+  isAdmin?: boolean;
   isFilterPanelOpen: boolean;
   onApplyFilters: () => void;
   onChangeFilters: (next: Partial<ReviewFilters>) => void;
@@ -395,11 +398,11 @@ function AccountPrivateSidebar({
         </div>
       </article>
 
-      <nav className="account-page__quick-links" aria-label="Navegación de cuenta">
-        <a className="account-page__quick-link" href="#/cuenta">Mi cuenta</a>
-        <a className="account-page__quick-link account-page__quick-link--active" href="#/cuenta/reviews" aria-current="page">Mis reviews</a>
-        <a className="account-page__quick-link" href="#/cuenta/solicitudes">Mis solicitudes</a>
-      </nav>
+      <AccountQuickLinksNav
+        activeAccountItem="reviews"
+        ariaLabel="Navegación de cuenta"
+        includeAdmin={isAdmin}
+      />
 
       <article className="account-page__notice">
         <span className="material-symbols-outlined" aria-hidden="true">info</span>
@@ -543,7 +546,7 @@ function PrivateState({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMotorcycleReviewsPageProps) {
-  const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
+  const { isAdmin, isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
   const [error, setError] = useState('');
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [reviewsError, setReviewsError] = useState('');
@@ -821,6 +824,7 @@ export function AccountMotorcycleReviewsPage({ bike, motorcycleId }: AccountMoto
           displayName={displayName}
           email={email}
           filters={filters}
+          isAdmin={isAdmin}
           isFilterPanelOpen={isFilterPanelOpen}
           onApplyFilters={() => setCurrentPage(1)}
           onChangeFilters={updateFilters}
