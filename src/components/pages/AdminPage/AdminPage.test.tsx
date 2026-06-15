@@ -1765,6 +1765,37 @@ describe('AdminPage', () => {
     expect(editLinks.length).toBeGreaterThan(0);
   });
 
+  it('usa la misma jerarquía de encabezado que AccountReviewMotorcycleSummaryCard (h2)', () => {
+    render(<AdminEditModelsPage />);
+
+    const cards = screen.getAllByTestId('admin-model-edit-summary-card');
+    expect(cards.length).toBeGreaterThan(0);
+
+    cards.forEach((card) => {
+      expect(within(card).getByRole('heading', { level: 2 })).toBeInTheDocument();
+    });
+  });
+
+  it('incluye la capa overlay en cada card como la referencia', () => {
+    render(<AdminEditModelsPage />);
+
+    const overlays = document.querySelectorAll('.admin-page__model-edit-summary-overlay');
+    expect(overlays.length).toBeGreaterThan(0);
+  });
+
+  it('no renderiza texto de segmento en la card de edición', () => {
+    render(<AdminEditModelsPage />);
+
+    const segmentLabels = ['Naked', 'Sport', 'Trail', 'Adventure', 'Scooter', 'Touring', 'Custom', 'Cruiser', 'Retro'];
+    const cards = screen.getAllByTestId('admin-model-edit-summary-card');
+
+    cards.forEach((card) => {
+      segmentLabels.forEach((label) => {
+        expect(within(card).queryByText(label)).not.toBeInTheDocument();
+      });
+    });
+  });
+
   it('cada card Editar modelo enlaza a la ruta de edición interna', () => {
     render(<AdminEditModelsPage />);
 

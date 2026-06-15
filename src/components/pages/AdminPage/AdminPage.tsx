@@ -57,7 +57,6 @@ import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
 import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../../types/bike';
-import {creatingBikeImg} from '../../../../public/images/placeholders/motorcycle-model-creating.jpg';
 
 type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
 
@@ -168,7 +167,7 @@ const emptyAdminModelDraft: AdminModelDraft = {
   },
 };
 
-const adminModelPreviewPlaceholderImage = creatingBikeImg;
+const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-model-creating.jpg';
 
 function formatPreviewNumber(value: string, unit: string) {
   const parsed = Number(value);
@@ -1868,35 +1867,27 @@ type AdminModelEditCardProps = Readonly<{
 function AdminModelEditCard({ bike }: AdminModelEditCardProps) {
   const displayName = getBikeDisplayName(bike);
   const editHref = `#/admin/modelos/${bike.id}/editar`;
-  const segmentLabel = segmentLabels[bike.segment];
-  const segmentIcon = segmentIcons[bike.segment];
 
   return (
-    <article className="admin-page__edit-card" aria-label={displayName}>
-      <div className="admin-page__edit-card-image">
-        <MotorcycleImage
-          alt={displayName}
-          className="admin-page__edit-card-img"
-          decorative
-          motorcycle={bike}
-        />
-      </div>
-      <div className="admin-page__edit-card-body">
-        <header className="admin-page__edit-card-header">
-          <h3 className="admin-page__edit-card-title">{displayName}</h3>
-          <div className="admin-page__edit-card-meta">
-            <span className="admin-page__edit-card-meta-item">
-              <span className="material-symbols-outlined" aria-hidden="true">{segmentIcon}</span>
-              {segmentLabel}
-            </span>
-          </div>
+    <article className="admin-page__model-edit-summary-card" data-testid="admin-model-edit-summary-card" aria-label={displayName}>
+      <MotorcycleImage decorative className="admin-page__model-edit-summary-image" motorcycle={bike} />
+      <div className="admin-page__model-edit-summary-overlay" aria-hidden="true" />
+
+      <div className="admin-page__model-edit-summary-content">
+        <header className="admin-page__model-edit-summary-header">
+          <h2 className="admin-page__model-edit-summary-title">
+            <span className='bike-brand'>{bike.brand}</span>
+            <span className='bike-model'>{bike.model}</span>
+          </h2>
         </header>
-        <footer className="admin-page__edit-card-actions">
-          <a
-            className="account-page__button account-page__button--glass"
-            href={editHref}
-            aria-label={`Editar modelo ${displayName}`}
-          >
+
+        <ul className="admin-page__model-edit-summary-meta" aria-label="Detalles del modelo">
+          <li><span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>{bike.year}</li>
+        </ul>
+
+
+        <footer className="admin-page__model-edit-summary-actions">
+          <a href={editHref} aria-label={`Editar modelo ${displayName}`}>
             <span className="material-symbols-outlined" aria-hidden="true">edit</span>
             Editar modelo
           </a>
