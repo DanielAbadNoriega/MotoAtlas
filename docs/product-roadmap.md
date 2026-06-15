@@ -18,13 +18,13 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `75 files / 1160 tests passing`.
+- Baseline validado actual: `1179 tests passing`.
 - Typecheck: clean.
-- Último bloque estable validado: `feature/admin-models-studio` (Admin Models create UI-only scaffold).
+- Último bloque estable validado: Admin Models create + edit selection UI (Quality Gate aprobado: 1179 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
-1. Admin Models Studio — Fase 3: búsqueda/listado para editar catálogo (`#/admin/modelos/editar`).
+1. Admin Models Studio — Fase 4: edit model form (`#/admin/modelos/{motorcycleId}/editar`).
 2. Después, refinado visual del hub `#/admin/modelos`.
 3. Persistencia/schema/RLS quedan fuera hasta auditoría específica.
 
@@ -65,14 +65,13 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fase 1 mínima implementada / resto futuro**.
+Estado: **Fase 1, 2 y 3 implementadas (UI-only) / Fase 4+ pendientes**.
 
 Nota de estado:
-- ya existen las rutas admin-protegidas `#/admin/modelos`, `#/admin/modelos/nuevo` y `#/admin/modelos/editar`;
-- `#/admin/modelos` funciona solo como hub pequeño de navegación;
+- `#/admin/modelos` funciona como hub de navegación admin-protegido;
 - `#/admin/modelos/nuevo` tiene un scaffold UI completo de alta de modelo (hero preview, secciones Stitch, tooltips, footer de acciones locales);
-- `#/admin/modelos/editar` sigue siendo placeholder sin forms, búsqueda real ni persistencia;
-- la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`.
+- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar: AccountReviewsPage-style sidebar con 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos), filtros alineados con contratos compartidos de iconos, cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard`. **UI-only**: sin formulario de edición real, sin persistencia, sin servicios;
+- la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
 Propósito:
 - evitar la edición manual de JSON como flujo principal a largo plazo;
@@ -109,10 +108,12 @@ Fases propuestas:
 
 1. **Admin entry points + minimal placeholders** — **implementado**
    - existe `#/admin/modelos` como hub de gestión mínimo;
-   - existen `#/admin/modelos/nuevo` y `#/admin/modelos/editar` como placeholders protegidos;
+   - existe `#/admin/modelos/nuevo` y `#/admin/modelos/editar` como rutas admin-protegidas;
+   - `#/admin/modelos/nuevo` evolucionó a scaffold completo en Fase 2;
+   - `#/admin/modelos/editar` evolucionó a edit selection UI en Fase 3;
    - los admin quick links exponen el submenú `Modelos`;
    - sin schema changes;
-   - sin persistencia real, forms ni búsqueda todavía.
+   - sin persistencia real.
 
 2. **Create model page UI** — **implementada como UI-only scaffold**
    - `#/admin/modelos/nuevo` tiene un formulario completo de alta de modelo, UI-only;
@@ -125,16 +126,12 @@ Fases propuestas:
    - `Imagen bloqueada / curada` con tooltip explicativo;
    - sin persistencia real, sin servicios, sin schema/RLS/Supabase, sin upload de imágenes.
 
-3. **Edit model search/list page** — pendiente
-   - crear una búsqueda/listado simplificado inspirado en `SearchPage`;
-   - search/filter de motos existentes para edición;
-   - resultados como cards admin simplificadas, no como cards públicas completas;
-   - mostrar solo info útil para edición:
-     - motorcycle name
-     - brand/model/year
-     - opcionalmente segment/status/completeness
-     - CTA `Editar`
-   - CTA hacia `#/admin/modelos/[motorcycleId]/editar`.
+3. **Edit model search/list page** — **implementada como UI-only**
+   - búsqueda/listado con AccountReviewsPage-style sidebar y 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos);
+   - filtros alineados con contratos compartidos: segmento usa iconos de `motorcycleSegmentFilterOptions`, carnet no inventa iconos, electrónica usa `getMotorcycleTechnicalIcon('electronics')`;
+   - resultados como cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard` (imagen, overlay, h2, brand/year, CTA `Editar modelo`);
+   - CTA hacia `#/admin/modelos/{motorcycleId}/editar` (ruta destino aún no implementada);
+   - sin persistencia real, sin servicios, sin schema/RLS/Supabase.
 
 4. **Edit model form** — pendiente
    - reutilizar la misma arquitectura visual/estructural que create;
@@ -153,6 +150,10 @@ Fases propuestas:
    - primero URL/preview de imagen;
    - upload/normalización/`image_locked` como fase posterior;
    - respetar el pipeline de imágenes existente y no sobrescribir assets curados/locked.
+
+Nota sobre el set de filtros de Fase 3:
+- el set definitivo de filtros puede refinarse tras uso real;
+- `Calidad de datos` es candidato a eliminación en esta pantalla de selección admin si no aporta valor operativo.
 
 Notas de testing futuro (no implementado ahora):
 - proteger rutas admin por rol;

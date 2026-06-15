@@ -8,6 +8,10 @@
 | `#/admin/moderacion` | Moderación de reportes y respuestas |
 | `#/admin/reviews` | Garaje: reviews agrupadas por modelo |
 | `#/admin/reviews/[motorcycleId]` | Reviews de una moto concreta |
+| `#/admin/modelos` | Hub de gestión de modelos |
+| `#/admin/modelos/nuevo` | Creación de nuevo modelo (UI-only scaffold) |
+| `#/admin/modelos/editar` | Búsqueda/selección de modelos para editar (UI-only) |
+| `#/admin/modelos/[motorcycleId]/editar` | Formulario de edición (rutero futuro, no implementado) |
 
 Protección:
 - Acceso restringido a usuarios con `user_profiles.role === 'admin'` (comprobado por `useAuth` y RLS en backend).
@@ -32,6 +36,46 @@ Dos tabs:
 - `created_at.desc` (Más recientes) o `created_at.asc` (Más antiguos).
 - Cuando `Estado = Todos`, no hay agrupación artificial por estado pending; se mezclan todos por fecha.
 - Filtros por estado concreto (`pending`, `approved`, `rejected`, `hidden`) y por motivo.
+
+## Admin Models Studio
+
+### `#/admin/modelos`
+
+Hub admin de navegación con submenú `Modelos` en el sidebar: `Vista general`, `Nuevo modelo`, `Editar modelo`.
+
+### `#/admin/modelos/nuevo`
+
+Scaffold UI-only de alta de modelo. Hero preview estilo `BikeDetailPage`, secciones Stitch colapsables con tooltips, footer de acciones locales (Descartar, Guardar, Vista previa, Publicar). Sin persistencia real.
+
+### `#/admin/modelos/editar` (UI-only)
+
+Selección y búsqueda de modelos existentes para editar. **No incluye formulario de edición real, ni persistencia, ni servicios.**
+
+**Layout:**
+- AccountReviewsPage-style sidebar con panel de filtros responsive (sheet/drawer en mobile, permanente en desktop)
+- Main content: grids de cards admin con paginación `AccountPagination`
+
+**Filtros (10 grupos):**
+- Marca (text-only, multi-select)
+- Segmento (iconos alineados con `motorcycleSegmentFilterOptions`: `bolt`/`speed`/`route`/`terrain`/`construction`/`two_wheeler`/`explore`; secundarios con `more_horiz`)
+- Carnet (sin iconos inventados, etiquetas del contrato compartido: `Carnet A2`, `Carnet A`)
+- Precio, Potencia, Peso, Altura asiento (rangos predefinidos)
+- Electrónica (icono `memory` vía `getMotorcycleTechnicalIcon`)
+- Uso recomendado (text-only)
+- Calidad de datos (text-only)
+- Búsqueda libre por marca o modelo
+
+**Cards:**
+- `AdminModelEditCard`: estructuralmente alineada con `AccountReviewMotorcycleSummaryCard` (imagen, overlay, h2, brand/year metadata). CTA `Editar modelo` hacia `#/admin/modelos/{motorcycleId}/editar` (rutero futuro).
+
+**Sin:**
+- formulario de edición real
+- create/update services
+- schema/RLS/Supabase changes
+- upload/storage
+- filtros de comunidad/reviews
+
+**Futuro:** Fase 4 (edit model form), Fase 5 (persistencia/seguridad), Fase 6 (image workflow). El set de filtros puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 

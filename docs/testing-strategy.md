@@ -3,7 +3,7 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1146` tests passing (75 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1179` tests passing. Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
   - `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing.
   - `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing.
@@ -12,7 +12,10 @@ Estado actual de suite:
   - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `22` tests passing.
   - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsEmptyState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` → `3` files / `15` tests passing.
   - `supabase/schema.test.ts` → `1` file / `66` tests passing.
-  - `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
+   - `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
+- Validación Admin Models edit selection UI (Quality Gate):
+   - `src/components/pages/AdminPage/AdminPage.test.tsx` → `105` tests passing (filtros, iconos, cards, paginación).
+   - suite completa → `1179` tests passing.
 
 ## Stack actual
 
