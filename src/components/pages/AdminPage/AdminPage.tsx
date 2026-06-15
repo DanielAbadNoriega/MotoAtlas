@@ -109,8 +109,7 @@ type AdminModelFeatureKey = keyof BikeFeatures;
 type AdminModelSectionProps = Readonly<{
   children: ReactNode;
   description?: string;
-  icon: string;
-  title: string;
+  technicalTitle: string;
 }>;
 
 const adminModelEngineTypeOptions = [
@@ -205,13 +204,14 @@ function getPreviewBadgeIcon(segment: BikeSegment | '') {
   return segment ? segmentIcons[segment] : 'category';
 }
 
-function AdminModelSection({ children, description, icon, title }: AdminModelSectionProps) {
+function AdminModelSection({ children, description, technicalTitle }: AdminModelSectionProps) {
   return (
     <section className="admin-page__model-section">
       <header className="admin-page__model-section-header">
-        <div className="admin-page__model-section-title">
-          <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>
-          <h2>{title}</h2>
+        <div className="admin-page__model-section-heading">
+          <span className="admin-page__model-section-line" aria-hidden="true" />
+          <h2>{technicalTitle}</h2>
+          <span className="admin-page__model-section-line" aria-hidden="true" />
         </div>
         {description ? <p>{description}</p> : null}
       </header>
@@ -827,8 +827,7 @@ export function AdminNewModelPage() {
 
         <form className="admin-page__model-form" aria-label="Formulario de nuevo modelo" onSubmit={(event) => event.preventDefault()}>
           <AdminModelSection
-            icon="fingerprint"
-            title="Identidad del modelo"
+            technicalTitle="01. IDENTIDAD_MODELO"
             description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
           >
             <div className="admin-page__model-field-grid">
@@ -876,8 +875,7 @@ export function AdminNewModelPage() {
           </AdminModelSection>
 
           <AdminModelSection
-            icon="category"
-            title="Clasificación"
+            technicalTitle="02. CLASIFICACION"
             description="Define la taxonomía base y el carnet objetivo antes de empezar a cargar números o copy técnico."
           >
             <div className="admin-page__model-field-grid">
@@ -910,8 +908,7 @@ export function AdminNewModelPage() {
           </AdminModelSection>
 
           <AdminModelSection
-            icon={getMotorcycleTechnicalIcon('engine')}
-            title="Motor y rendimiento"
+            technicalTitle="03. MOTOR_RENDIMIENTO"
             description="Bloque local de specs principales para alimentar el preview tipo ficha y preparar el contrato técnico futuro."
           >
             <div className="admin-page__model-field-grid">
@@ -979,8 +976,7 @@ export function AdminNewModelPage() {
           </AdminModelSection>
 
           <AdminModelSection
-            icon={getMotorcycleTechnicalIcon('electronics')}
-            title="Electrónica y equipamiento"
+            technicalTitle="04. ELECTRONICA_EQUIPAMIENTO"
             description="Selección local de features típicas para revisar el layout de toggles antes de mapearlas al backend real."
           >
             <div className="admin-page__model-checkbox-grid">
@@ -994,8 +990,7 @@ export function AdminNewModelPage() {
           </AdminModelSection>
 
           <AdminModelSection
-            icon={getMotorcycleTechnicalIcon('price')}
-            title="Precio y mercado"
+            technicalTitle="05. PRECIO_MERCADO"
             description="Campos locales para validar copy, fallback de precio pendiente y decisiones de presentación antes de tocar persistencia."
           >
             <div className="admin-page__model-field-grid">
@@ -1015,8 +1010,7 @@ export function AdminNewModelPage() {
           </AdminModelSection>
 
           <AdminModelSection
-            icon="image"
-            title="Imagen y curación"
+            technicalTitle="06. IMAGEN_CURACION"
             description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
           >
             <div className="admin-page__model-field-grid">
@@ -1036,8 +1030,7 @@ export function AdminNewModelPage() {
           </AdminModelSection>
 
           <AdminModelSection
-            icon="link"
-            title="Fuentes y notas internas"
+            technicalTitle="07. FUENTES_NOTAS"
             description="Campos de referencia local para preparar fuentes, URL oficial y notas editoriales antes de definir servicios reales."
           >
             <div className="admin-page__model-field-grid">

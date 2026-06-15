@@ -95,8 +95,7 @@
     gap: 1.5rem;
   }
 
-  &__model-toolbar,
-  &__model-section {
+  &__model-toolbar {
     background:
       radial-gradient(circle at top right, rgba($color-accent, 0.12), transparent 20rem),
       linear-gradient(180deg, rgba($color-surface-container-high, 0.92), rgba($color-surface-container, 0.92));
@@ -286,8 +285,7 @@
 
   &__model-preview-badge .material-symbols-outlined,
   &__model-preview-chip .material-symbols-outlined,
-  &__model-label .material-symbols-outlined,
-  &__model-section-title .material-symbols-outlined {
+  &__model-label .material-symbols-outlined {
     color: $color-accent;
     display: inline-flex;
     align-items: center;
@@ -332,54 +330,62 @@
 
   &__model-form {
     display: grid;
-    gap: 1rem;
+    gap: 2rem;
   }
 
   &__model-section {
     display: grid;
-    gap: 1rem;
-    padding: clamp(1.1rem, 2vw, 1.4rem);
+    gap: 1.2rem;
   }
 
   &__model-section-header {
     display: grid;
-    gap: 0.45rem;
+    gap: 0.75rem;
 
     p {
-      color: rgba($color-on-surface-variant, 0.84);
-      line-height: 1.6;
+      color: rgba($color-on-surface-variant, 0.76);
+      font-size: 0.95rem;
+      line-height: 1.55;
       margin: 0;
-      max-width: 70ch;
+      max-width: 68ch;
     }
   }
 
-  &__model-section-title {
+  &__model-section-heading {
     align-items: center;
-    display: inline-flex;
-    gap: 0.75rem;
-
-    .material-symbols-outlined {
-      color: $color-accent;
-      font-size: 1.3rem;
-    }
+    display: flex;
+    gap: 1rem;
+    width: 100%;
 
     h2 {
-      color: $color-on-surface;
-      font-family: $font-headline;
-      font-size: 1.2rem;
+      @include label-caps;
+
+      color: rgba($color-accent, 0.92);
+      flex: 0 0 auto;
+      font-family: $font-mono;
+      font-size: 0.78rem;
+      letter-spacing: 0.3em;
       margin: 0;
+      text-align: center;
       text-transform: uppercase;
     }
   }
 
+  &__model-section-line {
+    background: rgba($color-outline-variant, 0.42);
+    display: block;
+    flex: 1 1 auto;
+    height: 1px;
+  }
+
   &__model-section-body {
     display: grid;
-    gap: 1rem;
+    gap: 1.1rem;
   }
 
   &__model-field-grid {
     display: grid;
-    gap: 1rem;
+    gap: 1rem 1.1rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -395,9 +401,9 @@
     input,
     select,
     textarea {
-      background: rgba($color-surface-lowest, 0.78);
-      border: 1px solid rgba($color-outline-variant, 0.38);
-      border-radius: $radius-lg;
+      background: $color-surface-lowest;
+      border: 1px solid rgba($color-outline-variant, 0.44);
+      border-radius: $radius-md;
       color: $color-on-surface;
       font-family: $font-body;
       min-height: 3rem;
@@ -409,10 +415,14 @@
         color: rgba($color-on-surface-variant, 0.54);
       }
 
+      &:hover {
+        border-color: rgba($color-outline, 0.34);
+      }
+
       &:focus-visible {
-        background: rgba($color-surface-lowest, 0.9);
-        border-color: rgba($color-accent, 0.52);
-        box-shadow: 0 0 0 3px rgba($color-accent, 0.14);
+        background: rgba($color-surface-lowest, 0.98);
+        border-color: rgba($color-accent, 0.44);
+        box-shadow: 0 0 0 2px rgba($color-accent, 0.12);
         outline: 0;
       }
     }
@@ -431,7 +441,7 @@
     @include label-caps;
 
     align-items: center;
-    color: $color-on-surface;
+    color: rgba($color-on-surface-variant, 0.92);
     display: inline-flex;
     gap: 0.55rem;
 
@@ -443,20 +453,32 @@
 
   &__model-checkbox-grid {
     display: grid;
-    gap: 0.85rem;
+    gap: 0.85rem 1rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-top: 0.2rem;
   }
 
   &__model-checkbox {
     align-items: center;
-    background: rgba($color-surface-lowest, 0.48);
-    border: 1px solid rgba($color-outline-variant, 0.3);
-    border-radius: $radius-lg;
+    background: rgba($color-surface-lowest, 0.92);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-md;
     color: $color-on-surface;
     display: flex;
     gap: 0.75rem;
     min-height: 3rem;
     padding: 0.85rem 0.95rem;
+    transition: border-color $transition-base, background $transition-base;
+
+    &:hover {
+      background: rgba($color-surface-lowest, 0.96);
+      border-color: rgba($color-outline, 0.32);
+    }
+
+    &:focus-within {
+      border-color: rgba($color-accent, 0.34);
+      box-shadow: 0 0 0 1px rgba($color-accent, 0.12);
+    }
 
     input {
       accent-color: $color-accent;
@@ -474,6 +496,7 @@
 
   &__model-checkbox--inline {
     align-self: end;
+    min-height: 3rem;
   }
 
   &__demo-data-toggle {
@@ -1446,6 +1469,15 @@
       grid-template-columns: 1fr;
     }
 
+    &__model-section-heading {
+      gap: 0.65rem;
+
+      h2 {
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+      }
+    }
+
     &__model-preview-specs {
       gap: 1.25rem;
     }
@@ -1505,6 +1537,15 @@
 
 @media (max-width: $breakpoint-mobile) {
   .admin-page {
+    &__model-form {
+      gap: 1.65rem;
+    }
+
+    &__model-section-heading h2 {
+      font-size: 0.66rem;
+      letter-spacing: 0.14em;
+    }
+
     &__model-toolbar-actions {
       display: grid;
       width: 100%;
@@ -1523,7 +1564,6 @@
       }
     }
 
-    &__model-section,
     &__model-toolbar {
       padding-inline: 1rem;
     }

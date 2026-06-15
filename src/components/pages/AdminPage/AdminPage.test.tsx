@@ -1673,10 +1673,10 @@ describe('AdminPage', () => {
     expect(screen.getByRole('heading', { name: 'Nuevo modelo' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Workspace de creación' })).toBeInTheDocument();
     expect(screen.getByRole('form', { name: 'Formulario de nuevo modelo' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Identidad del modelo' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Motor y rendimiento' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Electrónica y equipamiento' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Precio y mercado' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '01. IDENTIDAD_MODELO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '03. MOTOR_RENDIMIENTO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '04. ELECTRONICA_EQUIPAMIENTO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '05. PRECIO_MERCADO' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('aria-current', 'page');
   });
 
