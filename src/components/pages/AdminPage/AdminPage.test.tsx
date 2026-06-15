@@ -1667,13 +1667,69 @@ describe('AdminPage', () => {
     expect(screen.queryByLabelText(/Marca/i)).not.toBeInTheDocument();
   });
 
-  it('renderiza el placeholder mínimo de Nuevo modelo para admin', () => {
+  it('renderiza el scaffold UI-only de Nuevo modelo para admin', () => {
     render(<AdminNewModelPage />);
 
     expect(screen.getByRole('heading', { name: 'Nuevo modelo' })).toBeInTheDocument();
-    expect(screen.getByText('Aquí se preparará el flujo de alta de modelos.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Workspace de creación' })).toBeInTheDocument();
+    expect(screen.getByRole('form', { name: 'Formulario de nuevo modelo' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Identidad del modelo' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Motor y rendimiento' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Electrónica y equipamiento' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Precio y mercado' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.queryByRole('form')).not.toBeInTheDocument();
+  });
+
+  it('muestra fallbacks en el preview local al iniciar', () => {
+    render(<AdminNewModelPage />);
+
+    expect(screen.getByRole('heading', { name: 'Marca Modelo' })).toBeInTheDocument();
+    expect(screen.getByText('Segmento pendiente')).toBeInTheDocument();
+    expect(screen.getByText('Carnet pendiente')).toBeInTheDocument();
+    expect(screen.getByText('Descripción pendiente de completar')).toBeInTheDocument();
+    expect(screen.getByText('Precio pendiente')).toBeInTheDocument();
+    expect(screen.getByText('Preview local')).toBeInTheDocument();
+    expect(screen.queryByText('Borrador sin guardar')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Vista previa' })).toHaveLength(1);
+  });
+
+  it('actualiza el preview local al cambiar campos del formulario', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Descripción'), 'Trail travel preparada para enlazar asfalto y tierra.');
+    await user.type(screen.getByLabelText('Image URL'), 'https://cdn.motoatlas.test/desertx.webp');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+
+    const previewHeading = screen.getByRole('heading', { name: 'Ducati DesertX' });
+    const previewSection = previewHeading.closest('section');
+
+    expect(previewHeading).toBeInTheDocument();
+    expect(previewSection).not.toBeNull();
+    expect(within(previewSection as HTMLElement).getByText('Trail travel preparada para enlazar asfalto y tierra.')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Preview local de Ducati DesertX' })).toHaveAttribute('src', 'https://cdn.motoatlas.test/desertx.webp');
+    expect(within(previewSection as HTMLElement).getByText('110 CV')).toBeInTheDocument();
+  });
+
+  it('mantiene guardar/publicar como acciones locales sin llamar servicios', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Borrador local actualizado.');
+
+    await user.click(screen.getByRole('button', { name: 'Vista previa' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Vista previa local actualizada.');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente: este scaffold todavía no guarda datos.');
+    expect(getReviewReportsMock).not.toHaveBeenCalled();
+    expect(getAllReviewsMock).not.toHaveBeenCalled();
+    expect(getAllModelRequestsMock).not.toHaveBeenCalled();
   });
 
   it('renderiza el placeholder mínimo de Editar catálogo para admin', () => {
