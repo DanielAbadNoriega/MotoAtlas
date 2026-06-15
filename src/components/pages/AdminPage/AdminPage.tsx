@@ -1186,6 +1186,16 @@ const useLabels: Record<keyof BikeUseScores, string> = {
   touring: 'Viaje',
 };
 
+const adminModelsEditSegmentIcon: Partial<Record<BikeSegment, string>> = {
+  naked: 'bolt',
+  sport: 'speed',
+  'sport-touring': 'route',
+  trail: 'terrain',
+  custom: 'construction',
+  scooter: 'two_wheeler',
+  touring: 'explore',
+};
+
 type AdminModelsEditFilters = {
   searchText: string;
   selectedBrands: string[];
@@ -1343,7 +1353,7 @@ function AdminModelsEditFiltersPanel({
                   active={filters.selectedSegments.includes(segment)}
                   ariaLabel={`Segmento: ${segmentLabels[segment]}`}
                   classPrefix="admin-page"
-                  icon={segmentIcons[segment]}
+                  icon={adminModelsEditSegmentIcon[segment] ?? 'more_horiz'}
                   key={segment}
                   label={segmentLabels[segment]}
                   onClick={() => {
@@ -1369,30 +1379,28 @@ function AdminModelsEditFiltersPanel({
                 onClick={() => onChange({ selectedLicenses: [] })}
               />
               <FilterOptionButton
-                active={filters.selectedLicenses.includes('A')}
-                ariaLabel="Carnet: Carnet A"
-                classPrefix="admin-page"
-                icon="workspace_premium"
-                label="Carnet A"
-                onClick={() => {
-                  onChange({
-                    selectedLicenses: filters.selectedLicenses.includes('A')
-                      ? filters.selectedLicenses.filter((l) => l !== 'A')
-                      : [...filters.selectedLicenses, 'A'],
-                  });
-                }}
-              />
-              <FilterOptionButton
                 active={filters.selectedLicenses.includes('A2')}
                 ariaLabel="Carnet: Carnet A2"
                 classPrefix="admin-page"
-                icon="license"
                 label="Carnet A2"
                 onClick={() => {
                   onChange({
                     selectedLicenses: filters.selectedLicenses.includes('A2')
                       ? filters.selectedLicenses.filter((l) => l !== 'A2')
                       : [...filters.selectedLicenses, 'A2'],
+                  });
+                }}
+              />
+              <FilterOptionButton
+                active={filters.selectedLicenses.includes('A')}
+                ariaLabel="Carnet: Carnet A"
+                classPrefix="admin-page"
+                label="Carnet A"
+                onClick={() => {
+                  onChange({
+                    selectedLicenses: filters.selectedLicenses.includes('A')
+                      ? filters.selectedLicenses.filter((l) => l !== 'A')
+                      : [...filters.selectedLicenses, 'A'],
                   });
                 }}
               />
@@ -1522,7 +1530,7 @@ function AdminModelsEditFiltersPanel({
                   active={filters.equipment.includes(feature)}
                   ariaLabel={`Electrónica: ${featureLabels[feature]}`}
                   classPrefix="admin-page"
-                  icon="settings"
+                  icon={getMotorcycleTechnicalIcon('electronics')}
                   key={feature}
                   label={featureLabels[feature]}
                   onClick={() => {
