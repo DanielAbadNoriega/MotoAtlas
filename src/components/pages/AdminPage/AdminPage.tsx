@@ -206,17 +206,53 @@ function getPreviewBadgeIcon(segment: BikeSegment | '') {
 
 function AdminModelSection({ children, description, technicalTitle }: AdminModelSectionProps) {
   return (
-    <section className="admin-page__model-section">
-      <header className="admin-page__model-section-header">
+    <details className="admin-page__model-section" open>
+      <summary className="admin-page__model-section-header">
         <div className="admin-page__model-section-heading">
           <span className="admin-page__model-section-line" aria-hidden="true" />
-          <h2>{technicalTitle}</h2>
+          <div className="admin-page__model-section-title-group">
+            <span className="admin-page__model-section-expand-icon" aria-hidden="true">
+              <span className="material-symbols-outlined">expand_more</span>
+            </span>
+            <h2>{technicalTitle}</h2>
+            {description ? (
+              <span className="admin-page__model-section-tooltip-wrapper">
+                <button
+                  type="button"
+                  className="admin-page__model-section-info-btn"
+                  aria-label={`Más información sobre ${technicalTitle}`}
+                >
+                  <span aria-hidden="true">i</span>
+                </button>
+                <span className="admin-page__model-section-tooltip" role="tooltip">
+                  {description}
+                </span>
+              </span>
+            ) : null}
+          </div>
           <span className="admin-page__model-section-line" aria-hidden="true" />
         </div>
-        {description ? <p>{description}</p> : null}
-      </header>
+      </summary>
       <div className="admin-page__model-section-body">{children}</div>
-    </section>
+    </details>
+  );
+}
+
+type AdminModelInfoTooltipProps = Readonly<{
+  ariaLabel: string;
+  description: string;
+}>;
+
+function AdminModelInfoTooltip({ ariaLabel, description }: AdminModelInfoTooltipProps) {
+  return (
+    <span className="admin-page__model-field-tooltip-wrapper">
+      <button type="button" className="admin-page__model-section-info-btn" aria-label={ariaLabel}>
+        <span aria-hidden="true">i</span>
+      </button>
+      <span className="admin-page__model-section-tooltip" role="tooltip">
+        {description}
+      </span>
+    </span>
   );
 }
 
@@ -797,6 +833,11 @@ export function AdminNewModelPage() {
     setLocalStatus(message);
   }, []);
 
+  const handleDiscardChanges = useCallback(() => {
+    setDraft(emptyAdminModelDraft);
+    setLocalStatus('Cambios descartados.');
+  }, []);
+
   return (
     <AdminModelsWorkspace
       activeModelsItem="new"
@@ -806,17 +847,8 @@ export function AdminNewModelPage() {
     >
       <section className="admin-page__model-studio" aria-labelledby="admin-models-new-workspace-title">
         <header className="admin-page__model-toolbar">
-          <div className="admin-page__model-toolbar-copy">
             <span className="admin-page__model-toolbar-kicker">Borrador local</span>
             <h2 id="admin-models-new-workspace-title">Workspace de creación</h2>
-            <p>Scaffold UI-only para preparar una ficha técnica completa sin escribir todavía en backend ni servicios.</p>
-          </div>
-
-          <div className="admin-page__model-toolbar-actions">
-            <button type="button" className="account-page__button account-page__button--glass" onClick={() => handleLocalAction('Borrador local actualizado.')}>Guardar borrador</button>
-            <button type="button" className="account-page__button account-page__button--glass" onClick={() => handleLocalAction('Vista previa local actualizada.')}>Vista previa</button>
-            <button type="button" className="account-page__button" onClick={() => handleLocalAction('Publicación pendiente: este scaffold todavía no guarda datos.')}>Publicar modelo</button>
-          </div>
         </header>
 
         {localStatus ? (
@@ -859,9 +891,12 @@ export function AdminNewModelPage() {
                 <span className="admin-page__model-label">
                   <span className="material-symbols-outlined" aria-hidden="true">tag</span>
                   ID sugerido
+                  <AdminModelInfoTooltip
+                    ariaLabel="Más información sobre ID sugerido"
+                    description={`Sugerencia automática: ${suggestedModelId || 'marca-modelo-2026'}`}
+                  />
                 </span>
                 <input id="admin-model-id" type="text" value={draft.modelId} onChange={(event) => handleDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
-                <small>Sugerencia automática: {suggestedModelId || 'marca-modelo-2026'}</small>
               </label>
 
               <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-description">
@@ -1024,7 +1059,13 @@ export function AdminNewModelPage() {
 
               <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
                 <input type="checkbox" checked={draft.imageLocked} onChange={(event) => handleDraftCheckboxChange('imageLocked', event.target.checked)} />
-                <span>Imagen bloqueada / curada</span>
+                <span className="content">
+                  Imagen bloqueada / curada
+                  <AdminModelInfoTooltip
+                    ariaLabel="Más información sobre imagen bloqueada"
+                    description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
+                  />
+                </span>
               </label>
             </div>
           </AdminModelSection>
@@ -1059,6 +1100,25 @@ export function AdminNewModelPage() {
               </label>
             </div>
           </AdminModelSection>
+
+          <footer className="admin-page__model-actions" aria-label="Acciones del borrador">
+            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button admin-page__model-action-button--discard" onClick={handleDiscardChanges}>
+              <span className="material-symbols-outlined" aria-hidden="true">undo</span>
+              Descartar cambios
+            </button>
+            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => handleLocalAction('Borrador local actualizado.')}>
+              <span className="material-symbols-outlined" aria-hidden="true">save</span>
+              Guardar borrador
+            </button>
+            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => handleLocalAction('Vista previa actualizada.')}>
+              <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
+              Vista previa
+            </button>
+            <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" onClick={() => handleLocalAction('Publicación pendiente de persistencia.')}>
+              <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+              Publicar modelo
+            </button>
+          </footer>
         </form>
       </section>
     </AdminModelsWorkspace>

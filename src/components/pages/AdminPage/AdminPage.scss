@@ -96,41 +96,12 @@
   }
 
   &__model-toolbar {
-    background:
-      radial-gradient(circle at top right, rgba($color-accent, 0.12), transparent 20rem),
-      linear-gradient(180deg, rgba($color-surface-container-high, 0.92), rgba($color-surface-container, 0.92));
-    border: 1px solid rgba($color-outline-variant, 0.4);
-    border-radius: $radius-xl;
-    box-shadow: $shadow-card;
-  }
-
-  &__model-toolbar {
-    align-items: start;
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: minmax(0, 1fr) auto;
-    padding: clamp(1.25rem, 2vw, 1.5rem);
-  }
-
-  &__model-toolbar-copy {
-    display: grid;
-    gap: 0.55rem;
-
-    h2,
-    p {
-      margin: 0;
-    }
 
     h2 {
       color: $color-on-surface;
       font-family: $font-headline;
       font-size: clamp(1.35rem, 2.4vw, 1.8rem);
       text-transform: uppercase;
-    }
-
-    p {
-      color: rgba($color-on-surface-variant, 0.88);
-      max-width: 62ch;
     }
   }
 
@@ -150,14 +121,6 @@
       height: 1px;
       width: 2.75rem;
     }
-  }
-
-  &__model-toolbar-actions {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: flex-end;
   }
 
   &__model-status {
@@ -338,17 +301,45 @@
     gap: 1.2rem;
   }
 
+  &__model-section > summary {
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::marker {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgba($color-accent, 0.5);
+      outline-offset: 2px;
+    }
+  }
+
+  &__model-section[open] > &__model-section-body {
+    padding-top: 1.2rem;
+  }
+
+  &__model-section-expand-icon {
+    align-items: center;
+    display: inline-flex;
+
+    .material-symbols-outlined {
+      font-size: 0.85rem;
+      transition: transform $transition-base;
+    }
+  }
+
+  .admin-page__model-section[open] &__model-section-expand-icon .material-symbols-outlined {
+    transform: rotate(180deg);
+  }
+
   &__model-section-header {
     display: grid;
     gap: 0.75rem;
-
-    p {
-      color: rgba($color-on-surface-variant, 0.76);
-      font-size: 0.95rem;
-      line-height: 1.55;
-      margin: 0;
-      max-width: 68ch;
-    }
   }
 
   &__model-section-heading {
@@ -378,6 +369,80 @@
     height: 1px;
   }
 
+  &__model-section-title-group {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.35rem;
+  }
+
+  &__model-section-tooltip-wrapper,
+  &__model-field-tooltip-wrapper {
+    position: relative;
+  }
+
+  &__model-section-info-btn {
+    height: 1.05rem;
+    width: 1.05rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    bottom: 2px;
+    background: transparent;
+    border: 1px solid rgba($color-accent, 0.36);
+    border-radius: 50%;
+    color: rgba($color-accent, 0.7);
+    cursor: pointer;
+    font-family: $font-mono;
+    font-size: 0.55rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: border-color $transition-base, color $transition-base, background $transition-base;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-accent, 0.12);
+      border-color: $color-accent;
+      color: $color-accent;
+      outline: 0;
+    }
+
+    span {
+      display: inline-flex;
+    }
+  }
+
+  &__model-section-tooltip {
+    background: $color-surface-lowest;
+    border: 1px solid rgba($color-outline-variant, 0.42);
+    border-radius: $radius-lg;
+    color: rgba($color-on-surface-variant, 0.9);
+    font-family: $font-body;
+    font-size: 0.78rem;
+    left: 50%;
+    line-height: 1.55;
+    max-width: min(300px, 80vw);
+    opacity: 0;
+    padding: 0.55rem 0.7rem;
+    pointer-events: none;
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    transform: translateX(-50%);
+    transition: opacity $transition-fast, visibility $transition-fast;
+    visibility: hidden;
+    white-space: normal;
+    width: max-content;
+    z-index: 10;
+
+    .admin-page__model-section-info-btn:is(:hover, :focus, :focus-visible) + &,
+    &:hover {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
   &__model-section-body {
     display: grid;
     gap: 1.1rem;
@@ -392,11 +457,6 @@
   &__model-field {
     display: grid;
     gap: 0.55rem;
-
-    small {
-      color: rgba($color-on-surface-variant, 0.74);
-      font-size: 0.8rem;
-    }
 
     input,
     select,
@@ -491,12 +551,55 @@
     span {
       font-weight: 600;
       line-height: 1.5;
+
+      &.content > span{
+        margin-left: 1.5rem;
+      }
     }
   }
 
   &__model-checkbox--inline {
     align-self: end;
     min-height: 3rem;
+  }
+
+  &__model-actions {
+    align-items: center;
+    border-top: 1px solid rgba($color-outline-variant, 0.22);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    padding-top: 1.4rem;
+  }
+
+  &__model-action-button {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.55rem;
+    justify-content: center;
+
+    .material-symbols-outlined {
+      color: currentcolor;
+      display: inline-flex;
+      font-family: 'Material Symbols Outlined';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      letter-spacing: normal;
+      line-height: 1;
+      text-transform: none;
+      white-space: nowrap;
+    }
+  }
+
+  &__model-action-button--discard {
+    margin-right: auto;
+  }
+
+  &__model-action-button--primary {
+    box-shadow: 0 10px 24px rgba($color-accent, 0.18);
   }
 
   &__demo-data-toggle {
@@ -1456,14 +1559,6 @@
       grid-template-columns: 1fr;
     }
 
-    &__model-toolbar {
-      grid-template-columns: 1fr;
-    }
-
-    &__model-toolbar-actions {
-      justify-content: flex-start;
-    }
-
     &__model-field-grid,
     &__model-checkbox-grid {
       grid-template-columns: 1fr;
@@ -1541,6 +1636,17 @@
       gap: 1.65rem;
     }
 
+    &__model-actions {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    &__model-action-button,
+    &__model-action-button--discard {
+      margin-right: 0;
+      width: 100%;
+    }
+
     &__model-section-heading h2 {
       font-size: 0.66rem;
       letter-spacing: 0.14em;
@@ -1562,10 +1668,6 @@
       h2 {
         font-size: clamp(2.2rem, 10vw, 3.4rem);
       }
-    }
-
-    &__model-toolbar {
-      padding-inline: 1rem;
     }
 
     &__filters {

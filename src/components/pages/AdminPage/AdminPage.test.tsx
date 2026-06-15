@@ -1677,7 +1677,15 @@ describe('AdminPage', () => {
     expect(screen.getByRole('heading', { name: '03. MOTOR_RENDIMIENTO' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '04. ELECTRONICA_EQUIPAMIENTO' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '05. PRECIO_MERCADO' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Publicar modelo' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: /Más información sobre 01\. IDENTIDAD_MODELO/i })).toBeInTheDocument();
+    expect(screen.getByText('Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Más información sobre ID sugerido/i })).toBeInTheDocument();
+    expect(screen.getByText(/^Sugerencia automática:/)).toBeInTheDocument();
   });
 
   it('muestra fallbacks en el preview local al iniciar', () => {
@@ -1690,7 +1698,7 @@ describe('AdminPage', () => {
     expect(screen.getByText('Precio pendiente')).toBeInTheDocument();
     expect(screen.getByText('Preview local')).toBeInTheDocument();
     expect(screen.queryByText('Borrador sin guardar')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Vista previa' })).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
   });
 
   it('actualiza el preview local al cambiar campos del formulario', async () => {
@@ -1715,18 +1723,25 @@ describe('AdminPage', () => {
     expect(within(previewSection as HTMLElement).getByText('110 CV')).toBeInTheDocument();
   });
 
-  it('mantiene guardar/publicar como acciones locales sin llamar servicios', async () => {
+  it('mantiene las acciones del footer como locales sin llamar servicios', async () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
 
     await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
     expect(screen.getByRole('status')).toHaveTextContent('Borrador local actualizado.');
 
+    await user.type(screen.getByLabelText('Marca'), 'Honda');
+    expect(screen.getByLabelText('Marca')).toHaveValue('Honda');
+
+    await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Cambios descartados.');
+    expect(screen.getByLabelText('Marca')).toHaveValue('');
+
     await user.click(screen.getByRole('button', { name: 'Vista previa' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Vista previa local actualizada.');
+    expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente: este scaffold todavía no guarda datos.');
+    expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
     expect(getReviewReportsMock).not.toHaveBeenCalled();
     expect(getAllReviewsMock).not.toHaveBeenCalled();
     expect(getAllModelRequestsMock).not.toHaveBeenCalled();
@@ -1858,5 +1873,27 @@ describe('AdminPage', () => {
     await user.click(within(card).getByRole('button', { name: 'Marcar revisada' }));
 
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('No se pudo completar la acción sobre la solicitud.'));
+  });
+
+  it('las secciones del formulario son expandibles y están abiertas por defecto', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    const section = screen.getByText('01. IDENTIDAD_MODELO').closest('details');
+    expect(section).not.toBeNull();
+    expect(section).toHaveAttribute('open');
+
+    await user.click(screen.getByText('01. IDENTIDAD_MODELO'));
+    expect(section).not.toHaveAttribute('open');
+
+    await user.click(screen.getByText('01. IDENTIDAD_MODELO'));
+    expect(section).toHaveAttribute('open');
+  });
+
+  it('muestra el tooltip de imagen bloqueada / curada', () => {
+    render(<AdminNewModelPage />);
+
+    expect(screen.getByRole('button', { name: /Más información sobre imagen bloqueada/i })).toBeInTheDocument();
+    expect(screen.getByText('Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.')).toBeInTheDocument();
   });
 });
