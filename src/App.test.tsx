@@ -208,6 +208,9 @@ describe('App navigation with mocked motorcycleService', () => {
     ['#/cuenta/solicitudes', /Inicia sesión para ver tus solicitudes/i, 'Mis solicitudes | MotoAtlas'],
     ['#/admin', /Inicia sesión para acceder al panel admin/i, 'Panel de administración | MotoAtlas'],
     ['#/admin/moderacion', /Inicia sesión para acceder al panel admin/i, 'Moderación | MotoAtlas'],
+    ['#/admin/modelos', /Inicia sesión para acceder al panel admin/i, 'Estudio de modelos | MotoAtlas'],
+    ['#/admin/modelos/nuevo', /Inicia sesión para acceder al panel admin/i, 'Nuevo modelo | MotoAtlas'],
+    ['#/admin/modelos/editar', /Inicia sesión para acceder al panel admin/i, 'Editar catálogo | MotoAtlas'],
     ['#/admin/reviews', /Inicia sesión para acceder al panel admin/i, 'Reviews por modelo | MotoAtlas'],
   ])('renderiza la ruta de auth %s', async (hash, heading, expectedTitle) => {
     window.location.hash = hash;

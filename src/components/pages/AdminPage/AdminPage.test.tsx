@@ -18,7 +18,7 @@ import {
   getReviewAspectsByReviewIds,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
-import { AdminDashboardPage, AdminModerationPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
+import { AdminDashboardPage, AdminEditModelsPage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
 
 import {
   getAllModelRequests,
@@ -1620,12 +1620,13 @@ describe('AdminPage', () => {
     expect(solicitudesLink).toHaveAttribute('href', '#/admin/solicitudes');
   });
 
-  it('navegación admin contiene Mi cuenta al final', () => {
+  it('navegación admin contiene grupos y subgrupo de modelos en el orden esperado', () => {
     render(<AdminDashboardPage />);
 
     const nav = screen.getByRole('navigation', { name: /Navegación de administración/i });
     expect(screen.getByText('Mi cuenta')).toBeInTheDocument();
     expect(screen.getByText('Panel Admin')).toBeInTheDocument();
+    expect(screen.getByText('Modelos')).toBeInTheDocument();
     expect(within(nav).getAllByRole('link').map((link) => link.textContent)).toEqual([
       'Resumen',
       'Mis reviews',
@@ -1634,8 +1635,14 @@ describe('AdminPage', () => {
       'Moderación',
       'Reviews',
       'Solicitudes',
+      'Vista general',
+      'Nuevo modelo',
+      'Editar catálogo',
     ]);
     expect(within(nav).getByRole('link', { name: 'Resumen' })).toHaveAttribute('href', '#/cuenta');
+    expect(within(nav).getByRole('link', { name: 'Vista general' })).toHaveAttribute('href', '#/admin/modelos');
+    expect(within(nav).getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('href', '#/admin/modelos/nuevo');
+    expect(within(nav).getByRole('link', { name: 'Editar catálogo' })).toHaveAttribute('href', '#/admin/modelos/editar');
   });
 
   it('sidebar de solicitudes muestra enlace activo', () => {
@@ -1644,6 +1651,50 @@ describe('AdminPage', () => {
     const nav = screen.getByRole('navigation', { name: /Navegación de administración/i });
     const activeLink = within(nav).getByRole('link', { name: 'Solicitudes' });
     expect(activeLink).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('renderiza el hub mínimo de Estudio de modelos para admin', () => {
+    render(<AdminModelsPage />);
+
+    expect(screen.getByRole('heading', { name: 'Estudio de modelos' })).toBeInTheDocument();
+    expect(screen.getByText('Gestiona las fichas técnicas del catálogo MotoAtlas.')).toBeInTheDocument();
+    expect(screen.getByText('Workspace futuro')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Vista general' })).toHaveAttribute('aria-current', 'page');
+    const placeholderLinks = screen.getAllByRole('link', { name: 'Abrir placeholder' });
+    expect(placeholderLinks[0]).toHaveAttribute('href', '#/admin/modelos/nuevo');
+    expect(placeholderLinks[1]).toHaveAttribute('href', '#/admin/modelos/editar');
+    expect(screen.queryByRole('form')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Marca/i)).not.toBeInTheDocument();
+  });
+
+  it('renderiza el placeholder mínimo de Nuevo modelo para admin', () => {
+    render(<AdminNewModelPage />);
+
+    expect(screen.getByRole('heading', { name: 'Nuevo modelo' })).toBeInTheDocument();
+    expect(screen.getByText('Aquí se preparará el flujo de alta de modelos.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByRole('form')).not.toBeInTheDocument();
+  });
+
+  it('renderiza el placeholder mínimo de Editar catálogo para admin', () => {
+    render(<AdminEditModelsPage />);
+
+    expect(screen.getByRole('heading', { name: 'Editar catálogo' })).toBeInTheDocument();
+    expect(screen.getByText('Aquí se preparará la búsqueda y edición de modelos existentes.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Editar catálogo' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByText(/Buscar por marca o modelo/i)).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['Estudio de modelos', <AdminModelsPage />],
+    ['Nuevo modelo', <AdminNewModelPage />],
+    ['Editar catálogo', <AdminEditModelsPage />],
+  ])('mantiene el guard admin en %s para usuarios sin rol admin', (_title, page) => {
+    mockAuth({ isAdmin: false });
+
+    render(page);
+
+    expect(screen.getByRole('heading', { name: 'No tienes permisos para acceder a esta zona.' })).toBeInTheDocument();
   });
 
   it('renderiza Marca, Modelo, Año y Segmento en los detalles expandidos', async () => {

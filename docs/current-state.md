@@ -2,17 +2,17 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/account-admin-quick-links-nav`
-- Último bloque validado: **navegación agrupada de quick links para cuenta/admin** aprobada.
-- Alcance validado: las superficies de `#/cuenta`, `#/cuenta/reviews`, `#/cuenta/solicitudes`, `#/admin`, `#/admin/moderacion`, `#/admin/reviews` y `#/admin/solicitudes` comparten ahora quick links agrupados en `Mi cuenta` y `Panel Admin`, con `<nav>` semántico, disclosure nativo vía `<details>/<summary>`, anchors reales y `aria-current="page"` en el enlace activo. No hubo cambios en data access, auth guards, schema, RLS, rutas, App ni servicios. **No** se implementó `Admin Models Studio` ni se añadió `#/admin/modelos`.
-- Tests: 1146 passed (75 files)
+- Rama actual: `feature/admin-models-minimal-route`
+- Último bloque validado: **placeholders mínimos de rutas para Admin Models Studio** aprobados.
+- Alcance validado: se añadieron las rutas admin-protegidas `#/admin/modelos`, `#/admin/modelos/nuevo` y `#/admin/modelos/editar`; `#/admin/modelos` funciona como hub pequeño de navegación, mientras `#/admin/modelos/nuevo` y `#/admin/modelos/editar` son placeholders mínimos. `Panel Admin` ahora incluye un submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar catálogo`. **No** hay form de alta, **no** hay flujo de edición/búsqueda, **no** hay persistencia ni write paths y no hubo cambios en schema, RLS, Supabase ni servicios.
+- Tests: 1155 passed (75 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Focused checks más recientes:
-  - `src/components/pages/AccountPage/AccountPage.test.tsx` + `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` + `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx` + `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx` → `6` files / `154` tests passing
+  - `src/App.test.tsx` + `src/components/pages/AccountPage/AccountPage.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` + `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx` + `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx` + `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx` → `7` files / `194` tests passing
   - `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing
   - `supabase/schema.test.ts` → `1` file / `66` tests passing
-  - suite completa → `75` files / `1146` tests passing
+  - suite completa → `75` files / `1155` tests passing
 - Último commit:
 
 ## Implementado
@@ -55,6 +55,7 @@
 - Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
 - Admin protegido por sesión + rol (`user_profiles.role = admin`).
 - quick links de cuenta/admin ya no se documentan como listas planas aisladas: `.account-page__quick-links` soporta grupos `Mi cuenta` y `Panel Admin`, con disclosure nativo `<details>/<summary>`, anchors semánticos y el mismo orden en superficies de cuenta y admin. El plumbing extra de `isAdmin` en páginas de cuenta solo habilita la visibilidad del grupo compartido, sin cambiar guards ni acceso a datos.
+- Admin Models Studio — **Fase 1 mínima implementada**: existen los placeholders admin-protegidos `#/admin/modelos` (hub), `#/admin/modelos/nuevo` y `#/admin/modelos/editar`, y el grupo `Panel Admin` expone el submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar catálogo`. Esta base no incluye forms, búsqueda real, persistencia ni cambios de schema/RLS/Supabase/servicios.
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - `#/admin/solicitudes` **Fase 1 implementada** (rama `feature/admin-requests-phase-1`, sin cambios de schema/RLS) sobre la base auditada en `feature/admin-requests-audit`. Capacidades verificadas:
@@ -273,7 +274,7 @@
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
 - Backlog P2 Auth: repetir opcionalmente el smoke del signup público directo cuando se libere el rate limit `429` de Supabase email y mantener auditorías periódicas si en el futuro aparecen nuevas funciones `security definer`.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
-- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` queda documentado como iniciativa futura para crear/editar motos del catálogo desde UI admin (`#/admin/modelos`, `#/admin/modelos/nuevo`, `#/admin/modelos/editar`, `#/admin/modelos/[motorcycleId]/editar`). No implementado todavía; requiere fases separadas de auditoría, UI create/edit, búsqueda admin y revisión explícita de persistencia/seguridad.
+- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` ya tiene **Fase 1 mínima implementada** (`#/admin/modelos`, `#/admin/modelos/nuevo`, `#/admin/modelos/editar`). Quedan pendientes las fases de UI create/edit real, búsqueda admin, edición por `motorcycleId` y la revisión explícita de persistencia/seguridad antes de cualquier write path.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
@@ -297,7 +298,7 @@
 
 ## Siguiente paso
 
-- **Admin Models Studio — Fase 1** sigue como backlog separado: entry points y landing `#/admin/modelos` sin persistencia real. El polish de quick links agrupados ya quedó implementado y **no** cuenta como esa fase.
+- **Admin Models Studio**: siguiente fase recomendada = refinado visual del hub o scaffold UI-only de `#/admin/modelos/nuevo`. Persistencia, seguridad, schema/RLS y servicios siguen como fase posterior explícita con auditoría dedicada.
 
 ## Decisiones importantes
 

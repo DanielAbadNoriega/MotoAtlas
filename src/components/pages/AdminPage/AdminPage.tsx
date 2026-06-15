@@ -48,7 +48,7 @@ import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButto
 import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
-import { AccountQuickLinksNav } from '../AccountPage/AccountQuickLinksNav';
+import { AccountQuickLinksNav, type AdminQuickLinksModelsItem } from '../AccountPage/AccountQuickLinksNav';
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
@@ -72,7 +72,7 @@ type AdminFilterOption<T extends string> = Readonly<{
   value: T;
 }>;
 
-type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews' | 'requests';
+type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews' | 'requests' | 'models';
 
 type AdminReviewGarageItem = Readonly<{
   detailHref: string;
@@ -363,7 +363,15 @@ function AdminGate({ children }: AdminGateProps) {
   return children;
 }
 
-export function AdminSidebar({ active, children }: Readonly<{ active: AdminSidebarActiveItem; children?: ReactNode }>) {
+export function AdminSidebar({
+  active,
+  activeModelsItem,
+  children,
+}: Readonly<{
+  active: AdminSidebarActiveItem;
+  activeModelsItem?: AdminQuickLinksModelsItem;
+  children?: ReactNode;
+}>) {
   return (
     <aside className="account-page__sidebar admin-page__sidebar" aria-label="Navegación admin">
       <article className="account-page__notice admin-page__notice">
@@ -376,6 +384,7 @@ export function AdminSidebar({ active, children }: Readonly<{ active: AdminSideb
 
       <AccountQuickLinksNav
         activeAdminItem={active}
+        activeAdminModelsItem={activeModelsItem}
         ariaLabel="Navegación de administración"
         includeAdmin
       />
@@ -474,6 +483,120 @@ export function AdminDashboardPage() {
         </section>
       </main>
     </AdminGate>
+  );
+}
+
+function AdminModelsWorkspace({
+  activeModelsItem,
+  children,
+  description,
+  title,
+  titleId,
+}: Readonly<{
+  activeModelsItem: AdminQuickLinksModelsItem;
+  children: ReactNode;
+  description: string;
+  title: string;
+  titleId: string;
+}>) {
+  const { profile, user } = useAuth();
+
+  return (
+    <AdminGate>
+      <PageHero
+        className="admin-page__community-hero admin-page__hero"
+        titleId={titleId}
+        imageSrc={adminHeroImage}
+        eyebrow="ADMIN STUDIO"
+        title={title}
+        description={description}
+      >
+        <div className="admin-page__hero-meta">
+          <div className="admin-page__admin-chip" aria-label="Administrador activo">
+            <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
+            {getDisplayName(profile?.displayName, user?.email)}
+          </div>
+        </div>
+      </PageHero>
+
+      <main className="account-page admin-page" aria-labelledby={titleId}>
+        <section className="account-page__dashboard admin-page__layout">
+          <AdminSidebar active="models" activeModelsItem={activeModelsItem}>
+            <AdminDemoDataToggle />
+          </AdminSidebar>
+          <div className="account-page__main">{children}</div>
+        </section>
+      </main>
+    </AdminGate>
+  );
+}
+
+export function AdminModelsPage() {
+  return (
+    <AdminModelsWorkspace
+      activeModelsItem="overview"
+      description="Gestiona las fichas técnicas del catálogo MotoAtlas."
+      title="Estudio de modelos"
+      titleId="admin-models-title"
+    >
+      <section className="admin-page__dashboard-grid" aria-labelledby="admin-models-cards-title">
+        <article className="account-page__card admin-page__summary-card">
+          <span className="material-symbols-outlined" aria-hidden="true">precision_manufacturing</span>
+          <h2 id="admin-models-cards-title">Workspace futuro</h2>
+          <p>Este hub reúne los accesos iniciales para preparar el alta y la edición del catálogo sin activar todavía formularios, búsqueda ni persistencia.</p>
+        </article>
+        <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
+          <span className="material-symbols-outlined" aria-hidden="true">add_circle</span>
+          <h2>Nuevo modelo</h2>
+          <p>Aquí arrancará el futuro flujo de alta interna del catálogo.</p>
+          <a className="account-page__button account-page__button--glass" href="#/admin/modelos/nuevo">Abrir placeholder</a>
+        </article>
+        <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
+          <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
+          <h2>Editar catálogo</h2>
+          <p>Aquí arrancará el futuro flujo de búsqueda y edición de modelos existentes.</p>
+          <a className="account-page__button account-page__button--glass" href="#/admin/modelos/editar">Abrir placeholder</a>
+        </article>
+      </section>
+    </AdminModelsWorkspace>
+  );
+}
+
+export function AdminNewModelPage() {
+  return (
+    <AdminModelsWorkspace
+      activeModelsItem="new"
+      description="Crea, revisa y completa fichas técnicas del catálogo MotoAtlas."
+      title="Nuevo modelo"
+      titleId="admin-models-new-title"
+    >
+      <section className="admin-page__dashboard-grid" aria-labelledby="admin-models-new-card-title">
+        <article className="account-page__card admin-page__summary-card">
+          <span className="material-symbols-outlined" aria-hidden="true">add_circle</span>
+          <h2 id="admin-models-new-card-title">Placeholder inicial</h2>
+          <p>Aquí se preparará el flujo de alta de modelos.</p>
+        </article>
+      </section>
+    </AdminModelsWorkspace>
+  );
+}
+
+export function AdminEditModelsPage() {
+  return (
+    <AdminModelsWorkspace
+      activeModelsItem="edit"
+      description="Crea, revisa y completa fichas técnicas del catálogo MotoAtlas."
+      title="Editar catálogo"
+      titleId="admin-models-edit-title"
+    >
+      <section className="admin-page__dashboard-grid" aria-labelledby="admin-models-edit-card-title">
+        <article className="account-page__card admin-page__summary-card">
+          <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
+          <h2 id="admin-models-edit-card-title">Placeholder inicial</h2>
+          <p>Aquí se preparará la búsqueda y edición de modelos existentes.</p>
+        </article>
+      </section>
+    </AdminModelsWorkspace>
   );
 }
 
