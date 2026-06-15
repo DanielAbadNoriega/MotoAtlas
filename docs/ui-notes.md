@@ -401,7 +401,8 @@ Ruta y layout:
 - body con `account-page admin-page` y `admin-page__layout` (sidebar + main).
 
 Sidebar admin (reutilizado, `AdminRequestsFilterSidebar`):
-- quick links a Panel admin (`#/admin`), Moderación (`#/admin/moderacion`), Reviews (`#/admin/reviews`), Solicitudes (`#/admin/solicitudes`, marcada como activa) y Mi cuenta (`#/cuenta`).
+- `.account-page__quick-links` ya soporta grupos desplegables compartidos para cuenta/admin. Se renderizan como `Mi cuenta` y `Panel Admin`, usando `nav` semántico, `<details>/<summary>` nativo y anchors reales; el link activo conserva `aria-current="page"`.
+- en admin el orden compartido es: `Resumen`, `Mis reviews`, `Mis solicitudes`, `Panel admin`, `Moderación`, `Reviews`, `Solicitudes`.
 - header de filtros con título `Filtros`, botón `Limpiar filtros` (deshabilitado cuando no hay filtros activos; al activarlo resetea a página 1) y botón `close` accesible (`Cerrar filtros de solicitudes`).
 - cuerpo de filtros con búsqueda `Buscar por marca o modelo` (input `type="search"`, icono `search` Material Symbols), grupo `Estado` (abierto por defecto), grupo `Origen` y grupo `Fecha de creación` (cerrados por defecto).
 - footer con `Limpiar filtros` y `Aplicar filtros` (este último cierra el panel/drawer en mobile).
@@ -480,6 +481,13 @@ No implementado aún. Dirección documentada para una futura gestión interna de
 - la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios.
 
 ## Mi cuenta — Reviews
+
+Quick links / sidebar de cuenta-admin:
+- reutilizar el patrón agrupado de `.account-page__quick-links` en lugar de duplicar listas planas por página;
+- grupos actuales: `Mi cuenta` (`Resumen`, `Mis reviews`, `Mis solicitudes`) y `Panel Admin` (`Panel admin`, `Moderación`, `Reviews`, `Solicitudes`);
+- disclosure nativo con `<details>/<summary>` y links semánticos `<a>`;
+- el enlace activo debe seguir usando `aria-current="page"`;
+- el grupo `Panel Admin` solo aparece cuando la superficie recibe `isAdmin`, sin alterar guards ni acceso a datos.
 
 La ruta `#/cuenta/reviews` funciona como “Mi garaje de reviews”: agrupa las reviews del usuario autenticado por moto, pagina modelos agrupados y aplica filtros sobre marca/modelo, segmento, carnet, rating medio, uso principal y orden. Los filtros usan el componente compartido `FilterGroup` (`src/shared/ui/filters/FilterGroup.tsx`) que importa sus propios estilos (`./FilterGroup.scss`); no requiere que la página cargue sus estilos. Los filtros replican el patrón visual de `#/comunidad/reviews` con header/body/footer y botones/chips sin selects; en desktop viven dentro del sidebar de cuenta antes del notice y en tablet/mobile usan panel responsive. El CTA `Ver mis reviews` de cada moto apunta al detalle privado `#/cuenta/reviews/[motorcycleId]`.
 

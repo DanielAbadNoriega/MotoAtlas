@@ -2,13 +2,14 @@
 
 ## Último estado estable
 
-- Rama actual: `feature/community-insights-actionable-cards`
-- Último bloque validado: **rediseño de insights de `CommunityReviewsPage` + cards accionables** aprobado.
-- Alcance validado: `#/comunidad/reviews` promueve `Pulso de la Comunidad` como sección full-width bajo el hero, elimina el layout legacy de aside/editorial-grid para insights, sustituye `Review más útil` por `Moto mejor valorada` y deja `Moto más comentada` + `Moto mejor valorada` como cards-link semánticas hacia `#/comunidad/{motorcycleId}`. No hubo cambios de backend, auth, schema, RLS, rutas ni servicios.
+- Rama actual: `feature/account-admin-quick-links-nav`
+- Último bloque validado: **navegación agrupada de quick links para cuenta/admin** aprobada.
+- Alcance validado: las superficies de `#/cuenta`, `#/cuenta/reviews`, `#/cuenta/solicitudes`, `#/admin`, `#/admin/moderacion`, `#/admin/reviews` y `#/admin/solicitudes` comparten ahora quick links agrupados en `Mi cuenta` y `Panel Admin`, con `<nav>` semántico, disclosure nativo vía `<details>/<summary>`, anchors reales y `aria-current="page"` en el enlace activo. No hubo cambios en data access, auth guards, schema, RLS, rutas, App ni servicios. **No** se implementó `Admin Models Studio` ni se añadió `#/admin/modelos`.
 - Tests: 1146 passed (75 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Focused checks más recientes:
+  - `src/components/pages/AccountPage/AccountPage.test.tsx` + `src/components/pages/AccountRequestsPage/AccountRequestsPage.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` + `src/components/pages/AccountMotorcycleReviewsPage/AccountMotorcycleReviewsPage.test.tsx` + `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/components/pages/AdminMotorcycleReviewsPage/AdminMotorcycleReviewsPage.test.tsx` → `6` files / `154` tests passing
   - `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing
   - `supabase/schema.test.ts` → `1` file / `66` tests passing
   - suite completa → `75` files / `1146` tests passing
@@ -53,10 +54,11 @@
 ### Admin
 - Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
 - Admin protegido por sesión + rol (`user_profiles.role = admin`).
+- quick links de cuenta/admin ya no se documentan como listas planas aisladas: `.account-page__quick-links` soporta grupos `Mi cuenta` y `Panel Admin`, con disclosure nativo `<details>/<summary>`, anchors semánticos y el mismo orden en superficies de cuenta y admin. El plumbing extra de `isAdmin` en páginas de cuenta solo habilita la visibilidad del grupo compartido, sin cambiar guards ni acceso a datos.
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - `#/admin/solicitudes` **Fase 1 implementada** (rama `feature/admin-requests-phase-1`, sin cambios de schema/RLS) sobre la base auditada en `feature/admin-requests-audit`. Capacidades verificadas:
-  - sidebar admin con quick links a Panel admin, Moderación, Reviews, Solicitudes, Mi cuenta.
+  - sidebar admin reutiliza la navegación agrupada compartida: grupo `Mi cuenta` (`Resumen`, `Mis reviews`, `Mis solicitudes`) + grupo `Panel Admin` (`Panel admin`, `Moderación`, `Reviews`, `Solicitudes`), manteniendo `Solicitudes` como enlace activo en esta ruta.
   - filtros laterales con `FilterGroup` + `FilterOptionButton` (`classPrefix="admin-page"`), `aria-pressed` y `aria-label` por opción: `Estado` (Todas, Pendientes, Revisadas, Aprobadas, Rechazadas), `Origen` (Todas, Usuario, Admin, Import) y búsqueda libre por marca o modelo. Botones `Limpiar filtros` y `Aplicar filtros` replicando el patrón visual de filtros admin.
   - **multi-select de `Estado` y `Origen`**: el admin puede combinar varios estados o varios orígenes a la vez; `Todas` significa "sin filtro" y limpia los específicos al activarse; al activar un valor concreto, `Todas` se desactiva automáticamente.
   - **filtro por rango de fechas** (`Fecha de creación`) con inputs `type="date"` Desde/Hasta; fecha enviada al backend como `YYYY-MM-DD` interpretada como día completo (`createdFrom` → `T00:00:00.000Z`, `createdTo` → `T23:59:59.999Z`); `min`/`max` cruzados para evitar invertir el rango.
@@ -295,7 +297,7 @@
 
 ## Siguiente paso
 
-- **Admin Models Studio — Fase 1**: entrada admin, quick links agrupados y landing #/admin/modelos, sin persistencia real.
+- **Admin Models Studio — Fase 1** sigue como backlog separado: entry points y landing `#/admin/modelos` sin persistencia real. El polish de quick links agrupados ya quedó implementado y **no** cuenta como esa fase.
 
 ## Decisiones importantes
 
