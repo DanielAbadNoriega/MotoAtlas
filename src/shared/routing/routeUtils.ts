@@ -295,6 +295,23 @@ export function getAdminMotorcycleIdFromRoute(route: string, motorcycles: readon
   return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
 }
 
+export function isAdminEditMotorcycleRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return /^\/admin\/modelos\/[^/?#]+\/editar$/.test(path);
+}
+
+export function getAdminEditMotorcycleIdFromRoute(route: string, motorcycles: readonly Bike[]) {
+  const { path } = routeToPathAndSearch(route);
+  const match = path.match(/^\/admin\/modelos\/([^/?#]+)\/editar/);
+
+  if (!match) {
+    return undefined;
+  }
+
+  const slugOrId = decodeURIComponent(match[1]);
+  return findBikeBySlugOrId(slugOrId, motorcycles)?.id ?? slugOrId;
+}
+
 export function getComparatorSelectionFromRoute(route: string, motorcycles: readonly Bike[]): ComparatorHashSelection {
   const queryIds = getQueryParamIds(route);
   const slug = getCompareSlugFromRoute(route);

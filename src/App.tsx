@@ -6,7 +6,7 @@ import { AccountPage } from './components/pages/AccountPage';
 import { AccountMotorcycleReviewsPage } from './components/pages/AccountMotorcycleReviewsPage';
 import { AccountReviewsPage } from './components/pages/AccountReviewsPage';
 import { AccountRequestsPage } from './components/pages/AccountRequestsPage';
-import { AdminDashboardPage, AdminEditModelsPage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './components/pages/AdminPage';
+import { AdminDashboardPage, AdminEditModelsPage, AdminEditMotorcyclePage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './components/pages/AdminPage';
 import { AdminMotorcycleReviewsPage } from './components/pages/AdminMotorcycleReviewsPage';
 import { AuthPage } from './components/pages/AuthPage';
 import { BikeDetailPage } from './components/pages/BikeDetailPage';
@@ -38,6 +38,7 @@ import {
   getBikeDetailIdFromRoute,
   getAccountReviewMotorcycleIdFromRoute,
   getCommunityMotorcycleIdFromRoute,
+  getAdminEditMotorcycleIdFromRoute,
   getAdminMotorcycleIdFromRoute,
   getComparatorSelectionFromRoute,
   getCurrentAppRoute,
@@ -46,6 +47,7 @@ import {
   isAccountRoute,
   isAccountRequestsRoute,
   isAccountMotorcycleReviewsRoute,
+  isAdminEditMotorcycleRoute,
   isAdminModerationRoute,
   isAdminRequestsRoute,
   isAdminReviewsRoute,
@@ -125,6 +127,8 @@ export function App() {
   const isAdminModelsPage = appPath === '/admin/modelos';
   const isAdminNewModelPage = appPath === '/admin/modelos/nuevo';
   const isAdminEditModelsPage = appPath === '/admin/modelos/editar';
+  const isAdminEditMotorcyclePage = isAdminEditMotorcycleRoute(route);
+  const adminEditMotorcycleId = isAdminEditMotorcyclePage ? getAdminEditMotorcycleIdFromRoute(route, motorcycles) : undefined;
   const isComparatorPage = isComparatorRoute(route) || Boolean(legacyComparison);
   const isCommunityPage = isCommunityRoute(route);
   const isCommunityReviewsPage = isCommunityReviewsRoute(route);
@@ -328,6 +332,8 @@ export function App() {
         <AdminModelsPage />
       ) : isAdminNewModelPage ? (
         <AdminNewModelPage />
+      ) : isAdminEditMotorcyclePage ? (
+        <AdminEditMotorcyclePage motorcycleId={adminEditMotorcycleId} />
       ) : isAdminEditModelsPage ? (
         <AdminEditModelsPage />
       ) : isAdminPage ? (

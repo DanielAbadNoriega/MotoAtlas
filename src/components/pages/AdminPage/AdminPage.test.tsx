@@ -18,7 +18,7 @@ import {
   getReviewAspectsByReviewIds,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
-import { AdminDashboardPage, AdminEditModelsPage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
+import { AdminDashboardPage, AdminEditModelsPage, AdminEditMotorcyclePage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
 
 import {
   getAllModelRequests,
@@ -2159,5 +2159,100 @@ describe('AdminPage', () => {
 
     expect(screen.getByRole('button', { name: /Más información sobre imagen bloqueada/i })).toBeInTheDocument();
     expect(screen.getByText('Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.')).toBeInTheDocument();
+  });
+
+  describe('AdminEditMotorcyclePage — #/admin/modelos/{motorcycleId}/editar', () => {
+    const existingId = 'bmw-f-900-gs-2024';
+    const unknownId = 'non-existent-motorcycle';
+
+    it('renderiza el formulario de edición con modo edit para un modelo existente', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+
+      expect(screen.getByRole('heading', { name: 'Editar modelo' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Workspace de edición' })).toBeInTheDocument();
+      expect(screen.getByRole('form', { name: 'Formulario de edición de modelo' })).toBeInTheDocument();
+      expect(screen.getByText('Actualiza los datos disponibles de este modelo.')).toBeInTheDocument();
+      expect(screen.getByText(/^Editando /)).toBeInTheDocument();
+    });
+
+    it('prefill los campos de identidad con los datos de la moto', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+
+      expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
+      expect(screen.getByLabelText('Modelo')).toHaveValue('F 900 GS');
+      expect(screen.getByDisplayValue('2024')).toBeInTheDocument();
+    });
+
+    it('prefill los campos de specs con los datos de la moto', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+
+      expect(screen.getByLabelText('Segmento')).toHaveValue('trail');
+      expect(screen.getByLabelText('Carnet')).toHaveValue('A');
+      expect(screen.getByLabelText('Potencia (hp)')).toHaveValue(105);
+    });
+
+    it('muestra el preview hero con los datos de la moto existente', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+
+      const previewHeading = screen.getByRole('heading', { name: 'BMW F 900 GS' });
+      const previewSection = previewHeading.closest('section');
+      expect(previewHeading).toBeInTheDocument();
+      expect(previewSection).not.toBeNull();
+      expect(within(previewSection as HTMLElement).getByText('105 CV')).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: 'Preview local de BMW F 900 GS' })).toBeInTheDocument();
+    });
+
+    it('preserva las mismas cuatro acciones en el footer', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+
+      expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Publicar modelo' })).toBeInTheDocument();
+    });
+
+    it('Descartar cambios resetea al estado original precargado', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+
+      await user.clear(screen.getByLabelText('Marca'));
+      await user.type(screen.getByLabelText('Marca'), 'Yamaha');
+      expect(screen.getByLabelText('Marca')).toHaveValue('Yamaha');
+
+      await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+      expect(screen.getByRole('status')).toHaveTextContent('Cambios descartados.');
+      expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
+    });
+
+    it('unknown motorcycleId muestra estado not-found con CTA', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={unknownId} />);
+
+      const headings = screen.getAllByRole('heading', { name: 'Modelo no encontrado' });
+      expect(headings.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('No se encontró un modelo con el identificador especificado.')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Volver a selección de modelos' })).toHaveAttribute('href', '#/admin/modelos/editar');
+    });
+
+    it('undefined motorcycleId muestra estado not-found con CTA', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={undefined} />);
+
+      const headings = screen.getAllByRole('heading', { name: 'Modelo no encontrado' });
+      expect(headings.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByRole('link', { name: 'Volver a selección de modelos' })).toHaveAttribute('href', '#/admin/modelos/editar');
+    });
+
+    it('las acciones del footer son locales sin llamar servicios', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+
+      await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+      expect(screen.getByRole('status')).toHaveTextContent('Borrador local actualizado.');
+
+      await user.click(screen.getByRole('button', { name: 'Vista previa' }));
+      expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+      expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
+    });
   });
 });

@@ -169,6 +169,33 @@ const emptyAdminModelDraft: AdminModelDraft = {
 
 const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-model-creating.jpg';
 
+function createDraftFromBike(bike: Bike): AdminModelDraft {
+  return {
+    brand: bike.brand,
+    model: bike.model,
+    year: String(bike.year),
+    description: bike.description || '',
+    modelId: bike.id,
+    segment: bike.segment,
+    license: bike.license,
+    engineType: bike.engineType,
+    displacementCc: String(bike.displacementCc),
+    powerHp: String(bike.powerHp),
+    torqueNm: String(bike.torqueNm),
+    wetWeightKg: String(bike.wetWeightKg),
+    seatHeightMm: String(bike.seatHeightMm),
+    fuelTankLiters: String(bike.fuelTankLiters),
+    priceEur: String(bike.priceEur),
+    pricePending: false,
+    imageUrl: bike.imageUrl,
+    imageLocked: bike.imageLocked ?? false,
+    officialUrl: bike.officialUrl ?? '',
+    sourceNotes: '',
+    internalNotes: '',
+    features: { ...bike.features },
+  };
+}
+
 function formatPreviewNumber(value: string, unit: string) {
   const parsed = Number(value);
 
@@ -810,6 +837,315 @@ export function AdminModelsPage() {
   );
 }
 
+type AdminModelFormBodyProps = Readonly<{
+  draft: AdminModelDraft;
+  suggestedModelId: string;
+  localStatus: string;
+  onDraftFieldChange: (field: AdminModelDraftField, value: string) => void;
+  onDraftCheckboxChange: (field: 'pricePending' | 'imageLocked', value: boolean) => void;
+  onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
+  onDiscardChanges: () => void;
+  onLocalAction: (message: string) => void;
+  toolbarKicker: string;
+  workspaceHeading: string;
+  workspaceHeadingId: string;
+  formLabel: string;
+}>;
+
+function AdminModelFormBody({
+  draft,
+  suggestedModelId,
+  localStatus,
+  onDraftFieldChange,
+  onDraftCheckboxChange,
+  onFeatureToggle,
+  onDiscardChanges,
+  onLocalAction,
+  toolbarKicker,
+  workspaceHeading,
+  workspaceHeadingId,
+  formLabel,
+}: AdminModelFormBodyProps) {
+  return (
+    <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
+      <header className="admin-page__model-toolbar">
+          <span className="admin-page__model-toolbar-kicker">{toolbarKicker}</span>
+          <h2 id={workspaceHeadingId}>{workspaceHeading}</h2>
+      </header>
+
+      {localStatus ? (
+        <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
+      ) : null}
+
+      <AdminModelHeroPreview draft={draft} />
+
+      <form className="admin-page__model-form" aria-label={formLabel} onSubmit={(event) => event.preventDefault()}>
+        <AdminModelSection
+          technicalTitle="01. IDENTIDAD_MODELO"
+          description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-brand">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">branding_watermark</span>
+                Marca
+              </span>
+              <input id="admin-model-brand" aria-label="Marca" type="text" value={draft.brand} onChange={(event) => onDraftFieldChange('brand', event.target.value)} placeholder="BMW" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-name">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">two_wheeler</span>
+                Modelo
+              </span>
+              <input id="admin-model-name" aria-label="Modelo" type="text" value={draft.model} onChange={(event) => onDraftFieldChange('model', event.target.value)} placeholder="F 900 GS" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-year">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                Año
+              </span>
+              <input id="admin-model-year" type="number" min="1900" max="2100" value={draft.year} onChange={(event) => onDraftFieldChange('year', event.target.value)} placeholder="2026" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-id">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">tag</span>
+                ID sugerido
+                <AdminModelInfoTooltip
+                  ariaLabel="Más información sobre ID sugerido"
+                  description={`Sugerencia automática: ${suggestedModelId || 'marca-modelo-2026'}`}
+                />
+              </span>
+              <input id="admin-model-id" type="text" value={draft.modelId} onChange={(event) => onDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
+            </label>
+
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-description">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">article</span>
+                Descripción
+              </span>
+              <textarea id="admin-model-description" aria-label="Descripción" rows={4} value={draft.description} onChange={(event) => onDraftFieldChange('description', event.target.value)} placeholder="Resumen técnico/editorial del modelo para el hero público." />
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="02. CLASIFICACION"
+          description="Define la taxonomía base y el carnet objetivo antes de empezar a cargar números o copy técnico."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-segment">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">category</span>
+                Segmento
+              </span>
+              <select id="admin-model-segment" aria-label="Segmento" value={draft.segment} onChange={(event) => onDraftFieldChange('segment', event.target.value)}>
+                <option value="">Seleccionar segmento</option>
+                {BIKE_SEGMENTS.map((segment) => (
+                  <option key={segment} value={segment}>{segmentLabels[segment]}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-license">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('license')}</span>
+                Carnet
+              </span>
+              <select id="admin-model-license" aria-label="Carnet" value={draft.license} onChange={(event) => onDraftFieldChange('license', event.target.value)}>
+                <option value="">Seleccionar carnet</option>
+                {BIKE_LICENSES.map((license) => (
+                  <option key={license} value={license}>{license}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="03. MOTOR_RENDIMIENTO"
+          description="Bloque local de specs principales para alimentar el preview tipo ficha y preparar el contrato técnico futuro."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-engine-type">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">memory</span>
+                Tipo de motor
+              </span>
+              <select id="admin-model-engine-type" value={draft.engineType} onChange={(event) => onDraftFieldChange('engineType', event.target.value)}>
+                <option value="">Seleccionar arquitectura</option>
+                {adminModelEngineTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-displacement">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('engine')}</span>
+                Cilindrada (cc)
+              </span>
+              <input id="admin-model-displacement" type="number" min="0" value={draft.displacementCc} onChange={(event) => onDraftFieldChange('displacementCc', event.target.value)} placeholder="895" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-power">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('power')}</span>
+                Potencia (hp)
+              </span>
+              <input id="admin-model-power" aria-label="Potencia (hp)" type="number" min="0" step="0.1" value={draft.powerHp} onChange={(event) => onDraftFieldChange('powerHp', event.target.value)} placeholder="105" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-torque">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('torque')}</span>
+                Torque (nm)
+              </span>
+              <input id="admin-model-torque" type="number" min="0" step="0.1" value={draft.torqueNm} onChange={(event) => onDraftFieldChange('torqueNm', event.target.value)} placeholder="93" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-weight">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('weight')}</span>
+                Peso (kg)
+              </span>
+              <input id="admin-model-weight" type="number" min="0" step="0.1" value={draft.wetWeightKg} onChange={(event) => onDraftFieldChange('wetWeightKg', event.target.value)} placeholder="219" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-seat-height">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('seatHeight')}</span>
+                Altura asiento (mm)
+              </span>
+              <input id="admin-model-seat-height" type="number" min="0" value={draft.seatHeightMm} onChange={(event) => onDraftFieldChange('seatHeightMm', event.target.value)} placeholder="870" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-fuel-tank">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('fuelTank')}</span>
+                Depósito (l)
+              </span>
+              <input id="admin-model-fuel-tank" type="number" min="0" step="0.1" value={draft.fuelTankLiters} onChange={(event) => onDraftFieldChange('fuelTankLiters', event.target.value)} placeholder="14.5" />
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="04. ELECTRONICA_EQUIPAMIENTO"
+          description="Selección local de features típicas para revisar el layout de toggles antes de mapearlas al backend real."
+        >
+          <div className="admin-page__model-checkbox-grid">
+            {adminModelFeatureOptions.map((feature) => (
+              <label className="admin-page__model-checkbox" key={feature.key}>
+                <input type="checkbox" checked={draft.features[feature.key]} onChange={(event) => onFeatureToggle(feature.key, event.target.checked)} />
+                <span>{feature.label}</span>
+              </label>
+            ))}
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="05. PRECIO_MERCADO"
+          description="Campos locales para validar copy, fallback de precio pendiente y decisiones de presentación antes de tocar persistencia."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-price">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('price')}</span>
+                Precio (€)
+              </span>
+              <input id="admin-model-price" type="number" min="0" value={draft.priceEur} onChange={(event) => onDraftFieldChange('priceEur', event.target.value)} placeholder="13990" />
+            </label>
+
+            <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+              <input type="checkbox" checked={draft.pricePending} onChange={(event) => onDraftCheckboxChange('pricePending', event.target.checked)} />
+              <span>Marcar precio como pendiente</span>
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="06. IMAGEN_CURACION"
+          description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">image</span>
+                Image URL
+              </span>
+              <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
+            </label>
+
+            <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+              <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
+              <span className="content">
+                Imagen bloqueada / curada
+                <AdminModelInfoTooltip
+                  ariaLabel="Más información sobre imagen bloqueada"
+                  description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
+                />
+              </span>
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="07. FUENTES_NOTAS"
+          description="Campos de referencia local para preparar fuentes, URL oficial y notas editoriales antes de definir servicios reales."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-official-url">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">link</span>
+                URL oficial
+              </span>
+              <input id="admin-model-official-url" type="url" value={draft.officialUrl} onChange={(event) => onDraftFieldChange('officialUrl', event.target.value)} placeholder="https://www.marca.com/modelo" />
+            </label>
+
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-source-notes">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">source_environment</span>
+                Notas de fuente
+              </span>
+              <textarea id="admin-model-source-notes" rows={3} value={draft.sourceNotes} onChange={(event) => onDraftFieldChange('sourceNotes', event.target.value)} placeholder="API, ficha oficial, manual interno, revisión editorial..." />
+            </label>
+
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-internal-notes">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">note_stack</span>
+                Notas internas
+              </span>
+              <textarea id="admin-model-internal-notes" rows={4} value={draft.internalNotes} onChange={(event) => onDraftFieldChange('internalNotes', event.target.value)} placeholder="Pendientes de copy, dudas de specs, checks para QA visual..." />
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <footer className="admin-page__model-actions" aria-label="Acciones del borrador">
+          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button admin-page__model-action-button--discard" onClick={onDiscardChanges}>
+            <span className="material-symbols-outlined" aria-hidden="true">undo</span>
+            Descartar cambios
+          </button>
+          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => onLocalAction('Borrador local actualizado.')}>
+            <span className="material-symbols-outlined" aria-hidden="true">save</span>
+            Guardar borrador
+          </button>
+          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => onLocalAction('Vista previa actualizada.')}>
+            <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
+            Vista previa
+          </button>
+          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" onClick={() => onLocalAction('Publicación pendiente de persistencia.')}>
+            <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+            Publicar modelo
+          </button>
+        </footer>
+      </form>
+    </section>
+  );
+}
+
 export function AdminNewModelPage() {
   const [draft, setDraft] = useState<AdminModelDraft>(emptyAdminModelDraft);
   const [localStatus, setLocalStatus] = useState('');
@@ -850,282 +1186,20 @@ export function AdminNewModelPage() {
       title="Nuevo modelo"
       titleId="admin-models-new-title"
     >
-      <section className="admin-page__model-studio" aria-labelledby="admin-models-new-workspace-title">
-        <header className="admin-page__model-toolbar">
-            <span className="admin-page__model-toolbar-kicker">Borrador local</span>
-            <h2 id="admin-models-new-workspace-title">Workspace de creación</h2>
-        </header>
-
-        {localStatus ? (
-          <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
-        ) : null}
-
-        <AdminModelHeroPreview draft={draft} />
-
-        <form className="admin-page__model-form" aria-label="Formulario de nuevo modelo" onSubmit={(event) => event.preventDefault()}>
-          <AdminModelSection
-            technicalTitle="01. IDENTIDAD_MODELO"
-            description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-brand">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">branding_watermark</span>
-                  Marca
-                </span>
-                <input id="admin-model-brand" aria-label="Marca" type="text" value={draft.brand} onChange={(event) => handleDraftFieldChange('brand', event.target.value)} placeholder="BMW" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-name">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">two_wheeler</span>
-                  Modelo
-                </span>
-                <input id="admin-model-name" aria-label="Modelo" type="text" value={draft.model} onChange={(event) => handleDraftFieldChange('model', event.target.value)} placeholder="F 900 GS" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-year">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
-                  Año
-                </span>
-                <input id="admin-model-year" type="number" min="1900" max="2100" value={draft.year} onChange={(event) => handleDraftFieldChange('year', event.target.value)} placeholder="2026" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-id">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">tag</span>
-                  ID sugerido
-                  <AdminModelInfoTooltip
-                    ariaLabel="Más información sobre ID sugerido"
-                    description={`Sugerencia automática: ${suggestedModelId || 'marca-modelo-2026'}`}
-                  />
-                </span>
-                <input id="admin-model-id" type="text" value={draft.modelId} onChange={(event) => handleDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
-              </label>
-
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-description">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">article</span>
-                  Descripción
-                </span>
-                <textarea id="admin-model-description" aria-label="Descripción" rows={4} value={draft.description} onChange={(event) => handleDraftFieldChange('description', event.target.value)} placeholder="Resumen técnico/editorial del modelo para el hero público." />
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="02. CLASIFICACION"
-            description="Define la taxonomía base y el carnet objetivo antes de empezar a cargar números o copy técnico."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-segment">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">category</span>
-                  Segmento
-                </span>
-                <select id="admin-model-segment" aria-label="Segmento" value={draft.segment} onChange={(event) => handleDraftFieldChange('segment', event.target.value)}>
-                  <option value="">Seleccionar segmento</option>
-                  {BIKE_SEGMENTS.map((segment) => (
-                    <option key={segment} value={segment}>{segmentLabels[segment]}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-license">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('license')}</span>
-                  Carnet
-                </span>
-                <select id="admin-model-license" aria-label="Carnet" value={draft.license} onChange={(event) => handleDraftFieldChange('license', event.target.value)}>
-                  <option value="">Seleccionar carnet</option>
-                  {BIKE_LICENSES.map((license) => (
-                    <option key={license} value={license}>{license}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="03. MOTOR_RENDIMIENTO"
-            description="Bloque local de specs principales para alimentar el preview tipo ficha y preparar el contrato técnico futuro."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-engine-type">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">memory</span>
-                  Tipo de motor
-                </span>
-                <select id="admin-model-engine-type" value={draft.engineType} onChange={(event) => handleDraftFieldChange('engineType', event.target.value)}>
-                  <option value="">Seleccionar arquitectura</option>
-                  {adminModelEngineTypeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-displacement">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('engine')}</span>
-                  Cilindrada (cc)
-                </span>
-                <input id="admin-model-displacement" type="number" min="0" value={draft.displacementCc} onChange={(event) => handleDraftFieldChange('displacementCc', event.target.value)} placeholder="895" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-power">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('power')}</span>
-                  Potencia (hp)
-                </span>
-                <input id="admin-model-power" aria-label="Potencia (hp)" type="number" min="0" step="0.1" value={draft.powerHp} onChange={(event) => handleDraftFieldChange('powerHp', event.target.value)} placeholder="105" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-torque">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('torque')}</span>
-                  Torque (nm)
-                </span>
-                <input id="admin-model-torque" type="number" min="0" step="0.1" value={draft.torqueNm} onChange={(event) => handleDraftFieldChange('torqueNm', event.target.value)} placeholder="93" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-weight">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('weight')}</span>
-                  Peso (kg)
-                </span>
-                <input id="admin-model-weight" type="number" min="0" step="0.1" value={draft.wetWeightKg} onChange={(event) => handleDraftFieldChange('wetWeightKg', event.target.value)} placeholder="219" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-seat-height">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('seatHeight')}</span>
-                  Altura asiento (mm)
-                </span>
-                <input id="admin-model-seat-height" type="number" min="0" value={draft.seatHeightMm} onChange={(event) => handleDraftFieldChange('seatHeightMm', event.target.value)} placeholder="870" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-fuel-tank">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('fuelTank')}</span>
-                  Depósito (l)
-                </span>
-                <input id="admin-model-fuel-tank" type="number" min="0" step="0.1" value={draft.fuelTankLiters} onChange={(event) => handleDraftFieldChange('fuelTankLiters', event.target.value)} placeholder="14.5" />
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="04. ELECTRONICA_EQUIPAMIENTO"
-            description="Selección local de features típicas para revisar el layout de toggles antes de mapearlas al backend real."
-          >
-            <div className="admin-page__model-checkbox-grid">
-              {adminModelFeatureOptions.map((feature) => (
-                <label className="admin-page__model-checkbox" key={feature.key}>
-                  <input type="checkbox" checked={draft.features[feature.key]} onChange={(event) => handleFeatureToggle(feature.key, event.target.checked)} />
-                  <span>{feature.label}</span>
-                </label>
-              ))}
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="05. PRECIO_MERCADO"
-            description="Campos locales para validar copy, fallback de precio pendiente y decisiones de presentación antes de tocar persistencia."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-price">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('price')}</span>
-                  Precio (€)
-                </span>
-                <input id="admin-model-price" type="number" min="0" value={draft.priceEur} onChange={(event) => handleDraftFieldChange('priceEur', event.target.value)} placeholder="13990" />
-              </label>
-
-              <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-                <input type="checkbox" checked={draft.pricePending} onChange={(event) => handleDraftCheckboxChange('pricePending', event.target.checked)} />
-                <span>Marcar precio como pendiente</span>
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="06. IMAGEN_CURACION"
-            description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">image</span>
-                  Image URL
-                </span>
-                <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => handleDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
-              </label>
-
-              <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-                <input type="checkbox" checked={draft.imageLocked} onChange={(event) => handleDraftCheckboxChange('imageLocked', event.target.checked)} />
-                <span className="content">
-                  Imagen bloqueada / curada
-                  <AdminModelInfoTooltip
-                    ariaLabel="Más información sobre imagen bloqueada"
-                    description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
-                  />
-                </span>
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="07. FUENTES_NOTAS"
-            description="Campos de referencia local para preparar fuentes, URL oficial y notas editoriales antes de definir servicios reales."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-official-url">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">link</span>
-                  URL oficial
-                </span>
-                <input id="admin-model-official-url" type="url" value={draft.officialUrl} onChange={(event) => handleDraftFieldChange('officialUrl', event.target.value)} placeholder="https://www.marca.com/modelo" />
-              </label>
-
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-source-notes">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">source_environment</span>
-                  Notas de fuente
-                </span>
-                <textarea id="admin-model-source-notes" rows={3} value={draft.sourceNotes} onChange={(event) => handleDraftFieldChange('sourceNotes', event.target.value)} placeholder="API, ficha oficial, manual interno, revisión editorial..." />
-              </label>
-
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-internal-notes">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">note_stack</span>
-                  Notas internas
-                </span>
-                <textarea id="admin-model-internal-notes" rows={4} value={draft.internalNotes} onChange={(event) => handleDraftFieldChange('internalNotes', event.target.value)} placeholder="Pendientes de copy, dudas de specs, checks para QA visual..." />
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <footer className="admin-page__model-actions" aria-label="Acciones del borrador">
-            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button admin-page__model-action-button--discard" onClick={handleDiscardChanges}>
-              <span className="material-symbols-outlined" aria-hidden="true">undo</span>
-              Descartar cambios
-            </button>
-            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => handleLocalAction('Borrador local actualizado.')}>
-              <span className="material-symbols-outlined" aria-hidden="true">save</span>
-              Guardar borrador
-            </button>
-            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => handleLocalAction('Vista previa actualizada.')}>
-              <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
-              Vista previa
-            </button>
-            <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" onClick={() => handleLocalAction('Publicación pendiente de persistencia.')}>
-              <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
-              Publicar modelo
-            </button>
-          </footer>
-        </form>
-      </section>
+      <AdminModelFormBody
+        draft={draft}
+        suggestedModelId={suggestedModelId}
+        localStatus={localStatus}
+        onDraftFieldChange={handleDraftFieldChange}
+        onDraftCheckboxChange={handleDraftCheckboxChange}
+        onFeatureToggle={handleFeatureToggle}
+        onDiscardChanges={handleDiscardChanges}
+        onLocalAction={handleLocalAction}
+        toolbarKicker="Borrador local"
+        workspaceHeading="Workspace de creación"
+        workspaceHeadingId="admin-models-new-workspace-title"
+        formLabel="Formulario de nuevo modelo"
+      />
     </AdminModelsWorkspace>
   );
 }
@@ -1864,6 +1938,100 @@ export function AdminEditModelsPage() {
           </article>
         )}
       </div>
+    </AdminModelsWorkspace>
+  );
+}
+
+export function AdminEditMotorcyclePage({ motorcycleId }: Readonly<{ motorcycleId: string | undefined }>) {
+  const originalDraft = useMemo(() => {
+    if (!motorcycleId) {
+      return undefined;
+    }
+
+    const bike = findBikeById(motorcycleId);
+    return bike ? createDraftFromBike(bike) : undefined;
+  }, [motorcycleId]);
+
+  const [draft, setDraft] = useState<AdminModelDraft | undefined>(originalDraft);
+  const [localStatus, setLocalStatus] = useState('');
+
+  const suggestedModelId = useMemo(() => draft ? buildSuggestedModelId(draft) : '', [draft]);
+
+  const handleDraftFieldChange = useCallback((field: AdminModelDraftField, value: string) => {
+    setDraft((current) => current ? ({ ...current, [field]: value }) : current);
+  }, []);
+
+  const handleDraftCheckboxChange = useCallback((field: 'pricePending' | 'imageLocked', value: boolean) => {
+    setDraft((current) => current ? ({ ...current, [field]: value }) : current);
+  }, []);
+
+  const handleFeatureToggle = useCallback((feature: AdminModelFeatureKey, checked: boolean) => {
+    setDraft((current) => {
+      if (!current) return current;
+
+      return {
+        ...current,
+        features: {
+          ...current.features,
+          [feature]: checked,
+        },
+      };
+    });
+  }, []);
+
+  const handleLocalAction = useCallback((message: string) => {
+    setLocalStatus(message);
+  }, []);
+
+  const handleDiscardChanges = useCallback(() => {
+    if (originalDraft) {
+      setDraft({ ...originalDraft });
+      setLocalStatus('Cambios descartados.');
+    }
+  }, [originalDraft]);
+
+  if (!motorcycleId || !originalDraft) {
+    return (
+      <AdminModelsWorkspace
+        activeModelsItem="edit"
+        description="Seleccionar modelo para editar"
+        title="Modelo no encontrado"
+        titleId="admin-models-edit-notfound-title"
+      >
+        <article className="account-page__empty-state">
+          <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">edit_note</span>
+          <h2>Modelo no encontrado</h2>
+          <p>No se encontró un modelo con el identificador especificado.</p>
+          <a className="account-page__button" href="#/admin/modelos/editar">Volver a selección de modelos</a>
+        </article>
+      </AdminModelsWorkspace>
+    );
+  }
+
+  const safeDraft = draft!;
+  const kickerText = `Editando ${safeDraft.brand} ${safeDraft.model} ${safeDraft.year}`;
+
+  return (
+    <AdminModelsWorkspace
+      activeModelsItem="edit"
+      description="Actualiza los datos disponibles de este modelo."
+      title="Editar modelo"
+      titleId="admin-models-edit-title"
+    >
+      <AdminModelFormBody
+        draft={safeDraft}
+        suggestedModelId={suggestedModelId}
+        localStatus={localStatus}
+        onDraftFieldChange={handleDraftFieldChange}
+        onDraftCheckboxChange={handleDraftCheckboxChange}
+        onFeatureToggle={handleFeatureToggle}
+        onDiscardChanges={handleDiscardChanges}
+        onLocalAction={handleLocalAction}
+        toolbarKicker={kickerText}
+        workspaceHeading="Workspace de edición"
+        workspaceHeadingId="admin-models-edit-workspace-title"
+        formLabel="Formulario de edición de modelo"
+      />
     </AdminModelsWorkspace>
   );
 }
