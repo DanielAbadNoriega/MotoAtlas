@@ -473,9 +473,9 @@ Limitaciones actuales (Fase 1 cerrada, pendientes para Fase 2/3/4 sin cambios es
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado actual: **Fase 1 mínima implementada**.
+Estado actual: **Fase 1 (rutas/hub) + Fase 2 (UI create scaffold) implementadas**.
 - `#/admin/modelos` existe como hub admin-protegido de navegación;
-- `#/admin/modelos/nuevo` existe como placeholder admin-protegido para la futura alta de modelos;
+- `#/admin/modelos/nuevo` tiene un scaffold UI completo de alta de modelo (no es solo placeholder);
 - `#/admin/modelos/editar` existe como placeholder admin-protegido para la futura búsqueda/edición del catálogo;
 - `Panel Admin` incluye el submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar catálogo`.
 
@@ -484,12 +484,21 @@ Regla de UI vigente:
 - no debe existir un create/edit combinado dentro de `#/admin/modelos`;
 - creación y edición vivirán en rutas separadas.
 
+Características del scaffold UI de `#/admin/modelos/nuevo`:
+- **Hero preview**: inspirado en `BikeDetailPage`, con MotorcycleImage, badge de segmento, año, carnet, display name, data notes de estado del draft. Sin CTAs. Sin texto `Borrador sin guardar`.
+- **Secciones Stitch**: identidad, clasificación, motor y rendimiento, ergonomía/uso, electrónica/equipamiento, precio/mercado, imagen/curación, fuentes/notas. Cada sección tiene título técnico centrado con líneas horizontales y Material Symbols decorativo. Sin iconos en headings.
+- **Tooltips accesibles**: las descripciones de sección se movieron a `(i)` buttons con `role="tooltip"`. El `<small>` helper del campo `ID sugerido` también se movió a un field-level tooltip.
+- **Secciones colapsables**: nativas con `<details open>`/`<summary>`, open por defecto. El icono `expand_more` rota 180° al colapsar.
+- **Footer de acciones locales**: 4 botones — Descartar cambios (resetea draft local), Guardar borrador (local), Vista previa (local), Publicar modelo (local). Ninguna acción persiste ni llama servicios.
+- **Campo `Imagen bloqueada / curada`**: checkbox con tooltip: `Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.`
+- **Sin upload de imágenes**: solo URL de imagen y notas locales. La subida real requiere backend/storage/security review posterior.
+
 Dirección futura (pendiente):
 - objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON;
-- visual: página admin full-size, dark premium technical form, inspiración base `ReviewModal` + Stitch, pero sin modal ni landing pública;
 - create/edit deben compartir la misma arquitectura visual y de formulario;
-- un preview hero inspirado en `BikeDetailPage` queda como fase UI-only posterior, no implementada ahora;
-- la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios.
+- Fase 3 (búsqueda/listado para editar catálogo) es el siguiente paso;
+- la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios;
+- el upload real de imágenes requiere backend/storage/security review y no debe implementarse desde frontend-only.
 
 ## Mi cuenta — Reviews
 
