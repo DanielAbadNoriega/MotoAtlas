@@ -383,7 +383,7 @@ describe('AccountPage', () => {
     expect(screen.getByText('Modelos')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Vista general' })).toHaveAttribute('href', '#/admin/modelos');
     expect(screen.getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('href', '#/admin/modelos/nuevo');
-    expect(screen.getByRole('link', { name: 'Editar catálogo' })).toHaveAttribute('href', '#/admin/modelos/editar');
+    expect(screen.getByRole('link', { name: 'Editar modelo' })).toHaveAttribute('href', '#/admin/modelos/editar');
   });
 
   it('no muestra Panel admin si el usuario no es admin', () => {
