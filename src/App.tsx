@@ -333,9 +333,9 @@ export function App() {
       ) : isAdminNewModelPage ? (
         <AdminNewModelPage />
       ) : isAdminEditMotorcyclePage ? (
-        <AdminEditMotorcyclePage motorcycleId={adminEditMotorcycleId} />
+        <AdminEditMotorcyclePage motorcycleId={adminEditMotorcycleId} motorcycles={motorcycles} />
       ) : isAdminEditModelsPage ? (
-        <AdminEditModelsPage />
+        <AdminEditModelsPage motorcycles={motorcycles} />
       ) : isAdminPage ? (
         <AdminDashboardPage />
       ) : isAccountMotorcycleReviewsPage ? (

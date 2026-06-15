@@ -1672,7 +1672,7 @@ function AdminModelsEditFiltersPanel({
   );
 }
 
-export function AdminEditModelsPage() {
+export function AdminEditModelsPage({ motorcycles }: Readonly<{ motorcycles: readonly Bike[] }>) {
   const [searchText, setSearchText] = useState('');
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedSegments, setSelectedSegments] = useState<BikeSegment[]>([]);
@@ -1692,7 +1692,7 @@ export function AdminEditModelsPage() {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const ITEMS_PER_PAGE = 12;
 
-  const brandOptions = useMemo(() => getBrandOptions(bikeCatalog), []);
+  const brandOptions = useMemo(() => getBrandOptions(motorcycles), [motorcycles]);
 
   const filters = useMemo<AdminModelsEditFilters>(() => ({
     searchText,
@@ -1731,7 +1731,7 @@ export function AdminEditModelsPage() {
   const filteredBikes = useMemo(() => {
     const normalizedText = normalizeText(searchText);
 
-    return bikeCatalog.filter((bike) => {
+    return motorcycles.filter((bike) => {
       if (normalizedText && !normalizeText(`${bike.brand} ${bike.model}`).includes(normalizedText)) {
         return false;
       }
@@ -1812,6 +1812,7 @@ export function AdminEditModelsPage() {
     equipment,
     recommendedUses,
     dataSources,
+    motorcycles,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(filteredBikes.length / ITEMS_PER_PAGE));
@@ -1942,15 +1943,15 @@ export function AdminEditModelsPage() {
   );
 }
 
-export function AdminEditMotorcyclePage({ motorcycleId }: Readonly<{ motorcycleId: string | undefined }>) {
+export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[] }>) {
   const originalDraft = useMemo(() => {
     if (!motorcycleId) {
       return undefined;
     }
 
-    const bike = findBikeById(motorcycleId);
+    const bike = motorcycles.find((b) => b.id === motorcycleId);
     return bike ? createDraftFromBike(bike) : undefined;
-  }, [motorcycleId]);
+  }, [motorcycleId, motorcycles]);
 
   const [draft, setDraft] = useState<AdminModelDraft | undefined>(originalDraft);
   const [localStatus, setLocalStatus] = useState('');

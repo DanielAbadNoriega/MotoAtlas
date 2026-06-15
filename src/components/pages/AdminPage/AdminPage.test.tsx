@@ -18,6 +18,7 @@ import {
   getReviewAspectsByReviewIds,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
+import { bikeCatalog } from '../../../data/bikes';
 import { AdminDashboardPage, AdminEditModelsPage, AdminEditMotorcyclePage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
 
 import {
@@ -1747,7 +1748,7 @@ describe('AdminPage', () => {
   });
 
   it('renderiza la página de selección de modelos para editar', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     expect(screen.getByRole('heading', { name: 'Seleccionar modelo para editar' })).toBeInTheDocument();
     expect(screen.getByText('Busca una moto del catálogo y abre su ficha interna de edición.')).toBeInTheDocument();
@@ -1757,7 +1758,7 @@ describe('AdminPage', () => {
   });
 
   it('muestra al menos un resultado de catálogo en la página de edición', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const cards = screen.getAllByRole('article');
     expect(cards.length).toBeGreaterThan(0);
@@ -1766,7 +1767,7 @@ describe('AdminPage', () => {
   });
 
   it('usa la misma jerarquía de encabezado que AccountReviewMotorcycleSummaryCard (h2)', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const cards = screen.getAllByTestId('admin-model-edit-summary-card');
     expect(cards.length).toBeGreaterThan(0);
@@ -1777,14 +1778,14 @@ describe('AdminPage', () => {
   });
 
   it('incluye la capa overlay en cada card como la referencia', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const overlays = document.querySelectorAll('.admin-page__model-edit-summary-overlay');
     expect(overlays.length).toBeGreaterThan(0);
   });
 
   it('no renderiza texto de segmento en la card de edición', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const segmentLabels = ['Naked', 'Sport', 'Trail', 'Adventure', 'Scooter', 'Touring', 'Custom', 'Cruiser', 'Retro'];
     const cards = screen.getAllByTestId('admin-model-edit-summary-card');
@@ -1797,7 +1798,7 @@ describe('AdminPage', () => {
   });
 
   it('cada card Editar modelo enlaza a la ruta de edición interna', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const editLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
     editLinks.forEach((link) => {
@@ -1805,9 +1806,25 @@ describe('AdminPage', () => {
     });
   });
 
+  it('cada card usa directamente la imageUrl de la moto sin sobrescribirla con getMotorcycleLocalImageUrl', () => {
+    const customBikes = [
+      { ...bikeCatalog[0], imageUrl: '/images/motorcycles/resolved-custom-image.webp' },
+      ...bikeCatalog.slice(1),
+    ];
+    render(<AdminEditModelsPage motorcycles={customBikes} />);
+
+    const cards = screen.getAllByTestId('admin-model-edit-summary-card');
+    expect(cards.length).toBeGreaterThan(0);
+
+    const firstCardImg = cards[0].querySelector('img');
+    expect(firstCardImg).not.toBeNull();
+    const src = firstCardImg!.getAttribute('src') ?? '';
+    expect(src).toBe('/images/motorcycles/resolved-custom-image.webp');
+  });
+
   it('filtra resultados al escribir en la búsqueda', async () => {
     const user = userEvent.setup();
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const initialLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
     expect(initialLinks.length).toBeGreaterThan(1);
@@ -1820,14 +1837,14 @@ describe('AdminPage', () => {
   });
 
   it('muestra resumen de resultados con el total de modelos encontrados', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     expect(screen.getByText(/\d+ modelos encontrados/)).toBeInTheDocument();
   });
 
   it('muestra botón Limpiar filtros en el panel cuando hay filtros activos y restaura resultados', async () => {
     const user = userEvent.setup();
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const searchInput = screen.getByRole('searchbox');
     await user.type(searchInput, 'BMW');
@@ -1840,7 +1857,7 @@ describe('AdminPage', () => {
   });
 
   it('renderiza los filtros en el panel del sidebar, no como bloque full-width', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const filterSection = screen.getByRole('region', { name: 'Filtros de modelos' });
     expect(filterSection).toBeInTheDocument();
@@ -1865,7 +1882,7 @@ describe('AdminPage', () => {
   });
 
   it('renderiza el trigger de filtros móvil en el contenido principal', () => {
-    render(<AdminEditModelsPage />);
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
     const mobileTrigger = screen.getByRole('button', { name: 'Filtros' });
     expect(mobileTrigger).toBeInTheDocument();
@@ -1886,7 +1903,7 @@ describe('AdminPage', () => {
     }
 
     it('renderiza todos los grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos)', () => {
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const filterPanel = getFilterPanel();
       const titles = ['Marca', 'Segmento', 'Carnet', 'Precio', 'Potencia', 'Peso', 'Altura asiento', 'Electrónica', 'Uso recomendado', 'Calidad de datos'];
@@ -1897,7 +1914,7 @@ describe('AdminPage', () => {
 
     it('filtrar por marca reduce los resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const initialCount = countResults();
       const filterPanel = getFilterPanel();
@@ -1912,7 +1929,7 @@ describe('AdminPage', () => {
 
     it('filtrar por segmento reduce los resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const initialCount = countResults();
       const filterPanel = getFilterPanel();
@@ -1927,7 +1944,7 @@ describe('AdminPage', () => {
 
     it('filtrar por carnet reduce los resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const initialCount = countResults();
       const filterPanel = getFilterPanel();
@@ -1942,7 +1959,7 @@ describe('AdminPage', () => {
 
     it('filtrar por potencia reduce los resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const initialCount = countResults();
       const filterPanel = getFilterPanel();
@@ -1957,7 +1974,7 @@ describe('AdminPage', () => {
 
     it('filtrar por equipo reduce los resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const initialCount = countResults();
       const filterPanel = getFilterPanel();
@@ -1972,7 +1989,7 @@ describe('AdminPage', () => {
 
     it('combinar filtros de marca y segmento reduce aún más los resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const initialCount = countResults();
       const filterPanel = getFilterPanel();
@@ -1992,7 +2009,7 @@ describe('AdminPage', () => {
 
     it('Limpiar filtros restaura todos los resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const filterPanel = getFilterPanel();
 
@@ -2010,7 +2027,7 @@ describe('AdminPage', () => {
 
     it('muestra empty state cuando los filtros producen cero resultados', async () => {
       const user = userEvent.setup();
-      render(<AdminEditModelsPage />);
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
 
       const searchInput = screen.getByRole('searchbox');
       await user.type(searchInput, 'ZZZZ_NO_EXISTE');
@@ -2021,13 +2038,13 @@ describe('AdminPage', () => {
   });
 
   it.each([
-    ['Estudio de modelos', <AdminModelsPage />],
-    ['Nuevo modelo', <AdminNewModelPage />],
-    ['Seleccionar modelo para editar', <AdminEditModelsPage />],
-  ])('mantiene el guard admin en %s para usuarios sin rol admin', (_title, page) => {
+    ['Estudio de modelos', () => <AdminModelsPage />],
+    ['Nuevo modelo', () => <AdminNewModelPage />],
+    ['Seleccionar modelo para editar', () => <AdminEditModelsPage motorcycles={bikeCatalog} />],
+  ])('mantiene el guard admin en %s para usuarios sin rol admin', (_title, pageFactory) => {
     mockAuth({ isAdmin: false });
 
-    render(page);
+    render(pageFactory());
 
     expect(screen.getByRole('heading', { name: 'No tienes permisos para acceder a esta zona.' })).toBeInTheDocument();
   });
@@ -2164,9 +2181,10 @@ describe('AdminPage', () => {
   describe('AdminEditMotorcyclePage — #/admin/modelos/{motorcycleId}/editar', () => {
     const existingId = 'bmw-f-900-gs-2024';
     const unknownId = 'non-existent-motorcycle';
+    const sharedProps = { motorcycles: bikeCatalog };
 
     it('renderiza el formulario de edición con modo edit para un modelo existente', () => {
-      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
       expect(screen.getByRole('heading', { name: 'Editar modelo' })).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Workspace de edición' })).toBeInTheDocument();
@@ -2176,7 +2194,7 @@ describe('AdminPage', () => {
     });
 
     it('prefill los campos de identidad con los datos de la moto', () => {
-      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
       expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
       expect(screen.getByLabelText('Modelo')).toHaveValue('F 900 GS');
@@ -2184,7 +2202,7 @@ describe('AdminPage', () => {
     });
 
     it('prefill los campos de specs con los datos de la moto', () => {
-      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
       expect(screen.getByLabelText('Segmento')).toHaveValue('trail');
       expect(screen.getByLabelText('Carnet')).toHaveValue('A');
@@ -2192,7 +2210,7 @@ describe('AdminPage', () => {
     });
 
     it('muestra el preview hero con los datos de la moto existente', () => {
-      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
       const previewHeading = screen.getByRole('heading', { name: 'BMW F 900 GS' });
       const previewSection = previewHeading.closest('section');
@@ -2203,7 +2221,7 @@ describe('AdminPage', () => {
     });
 
     it('preserva las mismas cuatro acciones en el footer', () => {
-      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
       expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeInTheDocument();
@@ -2213,7 +2231,7 @@ describe('AdminPage', () => {
 
     it('Descartar cambios resetea al estado original precargado', async () => {
       const user = userEvent.setup();
-      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
       await user.clear(screen.getByLabelText('Marca'));
       await user.type(screen.getByLabelText('Marca'), 'Yamaha');
@@ -2225,7 +2243,7 @@ describe('AdminPage', () => {
     });
 
     it('unknown motorcycleId muestra estado not-found con CTA', () => {
-      render(<AdminEditMotorcyclePage motorcycleId={unknownId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={unknownId} {...sharedProps} />);
 
       const headings = screen.getAllByRole('heading', { name: 'Modelo no encontrado' });
       expect(headings.length).toBeGreaterThanOrEqual(1);
@@ -2234,7 +2252,7 @@ describe('AdminPage', () => {
     });
 
     it('undefined motorcycleId muestra estado not-found con CTA', () => {
-      render(<AdminEditMotorcyclePage motorcycleId={undefined} />);
+      render(<AdminEditMotorcyclePage motorcycleId={undefined} {...sharedProps} />);
 
       const headings = screen.getAllByRole('heading', { name: 'Modelo no encontrado' });
       expect(headings.length).toBeGreaterThanOrEqual(1);
@@ -2243,7 +2261,7 @@ describe('AdminPage', () => {
 
     it('las acciones del footer son locales sin llamar servicios', async () => {
       const user = userEvent.setup();
-      render(<AdminEditMotorcyclePage motorcycleId={existingId} />);
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
       await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
       expect(screen.getByRole('status')).toHaveTextContent('Borrador local actualizado.');
