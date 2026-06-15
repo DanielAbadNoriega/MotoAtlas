@@ -387,7 +387,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `75` files / `1146` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused check más reciente: `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing.
+- Baseline validado actual del proyecto: `1179` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused check más reciente: `src/components/pages/AdminPage/AdminPage.test.tsx` → `105` tests passing.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
