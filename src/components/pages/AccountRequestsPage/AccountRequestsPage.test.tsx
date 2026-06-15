@@ -332,7 +332,8 @@ describe('AccountRequestsPage', () => {
     const user = userEvent.setup();
     render(<AccountRequestsPage />);
 
-    expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('href', '#/cuenta');
+    expect(screen.getByText('Mi cuenta')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Resumen' })).toHaveAttribute('href', '#/cuenta');
     expect(screen.getByRole('link', { name: 'Mis reviews' })).toHaveAttribute('href', '#/cuenta/reviews');
     expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toHaveAttribute('aria-current', 'page');
 

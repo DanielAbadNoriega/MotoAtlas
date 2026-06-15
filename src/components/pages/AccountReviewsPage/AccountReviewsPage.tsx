@@ -480,7 +480,7 @@ function ReviewSkeletonList() {
 }
 
 export function AccountReviewsPage() {
-  const { isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
+  const { isAdmin, isAuthenticated, isLoading, profile, session, signOut, user } = useAuth();
   const [error, setError] = useState('');
   const [reviews, setReviews] = useState<readonly MotorcycleReview[]>([]);
   const [reviewsError, setReviewsError] = useState('');
@@ -628,6 +628,7 @@ export function AccountReviewsPage() {
           )}
           displayName={displayName}
           email={email}
+          isAdmin={isAdmin}
           onSignOut={handleSignOut}
           notice={{
             body: 'Tus reviews autenticadas quedan asociadas a tu cuenta y solo vos ves su estado completo.',

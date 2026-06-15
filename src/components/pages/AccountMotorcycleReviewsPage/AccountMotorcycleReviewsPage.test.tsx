@@ -162,7 +162,12 @@ describe('AccountMotorcycleReviewsPage', () => {
     expect(within(sidebar).getByLabelText('Filtros de reviews')).toBeInTheDocument();
     expect(within(sidebar).getByRole('heading', { name: 'Tu distribución rating' })).toBeInTheDocument();
     expect(within(sidebar).getByRole('heading', { name: 'Resumen de perfil' })).toBeInTheDocument();
-    expect(within(sidebar).getByRole('navigation', { name: 'Navegación de cuenta' })).toBeInTheDocument();
+    const accountNav = within(sidebar).getByRole('navigation', { name: 'Navegación de cuenta' });
+    expect(within(accountNav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Resumen',
+      'Mis reviews',
+      'Mis solicitudes',
+    ]);
     expect(sidebar.querySelector('.account-page__notice')).toBeInTheDocument();
     expect(getReviewsByUserIdMock).toHaveBeenCalledWith({ accessToken: 'session-token', userId: 'user-1' });
 
