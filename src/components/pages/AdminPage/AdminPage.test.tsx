@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
   getReviewReports,
@@ -57,10 +58,15 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
   getReviewAspectsByReviewIds: vi.fn(),
 }));
 
+vi.mock('../../../services/adminMotorcycleService', () => ({
+  updateAdminMotorcycle: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
 const getAllReviewsMock = vi.mocked(getAllReviews);
 const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
+const updateAdminMotorcycleMock = vi.mocked(updateAdminMotorcycle);
 const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
 const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
@@ -246,6 +252,21 @@ describe('AdminPage', () => {
     getAllModelRequestsMock.mockReset().mockResolvedValue(requestFixtures);
     updateModelRequestStatusMock.mockReset().mockResolvedValue(undefined);
     getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
+    updateAdminMotorcycleMock.mockReset().mockResolvedValue({
+      id: 'bmw-f-900-gs-2024', brand: 'BMW', model: 'F 900 GS', year: 2024,
+      segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+      displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
+      fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+      description: 'Test', descriptionLocked: false,
+      specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+      scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+      isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+      officialUrl: null,
+      useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+      features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+      pros: [], cons: [],
+      reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+    });
     mockAuth();
   });
 
@@ -2259,7 +2280,7 @@ describe('AdminPage', () => {
       expect(screen.getByRole('link', { name: 'Volver a selección de modelos' })).toHaveAttribute('href', '#/admin/modelos/editar');
     });
 
-    it('las acciones del footer son locales sin llamar servicios', async () => {
+    it('las acciones de borrador y vista previa son locales sin llamar servicios', async () => {
       const user = userEvent.setup();
       render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
@@ -2268,9 +2289,65 @@ describe('AdminPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Vista previa' }));
       expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+    });
+
+    it('publicar modelo llama a updateAdminMotorcycle y muestra éxito', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      updateAdminMotorcycleMock.mockResolvedValueOnce({
+        id: existingId, brand: 'BMW', model: 'F 900 GS', year: 2024,
+        segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+        displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
+        fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+        description: 'Test', descriptionLocked: false,
+        specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+        scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+        isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+        officialUrl: null,
+        useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+        features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+        pros: [], cons: [],
+        reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+      });
 
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
-      expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalledWith(
+          existingId,
+          expect.objectContaining({ brand: 'BMW', model: 'F 900 GS' }),
+          'admin-token',
+        );
+      });
+      expect(screen.getByRole('status')).toHaveTextContent('Modelo actualizado correctamente.');
+    });
+
+    it('publicar modelo muestra error si falla updateAdminMotorcycle', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      updateAdminMotorcycleMock.mockRejectedValueOnce(new Error('permission denied'));
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('permission denied');
+      });
+    });
+
+    it('publicar modelo no se ejecuta si el admin guard no permite el render', () => {
+      mockAuth({
+        user: null,
+        session: null,
+        profile: null,
+        isAuthenticated: false,
+        isAdmin: false,
+      });
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
+      expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
     });
   });
 });

@@ -33,6 +33,10 @@ import {
   MotorcycleReviewRidingStyle,
   MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
+import {
+  updateAdminMotorcycle,
+  type AdminMotorcycleUpdatePayload,
+} from '../../../services/adminMotorcycleService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -846,6 +850,8 @@ type AdminModelFormBodyProps = Readonly<{
   onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
   onDiscardChanges: () => void;
   onLocalAction: (message: string) => void;
+  onPublish?: () => void;
+  saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
   workspaceHeadingId: string;
@@ -861,6 +867,8 @@ function AdminModelFormBody({
   onFeatureToggle,
   onDiscardChanges,
   onLocalAction,
+  onPublish,
+  saving,
   toolbarKicker,
   workspaceHeading,
   workspaceHeadingId,
@@ -1136,7 +1144,7 @@ function AdminModelFormBody({
             <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
             Vista previa
           </button>
-          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" onClick={() => onLocalAction('Publicación pendiente de persistencia.')}>
+          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" disabled={saving} onClick={onPublish ?? (() => onLocalAction('Publicación pendiente de persistencia.'))}>
             <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
             Publicar modelo
           </button>
@@ -1943,6 +1951,98 @@ export function AdminEditModelsPage({ motorcycles }: Readonly<{ motorcycles: rea
   );
 }
 
+function draftToUpdatePayload(draft: AdminModelDraft): AdminMotorcycleUpdatePayload {
+  const payload: Record<string, unknown> = {};
+
+  if (draft.brand.trim()) {
+    payload.brand = draft.brand.trim();
+  }
+
+  if (draft.model.trim()) {
+    payload.model = draft.model.trim();
+  }
+
+  const year = parseInt(draft.year, 10);
+  if (!Number.isNaN(year) && year >= 1900 && year <= 2100) {
+    payload.year = year;
+  }
+
+  if (draft.description.trim()) {
+    payload.description = draft.description.trim();
+  }
+
+  if (draft.segment) {
+    payload.segment = draft.segment;
+  }
+
+  if (draft.license) {
+    payload.license = draft.license;
+  }
+
+  if (draft.engineType) {
+    payload.engineType = draft.engineType;
+  }
+
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  if (!Number.isNaN(displacementCc) && displacementCc > 0) {
+    payload.displacementCc = displacementCc;
+  }
+
+  const powerHp = parseFloat(draft.powerHp);
+  if (!Number.isNaN(powerHp) && powerHp > 0) {
+    payload.powerHp = powerHp;
+  }
+
+  const torqueNm = parseFloat(draft.torqueNm);
+  if (!Number.isNaN(torqueNm) && torqueNm > 0) {
+    payload.torqueNm = torqueNm;
+  }
+
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  if (!Number.isNaN(wetWeightKg) && wetWeightKg > 0) {
+    payload.wetWeightKg = wetWeightKg;
+  }
+
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  if (!Number.isNaN(seatHeightMm) && seatHeightMm > 0) {
+    payload.seatHeightMm = seatHeightMm;
+  }
+
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  if (!Number.isNaN(fuelTankLiters) && fuelTankLiters > 0) {
+    payload.fuelTankLiters = fuelTankLiters;
+  }
+
+  if (!draft.pricePending) {
+    const priceEur = parseInt(draft.priceEur, 10);
+    if (!Number.isNaN(priceEur) && priceEur >= 0) {
+      payload.priceEur = priceEur;
+    }
+  }
+
+  if (draft.imageUrl.trim()) {
+    payload.imageUrl = draft.imageUrl.trim();
+  }
+
+  payload.imageLocked = draft.imageLocked;
+  payload.descriptionLocked = false;
+  payload.priceSource = 'manual';
+  payload.imageSource = 'manual';
+  payload.specsSource = 'manual';
+  payload.scoresSource = 'estimated';
+  payload.prosConsSource = 'estimated';
+  payload.reliabilitySource = 'estimated';
+  payload.absCornering = draft.features.absCornering;
+  payload.tractionControl = draft.features.tractionControl;
+  payload.ridingModes = draft.features.ridingModes;
+  payload.cruiseControl = draft.features.cruiseControl;
+  payload.quickshifter = draft.features.quickshifter;
+  payload.heatedGrips = draft.features.heatedGrips;
+  payload.tubelessWheels = draft.features.tubelessWheels;
+
+  return payload as AdminMotorcycleUpdatePayload;
+}
+
 export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[] }>) {
   const originalDraft = useMemo(() => {
     if (!motorcycleId) {
@@ -1955,6 +2055,10 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
 
   const [draft, setDraft] = useState<AdminModelDraft | undefined>(originalDraft);
   const [localStatus, setLocalStatus] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState('');
+
+  const { session } = useAuth();
 
   const suggestedModelId = useMemo(() => draft ? buildSuggestedModelId(draft) : '', [draft]);
 
@@ -1982,14 +2086,45 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
 
   const handleLocalAction = useCallback((message: string) => {
     setLocalStatus(message);
+    if (message !== 'Publicación pendiente de persistencia.') {
+      setPublishError('');
+    }
   }, []);
 
   const handleDiscardChanges = useCallback(() => {
     if (originalDraft) {
       setDraft({ ...originalDraft });
       setLocalStatus('Cambios descartados.');
+      setPublishError('');
     }
   }, [originalDraft]);
+
+  const handlePublish = useCallback(async () => {
+    if (!draft) return;
+
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setPublishError('No hay sesión activa para publicar.');
+      return;
+    }
+
+    setSaving(true);
+    setPublishError('');
+    setLocalStatus('Publicando modelo...');
+
+    try {
+      const payload = draftToUpdatePayload(draft);
+      await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
+      setLocalStatus('Modelo actualizado correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
+      setPublishError(message);
+      setLocalStatus(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, motorcycleId, session?.access_token]);
 
   if (!motorcycleId || !originalDraft) {
     return (
@@ -2019,6 +2154,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
       title="Editar modelo"
       titleId="admin-models-edit-title"
     >
+      {publishError ? <p className="admin-page__model-status admin-page__model-status--error" role="alert">{publishError}</p> : null}
       <AdminModelFormBody
         draft={safeDraft}
         suggestedModelId={suggestedModelId}
@@ -2028,6 +2164,8 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
         onFeatureToggle={handleFeatureToggle}
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
+        onPublish={handlePublish}
+        saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"
         workspaceHeadingId="admin-models-edit-workspace-title"
