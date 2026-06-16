@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
-import { uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
+import { deleteMotorcycleImage, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
   getReviewReports,
@@ -66,10 +66,13 @@ vi.mock('../../../services/adminMotorcycleService', () => ({
 }));
 
 vi.mock('../../../services/adminMotorcycleImageUploadService', () => ({
+  MOTORCYCLE_IMAGE_BUCKET: 'motorcycle-images',
+  deleteMotorcycleImage: vi.fn(),
   uploadMotorcycleImage: vi.fn(),
 }));
 
 const uploadMotorcycleImageMock = vi.mocked(uploadMotorcycleImage);
+const deleteMotorcycleImageMock = vi.mocked(deleteMotorcycleImage);
 
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
@@ -262,6 +265,7 @@ describe('AdminPage', () => {
     getAllModelRequestsMock.mockReset().mockResolvedValue(requestFixtures);
     updateModelRequestStatusMock.mockReset().mockResolvedValue(undefined);
     getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
+    deleteMotorcycleImageMock.mockReset().mockResolvedValue(undefined);
     updateAdminMotorcycleMock.mockReset().mockResolvedValue({
       id: 'bmw-f-900-gs-2024', brand: 'BMW', model: 'F 900 GS', year: 2024,
       segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
@@ -1769,6 +1773,16 @@ describe('AdminPage', () => {
     expect(within(previewSection as HTMLElement).getByText('110 CV')).toBeInTheDocument();
   });
 
+  it('renderiza preview de imagen actual cuando draft.imageUrl existe', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Image URL'), 'https://cdn.motoatlas.test/current-image.webp');
+
+    expect(screen.getByRole('region', { name: 'Imagen actual del modelo' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', 'https://cdn.motoatlas.test/current-image.webp');
+  });
+
   it('mantiene Guardar borrador y Vista previa como acciones locales sin llamar servicios', async () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
@@ -1785,6 +1799,17 @@ describe('AdminPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Vista previa' }));
     expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+  });
+
+  it('imagen local/catalog no muestra acción destructiva de Storage', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} onMotorcyclesChange={vi.fn()} />);
+
+    expect(screen.getByRole('region', { name: 'Imagen actual del modelo' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Eliminar imagen actual' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Quitar imagen del formulario' }));
+    expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
   });
 
   it('publicar modelo en create llama a createAdminMotorcycle y muestra éxito', async () => {
@@ -2813,6 +2838,288 @@ describe('AdminPage', () => {
 
       expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
       expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('current image preview + delete cleanup', () => {
+    const bucketUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/uuid.jpg';
+    const replacedUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/replaced.jpg';
+    const createUploadedUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/ducati-desertx-2025/uploaded.jpg';
+    let createObjectURLSpy: ReturnType<typeof vi.fn>;
+    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+      vi.stubEnv('VITE_SUPABASE_URL', 'https://supabase.test');
+    });
+
+    function stubURL() {
+      createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-preview');
+      revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    }
+
+    function renderEditWithBucketImage() {
+      const bucketBike = {
+        ...bikeCatalog[0],
+        id: 'bmw-f-900-gs-2024',
+        imageUrl: bucketUrl,
+        imageLocked: true,
+      };
+
+      render(
+        <AdminEditMotorcyclePage
+          motorcycleId="bmw-f-900-gs-2024"
+          motorcycles={[bucketBike]}
+          onMotorcyclesChange={vi.fn()}
+        />,
+      );
+    }
+
+    async function setupCreateWithUploadedImage() {
+      stubURL();
+      uploadMotorcycleImageMock.mockResolvedValueOnce(createUploadedUrl);
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Marca'), 'Ducati');
+      await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx-2025');
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
+      });
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      return { user };
+    }
+
+    afterEach(() => {
+      createObjectURLSpy?.mockRestore();
+      revokeObjectURLSpy?.mockRestore();
+      uploadMotorcycleImageMock.mockReset();
+      deleteMotorcycleImageMock.mockReset();
+      vi.unstubAllEnvs();
+    });
+
+    it('imagen persistida de bucket en edit muestra quitar del formulario, no delete inmediato', () => {
+      renderEditWithBucketImage();
+
+      expect(screen.getByRole('button', { name: 'Quitar imagen del formulario' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Eliminar imagen actual' })).not.toBeInTheDocument();
+    });
+
+    it('imagen persistida de bucket en edit no llama deleteMotorcycleImage al quitarla del formulario', async () => {
+      const user = userEvent.setup();
+      renderEditWithBucketImage();
+
+      await user.click(screen.getByRole('button', { name: 'Quitar imagen del formulario' }));
+
+      expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+      expect(screen.getByRole('status')).toHaveTextContent('Imagen quitada del formulario.');
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue('');
+      expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/i })).not.toBeChecked();
+    });
+
+    it('manual external URL no llama deleteMotorcycleImage al quitarla del formulario', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Image URL'), 'https://cdn.example.com/manual-image.webp');
+      await user.click(screen.getByRole('button', { name: 'Quitar imagen del formulario' }));
+
+      expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue('');
+    });
+
+    it('replace flow sigue funcionando cuando ya existe una imagen actual', async () => {
+      stubURL();
+      uploadMotorcycleImageMock.mockResolvedValueOnce(replacedUrl);
+      const user = userEvent.setup();
+      renderEditWithBucketImage();
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', replacedUrl);
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue(replacedUrl);
+      expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/i })).toBeChecked();
+    });
+
+    it('publish failure tras reemplazar imagen persistida no elimina la imagen vieja de Storage', async () => {
+      stubURL();
+      uploadMotorcycleImageMock.mockResolvedValueOnce(replacedUrl);
+      updateAdminMotorcycleMock.mockRejectedValueOnce(new Error('Update failed'));
+      const user = userEvent.setup();
+      renderEditWithBucketImage();
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
+      });
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Update failed');
+      });
+
+      expect(deleteMotorcycleImageMock).not.toHaveBeenCalledWith('bmw-f-900-gs-2024/uuid.jpg', 'admin-token');
+    });
+
+    it('publish success tras reemplazar imagen persistida elimina la imagen vieja después del update', async () => {
+      stubURL();
+      uploadMotorcycleImageMock.mockResolvedValueOnce(replacedUrl);
+      updateAdminMotorcycleMock.mockResolvedValueOnce({
+        ...(bikeCatalog[0] as Bike),
+        id: 'bmw-f-900-gs-2024',
+        imageUrl: replacedUrl,
+      });
+      const user = userEvent.setup();
+      renderEditWithBucketImage();
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
+      });
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(deleteMotorcycleImageMock).toHaveBeenCalledWith('bmw-f-900-gs-2024/uuid.jpg', 'admin-token');
+      });
+    });
+
+    it('publish success con misma imagen de Storage y query distinta no elimina el objeto persistido', async () => {
+      const user = userEvent.setup();
+      renderEditWithBucketImage();
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      const imageUrlInput = screen.getByLabelText('Image URL');
+      await user.clear(imageUrlInput);
+      await user.type(imageUrlInput, `${bucketUrl}?cache=2#preview`);
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+      });
+
+      expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+    });
+
+    it('imagen de otro proyecto Supabase no dispara cleanup destructivo al publicar reemplazo', async () => {
+      stubURL();
+      uploadMotorcycleImageMock.mockResolvedValueOnce(replacedUrl);
+      const foreignBucketBike = {
+        ...bikeCatalog[0],
+        id: 'bmw-f-900-gs-2024',
+        imageUrl: 'https://other-project.supabase.co/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/foreign.jpg',
+        imageLocked: true,
+      };
+      const user = userEvent.setup();
+
+      render(
+        <AdminEditMotorcyclePage
+          motorcycleId="bmw-f-900-gs-2024"
+          motorcycles={[foreignBucketBike]}
+          onMotorcyclesChange={vi.fn()}
+        />,
+      );
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
+      });
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+      });
+
+      expect(deleteMotorcycleImageMock).not.toHaveBeenCalledWith('bmw-f-900-gs-2024/foreign.jpg', 'admin-token');
+    });
+
+    it('imagen subida en la sesión se puede eliminar inmediatamente', async () => {
+      deleteMotorcycleImageMock.mockResolvedValueOnce();
+      const { user } = await setupCreateWithUploadedImage();
+
+      await user.click(screen.getByRole('button', { name: 'Eliminar imagen actual' }));
+
+      await waitFor(() => {
+        expect(deleteMotorcycleImageMock).toHaveBeenCalledWith('ducati-desertx-2025/uploaded.jpg', 'admin-token');
+      });
+
+      expect(screen.getByRole('status')).toHaveTextContent('Imagen eliminada correctamente.');
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue('');
+      expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/i })).not.toBeChecked();
+    });
+
+    it('delete failure de imagen subida en la sesión mantiene la UI y muestra role alert', async () => {
+      deleteMotorcycleImageMock.mockRejectedValueOnce(new Error('Delete failed'));
+      const { user } = await setupCreateWithUploadedImage();
+
+      await user.click(screen.getByRole('button', { name: 'Eliminar imagen actual' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Delete failed');
+      });
+
+      expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', createUploadedUrl);
+    });
+
+    it('descartar cambios limpia archivo local pendiente y estado de upload', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'pending-upload.jpg', { type: 'image/jpeg' })] },
+      });
+
+      expect(screen.getAllByText(/pending-upload\.jpg/)).toHaveLength(2);
+      expect(screen.getByText('Archivo seleccionado')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+
+      expect(screen.getByText('Ningún archivo seleccionado')).toBeInTheDocument();
+      expect(screen.queryByText('Archivo seleccionado')).not.toBeInTheDocument();
+      expect(uploadMotorcycleImageMock).not.toHaveBeenCalled();
+      expect(screen.getByRole('status')).toHaveTextContent('Cambios descartados.');
     });
   });
 

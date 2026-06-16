@@ -676,6 +676,102 @@
     white-space: nowrap;
   }
 
+  &__model-image-preview {
+    align-items: start;
+    background: rgba($color-surface-lowest, 0.9);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-lg;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+    overflow: hidden;
+    padding: 1rem;
+  }
+
+  &__model-image-preview--empty {
+    grid-template-columns: 1fr;
+  }
+
+  &__model-image-preview-media {
+    aspect-ratio: 16 / 10;
+    background: rgba($color-surface-container, 0.74);
+    border: 1px solid rgba($color-outline-variant, 0.28);
+    border-radius: $radius-lg;
+    overflow: hidden;
+    position: relative;
+
+    img {
+      display: block;
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+  }
+
+  &__model-image-preview-media--candidate {
+    max-height: 300px;
+  }
+
+  &__model-image-preview-copy {
+    display: grid;
+    gap: 0.45rem;
+    min-width: 0;
+
+    strong {
+      @include label-caps;
+
+      color: $color-on-surface;
+    }
+
+    p {
+      color: rgba($color-on-surface-variant, 0.84);
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+
+  &__model-image-preview-delete {
+    align-items: center;
+    background: rgba($color-surface-lowest, 0.84);
+    border: 1px solid rgba($color-error-container, 0.45);
+    border-radius: 999px;
+    color: $color-on-surface;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 0.4rem;
+    padding: 0.45rem 0.75rem;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.75rem;
+    transition: background $transition-base, border-color $transition-base, color $transition-base;
+
+    .material-symbols-outlined {
+      color: inherit;
+      display: inline-flex;
+      font-family: 'Material Symbols Outlined';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      letter-spacing: normal;
+      line-height: 1;
+      text-transform: none;
+      white-space: nowrap;
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      background: rgba($color-error-container, 0.72);
+      border-color: rgba($color-error, 0.6);
+      color: $color-on-surface;
+      outline: 0;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
   &__section-radar {
     backdrop-filter: blur(20px);
     background: rgba(20, 19, 19, 0.7);
@@ -1759,6 +1855,10 @@
       gap: 1.25rem;
     }
 
+    &__model-image-preview {
+      grid-template-columns: 1fr;
+    }
+
     &__mobile-filter-trigger {
       display: block;
       width: 100%;
@@ -1850,6 +1950,11 @@
       h2 {
         font-size: clamp(2.2rem, 10vw, 3.4rem);
       }
+    }
+
+    &__model-image-preview-delete {
+      left: 0.75rem;
+      right: auto;
     }
 
     &__filters {

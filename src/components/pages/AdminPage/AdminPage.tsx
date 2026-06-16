@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import adminHeroImage from '../../../assets/hero-admin.png';
 import { useAuth } from '../../../features/auth';
 import { bikeCatalog, findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
@@ -39,7 +39,7 @@ import {
   type AdminMotorcycleCreatePayload,
   type AdminMotorcycleUpdatePayload,
 } from '../../../services/adminMotorcycleService';
-import { uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
+import { deleteMotorcycleImage, MOTORCYCLE_IMAGE_BUCKET, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -849,6 +849,8 @@ type AdminModelFormBodyProps = Readonly<{
   draft: AdminModelDraft;
   suggestedModelId: string;
   localStatus: string;
+  persistedImageLocked?: boolean;
+  persistedImageUrl?: string;
   onDraftFieldChange: (field: AdminModelDraftField, value: string) => void;
   onDraftCheckboxChange: (field: 'pricePending' | 'imageLocked', value: boolean) => void;
   onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
@@ -856,6 +858,7 @@ type AdminModelFormBodyProps = Readonly<{
   onLocalAction: (message: string) => void;
   onPublish?: (autoUploadedUrl?: string) => void;
   onUploadImage?: (file: File) => Promise<string>;
+  onDeleteImage?: (objectPath: string) => Promise<void>;
   saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
@@ -863,10 +866,77 @@ type AdminModelFormBodyProps = Readonly<{
   formLabel: string;
 }>;
 
+const motorcycleImageBucketPublicPath = `/storage/v1/object/public/${MOTORCYCLE_IMAGE_BUCKET}/`;
+
+function getConfiguredMotorcycleImageOrigin(): string | null {
+  const configuredUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+  if (!configuredUrl) {
+    return null;
+  }
+
+  try {
+    return new URL(configuredUrl, window.location.origin).origin;
+  } catch {
+    return null;
+  }
+}
+
+function isSafeMotorcycleImageObjectPath(objectPath: string): boolean {
+  if (!objectPath) {
+    return false;
+  }
+
+  if (objectPath.startsWith('/')) {
+    return false;
+  }
+
+  if (objectPath.includes('..')) {
+    return false;
+  }
+
+  return objectPath.includes('/');
+}
+
+function getMotorcycleImageObjectPath(imageUrl: string): string | null {
+  const trimmedUrl = imageUrl.trim();
+  if (!trimmedUrl) return null;
+
+  const configuredOrigin = getConfiguredMotorcycleImageOrigin();
+  const isAbsoluteHttpUrl = /^https?:\/\//i.test(trimmedUrl);
+
+  try {
+    const parsedUrl = new URL(trimmedUrl, window.location.origin);
+
+    if (!isAbsoluteHttpUrl && (!configuredOrigin || configuredOrigin !== window.location.origin)) {
+      return null;
+    }
+
+    if (parsedUrl.origin !== window.location.origin && configuredOrigin && parsedUrl.origin !== configuredOrigin) {
+      return null;
+    }
+
+    if (!parsedUrl.pathname.startsWith(motorcycleImageBucketPublicPath)) {
+      return null;
+    }
+
+    const objectPath = decodeURIComponent(parsedUrl.pathname.slice(motorcycleImageBucketPublicPath.length));
+    return isSafeMotorcycleImageObjectPath(objectPath) ? objectPath : null;
+  } catch {
+    if (!trimmedUrl.startsWith(motorcycleImageBucketPublicPath)) {
+      return null;
+    }
+
+    const objectPath = decodeURIComponent(trimmedUrl.slice(motorcycleImageBucketPublicPath.length));
+    return isSafeMotorcycleImageObjectPath(objectPath) ? objectPath : null;
+  }
+}
+
 function AdminModelFormBody({
   draft,
   suggestedModelId,
   localStatus,
+  persistedImageLocked = false,
+  persistedImageUrl = '',
   onDraftFieldChange,
   onDraftCheckboxChange,
   onFeatureToggle,
@@ -874,6 +944,7 @@ function AdminModelFormBody({
   onLocalAction,
   onPublish,
   onUploadImage,
+  onDeleteImage,
   saving,
   toolbarKicker,
   workspaceHeading,
@@ -884,6 +955,7 @@ function AdminModelFormBody({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
   const maxFileSize = 5 * 1024 * 1024;
@@ -893,6 +965,15 @@ function AdminModelFormBody({
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
+
+  const resetSelectedUploadState = useCallback(() => {
+    setSelectedFile(null);
+    setPreviewBlobUrl(null);
+    setHasUploadedImage(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
 
   const handleFileSelect = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
@@ -908,6 +989,7 @@ function AdminModelFormBody({
       setFileError('Tipo de archivo no soportado. Usa: JPEG, PNG o WebP.');
       setSelectedFile(null);
       setPreviewBlobUrl(null);
+      setHasUploadedImage(false);
       return;
     }
 
@@ -915,6 +997,7 @@ function AdminModelFormBody({
       setFileError('El archivo supera el límite de 5 MB.');
       setSelectedFile(null);
       setPreviewBlobUrl(null);
+      setHasUploadedImage(false);
       return;
     }
 
@@ -945,6 +1028,7 @@ function AdminModelFormBody({
     try {
       const publicUrl = await onUploadImage(selectedFile);
       setHasUploadedImage(true);
+      setSessionUploadedImageUrl(publicUrl);
       onDraftFieldChange('imageUrl', publicUrl);
       onDraftCheckboxChange('imageLocked', true);
       onLocalAction('Imagen subida correctamente.');
@@ -966,6 +1050,7 @@ function AdminModelFormBody({
       try {
         const publicUrl = await onUploadImage(selectedFile);
         setHasUploadedImage(true);
+        setSessionUploadedImageUrl(publicUrl);
         onDraftFieldChange('imageUrl', publicUrl);
         onDraftCheckboxChange('imageLocked', true);
         setIsUploading(false);
@@ -981,6 +1066,78 @@ function AdminModelFormBody({
 
     await onPublish();
   }, [onPublish, onUploadImage, selectedFile, hasUploadedImage, onDraftFieldChange, onDraftCheckboxChange]);
+
+  const currentImageUrl = draft.imageUrl.trim();
+  const persistedImageUrlTrimmed = persistedImageUrl.trim();
+  const currentImageObjectPath = getMotorcycleImageObjectPath(currentImageUrl);
+  const currentImageIsStorageAsset = Boolean(currentImageObjectPath);
+  const [sessionUploadedImageUrl, setSessionUploadedImageUrl] = useState<string | null>(null);
+  const [isDeletingCurrentImage, setIsDeletingCurrentImage] = useState(false);
+
+  useEffect(() => {
+    if (!currentImageUrl || (persistedImageUrlTrimmed && currentImageUrl === persistedImageUrlTrimmed)) {
+      setSessionUploadedImageUrl(null);
+    }
+  }, [currentImageUrl, persistedImageUrlTrimmed]);
+
+  const currentImageIsSessionUpload = Boolean(
+    currentImageObjectPath
+    && sessionUploadedImageUrl
+    && currentImageUrl === sessionUploadedImageUrl,
+  );
+
+  const handleRemoveCurrentImage = useCallback(async () => {
+    const restorePersistedImage = currentImageIsSessionUpload
+      && persistedImageUrlTrimmed
+      && persistedImageUrlTrimmed !== currentImageUrl;
+    const nextImageUrl = restorePersistedImage ? persistedImageUrlTrimmed : '';
+    const nextImageLocked = restorePersistedImage ? persistedImageLocked : false;
+
+    if (!currentImageUrl) return;
+
+    if (!currentImageIsSessionUpload || !onDeleteImage || !currentImageObjectPath) {
+      onDraftFieldChange('imageUrl', nextImageUrl);
+      onDraftCheckboxChange('imageLocked', nextImageLocked);
+      onLocalAction('Imagen quitada del formulario.');
+      return;
+    }
+
+    setIsDeletingCurrentImage(true);
+    setFileError(null);
+
+    try {
+      await onDeleteImage(currentImageObjectPath);
+      onDraftFieldChange('imageUrl', nextImageUrl);
+      onDraftCheckboxChange('imageLocked', nextImageLocked);
+      setSessionUploadedImageUrl(null);
+      resetSelectedUploadState();
+      onLocalAction('Imagen eliminada correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al eliminar la imagen.';
+      setFileError(message);
+    } finally {
+      setIsDeletingCurrentImage(false);
+    }
+  }, [
+    currentImageIsSessionUpload,
+    currentImageObjectPath,
+    currentImageUrl,
+    onDeleteImage,
+    onDraftCheckboxChange,
+    onDraftFieldChange,
+    onLocalAction,
+    persistedImageLocked,
+    persistedImageUrlTrimmed,
+    resetSelectedUploadState,
+  ]);
+
+  const handleDiscardChangesClick = useCallback(() => {
+    setFileError(null);
+    setSessionUploadedImageUrl(null);
+    setIsDeletingCurrentImage(false);
+    resetSelectedUploadState();
+    onDiscardChanges();
+  }, [onDiscardChanges, resetSelectedUploadState]);
 
   function scrollToSection(sectionId: string) {
     const el = document.getElementById(sectionId);
@@ -1266,9 +1423,50 @@ function AdminModelFormBody({
         <AdminModelSection
           id="admin-model-section-image"
           technicalTitle="06. IMAGEN_CURACION"
-          description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
+          description="Gestioná la imagen actual del modelo y prepará un reemplazo antes de publicar."
         >
           <div className="admin-page__model-field-grid">
+            {currentImageUrl ? (
+              <section className="admin-page__model-image-preview admin-page__model-field--full" aria-label="Imagen actual del modelo">
+                <div className="admin-page__model-image-preview-media">
+                  <img src={currentImageUrl} alt="Imagen actual del modelo" />
+                  <button
+                    type="button"
+                    className="admin-page__model-image-preview-delete"
+                    aria-label={currentImageIsSessionUpload ? 'Eliminar imagen actual' : 'Quitar imagen del formulario'}
+                    disabled={isDeletingCurrentImage}
+                    onClick={handleRemoveCurrentImage}
+                  >
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      {currentImageIsSessionUpload ? 'delete' : 'close'}
+                    </span>
+                    {isDeletingCurrentImage
+                      ? 'Eliminando...'
+                      : currentImageIsSessionUpload
+                        ? 'Eliminar'
+                        : 'Quitar'}
+                  </button>
+                </div>
+                <div className="admin-page__model-image-preview-copy">
+                  <strong>Imagen actual</strong>
+                  <p>
+                    {currentImageIsSessionUpload
+                      ? 'Imagen subida en este borrador. Podés eliminarla o reemplazarla antes de publicar.'
+                      : currentImageIsStorageAsset
+                        ? 'Imagen guardada en el modelo. Podés quitarla del formulario o reemplazarla antes de publicar.'
+                        : 'Imagen activa en el formulario. Podés reemplazarla o quitarla antes de publicar.'}
+                  </p>
+                </div>
+              </section>
+            ) : (
+              <section className="admin-page__model-image-preview admin-page__model-image-preview--empty admin-page__model-field--full" aria-label="Imagen actual del modelo">
+                <div className="admin-page__model-image-preview-copy">
+                  <strong>Imagen no disponible</strong>
+                  <p>Elegí una URL o subí un archivo para continuar con el formulario.</p>
+                </div>
+              </section>
+            )}
+
             <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
               <span className="admin-page__model-label">
                 <span className="material-symbols-outlined" aria-hidden="true">image</span>
@@ -1283,6 +1481,10 @@ function AdminModelFormBody({
                 </button>
               </div>
             </div>
+
+            {fileError ? (
+              <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
+            ) : null}
 
             {imageMode === 'url' ? (
               <>
@@ -1313,7 +1515,7 @@ function AdminModelFormBody({
                     Seleccionar imagen del modelo
                   </span>
                   <div className="admin-page__image-file-control">
-                    <input id="admin-model-image-file" type="file" className="admin-page__image-file-input" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                    <input ref={fileInputRef} id="admin-model-image-file" type="file" className="admin-page__image-file-input" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
                     <label htmlFor="admin-model-image-file" className="admin-page__image-file-trigger">
                       <span className="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
                       Seleccionar imagen
@@ -1324,14 +1526,15 @@ function AdminModelFormBody({
                   </div>
                 </div>
 
-                {fileError ? (
-                  <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
-                ) : null}
-
                   {previewBlobUrl && selectedFile ? (
-                  <div className="admin-page__model-field admin-page__model-field--full">
-                    <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto' }} />
-                    <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                  <div className="admin-page__model-image-preview admin-page__model-field--full">
+                    <div className="admin-page__model-image-preview-media admin-page__model-image-preview-media--candidate">
+                      <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" />
+                    </div>
+                    <div className="admin-page__model-image-preview-copy">
+                      <strong>Archivo seleccionado</strong>
+                      <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                    </div>
                     <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
                       <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
                       {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
@@ -1376,7 +1579,7 @@ function AdminModelFormBody({
         </AdminModelSection>
 
         <footer className="admin-page__model-actions" aria-label="Acciones del borrador">
-          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button admin-page__model-action-button--discard" onClick={onDiscardChanges}>
+          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button admin-page__model-action-button--discard" onClick={handleDiscardChangesClick}>
             <span className="material-symbols-outlined" aria-hidden="true">undo</span>
             Descartar cambios
           </button>
@@ -1499,6 +1702,16 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
     return uploadMotorcycleImage(file, resolvedId, accessToken);
   }, [draft.modelId, suggestedModelId, session?.access_token]);
 
+  const handleDeleteImage = useCallback(async (objectPath: string) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para eliminar la imagen.');
+    }
+
+    await deleteMotorcycleImage(objectPath, accessToken);
+  }, [session?.access_token]);
+
   return (
     <AdminModelsWorkspace
       activeModelsItem="new"
@@ -1518,6 +1731,7 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
         onLocalAction={handleLocalAction}
         onPublish={handlePublish}
         onUploadImage={handleUploadImage}
+        onDeleteImage={handleDeleteImage}
         saving={saving}
         toolbarKicker="Borrador local"
         workspaceHeading="Workspace de creación"
@@ -2586,6 +2800,20 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     try {
       const payload = draftToUpdatePayload(effectiveDraft);
       const updatedBike = await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
+      const originalPersistedImageUrl = originalDraft?.imageUrl.trim() ?? '';
+      const originalPersistedObjectPath = getMotorcycleImageObjectPath(originalPersistedImageUrl);
+      const nextImageUrl = effectiveDraft.imageUrl.trim();
+      const nextImageObjectPath = getMotorcycleImageObjectPath(nextImageUrl);
+
+      if (
+        originalPersistedObjectPath
+        && nextImageUrl
+        && nextImageUrl !== originalPersistedImageUrl
+        && nextImageObjectPath !== originalPersistedObjectPath
+      ) {
+        void deleteMotorcycleImage(originalPersistedObjectPath, accessToken).catch(() => undefined);
+      }
+
       setLocalStatus('Modelo actualizado correctamente.');
       onMotorcyclesChangeProp?.(updatedBike);
       window.location.hash = `#/motos/${motorcycleId}`;
@@ -2596,7 +2824,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     } finally {
       setSaving(false);
     }
-  }, [draft, motorcycleId, session?.access_token, onMotorcyclesChangeProp]);
+  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, session?.access_token]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;
@@ -2607,6 +2835,16 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
 
     return uploadMotorcycleImage(file, motorcycleId!, accessToken);
   }, [motorcycleId, session?.access_token]);
+
+  const handleDeleteImage = useCallback(async (objectPath: string) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para eliminar la imagen.');
+    }
+
+    await deleteMotorcycleImage(objectPath, accessToken);
+  }, [session?.access_token]);
 
   if (!motorcycleId || !originalDraft) {
     return (
@@ -2641,6 +2879,8 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         draft={safeDraft}
         suggestedModelId={suggestedModelId}
         localStatus={localStatus}
+        persistedImageLocked={originalDraft.imageLocked}
+        persistedImageUrl={originalDraft.imageUrl}
         onDraftFieldChange={handleDraftFieldChange}
         onDraftCheckboxChange={handleDraftCheckboxChange}
         onFeatureToggle={handleFeatureToggle}
@@ -2648,6 +2888,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         onLocalAction={handleLocalAction}
         onPublish={handlePublish}
         onUploadImage={handleUploadImage}
+        onDeleteImage={handleDeleteImage}
         saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"
