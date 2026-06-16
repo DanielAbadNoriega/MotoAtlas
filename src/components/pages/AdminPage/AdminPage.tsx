@@ -34,7 +34,9 @@ import {
   MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
 import {
+  createAdminMotorcycle,
   updateAdminMotorcycle,
+  type AdminMotorcycleCreatePayload,
   type AdminMotorcycleUpdatePayload,
 } from '../../../services/adminMotorcycleService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
@@ -1157,6 +1159,10 @@ function AdminModelFormBody({
 export function AdminNewModelPage() {
   const [draft, setDraft] = useState<AdminModelDraft>(emptyAdminModelDraft);
   const [localStatus, setLocalStatus] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState('');
+
+  const { session } = useAuth();
 
   const suggestedModelId = useMemo(() => buildSuggestedModelId(draft), [draft]);
 
@@ -1180,12 +1186,41 @@ export function AdminNewModelPage() {
 
   const handleLocalAction = useCallback((message: string) => {
     setLocalStatus(message);
+    if (message !== 'Publicación pendiente de persistencia.') {
+      setPublishError('');
+    }
   }, []);
 
   const handleDiscardChanges = useCallback(() => {
     setDraft(emptyAdminModelDraft);
     setLocalStatus('Cambios descartados.');
+    setPublishError('');
   }, []);
+
+  const handlePublish = useCallback(async () => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setPublishError('No hay sesión activa para publicar.');
+      return;
+    }
+
+    setSaving(true);
+    setPublishError('');
+    setLocalStatus('Publicando modelo...');
+
+    try {
+      const payload = draftToCreatePayload(draft, suggestedModelId);
+      await createAdminMotorcycle(payload, accessToken);
+      setLocalStatus('Modelo publicado correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
+      setPublishError(message);
+      setLocalStatus(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, suggestedModelId, session?.access_token]);
 
   return (
     <AdminModelsWorkspace
@@ -1194,6 +1229,7 @@ export function AdminNewModelPage() {
       title="Nuevo modelo"
       titleId="admin-models-new-title"
     >
+      {publishError ? <p className="admin-page__model-status admin-page__model-status--error" role="alert">{publishError}</p> : null}
       <AdminModelFormBody
         draft={draft}
         suggestedModelId={suggestedModelId}
@@ -1203,6 +1239,8 @@ export function AdminNewModelPage() {
         onFeatureToggle={handleFeatureToggle}
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
+        onPublish={handlePublish}
+        saving={saving}
         toolbarKicker="Borrador local"
         workspaceHeading="Workspace de creación"
         workspaceHeadingId="admin-models-new-workspace-title"
@@ -2041,6 +2079,59 @@ function draftToUpdatePayload(draft: AdminModelDraft): AdminMotorcycleUpdatePayl
   payload.tubelessWheels = draft.features.tubelessWheels;
 
   return payload as AdminMotorcycleUpdatePayload;
+}
+
+function draftToCreatePayload(draft: AdminModelDraft, modelId: string): AdminMotorcycleCreatePayload {
+  const id = draft.modelId.trim() || modelId || '';
+  const brand = draft.brand.trim() || '';
+  const model = draft.model.trim() || '';
+  const year = parseInt(draft.year, 10);
+  const description = draft.description.trim();
+  const segment = draft.segment || '';
+  const license = draft.license || '';
+  const engineType = draft.engineType || '';
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  const powerHp = parseFloat(draft.powerHp);
+  const torqueNm = parseFloat(draft.torqueNm);
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  const priceEur = draft.pricePending ? 0 : parseInt(draft.priceEur, 10) || 0;
+  const imageUrl = draft.imageUrl.trim() || '';
+
+  return {
+    id,
+    brand,
+    model,
+    year: Number.isNaN(year) ? 0 : year,
+    description,
+    segment,
+    license,
+    engineType,
+    displacementCc: Number.isNaN(displacementCc) ? 0 : displacementCc,
+    powerHp: Number.isNaN(powerHp) ? 0 : powerHp,
+    torqueNm: Number.isNaN(torqueNm) ? 0 : torqueNm,
+    wetWeightKg: Number.isNaN(wetWeightKg) ? 0 : wetWeightKg,
+    seatHeightMm: Number.isNaN(seatHeightMm) ? 0 : seatHeightMm,
+    fuelTankLiters: Number.isNaN(fuelTankLiters) ? 0 : fuelTankLiters,
+    priceEur,
+    imageUrl,
+    imageLocked: draft.imageLocked,
+    descriptionLocked: false,
+    priceSource: 'manual',
+    imageSource: 'manual',
+    specsSource: 'manual',
+    scoresSource: 'estimated',
+    prosConsSource: 'estimated',
+    reliabilitySource: 'estimated',
+    absCornering: draft.features.absCornering,
+    tractionControl: draft.features.tractionControl,
+    ridingModes: draft.features.ridingModes,
+    cruiseControl: draft.features.cruiseControl,
+    quickshifter: draft.features.quickshifter,
+    heatedGrips: draft.features.heatedGrips,
+    tubelessWheels: draft.features.tubelessWheels,
+  };
 }
 
 export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[] }>) {

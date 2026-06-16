@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
+import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
   getReviewReports,
@@ -59,6 +59,7 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
 }));
 
 vi.mock('../../../services/adminMotorcycleService', () => ({
+  createAdminMotorcycle: vi.fn(),
   updateAdminMotorcycle: vi.fn(),
 }));
 
@@ -67,6 +68,7 @@ const getReviewReportsMock = vi.mocked(getReviewReports);
 const getAllReviewsMock = vi.mocked(getAllReviews);
 const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
 const updateAdminMotorcycleMock = vi.mocked(updateAdminMotorcycle);
+const createAdminMotorcycleMock = vi.mocked(createAdminMotorcycle);
 const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
 const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
@@ -257,6 +259,21 @@ describe('AdminPage', () => {
       segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
       displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
       fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+      description: 'Test', descriptionLocked: false,
+      specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+      scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+      isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+      officialUrl: null,
+      useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+      features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+      pros: [], cons: [],
+      reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+    });
+    createAdminMotorcycleMock.mockReset().mockResolvedValue({
+      id: 'new-model', brand: 'Test', model: 'Model', year: 2025,
+      segment: 'naked' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+      displacementCc: 500, powerHp: 50, torqueNm: 45, wetWeightKg: 180, seatHeightMm: 800,
+      fuelTankLiters: 15, priceEur: 8000, imageUrl: '/test.jpg', imageLocked: false,
       description: 'Test', descriptionLocked: false,
       specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
       scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
@@ -1744,7 +1761,7 @@ describe('AdminPage', () => {
     expect(within(previewSection as HTMLElement).getByText('110 CV')).toBeInTheDocument();
   });
 
-  it('mantiene las acciones del footer como locales sin llamar servicios', async () => {
+  it('mantiene Guardar borrador y Vista previa como acciones locales sin llamar servicios', async () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
 
@@ -1760,12 +1777,60 @@ describe('AdminPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Vista previa' }));
     expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+  });
+
+  it('publicar modelo en create llama a createAdminMotorcycle y muestra éxito', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Descripción'), 'Trail travel.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
-    expect(getReviewReportsMock).not.toHaveBeenCalled();
-    expect(getAllReviewsMock).not.toHaveBeenCalled();
-    expect(getAllModelRequestsMock).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(createAdminMotorcycleMock).toHaveBeenCalledWith(
+        expect.objectContaining({ brand: 'Ducati', model: 'DesertX', powerHp: 110 }),
+        'admin-token',
+      );
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Modelo publicado correctamente.');
+  });
+
+  it('publicar modelo en create muestra error si falla createAdminMotorcycle', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    createAdminMotorcycleMock.mockRejectedValueOnce(new Error('connection failed'));
+
+    await user.type(screen.getByLabelText('Marca'), 'Test');
+    await user.type(screen.getByLabelText('Modelo'), 'Moto');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('connection failed');
+    });
+  });
+
+  it('publicar modelo en create no ejecuta servicio sin sesión activa', () => {
+    mockAuth({
+      user: null,
+      session: null,
+      profile: null,
+      isAuthenticated: false,
+      isAdmin: false,
+    });
+    render(<AdminNewModelPage />);
+
+    expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
   });
 
   it('renderiza la página de selección de modelos para editar', () => {
