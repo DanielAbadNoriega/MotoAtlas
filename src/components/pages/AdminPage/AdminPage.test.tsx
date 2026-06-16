@@ -1,6 +1,8 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
+import { uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
   getReviewReports,
@@ -18,7 +20,9 @@ import {
   getReviewAspectsByReviewIds,
   type MotorcycleReview,
 } from '../../../services/motorcycleReviewService';
-import { AdminDashboardPage, AdminEditModelsPage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
+import type { Bike } from '../../../types/bike';
+import { bikeCatalog } from '../../../data/bikes';
+import { AdminDashboardPage, AdminEditModelsPage, AdminEditMotorcyclePage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage } from './AdminPage';
 
 import {
   getAllModelRequests,
@@ -26,7 +30,7 @@ import {
   type ModelRequest,
   type ModelRequestStatus,
 } from '../../../services/modelRequestService';
-import { createAuthState, createAuthUser, createSession, createUserProfile, mockAdminAuthState } from '../../../test/fixtures/auth';
+import { adminProfileFixture, adminUserFixture, createAuthState, createAuthUser, createSession, createUserProfile, mockAdminAuthState } from '../../../test/fixtures/auth';
 
 vi.mock('../../../features/auth', () => ({
   useAuth: vi.fn(),
@@ -56,10 +60,23 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
   getReviewAspectsByReviewIds: vi.fn(),
 }));
 
+vi.mock('../../../services/adminMotorcycleService', () => ({
+  createAdminMotorcycle: vi.fn(),
+  updateAdminMotorcycle: vi.fn(),
+}));
+
+vi.mock('../../../services/adminMotorcycleImageUploadService', () => ({
+  uploadMotorcycleImage: vi.fn(),
+}));
+
+const uploadMotorcycleImageMock = vi.mocked(uploadMotorcycleImage);
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
 const getAllReviewsMock = vi.mocked(getAllReviews);
 const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
+const updateAdminMotorcycleMock = vi.mocked(updateAdminMotorcycle);
+const createAdminMotorcycleMock = vi.mocked(createAdminMotorcycle);
 const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
 const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
@@ -245,6 +262,36 @@ describe('AdminPage', () => {
     getAllModelRequestsMock.mockReset().mockResolvedValue(requestFixtures);
     updateModelRequestStatusMock.mockReset().mockResolvedValue(undefined);
     getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
+    updateAdminMotorcycleMock.mockReset().mockResolvedValue({
+      id: 'bmw-f-900-gs-2024', brand: 'BMW', model: 'F 900 GS', year: 2024,
+      segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+      displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
+      fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+      description: 'Test', descriptionLocked: false,
+      specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+      scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+      isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+      officialUrl: null,
+      useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+      features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+      pros: [], cons: [],
+      reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+    });
+    createAdminMotorcycleMock.mockReset().mockResolvedValue({
+      id: 'new-model', brand: 'Test', model: 'Model', year: 2025,
+      segment: 'naked' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+      displacementCc: 500, powerHp: 50, torqueNm: 45, wetWeightKg: 180, seatHeightMm: 800,
+      fuelTankLiters: 15, priceEur: 8000, imageUrl: '/test.jpg', imageLocked: false,
+      description: 'Test', descriptionLocked: false,
+      specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+      scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+      isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+      officialUrl: null,
+      useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+      features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+      pros: [], cons: [],
+      reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+    });
     mockAuth();
   });
 
@@ -1637,12 +1684,12 @@ describe('AdminPage', () => {
       'Solicitudes',
       'Vista general',
       'Nuevo modelo',
-      'Editar catálogo',
+      'Editar modelo',
     ]);
     expect(within(nav).getByRole('link', { name: 'Resumen' })).toHaveAttribute('href', '#/cuenta');
     expect(within(nav).getByRole('link', { name: 'Vista general' })).toHaveAttribute('href', '#/admin/modelos');
     expect(within(nav).getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('href', '#/admin/modelos/nuevo');
-    expect(within(nav).getByRole('link', { name: 'Editar catálogo' })).toHaveAttribute('href', '#/admin/modelos/editar');
+    expect(within(nav).getByRole('link', { name: 'Editar modelo' })).toHaveAttribute('href', '#/admin/modelos/editar');
   });
 
   it('sidebar de solicitudes muestra enlace activo', () => {
@@ -1659,10 +1706,9 @@ describe('AdminPage', () => {
     expect(screen.getByRole('heading', { name: 'Estudio de modelos' })).toBeInTheDocument();
     expect(screen.getByText('Gestiona las fichas técnicas del catálogo MotoAtlas.')).toBeInTheDocument();
     expect(screen.getByText('Workspace futuro')).toBeInTheDocument();
+    expect(screen.getByText('Editar modelo existente')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Vista general' })).toHaveAttribute('aria-current', 'page');
-    const placeholderLinks = screen.getAllByRole('link', { name: 'Abrir placeholder' });
-    expect(placeholderLinks[0]).toHaveAttribute('href', '#/admin/modelos/nuevo');
-    expect(placeholderLinks[1]).toHaveAttribute('href', '#/admin/modelos/editar');
+    expect(screen.getByRole('link', { name: 'Seleccionar modelo' })).toHaveAttribute('href', '#/admin/modelos/editar');
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Marca/i)).not.toBeInTheDocument();
   });
@@ -1723,7 +1769,7 @@ describe('AdminPage', () => {
     expect(within(previewSection as HTMLElement).getByText('110 CV')).toBeInTheDocument();
   });
 
-  it('mantiene las acciones del footer como locales sin llamar servicios', async () => {
+  it('mantiene Guardar borrador y Vista previa como acciones locales sin llamar servicios', async () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
 
@@ -1739,31 +1785,512 @@ describe('AdminPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Vista previa' }));
     expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
-
-    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
-    expect(getReviewReportsMock).not.toHaveBeenCalled();
-    expect(getAllReviewsMock).not.toHaveBeenCalled();
-    expect(getAllModelRequestsMock).not.toHaveBeenCalled();
   });
 
-  it('renderiza el placeholder mínimo de Editar catálogo para admin', () => {
-    render(<AdminEditModelsPage />);
+  it('publicar modelo en create llama a createAdminMotorcycle y muestra éxito', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
 
-    expect(screen.getByRole('heading', { name: 'Editar catálogo' })).toBeInTheDocument();
-    expect(screen.getByText('Aquí se preparará la búsqueda y edición de modelos existentes.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Editar catálogo' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.queryByText(/Buscar por marca o modelo/i)).not.toBeInTheDocument();
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Trail travel.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(createAdminMotorcycleMock).toHaveBeenCalledWith(
+        expect.objectContaining({ brand: 'Ducati', model: 'DesertX', powerHp: 110 }),
+        'admin-token',
+      );
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Modelo publicado correctamente.');
+  });
+
+  it('publicar modelo en create muestra error si falla createAdminMotorcycle', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    createAdminMotorcycleMock.mockRejectedValueOnce(new Error('connection failed'));
+
+    await user.type(screen.getByLabelText('Marca'), 'Test');
+    await user.type(screen.getByLabelText('Modelo'), 'Moto');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test model.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '500');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '50');
+    await user.type(screen.getByLabelText('Torque (nm)'), '45');
+    await user.type(screen.getByLabelText('Peso (kg)'), '180');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '800');
+    await user.type(screen.getByLabelText('Depósito (l)'), '15');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('connection failed');
+    });
+  });
+
+  it('publicar modelo en create no ejecuta servicio sin sesión activa', () => {
+    mockAuth({
+      user: null,
+      session: null,
+      profile: null,
+      isAuthenticated: false,
+      isAdmin: false,
+    });
+    render(<AdminNewModelPage />);
+
+    expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con modeloId vacío muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El ID del modelo es obligatorio.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con modeloId con espacios muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+    await user.type(screen.getByLabelText('ID sugerido'), 'invalid id with spaces');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El ID del modelo no puede contener espacios.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish sin marca muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'test-model');
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('La marca es obligatoria.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con año inválido muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'test-model');
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El año debe ser un número entre 1900 y 2100.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish acepta imageUrl local comenzando con /', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'valid-model');
+    await user.type(screen.getByLabelText('Marca'), 'Yamaha');
+    await user.type(screen.getByLabelText('Modelo'), 'MT-07');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '689');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '73');
+    await user.type(screen.getByLabelText('Torque (nm)'), '68');
+    await user.type(screen.getByLabelText('Peso (kg)'), '184');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '805');
+    await user.type(screen.getByLabelText('Depósito (l)'), '14');
+    await user.type(screen.getByLabelText('Image URL'), '/images/motorcycles/mt-07.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(createAdminMotorcycleMock).toHaveBeenCalled();
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Modelo publicado correctamente.');
+  });
+
+  it('edit publish con potencia inválida muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+    await user.clear(screen.getByLabelText('Potencia (hp)'));
+    await user.type(screen.getByLabelText('Potencia (hp)'), '0');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('La potencia debe ser un número mayor a 0.');
+    });
+    expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('edit publish no requiere validación de modeloId', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+    });
+  });
+
+  it('renderiza la página de selección de modelos para editar', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    expect(screen.getByRole('heading', { name: 'Seleccionar modelo para editar' })).toBeInTheDocument();
+    expect(screen.getByText('Busca una moto del catálogo y abre su ficha interna de edición.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Editar modelo' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByPlaceholderText(/Buscar por marca o modelo/i)).toBeInTheDocument();
+    expect(screen.getByRole('searchbox', { name: /Buscar por marca o modelo/i })).toBeInTheDocument();
+  });
+
+  it('muestra al menos un resultado de catálogo en la página de edición', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const cards = screen.getAllByRole('article');
+    expect(cards.length).toBeGreaterThan(0);
+    const editLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
+    expect(editLinks.length).toBeGreaterThan(0);
+  });
+
+  it('usa la misma jerarquía de encabezado que AccountReviewMotorcycleSummaryCard (h2)', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const cards = screen.getAllByTestId('admin-model-edit-summary-card');
+    expect(cards.length).toBeGreaterThan(0);
+
+    cards.forEach((card) => {
+      expect(within(card).getByRole('heading', { level: 2 })).toBeInTheDocument();
+    });
+  });
+
+  it('incluye la capa overlay en cada card como la referencia', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const overlays = document.querySelectorAll('.admin-page__model-edit-summary-overlay');
+    expect(overlays.length).toBeGreaterThan(0);
+  });
+
+  it('no renderiza texto de segmento en la card de edición', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const segmentLabels = ['Naked', 'Sport', 'Trail', 'Adventure', 'Scooter', 'Touring', 'Custom', 'Cruiser', 'Retro'];
+    const cards = screen.getAllByTestId('admin-model-edit-summary-card');
+
+    cards.forEach((card) => {
+      segmentLabels.forEach((label) => {
+        expect(within(card).queryByText(label)).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  it('cada card Editar modelo enlaza a la ruta de edición interna', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const editLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
+    editLinks.forEach((link) => {
+      expect(link).toHaveAttribute('href', expect.stringMatching(/^#\/admin\/modelos\/.+\/editar$/));
+    });
+  });
+
+  it('cada card usa directamente la imageUrl de la moto sin sobrescribirla con getMotorcycleLocalImageUrl', () => {
+    const customBikes = [
+      { ...bikeCatalog[0], imageUrl: '/images/motorcycles/resolved-custom-image.webp' },
+      ...bikeCatalog.slice(1),
+    ];
+    render(<AdminEditModelsPage motorcycles={customBikes} />);
+
+    const cards = screen.getAllByTestId('admin-model-edit-summary-card');
+    expect(cards.length).toBeGreaterThan(0);
+
+    const firstCardImg = cards[0].querySelector('img');
+    expect(firstCardImg).not.toBeNull();
+    const src = firstCardImg!.getAttribute('src') ?? '';
+    expect(src).toBe('/images/motorcycles/resolved-custom-image.webp');
+  });
+
+  it('filtra resultados al escribir en la búsqueda', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const initialLinks = screen.getAllByRole('link', { name: /^Editar modelo /i });
+    expect(initialLinks.length).toBeGreaterThan(1);
+
+    const searchInput = screen.getByRole('searchbox');
+    await user.type(searchInput, 'ZZZZ_NO_EXISTE');
+
+    expect(screen.queryByRole('link', { name: /^Editar modelo /i })).not.toBeInTheDocument();
+    expect(screen.getByText('No hay modelos que coincidan con los filtros.')).toBeInTheDocument();
+  });
+
+  it('muestra resumen de resultados con el total de modelos encontrados', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    expect(screen.getByText(/\d+ modelos encontrados/)).toBeInTheDocument();
+  });
+
+  it('muestra botón Limpiar filtros en el panel cuando hay filtros activos y restaura resultados', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const searchInput = screen.getByRole('searchbox');
+    await user.type(searchInput, 'BMW');
+    const clearButtons = screen.getAllByRole('button', { name: 'Limpiar filtros' });
+    expect(clearButtons.length).toBeGreaterThan(0);
+
+    await user.click(clearButtons[0]);
+    expect(searchInput).toHaveValue('');
+    expect(screen.getByText(/\d+ modelos encontrados/)).toBeInTheDocument();
+  });
+
+  it('renderiza los filtros en el panel del sidebar, no como bloque full-width', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const filterSection = screen.getByRole('region', { name: 'Filtros de modelos' });
+    expect(filterSection).toBeInTheDocument();
+    expect(filterSection).toHaveClass('admin-page__filters');
+    expect(within(filterSection).getByRole('heading', { name: 'Filtros' })).toBeInTheDocument();
+    expect(within(filterSection).getByRole('button', { name: 'Aplicar filtros' })).toBeInTheDocument();
+    expect(within(filterSection).getAllByRole('button', { name: 'Limpiar filtros' }).length).toBeGreaterThan(0);
+
+    const searchInput = within(filterSection).getByRole('searchbox');
+    expect(searchInput).toBeInTheDocument();
+    expect(within(filterSection).getByPlaceholderText(/Buscar por marca o modelo/i)).toBeInTheDocument();
+
+    const segmentGroup = within(filterSection).getByText('Segmento', { selector: '.filter-group__title' }).closest('details');
+    expect(segmentGroup).not.toBeNull();
+
+    const licenseGroup = within(filterSection).getByText('Carnet', { selector: '.filter-group__title' }).closest('details');
+    expect(licenseGroup).not.toBeNull();
+
+    expect(filterSection.querySelector('.admin-page__filters-header')).toBeInTheDocument();
+    expect(filterSection.querySelector('.admin-page__filters-body')).toBeInTheDocument();
+    expect(filterSection.querySelector('.admin-page__filters-footer')).toBeInTheDocument();
+  });
+
+  it('renderiza el trigger de filtros móvil en el contenido principal', () => {
+    render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+    const mobileTrigger = screen.getByRole('button', { name: 'Filtros' });
+    expect(mobileTrigger).toBeInTheDocument();
+    expect(mobileTrigger.querySelector('.material-symbols-outlined')).toHaveTextContent('tune');
+  });
+
+  describe('filtros extendidos de #/admin/modelos/editar', () => {
+    function getFilterPanel() {
+      return screen.getByRole('region', { name: 'Filtros de modelos' });
+    }
+
+    function getResultsHeading() {
+      return screen.getByText(/\d+ modelos encontrados/);
+    }
+
+    function countResults() {
+      return screen.getAllByRole('link', { name: /^Editar modelo /i }).length;
+    }
+
+    it('renderiza todos los grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos)', () => {
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const filterPanel = getFilterPanel();
+      const titles = ['Marca', 'Segmento', 'Carnet', 'Precio', 'Potencia', 'Peso', 'Altura asiento', 'Electrónica', 'Uso recomendado', 'Calidad de datos'];
+      titles.forEach((title) => {
+        expect(within(filterPanel).getByText(title, { selector: '.filter-group__title' })).toBeInTheDocument();
+      });
+    });
+
+    it('filtrar por marca reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const yamahaBtn = within(filterPanel).getByRole('button', { name: 'Marca: Yamaha' });
+      await user.click(yamahaBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por segmento reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const nakedBtn = within(filterPanel).getByRole('button', { name: 'Segmento: Naked' });
+      await user.click(nakedBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por carnet reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const a2Btn = within(filterPanel).getByRole('button', { name: 'Carnet: Carnet A2' });
+      await user.click(a2Btn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por potencia reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const presetBtn = within(filterPanel).getByRole('button', { name: /Potencia: 116\+ CV/ });
+      await user.click(presetBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('filtrar por equipo reduce los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const heatedGripsBtn = within(filterPanel).getByRole('button', { name: 'Electrónica: Puños calefactables' });
+      await user.click(heatedGripsBtn);
+
+      const newCount = countResults();
+      expect(newCount).toBeGreaterThan(0);
+      expect(newCount).toBeLessThan(initialCount);
+    });
+
+    it('combinar filtros de marca y segmento reduce aún más los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const initialCount = countResults();
+      const filterPanel = getFilterPanel();
+
+      const bmwBtn = within(filterPanel).getByRole('button', { name: 'Marca: BMW' });
+      await user.click(bmwBtn);
+
+      const afterBrand = countResults();
+      expect(afterBrand).toBeLessThan(initialCount);
+
+      const trailBtn = within(filterPanel).getByRole('button', { name: 'Segmento: Trail' });
+      await user.click(trailBtn);
+
+      const combinedCount = countResults();
+      expect(combinedCount).toBeLessThanOrEqual(afterBrand);
+    });
+
+    it('Limpiar filtros restaura todos los resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const filterPanel = getFilterPanel();
+
+      const initialCount = countResults();
+      const brandBtn = within(filterPanel).getByRole('button', { name: 'Marca: KTM' });
+      await user.click(brandBtn);
+
+      expect(countResults()).toBeLessThan(initialCount);
+
+      const clearButtons = within(filterPanel).getAllByRole('button', { name: 'Limpiar filtros' });
+      await user.click(clearButtons[0]);
+
+      expect(countResults()).toBe(initialCount);
+    });
+
+    it('muestra empty state cuando los filtros producen cero resultados', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditModelsPage motorcycles={bikeCatalog} />);
+
+      const searchInput = screen.getByRole('searchbox');
+      await user.type(searchInput, 'ZZZZ_NO_EXISTE');
+
+      expect(screen.getByText('No hay modelos que coincidan con los filtros.')).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: 'Limpiar filtros' }).length).toBeGreaterThan(0);
+    });
   });
 
   it.each([
-    ['Estudio de modelos', <AdminModelsPage />],
-    ['Nuevo modelo', <AdminNewModelPage />],
-    ['Editar catálogo', <AdminEditModelsPage />],
-  ])('mantiene el guard admin en %s para usuarios sin rol admin', (_title, page) => {
+    ['Estudio de modelos', () => <AdminModelsPage />],
+    ['Nuevo modelo', () => <AdminNewModelPage />],
+    ['Seleccionar modelo para editar', () => <AdminEditModelsPage motorcycles={bikeCatalog} />],
+  ])('mantiene el guard admin en %s para usuarios sin rol admin', (_title, pageFactory) => {
     mockAuth({ isAdmin: false });
 
-    render(page);
+    render(pageFactory());
 
     expect(screen.getByRole('heading', { name: 'No tienes permisos para acceder a esta zona.' })).toBeInTheDocument();
   });
@@ -1895,5 +2422,737 @@ describe('AdminPage', () => {
 
     expect(screen.getByRole('button', { name: /Más información sobre imagen bloqueada/i })).toBeInTheDocument();
     expect(screen.getByText('Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.')).toBeInTheDocument();
+  });
+
+  describe('image upload UI shell — mode switch and local preview', () => {
+    let createObjectURLSpy: ReturnType<typeof vi.fn>;
+    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+
+    function stubURL() {
+      createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-preview-url');
+      revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    }
+
+    afterEach(() => {
+      createObjectURLSpy?.mockRestore();
+      revokeObjectURLSpy?.mockRestore();
+    });
+
+    it('renderiza el mode switch con URL manual y Subir archivo', () => {
+      render(<AdminNewModelPage />);
+
+      expect(screen.getByRole('radio', { name: 'URL manual' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Subir archivo' })).toBeInTheDocument();
+    });
+
+    it('URL manual mode mantiene el input de Image URL funcional', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Image URL'), 'https://example.com/bike.webp');
+      expect(screen.getByLabelText('Image URL')).toHaveValue('https://example.com/bike.webp');
+    });
+
+    it('switching a Subir archivo muestra el input file', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      expect(screen.getByLabelText('Seleccionar imagen del modelo')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Image URL')).not.toBeInTheDocument();
+    });
+
+    function selectFile(input: HTMLElement, file: File) {
+      fireEvent.change(input, { target: { files: [file] } });
+    }
+
+    it('seleccionar JPEG válido muestra preview y metadatos', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test-image.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      expect(createObjectURLSpy).toHaveBeenCalledWith(file);
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toHaveAttribute('src', 'blob:mock-preview-url');
+      expect(screen.getByText(/test-image\.jpg/)).toBeInTheDocument();
+    });
+
+    it('seleccionar PNG válido muestra preview', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.png', { type: 'image/png' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toHaveAttribute('src', 'blob:mock-preview-url');
+    });
+
+    it('seleccionar WebP válido muestra preview', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.webp', { type: 'image/webp' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toHaveAttribute('src', 'blob:mock-preview-url');
+    });
+
+    it('tipo no soportado muestra role="alert" sin preview', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.gif', { type: 'image/gif' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByRole('alert')).toHaveTextContent('Tipo de archivo no soportado. Usa: JPEG, PNG o WebP.');
+      expect(screen.queryByAltText('Previsualización local del archivo seleccionado')).not.toBeInTheDocument();
+    });
+
+    it('archivo mayor a 5 MB muestra role="alert" sin preview', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const largeContent = new ArrayBuffer(6 * 1024 * 1024);
+      const file = new File([largeContent], 'large.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByRole('alert')).toHaveTextContent('El archivo supera el límite de 5 MB.');
+      expect(screen.queryByAltText('Previsualización local del archivo seleccionado')).not.toBeInTheDocument();
+    });
+
+    it('volver a URL manual preserva el valor del input Image URL', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Image URL'), 'https://example.com/bike.webp');
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      expect(screen.queryByLabelText('Image URL')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue('https://example.com/bike.webp');
+    });
+
+    it('seleccionar archivo no llama al servicio de upload', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+    });
+  });
+
+  describe('upload wiring — explicit Subir imagen action', () => {
+    const publicUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/moto-id/uuid.jpg';
+    let createObjectURLSpy: ReturnType<typeof vi.fn>;
+    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+
+    function stubURL() {
+      createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-preview');
+      revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    }
+
+    afterEach(() => {
+      createObjectURLSpy?.mockRestore();
+      revokeObjectURLSpy?.mockRestore();
+      uploadMotorcycleImageMock.mockReset();
+    });
+
+    function selectFile(input: HTMLElement, file: File) {
+      fireEvent.change(input, { target: { files: [file] } });
+    }
+
+    async function setupCreateWithFile() {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Marca'), 'Ducati');
+      await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      return { user, file };
+    }
+
+    async function setupEditWithFile() {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      return { user, file };
+    }
+
+    it('upload mode renderiza Subir imagen tras seleccionar archivo válido', async () => {
+      const user = userEvent.setup();
+      stubURL();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      selectFile(fileInput, new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' }));
+
+      expect(screen.getByRole('button', { name: 'Subir imagen' })).toBeInTheDocument();
+    });
+
+    it('create upload pasa modelId de draft.modelId a uploadMotorcycleImage', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user, file } = await setupCreateWithFile();
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx-2025');
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(file, 'ducati-desertx-2025', 'admin-token');
+      });
+    });
+
+    it('create upload fallback a suggestedModelId cuando draft.modelId está vacío', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user, file } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(file, expect.stringContaining('ducati-desertx'), 'admin-token');
+      });
+    });
+
+    it('edit upload pasa motorcycleId de ruta a uploadMotorcycleImage', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user, file } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(file, 'bmw-f-900-gs-2024', 'admin-token');
+      });
+    });
+
+    it('upload exitoso actualiza Image URL y marca Imagen bloqueada', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue(publicUrl);
+      expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/ })).toBeChecked();
+    });
+
+    it('upload exitoso en edit actualiza Image URL y marca Imagen bloqueada', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue(publicUrl);
+      expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/ })).toBeChecked();
+    });
+
+    it('upload error muestra role alert sin perder preview', async () => {
+      uploadMotorcycleImageMock.mockRejectedValueOnce(new Error('Storage error'));
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Storage error');
+      });
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+    });
+
+    it('upload permite reintentar tras error', async () => {
+      uploadMotorcycleImageMock.mockRejectedValueOnce(new Error('Network error'));
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Network error');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+    });
+
+    it('upload sin access token muestra error controlado', async () => {
+      useAuthMock.mockReturnValue(createAuthState({
+        user: adminUserFixture,
+        session: null,
+        profile: adminProfileFixture,
+        isAuthenticated: true,
+        isAdmin: true,
+        isLoading: false,
+        signIn: signInMock,
+        signUp: signUpMock,
+        signOut: signOutMock,
+        refreshProfile: refreshProfileMock,
+      }));
+
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('No hay sesión activa para subir la imagen.');
+      });
+
+      expect(uploadMotorcycleImageMock).not.toHaveBeenCalled();
+    });
+
+    it('upload no llama a createAdminMotorcycle ni updateAdminMotorcycle', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+      expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('auto-upload before publish', () => {
+    const publicUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/moto-id/uuid.jpg';
+
+    let createObjectURLSpy: ReturnType<typeof vi.fn>;
+    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+
+    function stubURL() {
+      createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-preview');
+      revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    }
+
+    afterEach(() => {
+      createObjectURLSpy?.mockRestore();
+      revokeObjectURLSpy?.mockRestore();
+      uploadMotorcycleImageMock.mockReset();
+      createAdminMotorcycleMock.mockReset();
+      updateAdminMotorcycleMock.mockReset();
+    });
+
+    function selectFile(input: HTMLElement, file: File) {
+      fireEvent.change(input, { target: { files: [file] } });
+    }
+
+    async function fillCreateForm(user: ReturnType<typeof userEvent.setup>) {
+      await user.type(screen.getByLabelText('Marca'), 'Ducati');
+      await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+      await user.type(screen.getByLabelText('Año'), '2025');
+      await user.type(screen.getByLabelText('Descripción'), 'Adventure bike.');
+      await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+      await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+      await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+      await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+      await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+      await user.type(screen.getByLabelText('Torque (nm)'), '92');
+      await user.type(screen.getByLabelText('Peso (kg)'), '210');
+      await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+      await user.type(screen.getByLabelText('Depósito (l)'), '21');
+    }
+
+    async function setupCreateWithFile() {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await fillCreateForm(user);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      return { user, file };
+    }
+
+    async function setupEditWithFile() {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      return { user, file };
+    }
+
+    it('URL manual mode publish no llama a uploadMotorcycleImage', async () => {
+      createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id', brand: 'Ducati', model: 'DesertX', year: 2025, segment: 'trail', license: 'A', engineType: 'parallel-twin', displacementCc: 937, powerHp: 110, torqueNm: 92, wetWeightKg: 210, seatHeightMm: 875, fuelTankLiters: 21, priceEur: 15000, imageUrl: '/images/ducati-desertx.webp', imageLocked: true } as unknown as Bike);
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await fillCreateForm(user);
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+      await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(createAdminMotorcycleMock).toHaveBeenCalled();
+      });
+      expect(uploadMotorcycleImageMock).not.toHaveBeenCalled();
+    });
+
+    it('upload mode with selected file auto-calls uploadMotorcycleImage before publish', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id' } as unknown as Bike);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalled();
+      });
+      expect(createAdminMotorcycleMock).toHaveBeenCalled();
+    });
+
+    it('create auto-upload usa draft.modelId cuando está presente', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id' } as unknown as Bike);
+      const { user } = await setupCreateWithFile();
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx-2025');
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(expect.any(File), 'ducati-desertx-2025', 'admin-token');
+      });
+      expect(createAdminMotorcycleMock).toHaveBeenCalled();
+    });
+
+    it('create auto-upload fallback a suggestedModelId cuando draft.modelId vacío', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id' } as unknown as Bike);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(expect.any(File), expect.stringContaining('ducati-desertx'), 'admin-token');
+      });
+      expect(createAdminMotorcycleMock).toHaveBeenCalled();
+    });
+
+    it('edit auto-upload usa route motorcycleId', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      updateAdminMotorcycleMock.mockResolvedValueOnce({ id: 'bmw-f-900-gs-2024' } as unknown as Bike);
+      const { user } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(expect.any(File), 'bmw-f-900-gs-2024', 'admin-token');
+      });
+      expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+    });
+
+    it('create auto-upload success llama a createAdminMotorcycle con publicUrl retornado y imageLocked true', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id' } as unknown as Bike);
+      const { user } = await setupCreateWithFile();
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(createAdminMotorcycleMock).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: publicUrl, imageLocked: true }),
+          expect.any(String),
+        );
+      });
+    });
+
+    it('edit auto-upload success llama a updateAdminMotorcycle con publicUrl retornado y imageLocked true', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      updateAdminMotorcycleMock.mockResolvedValueOnce({ id: 'bmw-f-900-gs-2024' } as unknown as Bike);
+      const { user } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalledWith(
+          'bmw-f-900-gs-2024',
+          expect.objectContaining({ imageUrl: publicUrl, imageLocked: true }),
+          'admin-token',
+        );
+      });
+    });
+
+    it('auto-upload failure previene create/update y muestra role alert', async () => {
+      uploadMotorcycleImageMock.mockRejectedValueOnce(new Error('Upload storage error'));
+      const { user } = await setupCreateWithFile();
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Upload storage error');
+      });
+      expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+      expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+    });
+
+    it('missing access token previene upload y publish', async () => {
+      useAuthMock.mockReturnValue(createAuthState({
+        user: adminUserFixture,
+        session: null,
+        profile: adminProfileFixture,
+        isAuthenticated: true,
+        isAdmin: true,
+        isLoading: false,
+        signIn: signInMock,
+        signUp: signUpMock,
+        signOut: signOutMock,
+        refreshProfile: refreshProfileMock,
+      }));
+
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await fillCreateForm(user);
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+      await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('No hay sesión activa para subir la imagen.');
+      });
+      expect(uploadMotorcycleImageMock).not.toHaveBeenCalled();
+      expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+    });
+
+    it('explicit Subir imagen + publish posterior funciona correctamente', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id' } as unknown as Bike);
+      const { user } = await setupCreateWithFile();
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(createAdminMotorcycleMock).toHaveBeenCalledWith(
+          expect.objectContaining({ imageUrl: publicUrl, imageLocked: true }),
+          expect.any(String),
+        );
+      });
+      expect(uploadMotorcycleImageMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('AdminEditMotorcyclePage — #/admin/modelos/{motorcycleId}/editar', () => {
+    const existingId = 'bmw-f-900-gs-2024';
+    const unknownId = 'non-existent-motorcycle';
+    const sharedProps = { motorcycles: bikeCatalog };
+
+    it('renderiza el formulario de edición con modo edit para un modelo existente', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.getByRole('heading', { name: 'Editar modelo' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Workspace de edición' })).toBeInTheDocument();
+      expect(screen.getByRole('form', { name: 'Formulario de edición de modelo' })).toBeInTheDocument();
+      expect(screen.getByText('Actualiza los datos disponibles de este modelo.')).toBeInTheDocument();
+      expect(screen.getByText(/^Editando /)).toBeInTheDocument();
+    });
+
+    it('prefill los campos de identidad con los datos de la moto', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
+      expect(screen.getByLabelText('Modelo')).toHaveValue('F 900 GS');
+      expect(screen.getByDisplayValue('2024')).toBeInTheDocument();
+    });
+
+    it('prefill los campos de specs con los datos de la moto', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.getByLabelText('Segmento')).toHaveValue('trail');
+      expect(screen.getByLabelText('Carnet')).toHaveValue('A');
+      expect(screen.getByLabelText('Potencia (hp)')).toHaveValue(105);
+    });
+
+    it('muestra el preview hero con los datos de la moto existente', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      const previewHeading = screen.getByRole('heading', { name: 'BMW F 900 GS' });
+      const previewSection = previewHeading.closest('section');
+      expect(previewHeading).toBeInTheDocument();
+      expect(previewSection).not.toBeNull();
+      expect(within(previewSection as HTMLElement).getByText('105 CV')).toBeInTheDocument();
+      expect(screen.getByRole('img', { name: 'Preview local de BMW F 900 GS' })).toBeInTheDocument();
+    });
+
+    it('preserva las mismas cuatro acciones en el footer', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Publicar modelo' })).toBeInTheDocument();
+    });
+
+    it('Descartar cambios resetea al estado original precargado', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      await user.clear(screen.getByLabelText('Marca'));
+      await user.type(screen.getByLabelText('Marca'), 'Yamaha');
+      expect(screen.getByLabelText('Marca')).toHaveValue('Yamaha');
+
+      await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+      expect(screen.getByRole('status')).toHaveTextContent('Cambios descartados.');
+      expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
+    });
+
+    it('unknown motorcycleId muestra estado not-found con CTA', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={unknownId} {...sharedProps} />);
+
+      const headings = screen.getAllByRole('heading', { name: 'Modelo no encontrado' });
+      expect(headings.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('No se encontró un modelo con el identificador especificado.')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Volver a selección de modelos' })).toHaveAttribute('href', '#/admin/modelos/editar');
+    });
+
+    it('undefined motorcycleId muestra estado not-found con CTA', () => {
+      render(<AdminEditMotorcyclePage motorcycleId={undefined} {...sharedProps} />);
+
+      const headings = screen.getAllByRole('heading', { name: 'Modelo no encontrado' });
+      expect(headings.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByRole('link', { name: 'Volver a selección de modelos' })).toHaveAttribute('href', '#/admin/modelos/editar');
+    });
+
+    it('las acciones de borrador y vista previa son locales sin llamar servicios', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      await user.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+      expect(screen.getByRole('status')).toHaveTextContent('Borrador local actualizado.');
+
+      await user.click(screen.getByRole('button', { name: 'Vista previa' }));
+      expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+    });
+
+    it('publicar modelo llama a updateAdminMotorcycle y muestra éxito', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      updateAdminMotorcycleMock.mockResolvedValueOnce({
+        id: existingId, brand: 'BMW', model: 'F 900 GS', year: 2024,
+        segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+        displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
+        fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+        description: 'Test', descriptionLocked: false,
+        specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+        scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+        isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+        officialUrl: null,
+        useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+        features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+        pros: [], cons: [],
+        reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalledWith(
+          existingId,
+          expect.objectContaining({ brand: 'BMW', model: 'F 900 GS' }),
+          'admin-token',
+        );
+      });
+      expect(screen.getByRole('status')).toHaveTextContent('Modelo actualizado correctamente.');
+    });
+
+    it('publicar modelo muestra error si falla updateAdminMotorcycle', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      updateAdminMotorcycleMock.mockRejectedValueOnce(new Error('permission denied'));
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('permission denied');
+      });
+    });
+
+    it('publicar modelo no se ejecuta si el admin guard no permite el render', () => {
+      mockAuth({
+        user: null,
+        session: null,
+        profile: null,
+        isAuthenticated: false,
+        isAdmin: false,
+      });
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
+      expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+    });
   });
 });

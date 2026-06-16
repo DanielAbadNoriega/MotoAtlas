@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
 import adminHeroImage from '../../../assets/hero-admin.png';
 import { useAuth } from '../../../features/auth';
-import { findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+import { bikeCatalog, findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
 import {
   getReviewReports,
   resolveReportWithReviewStatus,
@@ -33,6 +33,13 @@ import {
   MotorcycleReviewRidingStyle,
   MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
+import {
+  createAdminMotorcycle,
+  updateAdminMotorcycle,
+  type AdminMotorcycleCreatePayload,
+  type AdminMotorcycleUpdatePayload,
+} from '../../../services/adminMotorcycleService';
+import { uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -41,9 +48,11 @@ import {
   motorcycleSegmentFilterOptions,
   type MotorcycleSegmentFilterValue,
 } from '../../../shared/filters/motorcycleFilterOptions';
-import { BIKE_LICENSES, BIKE_SEGMENTS, getBikeA2Status, segmentIcons, segmentLabels, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { BIKE_LICENSES, BIKE_SEGMENTS, getBikeA2Status, segmentIcons, segmentLabels, MOTORCYCLE_DATA_SOURCES, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+import { dataQualityLabels, getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
 import { canUseDemoData, isDemoDataToggleAvailable, setDemoDataPreference } from '../../../shared/env/runtimeEnvironment';
 import { getMotorcycleTechnicalIcon } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
+import { normalizeText } from '../../../utils/motorcycleSearch';
 import { slugifyRoutePart } from '../../../shared/routing/routeUtils';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
@@ -54,7 +63,7 @@ import { AccountQuickLinksNav, type AdminQuickLinksModelsItem } from '../Account
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
-import type { BikeEngineType, BikeFeatures, BikeLicense, BikeSegment } from '../../../types/bike';
+import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../../types/bike';
 
 type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
 
@@ -165,7 +174,34 @@ const emptyAdminModelDraft: AdminModelDraft = {
   },
 };
 
-const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-technical-pending.jpg';
+const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-model-creating.jpg';
+
+function createDraftFromBike(bike: Bike): AdminModelDraft {
+  return {
+    brand: bike.brand,
+    model: bike.model,
+    year: String(bike.year),
+    description: bike.description || '',
+    modelId: bike.id,
+    segment: bike.segment,
+    license: bike.license,
+    engineType: bike.engineType,
+    displacementCc: String(bike.displacementCc),
+    powerHp: String(bike.powerHp),
+    torqueNm: String(bike.torqueNm),
+    wetWeightKg: String(bike.wetWeightKg),
+    seatHeightMm: String(bike.seatHeightMm),
+    fuelTankLiters: String(bike.fuelTankLiters),
+    priceEur: String(bike.priceEur),
+    pricePending: false,
+    imageUrl: bike.imageUrl,
+    imageLocked: bike.imageLocked ?? false,
+    officialUrl: bike.officialUrl ?? '',
+    sourceNotes: '',
+    internalNotes: '',
+    features: { ...bike.features },
+  };
+}
 
 function formatPreviewNumber(value: string, unit: string) {
   const parsed = Number(value);
@@ -257,10 +293,10 @@ function AdminModelInfoTooltip({ ariaLabel, description }: AdminModelInfoTooltip
 }
 
 function AdminModelHeroPreview({ draft }: Readonly<{ draft: AdminModelDraft }>) {
-  const brandLabel = draft.brand.trim() || 'Marca';
-  const modelLabel = draft.model.trim() || 'Modelo';
-  const description = draft.description.trim() || 'Descripción pendiente de completar';
-  const previewImageSrc = draft.imageUrl.trim() || adminModelPreviewPlaceholderImage;
+  const brandLabel = (draft.brand ?? '').trim() || 'Marca';
+  const modelLabel = (draft.model ?? '').trim() || 'Modelo';
+  const description = (draft.description ?? '').trim() || 'Descripción pendiente de completar';
+  const previewImageSrc = (draft.imageUrl ?? '').trim() || adminModelPreviewPlaceholderImage;
   const previewTitle = `${brandLabel} ${modelLabel}`;
 
   return (
@@ -733,12 +769,14 @@ function AdminModelsWorkspace({
   activeModelsItem,
   children,
   description,
+  sidebarContent,
   title,
   titleId,
 }: Readonly<{
   activeModelsItem: AdminQuickLinksModelsItem;
   children: ReactNode;
   description: string;
+  sidebarContent?: ReactNode;
   title: string;
   titleId: string;
 }>) {
@@ -765,6 +803,7 @@ function AdminModelsWorkspace({
       <main className="account-page admin-page" aria-labelledby={titleId}>
         <section className="account-page__dashboard admin-page__layout">
           <AdminSidebar active="models" activeModelsItem={activeModelsItem}>
+            {sidebarContent}
             <AdminDemoDataToggle />
           </AdminSidebar>
           <div className="account-page__main">{children}</div>
@@ -794,20 +833,485 @@ export function AdminModelsPage() {
           <p>Aquí arrancará el futuro flujo de alta interna del catálogo.</p>
           <a className="account-page__button account-page__button--glass" href="#/admin/modelos/nuevo">Abrir placeholder</a>
         </article>
-        <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
+        <article className="account-page__card admin-page__summary-card">
           <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
-          <h2>Editar catálogo</h2>
-          <p>Aquí arrancará el futuro flujo de búsqueda y edición de modelos existentes.</p>
-          <a className="account-page__button account-page__button--glass" href="#/admin/modelos/editar">Abrir placeholder</a>
+          <h2>Editar modelo existente</h2>
+          <p>Busca y selecciona una moto del catálogo para abrir su ficha interna de edición.</p>
+          <a className="account-page__button account-page__button--glass" href="#/admin/modelos/editar">Seleccionar modelo</a>
         </article>
       </section>
     </AdminModelsWorkspace>
   );
 }
 
+type AdminModelFormBodyProps = Readonly<{
+  draft: AdminModelDraft;
+  suggestedModelId: string;
+  localStatus: string;
+  onDraftFieldChange: (field: AdminModelDraftField, value: string) => void;
+  onDraftCheckboxChange: (field: 'pricePending' | 'imageLocked', value: boolean) => void;
+  onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
+  onDiscardChanges: () => void;
+  onLocalAction: (message: string) => void;
+  onPublish?: (autoUploadedUrl?: string) => void;
+  onUploadImage?: (file: File) => Promise<string>;
+  saving?: boolean;
+  toolbarKicker: string;
+  workspaceHeading: string;
+  workspaceHeadingId: string;
+  formLabel: string;
+}>;
+
+function AdminModelFormBody({
+  draft,
+  suggestedModelId,
+  localStatus,
+  onDraftFieldChange,
+  onDraftCheckboxChange,
+  onFeatureToggle,
+  onDiscardChanges,
+  onLocalAction,
+  onPublish,
+  onUploadImage,
+  saving,
+  toolbarKicker,
+  workspaceHeading,
+  workspaceHeadingId,
+  formLabel,
+}: AdminModelFormBodyProps) {
+  const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const maxFileSize = 5 * 1024 * 1024;
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  const handleFileSelect = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setFileError(null);
+
+    if (!file) {
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    if (!acceptedMimeTypes.includes(file.type)) {
+      setFileError('Tipo de archivo no soportado. Usa: JPEG, PNG o WebP.');
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    if (file.size > maxFileSize) {
+      setFileError('El archivo supera el límite de 5 MB.');
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    setHasUploadedImage(false);
+    const blobUrl = URL.createObjectURL(file);
+    setPreviewBlobUrl(blobUrl);
+    setSelectedFile(file);
+  }, []);
+
+  useEffect(() => {
+    const url = previewBlobUrl;
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [previewBlobUrl]);
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [hasUploadedImage, setHasUploadedImage] = useState(false);
+
+  const handleImageUpload = useCallback(async () => {
+    if (!onUploadImage || !selectedFile) return;
+
+    setIsUploading(true);
+    setFileError(null);
+
+    try {
+      const publicUrl = await onUploadImage(selectedFile);
+      setHasUploadedImage(true);
+      onDraftFieldChange('imageUrl', publicUrl);
+      onDraftCheckboxChange('imageLocked', true);
+      onLocalAction('Imagen subida correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
+      setFileError(message);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [onUploadImage, selectedFile, onDraftFieldChange, onDraftCheckboxChange, onLocalAction]);
+
+  const handlePublishWithAutoUpload = useCallback(async () => {
+    if (!onPublish) return;
+
+    if (selectedFile && onUploadImage && !hasUploadedImage) {
+      setIsUploading(true);
+      setFileError(null);
+
+      try {
+        const publicUrl = await onUploadImage(selectedFile);
+        setHasUploadedImage(true);
+        onDraftFieldChange('imageUrl', publicUrl);
+        onDraftCheckboxChange('imageLocked', true);
+        setIsUploading(false);
+        await onPublish(publicUrl);
+        return;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
+        setFileError(message);
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    await onPublish();
+  }, [onPublish, onUploadImage, selectedFile, hasUploadedImage, onDraftFieldChange, onDraftCheckboxChange]);
+
+  return (
+    <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
+      <header className="admin-page__model-toolbar">
+          <span className="admin-page__model-toolbar-kicker">{toolbarKicker}</span>
+          <h2 id={workspaceHeadingId}>{workspaceHeading}</h2>
+      </header>
+
+      <AdminModelHeroPreview draft={draft} />
+
+      <form className="admin-page__model-form" aria-label={formLabel} onSubmit={(event) => event.preventDefault()}>
+        <AdminModelSection
+          technicalTitle="01. IDENTIDAD_MODELO"
+          description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-brand">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">branding_watermark</span>
+                Marca
+              </span>
+              <input id="admin-model-brand" aria-label="Marca" type="text" value={draft.brand} onChange={(event) => onDraftFieldChange('brand', event.target.value)} placeholder="BMW" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-name">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">two_wheeler</span>
+                Modelo
+              </span>
+              <input id="admin-model-name" aria-label="Modelo" type="text" value={draft.model} onChange={(event) => onDraftFieldChange('model', event.target.value)} placeholder="F 900 GS" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-year">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                Año
+              </span>
+              <input id="admin-model-year" aria-label="Año" type="number" min="1900" max="2100" value={draft.year} onChange={(event) => onDraftFieldChange('year', event.target.value)} placeholder="2026" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-id">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">tag</span>
+                ID sugerido
+                <AdminModelInfoTooltip
+                  ariaLabel="Más información sobre ID sugerido"
+                  description={`Sugerencia automática: ${suggestedModelId || 'marca-modelo-2026'}`}
+                />
+              </span>
+              <input id="admin-model-id" aria-label="ID sugerido" type="text" value={draft.modelId} onChange={(event) => onDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
+            </label>
+
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-description">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">article</span>
+                Descripción
+              </span>
+              <textarea id="admin-model-description" aria-label="Descripción" rows={4} value={draft.description} onChange={(event) => onDraftFieldChange('description', event.target.value)} placeholder="Resumen técnico/editorial del modelo para el hero público." />
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="02. CLASIFICACION"
+          description="Define la taxonomía base y el carnet objetivo antes de empezar a cargar números o copy técnico."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-segment">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">category</span>
+                Segmento
+              </span>
+              <select id="admin-model-segment" aria-label="Segmento" value={draft.segment} onChange={(event) => onDraftFieldChange('segment', event.target.value)}>
+                <option value="">Seleccionar segmento</option>
+                {BIKE_SEGMENTS.map((segment) => (
+                  <option key={segment} value={segment}>{segmentLabels[segment]}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-license">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('license')}</span>
+                Carnet
+              </span>
+              <select id="admin-model-license" aria-label="Carnet" value={draft.license} onChange={(event) => onDraftFieldChange('license', event.target.value)}>
+                <option value="">Seleccionar carnet</option>
+                {BIKE_LICENSES.map((license) => (
+                  <option key={license} value={license}>{license}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="03. MOTOR_RENDIMIENTO"
+          description="Bloque local de specs principales para alimentar el preview tipo ficha y preparar el contrato técnico futuro."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-engine-type">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">memory</span>
+                Tipo de motor
+              </span>
+              <select id="admin-model-engine-type" aria-label="Tipo de motor" value={draft.engineType} onChange={(event) => onDraftFieldChange('engineType', event.target.value)}>
+                <option value="">Seleccionar arquitectura</option>
+                {adminModelEngineTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-displacement">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('engine')}</span>
+                Cilindrada (cc)
+              </span>
+              <input id="admin-model-displacement" aria-label="Cilindrada (cc)" type="number" min="0" value={draft.displacementCc} onChange={(event) => onDraftFieldChange('displacementCc', event.target.value)} placeholder="895" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-power">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('power')}</span>
+                Potencia (hp)
+              </span>
+              <input id="admin-model-power" aria-label="Potencia (hp)" type="number" min="0" step="0.1" value={draft.powerHp} onChange={(event) => onDraftFieldChange('powerHp', event.target.value)} placeholder="105" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-torque">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('torque')}</span>
+                Torque (nm)
+              </span>
+              <input id="admin-model-torque" aria-label="Torque (nm)" type="number" min="0" step="0.1" value={draft.torqueNm} onChange={(event) => onDraftFieldChange('torqueNm', event.target.value)} placeholder="93" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-weight">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('weight')}</span>
+                Peso (kg)
+              </span>
+              <input id="admin-model-weight" aria-label="Peso (kg)" type="number" min="0" step="0.1" value={draft.wetWeightKg} onChange={(event) => onDraftFieldChange('wetWeightKg', event.target.value)} placeholder="219" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-seat-height">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('seatHeight')}</span>
+                Altura asiento (mm)
+              </span>
+              <input id="admin-model-seat-height" aria-label="Altura asiento (mm)" type="number" min="0" value={draft.seatHeightMm} onChange={(event) => onDraftFieldChange('seatHeightMm', event.target.value)} placeholder="870" />
+            </label>
+
+            <label className="admin-page__model-field" htmlFor="admin-model-fuel-tank">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('fuelTank')}</span>
+                Depósito (l)
+              </span>
+              <input id="admin-model-fuel-tank" aria-label="Depósito (l)" type="number" min="0" step="0.1" value={draft.fuelTankLiters} onChange={(event) => onDraftFieldChange('fuelTankLiters', event.target.value)} placeholder="14.5" />
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="04. ELECTRONICA_EQUIPAMIENTO"
+          description="Selección local de features típicas para revisar el layout de toggles antes de mapearlas al backend real."
+        >
+          <div className="admin-page__model-checkbox-grid">
+            {adminModelFeatureOptions.map((feature) => (
+              <label className="admin-page__model-checkbox" key={feature.key}>
+                <input type="checkbox" checked={draft.features[feature.key]} onChange={(event) => onFeatureToggle(feature.key, event.target.checked)} />
+                <span>{feature.label}</span>
+              </label>
+            ))}
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="05. PRECIO_MERCADO"
+          description="Campos locales para validar copy, fallback de precio pendiente y decisiones de presentación antes de tocar persistencia."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field" htmlFor="admin-model-price">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('price')}</span>
+                Precio (€)
+              </span>
+              <input id="admin-model-price" type="number" min="0" value={draft.priceEur} onChange={(event) => onDraftFieldChange('priceEur', event.target.value)} placeholder="13990" />
+            </label>
+
+            <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+              <input type="checkbox" checked={draft.pricePending} onChange={(event) => onDraftCheckboxChange('pricePending', event.target.checked)} />
+              <span>Marcar precio como pendiente</span>
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="06. IMAGEN_CURACION"
+          description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
+        >
+          <div className="admin-page__model-field-grid">
+            <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">image</span>
+                Modo de imagen
+              </span>
+              <div className="container-actions" role="radiogroup" aria-label="Modo de selección de imagen">
+                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
+                  URL manual
+                </button>
+                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
+                  Subir archivo
+                </button>
+              </div>
+            </div>
+
+            {imageMode === 'url' ? (
+              <>
+                <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+                  <span className="admin-page__model-label">
+                    <span className="material-symbols-outlined" aria-hidden="true">link_2</span>
+                    Image URL
+                  </span>
+                  <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
+                </label>
+
+                <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+                  <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
+                  <span className="content">
+                    Imagen bloqueada / curada
+                    <AdminModelInfoTooltip
+                      ariaLabel="Más información sobre imagen bloqueada"
+                      description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
+                    />
+                  </span>
+                </label>
+              </>
+            ) : (
+              <>
+                <div className="admin-page__model-field admin-page__model-field--full">
+                  <span className="admin-page__model-label">
+                    <span className="material-symbols-outlined" aria-hidden="true">upload</span>
+                    Seleccionar imagen del modelo
+                  </span>
+                  <input id="admin-model-image-file" className="account-page__button account-page__button--glass admin-page__model-action-button" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                </div>
+
+                {fileError ? (
+                  <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
+                ) : null}
+
+                {previewBlobUrl && selectedFile ? (
+                  <div className="admin-page__model-field admin-page__model-field--full">
+                    <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto' }} />
+                    <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                    <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
+                      <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                      {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
+        </AdminModelSection>
+
+        <AdminModelSection
+          technicalTitle="07. FUENTES_NOTAS"
+          description="Campos de referencia local para preparar fuentes, URL oficial y notas editoriales antes de definir servicios reales."
+        >
+          <div className="admin-page__model-field-grid">
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-official-url">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">link</span>
+                URL oficial
+              </span>
+              <input id="admin-model-official-url" type="url" value={draft.officialUrl} onChange={(event) => onDraftFieldChange('officialUrl', event.target.value)} placeholder="https://www.marca.com/modelo" />
+            </label>
+
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-source-notes">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">source_environment</span>
+                Notas de fuente
+              </span>
+              <textarea id="admin-model-source-notes" rows={3} value={draft.sourceNotes} onChange={(event) => onDraftFieldChange('sourceNotes', event.target.value)} placeholder="API, ficha oficial, manual interno, revisión editorial..." />
+            </label>
+
+            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-internal-notes">
+              <span className="admin-page__model-label">
+                <span className="material-symbols-outlined" aria-hidden="true">note_stack</span>
+                Notas internas
+              </span>
+              <textarea id="admin-model-internal-notes" rows={4} value={draft.internalNotes} onChange={(event) => onDraftFieldChange('internalNotes', event.target.value)} placeholder="Pendientes de copy, dudas de specs, checks para QA visual..." />
+            </label>
+          </div>
+        </AdminModelSection>
+
+        <footer className="admin-page__model-actions" aria-label="Acciones del borrador">
+          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button admin-page__model-action-button--discard" onClick={onDiscardChanges}>
+            <span className="material-symbols-outlined" aria-hidden="true">undo</span>
+            Descartar cambios
+          </button>
+          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => onLocalAction('Borrador local actualizado.')}>
+            <span className="material-symbols-outlined" aria-hidden="true">save</span>
+            Guardar borrador
+          </button>
+          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => onLocalAction('Vista previa actualizada.')}>
+            <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
+            Vista previa
+          </button>
+          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" disabled={saving || isUploading} onClick={handlePublishWithAutoUpload}>
+            <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+            {isUploading ? 'Subiendo imagen previa...' : 'Publicar modelo'}
+          </button>
+        </footer>
+      </form>
+      
+      {localStatus ? (
+        <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
+      ) : null}
+    </section>
+  );
+}
+
 export function AdminNewModelPage() {
   const [draft, setDraft] = useState<AdminModelDraft>(emptyAdminModelDraft);
   const [localStatus, setLocalStatus] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState('');
+
+  const { session } = useAuth();
 
   const suggestedModelId = useMemo(() => buildSuggestedModelId(draft), [draft]);
 
@@ -831,12 +1335,68 @@ export function AdminNewModelPage() {
 
   const handleLocalAction = useCallback((message: string) => {
     setLocalStatus(message);
+    if (message !== 'Publicación pendiente de persistencia.') {
+      setPublishError('');
+    }
   }, []);
 
   const handleDiscardChanges = useCallback(() => {
     setDraft(emptyAdminModelDraft);
     setLocalStatus('Cambios descartados.');
+    setPublishError('');
   }, []);
+
+  const handlePublish = useCallback(async (autoUploadedUrl?: string) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setPublishError('No hay sesión activa para publicar.');
+      return;
+    }
+
+    const effectiveDraft = autoUploadedUrl
+      ? { ...draft, imageUrl: autoUploadedUrl, imageLocked: true }
+      : draft;
+
+    const validation = validateAdminModelDraftForPublish(effectiveDraft, { mode: 'create', modelId: suggestedModelId });
+    if (!validation.isValid) {
+      setPublishError(validation.message);
+      setLocalStatus(validation.message);
+      return;
+    }
+
+    setSaving(true);
+    setPublishError('');
+    setLocalStatus('Publicando modelo...');
+
+    try {
+      const payload = draftToCreatePayload(effectiveDraft, suggestedModelId);
+      await createAdminMotorcycle(payload, accessToken);
+      setLocalStatus('Modelo publicado correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
+      setPublishError(message);
+      setLocalStatus(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, suggestedModelId, session?.access_token]);
+
+  const handleUploadImage = useCallback(async (file: File) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para subir la imagen.');
+    }
+
+    const resolvedId = draft.modelId.trim() || suggestedModelId;
+
+    if (!resolvedId) {
+      throw new Error('El ID del modelo es obligatorio para subir la imagen.');
+    }
+
+    return uploadMotorcycleImage(file, resolvedId, accessToken);
+  }, [draft.modelId, suggestedModelId, session?.access_token]);
 
   return (
     <AdminModelsWorkspace
@@ -845,302 +1405,1190 @@ export function AdminNewModelPage() {
       title="Nuevo modelo"
       titleId="admin-models-new-title"
     >
-      <section className="admin-page__model-studio" aria-labelledby="admin-models-new-workspace-title">
-        <header className="admin-page__model-toolbar">
-            <span className="admin-page__model-toolbar-kicker">Borrador local</span>
-            <h2 id="admin-models-new-workspace-title">Workspace de creación</h2>
-        </header>
-
-        {localStatus ? (
-          <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
-        ) : null}
-
-        <AdminModelHeroPreview draft={draft} />
-
-        <form className="admin-page__model-form" aria-label="Formulario de nuevo modelo" onSubmit={(event) => event.preventDefault()}>
-          <AdminModelSection
-            technicalTitle="01. IDENTIDAD_MODELO"
-            description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-brand">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">branding_watermark</span>
-                  Marca
-                </span>
-                <input id="admin-model-brand" aria-label="Marca" type="text" value={draft.brand} onChange={(event) => handleDraftFieldChange('brand', event.target.value)} placeholder="BMW" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-name">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">two_wheeler</span>
-                  Modelo
-                </span>
-                <input id="admin-model-name" aria-label="Modelo" type="text" value={draft.model} onChange={(event) => handleDraftFieldChange('model', event.target.value)} placeholder="F 900 GS" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-year">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
-                  Año
-                </span>
-                <input id="admin-model-year" type="number" min="1900" max="2100" value={draft.year} onChange={(event) => handleDraftFieldChange('year', event.target.value)} placeholder="2026" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-id">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">tag</span>
-                  ID sugerido
-                  <AdminModelInfoTooltip
-                    ariaLabel="Más información sobre ID sugerido"
-                    description={`Sugerencia automática: ${suggestedModelId || 'marca-modelo-2026'}`}
-                  />
-                </span>
-                <input id="admin-model-id" type="text" value={draft.modelId} onChange={(event) => handleDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
-              </label>
-
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-description">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">article</span>
-                  Descripción
-                </span>
-                <textarea id="admin-model-description" aria-label="Descripción" rows={4} value={draft.description} onChange={(event) => handleDraftFieldChange('description', event.target.value)} placeholder="Resumen técnico/editorial del modelo para el hero público." />
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="02. CLASIFICACION"
-            description="Define la taxonomía base y el carnet objetivo antes de empezar a cargar números o copy técnico."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-segment">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">category</span>
-                  Segmento
-                </span>
-                <select id="admin-model-segment" aria-label="Segmento" value={draft.segment} onChange={(event) => handleDraftFieldChange('segment', event.target.value)}>
-                  <option value="">Seleccionar segmento</option>
-                  {BIKE_SEGMENTS.map((segment) => (
-                    <option key={segment} value={segment}>{segmentLabels[segment]}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-license">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('license')}</span>
-                  Carnet
-                </span>
-                <select id="admin-model-license" aria-label="Carnet" value={draft.license} onChange={(event) => handleDraftFieldChange('license', event.target.value)}>
-                  <option value="">Seleccionar carnet</option>
-                  {BIKE_LICENSES.map((license) => (
-                    <option key={license} value={license}>{license}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="03. MOTOR_RENDIMIENTO"
-            description="Bloque local de specs principales para alimentar el preview tipo ficha y preparar el contrato técnico futuro."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-engine-type">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">memory</span>
-                  Tipo de motor
-                </span>
-                <select id="admin-model-engine-type" value={draft.engineType} onChange={(event) => handleDraftFieldChange('engineType', event.target.value)}>
-                  <option value="">Seleccionar arquitectura</option>
-                  {adminModelEngineTypeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-displacement">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('engine')}</span>
-                  Cilindrada (cc)
-                </span>
-                <input id="admin-model-displacement" type="number" min="0" value={draft.displacementCc} onChange={(event) => handleDraftFieldChange('displacementCc', event.target.value)} placeholder="895" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-power">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('power')}</span>
-                  Potencia (hp)
-                </span>
-                <input id="admin-model-power" aria-label="Potencia (hp)" type="number" min="0" step="0.1" value={draft.powerHp} onChange={(event) => handleDraftFieldChange('powerHp', event.target.value)} placeholder="105" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-torque">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('torque')}</span>
-                  Torque (nm)
-                </span>
-                <input id="admin-model-torque" type="number" min="0" step="0.1" value={draft.torqueNm} onChange={(event) => handleDraftFieldChange('torqueNm', event.target.value)} placeholder="93" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-weight">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('weight')}</span>
-                  Peso (kg)
-                </span>
-                <input id="admin-model-weight" type="number" min="0" step="0.1" value={draft.wetWeightKg} onChange={(event) => handleDraftFieldChange('wetWeightKg', event.target.value)} placeholder="219" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-seat-height">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('seatHeight')}</span>
-                  Altura asiento (mm)
-                </span>
-                <input id="admin-model-seat-height" type="number" min="0" value={draft.seatHeightMm} onChange={(event) => handleDraftFieldChange('seatHeightMm', event.target.value)} placeholder="870" />
-              </label>
-
-              <label className="admin-page__model-field" htmlFor="admin-model-fuel-tank">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('fuelTank')}</span>
-                  Depósito (l)
-                </span>
-                <input id="admin-model-fuel-tank" type="number" min="0" step="0.1" value={draft.fuelTankLiters} onChange={(event) => handleDraftFieldChange('fuelTankLiters', event.target.value)} placeholder="14.5" />
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="04. ELECTRONICA_EQUIPAMIENTO"
-            description="Selección local de features típicas para revisar el layout de toggles antes de mapearlas al backend real."
-          >
-            <div className="admin-page__model-checkbox-grid">
-              {adminModelFeatureOptions.map((feature) => (
-                <label className="admin-page__model-checkbox" key={feature.key}>
-                  <input type="checkbox" checked={draft.features[feature.key]} onChange={(event) => handleFeatureToggle(feature.key, event.target.checked)} />
-                  <span>{feature.label}</span>
-                </label>
-              ))}
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="05. PRECIO_MERCADO"
-            description="Campos locales para validar copy, fallback de precio pendiente y decisiones de presentación antes de tocar persistencia."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field" htmlFor="admin-model-price">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('price')}</span>
-                  Precio (€)
-                </span>
-                <input id="admin-model-price" type="number" min="0" value={draft.priceEur} onChange={(event) => handleDraftFieldChange('priceEur', event.target.value)} placeholder="13990" />
-              </label>
-
-              <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-                <input type="checkbox" checked={draft.pricePending} onChange={(event) => handleDraftCheckboxChange('pricePending', event.target.checked)} />
-                <span>Marcar precio como pendiente</span>
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="06. IMAGEN_CURACION"
-            description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">image</span>
-                  Image URL
-                </span>
-                <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => handleDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
-              </label>
-
-              <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-                <input type="checkbox" checked={draft.imageLocked} onChange={(event) => handleDraftCheckboxChange('imageLocked', event.target.checked)} />
-                <span className="content">
-                  Imagen bloqueada / curada
-                  <AdminModelInfoTooltip
-                    ariaLabel="Más información sobre imagen bloqueada"
-                    description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
-                  />
-                </span>
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <AdminModelSection
-            technicalTitle="07. FUENTES_NOTAS"
-            description="Campos de referencia local para preparar fuentes, URL oficial y notas editoriales antes de definir servicios reales."
-          >
-            <div className="admin-page__model-field-grid">
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-official-url">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">link</span>
-                  URL oficial
-                </span>
-                <input id="admin-model-official-url" type="url" value={draft.officialUrl} onChange={(event) => handleDraftFieldChange('officialUrl', event.target.value)} placeholder="https://www.marca.com/modelo" />
-              </label>
-
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-source-notes">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">source_environment</span>
-                  Notas de fuente
-                </span>
-                <textarea id="admin-model-source-notes" rows={3} value={draft.sourceNotes} onChange={(event) => handleDraftFieldChange('sourceNotes', event.target.value)} placeholder="API, ficha oficial, manual interno, revisión editorial..." />
-              </label>
-
-              <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-internal-notes">
-                <span className="admin-page__model-label">
-                  <span className="material-symbols-outlined" aria-hidden="true">note_stack</span>
-                  Notas internas
-                </span>
-                <textarea id="admin-model-internal-notes" rows={4} value={draft.internalNotes} onChange={(event) => handleDraftFieldChange('internalNotes', event.target.value)} placeholder="Pendientes de copy, dudas de specs, checks para QA visual..." />
-              </label>
-            </div>
-          </AdminModelSection>
-
-          <footer className="admin-page__model-actions" aria-label="Acciones del borrador">
-            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button admin-page__model-action-button--discard" onClick={handleDiscardChanges}>
-              <span className="material-symbols-outlined" aria-hidden="true">undo</span>
-              Descartar cambios
-            </button>
-            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => handleLocalAction('Borrador local actualizado.')}>
-              <span className="material-symbols-outlined" aria-hidden="true">save</span>
-              Guardar borrador
-            </button>
-            <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" onClick={() => handleLocalAction('Vista previa actualizada.')}>
-              <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
-              Vista previa
-            </button>
-            <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" onClick={() => handleLocalAction('Publicación pendiente de persistencia.')}>
-              <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
-              Publicar modelo
-            </button>
-          </footer>
-        </form>
-      </section>
+      {publishError ? <p className="admin-page__model-status admin-page__model-status--error" role="alert">{publishError}</p> : null}
+      <AdminModelFormBody
+        draft={draft}
+        suggestedModelId={suggestedModelId}
+        localStatus={localStatus}
+        onDraftFieldChange={handleDraftFieldChange}
+        onDraftCheckboxChange={handleDraftCheckboxChange}
+        onFeatureToggle={handleFeatureToggle}
+        onDiscardChanges={handleDiscardChanges}
+        onLocalAction={handleLocalAction}
+        onPublish={handlePublish}
+        onUploadImage={handleUploadImage}
+        saving={saving}
+        toolbarKicker="Borrador local"
+        workspaceHeading="Workspace de creación"
+        workspaceHeadingId="admin-models-new-workspace-title"
+        formLabel="Formulario de nuevo modelo"
+        />
     </AdminModelsWorkspace>
   );
 }
 
-export function AdminEditModelsPage() {
+type RangeFilterPreset = {
+  key: string;
+  label: string;
+  min: string;
+  max: string;
+};
+
+const pricePresets: RangeFilterPreset[] = [
+  { key: 'price-1', label: 'Hasta 5.000 €', min: '', max: '5000' },
+  { key: 'price-2', label: '5.000 - 10.000 €', min: '5000', max: '10000' },
+  { key: 'price-3', label: '10.000 - 15.000 €', min: '10000', max: '15000' },
+  { key: 'price-4', label: '15.000 - 20.000 €', min: '15000', max: '20000' },
+  { key: 'price-5', label: 'Más de 20.000 €', min: '20000', max: '' },
+];
+
+const powerPresets: RangeFilterPreset[] = [
+  { key: 'power-1', label: 'Hasta 47 CV', min: '', max: '47' },
+  { key: 'power-2', label: '48 - 75 CV', min: '48', max: '75' },
+  { key: 'power-3', label: '76 - 115 CV', min: '76', max: '115' },
+  { key: 'power-4', label: '116+ CV', min: '116', max: '' },
+];
+
+const weightPresets: RangeFilterPreset[] = [
+  { key: 'weight-1', label: 'Menos de 180 kg', min: '', max: '180' },
+  { key: 'weight-2', label: '180 - 210 kg', min: '180', max: '210' },
+  { key: 'weight-3', label: '211 - 240 kg', min: '211', max: '240' },
+  { key: 'weight-4', label: 'Más de 240 kg', min: '240', max: '' },
+];
+
+const seatHeightPresets: RangeFilterPreset[] = [
+  { key: 'seat-1', label: 'Menos de 800 mm', min: '', max: '800' },
+  { key: 'seat-2', label: '800 - 850 mm', min: '800', max: '850' },
+  { key: 'seat-3', label: '851 - 900 mm', min: '851', max: '900' },
+  { key: 'seat-4', label: 'Más de 900 mm', min: '900', max: '' },
+];
+
+const featureLabels: Record<keyof BikeFeatures, string> = {
+  absCornering: 'ABS curva',
+  cruiseControl: 'Control crucero',
+  heatedGrips: 'Puños calefactables',
+  quickshifter: 'Quickshifter',
+  ridingModes: 'Modos conducción',
+  tractionControl: 'Control tracción',
+  tubelessWheels: 'Llantas tubeless',
+};
+
+const useLabels: Record<keyof BikeUseScores, string> = {
+  beginner: 'Principiante',
+  city: 'Ciudad',
+  funFactor: 'Diversión',
+  offroad: 'Off-road',
+  passenger: 'Pasajero',
+  sport: 'Deportivo',
+  touring: 'Viaje',
+};
+
+const adminModelsEditSegmentIcon: Partial<Record<BikeSegment, string>> = {
+  naked: 'bolt',
+  sport: 'speed',
+  'sport-touring': 'route',
+  trail: 'terrain',
+  custom: 'construction',
+  scooter: 'two_wheeler',
+  touring: 'explore',
+};
+
+type AdminModelsEditFilters = {
+  searchText: string;
+  selectedBrands: string[];
+  selectedSegments: BikeSegment[];
+  selectedLicenses: BikeLicense[];
+  minPrice: string;
+  maxPrice: string;
+  minPower: string;
+  maxPower: string;
+  minWeight: string;
+  maxWeight: string;
+  minSeatHeight: string;
+  maxSeatHeight: string;
+  equipment: (keyof BikeFeatures)[];
+  recommendedUses: (keyof BikeUseScores)[];
+  dataSources: MotorcycleDataSource[];
+};
+
+function isRangePresetActive(min: string, max: string, preset: RangeFilterPreset): boolean {
+  return min === preset.min && max === preset.max;
+}
+
+function getBrandOptions(catalog: readonly Bike[]): string[] {
+  return [...new Set(catalog.map((b) => b.brand))].sort();
+}
+
+function AdminModelsEditFiltersPanel({
+  filters,
+  isOpen,
+  brandOptions,
+  onApplyFilters,
+  onChange,
+  onClearFilters,
+  onClose,
+}: Readonly<{
+  filters: AdminModelsEditFilters;
+  isOpen: boolean;
+  brandOptions: readonly string[];
+  onApplyFilters: () => void;
+  onChange: (next: Partial<AdminModelsEditFilters>) => void;
+  onClearFilters: () => void;
+  onClose: () => void;
+}>) {
+  const hasActiveFilters = filters.searchText.length > 0
+    || filters.selectedBrands.length > 0
+    || filters.selectedSegments.length > 0
+    || filters.selectedLicenses.length > 0
+    || filters.minPrice.length > 0
+    || filters.maxPrice.length > 0
+    || filters.minPower.length > 0
+    || filters.maxPower.length > 0
+    || filters.minWeight.length > 0
+    || filters.maxWeight.length > 0
+    || filters.minSeatHeight.length > 0
+    || filters.maxSeatHeight.length > 0
+    || filters.equipment.length > 0
+    || filters.recommendedUses.length > 0
+    || filters.dataSources.length > 0;
+  const panelClasses = ['admin-page__filters', isOpen ? 'admin-page__filters--open' : ''].filter(Boolean).join(' ');
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  return (
+    <>
+      {isOpen ? <button className="admin-page__filters-backdrop" type="button" onClick={onClose} aria-label="Cerrar filtros" /> : null}
+      <section
+        className={panelClasses}
+        aria-label="Filtros de modelos"
+        aria-modal={isOpen ? 'true' : undefined}
+        role={isOpen ? 'dialog' : undefined}
+      >
+        <div className="admin-page__sheet-handle" aria-hidden="true" />
+        <div className="admin-page__filters-header">
+          <h2 id="admin-edit-models-filters-title">Filtros</h2>
+          <button type="button" onClick={onClearFilters} disabled={!hasActiveFilters}>Limpiar filtros</button>
+          <button className="admin-page__filters-close" type="button" onClick={onClose} aria-label="Cerrar filtros">
+            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <div className="admin-page__filters-body">
+          <label className="admin-page__search" htmlFor="admin-edit-models-search">
+            Buscar por marca o modelo
+            <span className="material-symbols-outlined" aria-hidden="true">search</span>
+            <input
+              id="admin-edit-models-search"
+              type="search"
+              value={filters.searchText}
+              onChange={(event) => onChange({ searchText: event.target.value })}
+              placeholder="Buscar por marca o modelo…"
+            />
+          </label>
+
+          <FilterGroup title="Marca">
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.selectedBrands.length === 0}
+                ariaLabel="Marca: Todas"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todas"
+                onClick={() => onChange({ selectedBrands: [] })}
+              />
+              {brandOptions.map((brand) => (
+                <FilterOptionButton
+                  active={filters.selectedBrands.includes(brand)}
+                  ariaLabel={`Marca: ${brand}`}
+                  classPrefix="admin-page"
+                  key={brand}
+                  label={brand}
+                  onClick={() => {
+                    onChange({
+                      selectedBrands: filters.selectedBrands.includes(brand)
+                        ? filters.selectedBrands.filter((b) => b !== brand)
+                        : [...filters.selectedBrands, brand],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Segmento">
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.selectedSegments.length === 0}
+                ariaLabel="Segmento: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ selectedSegments: [] })}
+              />
+              {BIKE_SEGMENTS.map((segment) => (
+                <FilterOptionButton
+                  active={filters.selectedSegments.includes(segment)}
+                  ariaLabel={`Segmento: ${segmentLabels[segment]}`}
+                  classPrefix="admin-page"
+                  icon={adminModelsEditSegmentIcon[segment] ?? 'more_horiz'}
+                  key={segment}
+                  label={segmentLabels[segment]}
+                  onClick={() => {
+                    onChange({
+                      selectedSegments: filters.selectedSegments.includes(segment)
+                        ? filters.selectedSegments.filter((s) => s !== segment)
+                        : [...filters.selectedSegments, segment],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Carnet" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.selectedLicenses.length === 0}
+                ariaLabel="Carnet: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ selectedLicenses: [] })}
+              />
+              <FilterOptionButton
+                active={filters.selectedLicenses.includes('A2')}
+                ariaLabel="Carnet: Carnet A2"
+                classPrefix="admin-page"
+                label="Carnet A2"
+                onClick={() => {
+                  onChange({
+                    selectedLicenses: filters.selectedLicenses.includes('A2')
+                      ? filters.selectedLicenses.filter((l) => l !== 'A2')
+                      : [...filters.selectedLicenses, 'A2'],
+                  });
+                }}
+              />
+              <FilterOptionButton
+                active={filters.selectedLicenses.includes('A')}
+                ariaLabel="Carnet: Carnet A"
+                classPrefix="admin-page"
+                label="Carnet A"
+                onClick={() => {
+                  onChange({
+                    selectedLicenses: filters.selectedLicenses.includes('A')
+                      ? filters.selectedLicenses.filter((l) => l !== 'A')
+                      : [...filters.selectedLicenses, 'A'],
+                  });
+                }}
+              />
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Precio" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minPrice === '' && filters.maxPrice === ''}
+                ariaLabel="Precio: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ minPrice: '', maxPrice: '' })}
+              />
+              {pricePresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minPrice, filters.maxPrice, preset)}
+                  ariaLabel={`Precio: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minPrice, filters.maxPrice, preset)) {
+                      onChange({ minPrice: '', maxPrice: '' });
+                    } else {
+                      onChange({ minPrice: preset.min, maxPrice: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Potencia" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minPower === '' && filters.maxPower === ''}
+                ariaLabel="Potencia: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ minPower: '', maxPower: '' })}
+              />
+              {powerPresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minPower, filters.maxPower, preset)}
+                  ariaLabel={`Potencia: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minPower, filters.maxPower, preset)) {
+                      onChange({ minPower: '', maxPower: '' });
+                    } else {
+                      onChange({ minPower: preset.min, maxPower: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Peso" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minWeight === '' && filters.maxWeight === ''}
+                ariaLabel="Peso: Todos"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todos"
+                onClick={() => onChange({ minWeight: '', maxWeight: '' })}
+              />
+              {weightPresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minWeight, filters.maxWeight, preset)}
+                  ariaLabel={`Peso: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minWeight, filters.maxWeight, preset)) {
+                      onChange({ minWeight: '', maxWeight: '' });
+                    } else {
+                      onChange({ minWeight: preset.min, maxWeight: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Altura asiento" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              <FilterOptionButton
+                active={filters.minSeatHeight === '' && filters.maxSeatHeight === ''}
+                ariaLabel="Altura asiento: Todas"
+                classPrefix="admin-page"
+                icon="apps"
+                label="Todas"
+                onClick={() => onChange({ minSeatHeight: '', maxSeatHeight: '' })}
+              />
+              {seatHeightPresets.map((preset) => (
+                <FilterOptionButton
+                  active={isRangePresetActive(filters.minSeatHeight, filters.maxSeatHeight, preset)}
+                  ariaLabel={`Altura asiento: ${preset.label}`}
+                  classPrefix="admin-page"
+                  key={preset.key}
+                  label={preset.label}
+                  onClick={() => {
+                    if (isRangePresetActive(filters.minSeatHeight, filters.maxSeatHeight, preset)) {
+                      onChange({ minSeatHeight: '', maxSeatHeight: '' });
+                    } else {
+                      onChange({ minSeatHeight: preset.min, maxSeatHeight: preset.max });
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Electrónica" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {(Object.keys(featureLabels) as (keyof BikeFeatures)[]).map((feature) => (
+                <FilterOptionButton
+                  active={filters.equipment.includes(feature)}
+                  ariaLabel={`Electrónica: ${featureLabels[feature]}`}
+                  classPrefix="admin-page"
+                  icon={getMotorcycleTechnicalIcon('electronics')}
+                  key={feature}
+                  label={featureLabels[feature]}
+                  onClick={() => {
+                    onChange({
+                      equipment: filters.equipment.includes(feature)
+                        ? filters.equipment.filter((f) => f !== feature)
+                        : [...filters.equipment, feature],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Uso recomendado" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {(Object.keys(useLabels) as (keyof BikeUseScores)[]).map((use) => (
+                <FilterOptionButton
+                  active={filters.recommendedUses.includes(use)}
+                  ariaLabel={`Uso: ${useLabels[use]}`}
+                  classPrefix="admin-page"
+                  key={use}
+                  label={useLabels[use]}
+                  onClick={() => {
+                    onChange({
+                      recommendedUses: filters.recommendedUses.includes(use)
+                        ? filters.recommendedUses.filter((u) => u !== use)
+                        : [...filters.recommendedUses, use],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+
+          <FilterGroup title="Calidad de datos" defaultOpen={false}>
+            <div className="admin-page__filter-options">
+              {MOTORCYCLE_DATA_SOURCES.map((source) => (
+                <FilterOptionButton
+                  active={filters.dataSources.includes(source)}
+                  ariaLabel={`Calidad de datos: ${dataQualityLabels[source]}`}
+                  classPrefix="admin-page"
+                  icon="fact_check"
+                  key={source}
+                  label={dataQualityLabels[source]}
+                  onClick={() => {
+                    onChange({
+                      dataSources: filters.dataSources.includes(source)
+                        ? filters.dataSources.filter((s) => s !== source)
+                        : [...filters.dataSources, source],
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </FilterGroup>
+        </div>
+
+        <footer className="admin-page__filters-footer">
+          <button type="button" onClick={onClearFilters} disabled={!hasActiveFilters}>Limpiar filtros</button>
+          <button type="button" onClick={onApplyFilters}>Aplicar filtros</button>
+        </footer>
+      </section>
+    </>
+  );
+}
+
+export function AdminEditModelsPage({ motorcycles }: Readonly<{ motorcycles: readonly Bike[] }>) {
+  const [searchText, setSearchText] = useState('');
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedSegments, setSelectedSegments] = useState<BikeSegment[]>([]);
+  const [selectedLicenses, setSelectedLicenses] = useState<BikeLicense[]>([]);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [minPower, setMinPower] = useState('');
+  const [maxPower, setMaxPower] = useState('');
+  const [minWeight, setMinWeight] = useState('');
+  const [maxWeight, setMaxWeight] = useState('');
+  const [minSeatHeight, setMinSeatHeight] = useState('');
+  const [maxSeatHeight, setMaxSeatHeight] = useState('');
+  const [equipment, setEquipment] = useState<(keyof BikeFeatures)[]>([]);
+  const [recommendedUses, setRecommendedUses] = useState<(keyof BikeUseScores)[]>([]);
+  const [dataSources, setDataSources] = useState<MotorcycleDataSource[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const ITEMS_PER_PAGE = 12;
+
+  const brandOptions = useMemo(() => getBrandOptions(motorcycles), [motorcycles]);
+
+  const filters = useMemo<AdminModelsEditFilters>(() => ({
+    searchText,
+    selectedBrands,
+    selectedSegments,
+    selectedLicenses,
+    minPrice,
+    maxPrice,
+    minPower,
+    maxPower,
+    minWeight,
+    maxWeight,
+    minSeatHeight,
+    maxSeatHeight,
+    equipment,
+    recommendedUses,
+    dataSources,
+  }), [
+    searchText,
+    selectedBrands,
+    selectedSegments,
+    selectedLicenses,
+    minPrice,
+    maxPrice,
+    minPower,
+    maxPower,
+    minWeight,
+    maxWeight,
+    minSeatHeight,
+    maxSeatHeight,
+    equipment,
+    recommendedUses,
+    dataSources,
+  ]);
+
+  const filteredBikes = useMemo(() => {
+    const normalizedText = normalizeText(searchText);
+
+    return motorcycles.filter((bike) => {
+      if (normalizedText && !normalizeText(`${bike.brand} ${bike.model}`).includes(normalizedText)) {
+        return false;
+      }
+
+      if (selectedBrands.length > 0 && !selectedBrands.includes(bike.brand)) {
+        return false;
+      }
+
+      if (selectedSegments.length > 0 && !selectedSegments.includes(bike.segment)) {
+        return false;
+      }
+
+      if (selectedLicenses.length > 0 && !selectedLicenses.includes(bike.license)) {
+        return false;
+      }
+
+      if (minPrice !== '' || maxPrice !== '') {
+        const price = bike.priceEur;
+        if (minPrice !== '' && price < Number(minPrice)) return false;
+        if (maxPrice !== '' && price > Number(maxPrice)) return false;
+      }
+
+      if (minPower !== '' || maxPower !== '') {
+        const power = bike.powerHp;
+        if (minPower !== '' && power < Number(minPower)) return false;
+        if (maxPower !== '' && power > Number(maxPower)) return false;
+      }
+
+      if (minWeight !== '' || maxWeight !== '') {
+        const weight = bike.wetWeightKg;
+        if (minWeight !== '' && weight < Number(minWeight)) return false;
+        if (maxWeight !== '' && weight > Number(maxWeight)) return false;
+      }
+
+      if (minSeatHeight !== '' || maxSeatHeight !== '') {
+        const seatHeight = bike.seatHeightMm;
+        if (minSeatHeight !== '' && seatHeight < Number(minSeatHeight)) return false;
+        if (maxSeatHeight !== '' && seatHeight > Number(maxSeatHeight)) return false;
+      }
+
+      if (equipment.length > 0 && !equipment.every((feature) => bike.features[feature])) {
+        return false;
+      }
+
+      if (recommendedUses.length > 0 && !recommendedUses.some((use) => bike.useScores[use] >= 7)) {
+        return false;
+      }
+
+      if (dataSources.length > 0) {
+        const bikeDataSources: (MotorcycleDataSource | undefined)[] = [
+          bike.specsSource,
+          bike.priceSource,
+          bike.imageSource,
+          bike.scoresSource,
+          bike.prosConsSource,
+          bike.reliabilitySource,
+        ];
+        if (!dataSources.some((source) => bikeDataSources.includes(source))) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [
+    searchText,
+    selectedBrands,
+    selectedSegments,
+    selectedLicenses,
+    minPrice,
+    maxPrice,
+    minPower,
+    maxPower,
+    minWeight,
+    maxWeight,
+    minSeatHeight,
+    maxSeatHeight,
+    equipment,
+    recommendedUses,
+    dataSources,
+    motorcycles,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredBikes.length / ITEMS_PER_PAGE));
+  const paginatedBikes = useMemo(
+    () => filteredBikes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE),
+    [currentPage, filteredBikes],
+  );
+
+  const hasActiveFilters = searchText.length > 0
+    || selectedBrands.length > 0
+    || selectedSegments.length > 0
+    || selectedLicenses.length > 0
+    || minPrice.length > 0
+    || maxPrice.length > 0
+    || minPower.length > 0
+    || maxPower.length > 0
+    || minWeight.length > 0
+    || maxWeight.length > 0
+    || minSeatHeight.length > 0
+    || maxSeatHeight.length > 0
+    || equipment.length > 0
+    || recommendedUses.length > 0
+    || dataSources.length > 0;
+
+  const clearFilters = useCallback(() => {
+    setSearchText('');
+    setSelectedBrands([]);
+    setSelectedSegments([]);
+    setSelectedLicenses([]);
+    setMinPrice('');
+    setMaxPrice('');
+    setMinPower('');
+    setMaxPower('');
+    setMinWeight('');
+    setMaxWeight('');
+    setMinSeatHeight('');
+    setMaxSeatHeight('');
+    setEquipment([]);
+    setRecommendedUses([]);
+    setDataSources([]);
+  }, []);
+
+  const updateFilters = useCallback((next: Partial<AdminModelsEditFilters>) => {
+    if (next.searchText !== undefined) setSearchText(next.searchText);
+    if (next.selectedBrands !== undefined) setSelectedBrands(next.selectedBrands);
+    if (next.selectedSegments !== undefined) setSelectedSegments(next.selectedSegments);
+    if (next.selectedLicenses !== undefined) setSelectedLicenses(next.selectedLicenses);
+    if (next.minPrice !== undefined) setMinPrice(next.minPrice);
+    if (next.maxPrice !== undefined) setMaxPrice(next.maxPrice);
+    if (next.minPower !== undefined) setMinPower(next.minPower);
+    if (next.maxPower !== undefined) setMaxPower(next.maxPower);
+    if (next.minWeight !== undefined) setMinWeight(next.minWeight);
+    if (next.maxWeight !== undefined) setMaxWeight(next.maxWeight);
+    if (next.minSeatHeight !== undefined) setMinSeatHeight(next.minSeatHeight);
+    if (next.maxSeatHeight !== undefined) setMaxSeatHeight(next.maxSeatHeight);
+    if (next.equipment !== undefined) setEquipment(next.equipment);
+    if (next.recommendedUses !== undefined) setRecommendedUses(next.recommendedUses);
+    if (next.dataSources !== undefined) setDataSources(next.dataSources);
+    setCurrentPage(1);
+  }, []);
+
   return (
     <AdminModelsWorkspace
       activeModelsItem="edit"
-      description="Crea, revisa y completa fichas técnicas del catálogo MotoAtlas."
-      title="Editar catálogo"
+      description="Busca una moto del catálogo y abre su ficha interna de edición."
+      title="Seleccionar modelo para editar"
+      titleId="admin-models-edit-title"
+      sidebarContent={(
+        <AdminModelsEditFiltersPanel
+          brandOptions={brandOptions}
+          filters={filters}
+          isOpen={isFilterPanelOpen}
+          onApplyFilters={() => setIsFilterPanelOpen(false)}
+          onChange={updateFilters}
+          onClearFilters={clearFilters}
+          onClose={() => setIsFilterPanelOpen(false)}
+        />
+      )}
+    >
+      <div className="admin-page__edit-models">
+        <div className="admin-page__mobile-filter-trigger">
+          <button type="button" onClick={() => setIsFilterPanelOpen(true)}>
+            <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+            Filtros
+          </button>
+        </div>
+
+        {filteredBikes.length > 0 ? (
+          <>
+            <p className="admin-page__results-summary" aria-live="polite">
+              {filteredBikes.length === 1
+                ? '1 modelo encontrado'
+                : `${filteredBikes.length} modelos encontrados`}
+            </p>
+
+            <div className="admin-page__edit-grid">
+              {paginatedBikes.map((bike) => (
+                <AdminModelEditCard bike={bike} key={bike.id} />
+              ))}
+            </div>
+
+            {totalPages > 1 ? (
+              <AccountPagination
+                ariaLabel="Paginación de edición de modelos"
+                className="admin-page__pagination"
+                currentClassName="admin-page__pagination-current"
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            ) : null}
+          </>
+        ) : (
+          <article className="account-page__empty-state">
+            <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">edit_note</span>
+            <h3>No hay modelos que coincidan con los filtros.</h3>
+            {hasActiveFilters ? (
+              <button className="account-page__button" type="button" onClick={clearFilters}>
+                Limpiar filtros
+              </button>
+            ) : (
+              <p>El catálogo no contiene modelos todavía.</p>
+            )}
+          </article>
+        )}
+      </div>
+    </AdminModelsWorkspace>
+  );
+}
+
+function draftToUpdatePayload(draft: AdminModelDraft): AdminMotorcycleUpdatePayload {
+  const payload: Record<string, unknown> = {};
+
+  if (draft.brand.trim()) {
+    payload.brand = draft.brand.trim();
+  }
+
+  if (draft.model.trim()) {
+    payload.model = draft.model.trim();
+  }
+
+  const year = parseInt(draft.year, 10);
+  if (!Number.isNaN(year) && year >= 1900 && year <= 2100) {
+    payload.year = year;
+  }
+
+  if (draft.description.trim()) {
+    payload.description = draft.description.trim();
+  }
+
+  if (draft.segment) {
+    payload.segment = draft.segment;
+  }
+
+  if (draft.license) {
+    payload.license = draft.license;
+  }
+
+  if (draft.engineType) {
+    payload.engineType = draft.engineType;
+  }
+
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  if (!Number.isNaN(displacementCc) && displacementCc > 0) {
+    payload.displacementCc = displacementCc;
+  }
+
+  const powerHp = parseFloat(draft.powerHp);
+  if (!Number.isNaN(powerHp) && powerHp > 0) {
+    payload.powerHp = powerHp;
+  }
+
+  const torqueNm = parseFloat(draft.torqueNm);
+  if (!Number.isNaN(torqueNm) && torqueNm > 0) {
+    payload.torqueNm = torqueNm;
+  }
+
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  if (!Number.isNaN(wetWeightKg) && wetWeightKg > 0) {
+    payload.wetWeightKg = wetWeightKg;
+  }
+
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  if (!Number.isNaN(seatHeightMm) && seatHeightMm > 0) {
+    payload.seatHeightMm = seatHeightMm;
+  }
+
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  if (!Number.isNaN(fuelTankLiters) && fuelTankLiters > 0) {
+    payload.fuelTankLiters = fuelTankLiters;
+  }
+
+  if (!draft.pricePending) {
+    const priceEur = parseInt(draft.priceEur, 10);
+    if (!Number.isNaN(priceEur) && priceEur >= 0) {
+      payload.priceEur = priceEur;
+    }
+  }
+
+  if (draft.imageUrl.trim()) {
+    payload.imageUrl = draft.imageUrl.trim();
+  }
+
+  payload.imageLocked = draft.imageLocked;
+  payload.descriptionLocked = false;
+  payload.priceSource = 'manual';
+  payload.imageSource = 'manual';
+  payload.specsSource = 'manual';
+  payload.scoresSource = 'estimated';
+  payload.prosConsSource = 'estimated';
+  payload.reliabilitySource = 'estimated';
+  payload.absCornering = draft.features.absCornering;
+  payload.tractionControl = draft.features.tractionControl;
+  payload.ridingModes = draft.features.ridingModes;
+  payload.cruiseControl = draft.features.cruiseControl;
+  payload.quickshifter = draft.features.quickshifter;
+  payload.heatedGrips = draft.features.heatedGrips;
+  payload.tubelessWheels = draft.features.tubelessWheels;
+
+  return payload as AdminMotorcycleUpdatePayload;
+}
+
+function draftToCreatePayload(draft: AdminModelDraft, modelId: string): AdminMotorcycleCreatePayload {
+  const id = draft.modelId.trim() || modelId || '';
+  const brand = draft.brand.trim() || '';
+  const model = draft.model.trim() || '';
+  const year = parseInt(draft.year, 10);
+  const description = draft.description.trim();
+  const segment = draft.segment || '';
+  const license = draft.license || '';
+  const engineType = draft.engineType || '';
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  const powerHp = parseFloat(draft.powerHp);
+  const torqueNm = parseFloat(draft.torqueNm);
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  const priceEur = draft.pricePending ? 0 : parseInt(draft.priceEur, 10) || 0;
+  const imageUrl = draft.imageUrl.trim() || '';
+
+  return {
+    id,
+    brand,
+    model,
+    year: Number.isNaN(year) ? 0 : year,
+    description,
+    segment,
+    license,
+    engineType,
+    displacementCc: Number.isNaN(displacementCc) ? 0 : displacementCc,
+    powerHp: Number.isNaN(powerHp) ? 0 : powerHp,
+    torqueNm: Number.isNaN(torqueNm) ? 0 : torqueNm,
+    wetWeightKg: Number.isNaN(wetWeightKg) ? 0 : wetWeightKg,
+    seatHeightMm: Number.isNaN(seatHeightMm) ? 0 : seatHeightMm,
+    fuelTankLiters: Number.isNaN(fuelTankLiters) ? 0 : fuelTankLiters,
+    priceEur,
+    imageUrl,
+    imageLocked: draft.imageLocked,
+    descriptionLocked: false,
+    priceSource: 'manual',
+    imageSource: 'manual',
+    specsSource: 'manual',
+    scoresSource: 'estimated',
+    prosConsSource: 'estimated',
+    reliabilitySource: 'estimated',
+    absCornering: draft.features.absCornering,
+    tractionControl: draft.features.tractionControl,
+    ridingModes: draft.features.ridingModes,
+    cruiseControl: draft.features.cruiseControl,
+    quickshifter: draft.features.quickshifter,
+    heatedGrips: draft.features.heatedGrips,
+    tubelessWheels: draft.features.tubelessWheels,
+  };
+}
+
+type ValidationResult =
+  | { isValid: true }
+  | { isValid: false; message: string };
+
+function validateAdminModelDraftForPublish(
+  draft: AdminModelDraft,
+  options: { mode: 'create' | 'edit'; modelId?: string },
+): ValidationResult {
+  if (options.mode === 'create') {
+    const id = draft.modelId.trim() || options.modelId || '';
+    if (!id) {
+      return { isValid: false, message: 'El ID del modelo es obligatorio.' };
+    }
+    if (id.includes(' ')) {
+      return { isValid: false, message: 'El ID del modelo no puede contener espacios.' };
+    }
+  }
+
+  if (!draft.brand.trim()) {
+    return { isValid: false, message: 'La marca es obligatoria.' };
+  }
+  if (!draft.model.trim()) {
+    return { isValid: false, message: 'El modelo es obligatorio.' };
+  }
+  if (!draft.description.trim()) {
+    return { isValid: false, message: 'La descripción es obligatoria.' };
+  }
+  if (!draft.segment) {
+    return { isValid: false, message: 'El segmento es obligatorio.' };
+  }
+  if (!draft.license) {
+    return { isValid: false, message: 'El carnet es obligatorio.' };
+  }
+  if (!draft.engineType) {
+    return { isValid: false, message: 'El tipo de motor es obligatorio.' };
+  }
+
+  const year = parseInt(draft.year, 10);
+  if (Number.isNaN(year) || year < 1900 || year > 2100) {
+    return { isValid: false, message: 'El año debe ser un número entre 1900 y 2100.' };
+  }
+
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  if (Number.isNaN(displacementCc) || displacementCc <= 0) {
+    return { isValid: false, message: 'La cilindrada debe ser un número mayor a 0.' };
+  }
+
+  const powerHp = parseFloat(draft.powerHp);
+  if (Number.isNaN(powerHp) || powerHp <= 0) {
+    return { isValid: false, message: 'La potencia debe ser un número mayor a 0.' };
+  }
+
+  const torqueNm = parseFloat(draft.torqueNm);
+  if (Number.isNaN(torqueNm) || torqueNm <= 0) {
+    return { isValid: false, message: 'El par motor debe ser un número mayor a 0.' };
+  }
+
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  if (Number.isNaN(wetWeightKg) || wetWeightKg <= 0) {
+    return { isValid: false, message: 'El peso debe ser un número mayor a 0.' };
+  }
+
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  if (Number.isNaN(seatHeightMm) || seatHeightMm <= 0) {
+    return { isValid: false, message: 'La altura del asiento debe ser un número mayor a 0.' };
+  }
+
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  if (Number.isNaN(fuelTankLiters) || fuelTankLiters <= 0) {
+    return { isValid: false, message: 'La capacidad del depósito debe ser un número mayor a 0.' };
+  }
+
+  if (!draft.pricePending) {
+    const priceEur = parseInt(draft.priceEur, 10);
+    if (Number.isNaN(priceEur) || priceEur < 0) {
+      return { isValid: false, message: 'El precio debe ser un número igual o mayor a 0.' };
+    }
+  }
+
+  const imageUrl = draft.imageUrl.trim();
+  if (!imageUrl) {
+    return { isValid: false, message: 'La URL de imagen es obligatoria.' };
+  }
+  if (!imageUrl.startsWith('/') && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+    return { isValid: false, message: 'La URL de imagen debe ser una URL absoluta o una ruta local comenzando con /.' };
+  }
+
+  return { isValid: true };
+}
+
+export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[] }>) {
+  const originalDraft = useMemo(() => {
+    if (!motorcycleId) {
+      return undefined;
+    }
+
+    const bike = motorcycles.find((b) => b.id === motorcycleId);
+    return bike ? createDraftFromBike(bike) : undefined;
+  }, [motorcycleId, motorcycles]);
+
+  const [draft, setDraft] = useState<AdminModelDraft | undefined>(originalDraft);
+  const [localStatus, setLocalStatus] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState('');
+
+  const { session } = useAuth();
+
+  const suggestedModelId = useMemo(() => draft ? buildSuggestedModelId(draft) : '', [draft]);
+
+  const handleDraftFieldChange = useCallback((field: AdminModelDraftField, value: string) => {
+    setDraft((current) => current ? ({ ...current, [field]: value }) : current);
+  }, []);
+
+  const handleDraftCheckboxChange = useCallback((field: 'pricePending' | 'imageLocked', value: boolean) => {
+    setDraft((current) => current ? ({ ...current, [field]: value }) : current);
+  }, []);
+
+  const handleFeatureToggle = useCallback((feature: AdminModelFeatureKey, checked: boolean) => {
+    setDraft((current) => {
+      if (!current) return current;
+
+      return {
+        ...current,
+        features: {
+          ...current.features,
+          [feature]: checked,
+        },
+      };
+    });
+  }, []);
+
+  const handleLocalAction = useCallback((message: string) => {
+    setLocalStatus(message);
+    if (message !== 'Publicación pendiente de persistencia.') {
+      setPublishError('');
+    }
+  }, []);
+
+  const handleDiscardChanges = useCallback(() => {
+    if (originalDraft) {
+      setDraft({ ...originalDraft });
+      setLocalStatus('Cambios descartados.');
+      setPublishError('');
+    }
+  }, [originalDraft]);
+
+  const handlePublish = useCallback(async (autoUploadedUrl?: string) => {
+    if (!draft) return;
+
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setPublishError('No hay sesión activa para publicar.');
+      return;
+    }
+
+    const effectiveDraft = autoUploadedUrl
+      ? { ...draft, imageUrl: autoUploadedUrl, imageLocked: true }
+      : draft;
+
+    const validation = validateAdminModelDraftForPublish(effectiveDraft, { mode: 'edit' });
+    if (!validation.isValid) {
+      setPublishError(validation.message);
+      setLocalStatus(validation.message);
+      return;
+    }
+
+    setSaving(true);
+    setPublishError('');
+    setLocalStatus('Publicando modelo...');
+
+    try {
+      const payload = draftToUpdatePayload(effectiveDraft);
+      await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
+      setLocalStatus('Modelo actualizado correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
+      setPublishError(message);
+      setLocalStatus(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, motorcycleId, session?.access_token]);
+
+  const handleUploadImage = useCallback(async (file: File) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para subir la imagen.');
+    }
+
+    return uploadMotorcycleImage(file, motorcycleId!, accessToken);
+  }, [motorcycleId, session?.access_token]);
+
+  if (!motorcycleId || !originalDraft) {
+    return (
+      <AdminModelsWorkspace
+        activeModelsItem="edit"
+        description="Seleccionar modelo para editar"
+        title="Modelo no encontrado"
+        titleId="admin-models-edit-notfound-title"
+      >
+        <article className="account-page__empty-state">
+          <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">edit_note</span>
+          <h2>Modelo no encontrado</h2>
+          <p>No se encontró un modelo con el identificador especificado.</p>
+          <a className="account-page__button" href="#/admin/modelos/editar">Volver a selección de modelos</a>
+        </article>
+      </AdminModelsWorkspace>
+    );
+  }
+
+  const safeDraft = draft!;
+  const kickerText = `Editando ${safeDraft.brand} ${safeDraft.model} ${safeDraft.year}`;
+
+  return (
+    <AdminModelsWorkspace
+      activeModelsItem="edit"
+      description="Actualiza los datos disponibles de este modelo."
+      title="Editar modelo"
       titleId="admin-models-edit-title"
     >
-      <section className="admin-page__dashboard-grid" aria-labelledby="admin-models-edit-card-title">
-        <article className="account-page__card admin-page__summary-card">
-          <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
-          <h2 id="admin-models-edit-card-title">Placeholder inicial</h2>
-          <p>Aquí se preparará la búsqueda y edición de modelos existentes.</p>
-        </article>
-      </section>
+      {publishError ? <p className="admin-page__model-status admin-page__model-status--error" role="alert">{publishError}</p> : null}
+      <AdminModelFormBody
+        draft={safeDraft}
+        suggestedModelId={suggestedModelId}
+        localStatus={localStatus}
+        onDraftFieldChange={handleDraftFieldChange}
+        onDraftCheckboxChange={handleDraftCheckboxChange}
+        onFeatureToggle={handleFeatureToggle}
+        onDiscardChanges={handleDiscardChanges}
+        onLocalAction={handleLocalAction}
+        onPublish={handlePublish}
+        onUploadImage={handleUploadImage}
+        saving={saving}
+        toolbarKicker={kickerText}
+        workspaceHeading="Workspace de edición"
+        workspaceHeadingId="admin-models-edit-workspace-title"
+        formLabel="Formulario de edición de modelo"
+      />
     </AdminModelsWorkspace>
+  );
+}
+
+type AdminModelEditCardProps = Readonly<{
+  bike: Bike;
+}>;
+
+function AdminModelEditCard({ bike }: AdminModelEditCardProps) {
+  const displayName = getBikeDisplayName(bike);
+  const editHref = `#/admin/modelos/${bike.id}/editar`;
+
+  return (
+    <article className="admin-page__model-edit-summary-card" data-testid="admin-model-edit-summary-card" aria-label={displayName}>
+      <MotorcycleImage decorative className="admin-page__model-edit-summary-image" motorcycle={bike} />
+      <div className="admin-page__model-edit-summary-overlay" aria-hidden="true" />
+
+      <div className="admin-page__model-edit-summary-content">
+        <header className="admin-page__model-edit-summary-header">
+          <h2 className="admin-page__model-edit-summary-title">
+            <span className='bike-brand'>{bike.brand}</span>
+            <span className='bike-model'>{bike.model}</span>
+          </h2>
+        </header>
+
+        <ul className="admin-page__model-edit-summary-meta" aria-label="Detalles del modelo">
+          <li><span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>{bike.year}</li>
+        </ul>
+
+
+        <footer className="admin-page__model-edit-summary-actions">
+          <a href={editHref} aria-label={`Editar modelo ${displayName}`}>
+            <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+            Editar modelo
+          </a>
+        </footer>
+      </div>
+    </article>
   );
 }
 

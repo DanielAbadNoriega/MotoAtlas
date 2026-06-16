@@ -3,16 +3,10 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1146` tests passing (75 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1298` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
-  - `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing.
-  - `src/App.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `49` tests passing.
-  - `src/App.test.tsx` + `src/components/layout/Footer/Footer.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` + `src/shared/routing/routeUtils.test.ts` + `src/shared/seo/seoUtils.test.ts` → `5` files / `73` tests passing.
-  - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/CommunityRankingsPage/CommunityRankingsPage.test.tsx` → `2` files / `31` tests passing.
-  - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` → `2` files / `22` tests passing.
-  - `src/shared/ui/states/RadarState/RadarState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsEmptyState.test.tsx` + `src/components/pages/AccountReviewsPage/AccountReviewsPage.test.tsx` → `3` files / `15` tests passing.
-  - `supabase/schema.test.ts` → `1` file / `66` tests passing.
-  - `src/test/fixtures/auth.test.ts` + `src/components/reviews/ReviewModal/ReviewModal.test.tsx` → `2` files / `38` tests passing.
+  - `src/services/adminMotorcycleImageUploadService.test.ts` + `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/shared/images/getMotorcycleImage.test.ts` → `193` tests passing (upload service, admin page create/edit/publish, image resolver).
+  - suite completa → `1298` tests passing.
 
 ## Stack actual
 
@@ -384,7 +378,12 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `75` files / `1146` tests passing. Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. Focused check más reciente: `src/components/pages/CommunityReviewsPage/CommunityReviewsPage.test.tsx` → `1` file / `76` tests passing.
+- Baseline validado actual del proyecto: `1231` tests passing (76 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Cobertura Admin Models Studio persistencia:
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` → `128` tests cubriendo create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks.
+  - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.
+  - Admin create/edit publish validan que el servicio no se llama cuando la validación falla.
+  - Edit publish no requiere modeloId; create sí.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
@@ -406,6 +405,14 @@ Cobertura actual relevante:
 - El focused check de rename documenta que `#/comunidad` sigue renderizando la landing comunitaria bajo `CommunityLandingPage`, sin reintroducir `#/motos-mejor-valoradas` ni cambiar el comportamiento del hero, el podio o `RadarState`.
 - `CommunityRankingsPage.test.tsx` añade el tercer consumidor real de `RadarState` para el empty state técnico filtrado: valida `Sin resultados`, el texto `No hay resultados para los filtros seleccionados.`, la desaparición de `Listado técnico de rankings` y que no aparezca `Limpiar filtros`. El comportamiento sin acción sigue cubierto principalmente por el contrato compartido de `RadarState`, no por una duplicación page-level.
 - `src/shared/env/runtimeEnvironment.test.ts` valida el guard central de entorno/demo data: producción nunca habilita demo data, `VITE_ENABLE_DEMO_DATA='true'` no rompe esa protección, preview/development solo habilitan demo cuando corresponde y un `VITE_APP_ENV` inválido cae a comportamiento production-safe.
+- `src/services/adminMotorcycleImageUploadService.test.ts` cubre el servicio de upload/delete de imágenes:
+  - validaciones de seguridad: env vars, access token, motorcycleId (vacío, `/`, `..`, espacios), file type no soportado, file size > 5 MB.
+  - éxito con extensión preservada: jpeg → `.jpg`, png → `.png`, webp → `.webp`.
+  - headers: anon key + Bearer token + Content-Type correcto.
+  - URL pública retornada según plantilla esperada.
+  - error HTTP controlado (401, etc.) y error de red.
+  - UUID hardening: `globalThis.crypto.randomUUID()` cuando disponible, `globalThis.crypto = {}` (sin randomUUID), `globalThis.crypto = undefined` (completamente ausente). Fallback Math.random genera UUID v4 válido.
+  - `deleteMotorcycleImage`: validaciones (token, objectPath vacío, `..`, `/` inicial, sin directorio), DELETE con headers correctos, success void, error HTTP, error de red.
 - `src/shared/reviews/reviewSourcePolicy.test.ts` valida el contrato delegado al guard central: producción devuelve solo `user`; demo habilitado devuelve `user/seed/mock`; demo deshabilitado vuelve a solo `user`; el contrato ya no depende directamente de `import.meta.env.PROD`.
 - `src/components/pages/AdminPage/AdminPage.test.tsx` cubre el toggle admin de datos demo: solo se renderiza cuando el runtime lo permite, el click persiste `motoatlas.includeDemoData`, la preferencia local se hidrata al volver a montar y producción oculta el control aunque exista `localStorage` o `VITE_ENABLE_DEMO_DATA='true'`.
 - El contrato del toggle sigue siendo de comportamiento y no de implementación interna: validar visibilidad, persistencia local y delegación al guard central; evitar duplicar en tests la lógica de `reviewSourcePolicy` dentro del componente admin.
@@ -452,6 +459,16 @@ Cobertura actual relevante:
   - `upsertReactionSummaryById`
 - `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` cubre paridad de metadatos en podio de `#/comunidad`:
   - las cards compactas 2 y 3 mantienen visible en DOM el span `año · segmento · cilindrada`.
+- `src/components/pages/AdminPage/AdminPage.test.tsx` cubre image upload flow en Admin Models Studio:
+  - modo URL manual: publish no llama a `uploadMotorcycleImage`.
+  - modo upload: auto-upload antes de create publish y antes de edit publish.
+  - create payload usa URL pública retornada y `imageLocked: true`.
+  - edit payload usa URL pública retornada y `imageLocked: true`.
+  - auto-upload failure previene create/update calls.
+  - missing access token previene upload y publish.
+  - explicit `Subir imagen` + publish posterior no re-upload (assert `toHaveBeenCalledTimes(1)`).
+  - creación/fallback de `modelId` para la ruta de upload.
+  - auto-upload usa `motorcycleId` de ruta en edit mode.
 
 Pendiente/riesgo menor:
 - Existe reporte de flaky aislado en `AdminPage` (`no muestra paginación cuando hay 6 reportes o menos`); no se observó relación con consolidación de reacciones.

@@ -473,39 +473,57 @@ Limitaciones actuales (Fase 1 cerrada, pendientes para Fase 2/3/4 sin cambios es
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado actual: **Fase 1 (rutas/hub) + Fase 2 (UI create scaffold) implementadas**.
+Estado actual: **Fase 1 (rutas/hub) + Fase 2 (UI create) + Fase 3 (UI edit selection) + Fase 4 (UI edit form) + Fase 5A (persistencia backend) + Fase 5B.1 (edit publica) + Fase 5B.2 (create publica) + Fase 5C.1 (validación cliente + aria-labels) implementadas**.
 - `#/admin/modelos` existe como hub admin-protegido de navegación;
-- `#/admin/modelos/nuevo` tiene un scaffold UI completo de alta de modelo (no es solo placeholder);
-- `#/admin/modelos/editar` existe como placeholder admin-protegido para la futura búsqueda/edición del catálogo;
-- `Panel Admin` incluye el submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar catálogo`.
+- `#/admin/modelos/nuevo` crea modelos reales vía `createAdminMotorcycle` con validación cliente compartida;
+- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar con AccountReviewsPage-style sidebar, 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos) y cards admin dedicadas. Las cards usan `motorcycles` resueltos desde App, con imágenes alineadas a SearchPage/MotorcycleGarageCard;
+- `#/admin/modelos/{motorcycleId}/editar` edita modelos reales vía `updateAdminMotorcycle` con validación cliente compartida. Edit NO valida modeloId;
+- `Panel Admin` incluye el submenú anidado `Modelos` con `Vista general`, `Nuevo modelo` y `Editar modelo`.
 
 Regla de UI vigente:
 - el hub `#/admin/modelos` debe mantenerse separado de los flujos de creación y edición;
 - no debe existir un create/edit combinado dentro de `#/admin/modelos`;
 - creación y edición vivirán en rutas separadas.
 
-Características del scaffold UI de `#/admin/modelos/nuevo`:
+Características del formulario de `#/admin/modelos/nuevo` y `#/admin/modelos/{motorcycleId}/editar`:
 - **Hero preview**: inspirado en `BikeDetailPage`, con MotorcycleImage, badge de segmento, año, carnet, display name, data notes de estado del draft. Sin CTAs. Sin texto `Borrador sin guardar`.
 - **Secciones Stitch**: identidad, clasificación, motor y rendimiento, ergonomía/uso, electrónica/equipamiento, precio/mercado, imagen/curación, fuentes/notas. Cada sección tiene título técnico centrado con líneas horizontales y Material Symbols decorativo. Sin iconos en headings.
 - **Tooltips accesibles**: las descripciones de sección se movieron a `(i)` buttons con `role="tooltip"`. El `<small>` helper del campo `ID sugerido` también se movió a un field-level tooltip.
 - **Secciones colapsables**: nativas con `<details open>`/`<summary>`, open por defecto. El icono `expand_more` rota 180° al colapsar.
-- **Footer de acciones locales**: 4 botones — Descartar cambios (resetea draft local), Guardar borrador (local), Vista previa (local), Publicar modelo (local). Ninguna acción persiste ni llama servicios.
-- **Campo `Imagen bloqueada / curada`**: checkbox con tooltip: `Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.`
-- **Sin upload de imágenes**: solo URL de imagen y notas locales. La subida real requiere backend/storage/security review posterior.
+- **Footer**: 4 botones — Descartar cambios, Guardar borrador (local), Vista previa (local), Publicar modelo (persiste en create/edit).
+- **Accesibilidad**: todos los inputs/selects del formulario tienen `aria-label` coincidente con el label visible.
+- **Feedback de errores**: errores de validación se muestran con `role="alert"` y mensajes descriptivos. Éxito/estado usa `role="status"` con `aria-live="polite"`.
+- **Sección imagen**: modo `URL manual` (input `type="url"` + checkbox `Imagen bloqueada / curada`) o `Subir archivo` (file input, preview local con `URL.createObjectURL`, object URL cleanup en unmount/replacement).
+- **Modo de selección de imagen**: `role="radiogroup"` con botones `role="radio"` y `aria-checked`.
+- **Validación upload local**: tipo MIME (jpeg/png/webp) y tamaño (5 MB max). Errores con `role="alert"`.
+- **Preview upload**: `<img>` con `alt="Previsualización local del archivo seleccionado"` + nombre y tamaño del archivo.
+- **Subir imagen**: botón visible solo con archivo válido seleccionado. Texto cambia a `Subiendo imagen...` durante upload. Deshabilitado durante upload o sin handler.
+- **Upload exitoso**: `draft.imageUrl` y `draft.imageLocked` actualizados. Status con `role="status"` (`Imagen subida correctamente.`).
+- **Upload fallido**: `role="alert"` con mensaje de error. Preview y archivo se conservan para retry.
+- **Auto-upload al publicar**: si hay archivo seleccionado no subido, se sube antes de create/update. `imageLocked = true`. Fallo de upload previene publish.
+- **Sin SCSS nuevo**: las clases existentes `admin-page__model-*` cubren la sección de imagen (field, checkbox, field--full, status, label).
+
+Validación cliente (`validateAdminModelDraftForPublish`):
+- Compartida entre create y edit.
+- Create: valida modeloId obligatorio y sin espacios.
+- Edit: omite validación de modeloId.
+- Campos validados: marca, modelo, descripción, segmento, carnet, tipo de motor, año (1900-2100), cilindrada, potencia, torque, peso, altura asiento, depósito, precio, image URL (obligatoria, formato `/` o `http(s)://`). Imágenes locales `/images/...` aceptadas.
 
 Dirección futura (pendiente):
-- objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON;
-- create/edit deben compartir la misma arquitectura visual y de formulario;
-- Fase 3 (búsqueda/listado para editar catálogo) es el siguiente paso;
-- la persistencia real queda explícitamente diferida hasta revisión separada de schema/RLS/seguridad/servicios;
-- el upload real de imágenes requiere backend/storage/security review y no debe implementarse desde frontend-only.
+- objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON (base operativa implementada);
+- create/edit comparten la misma arquitectura visual y de formulario (`AdminModelFormBody`);
+- delete/replace cleanup en UI de imagen;
+- navegación automática post-publicación y refactor App-level de catálogo tras create/edit;
+- A2 fields en draft si aplica;
+- WebP conversion opcional durante upload;
+- el set definitivo de filtros de Fase 3 puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación en esta pantalla de selección admin;
 
 ## Mi cuenta — Reviews
 
 Quick links / sidebar de cuenta-admin:
 - reutilizar el patrón agrupado de `.account-page__quick-links` en lugar de duplicar listas planas por página;
 - grupos actuales: `Mi cuenta` (`Resumen`, `Mis reviews`, `Mis solicitudes`) y `Panel Admin` (`Panel admin`, `Moderación`, `Reviews`, `Solicitudes`);
-- `Panel Admin` ahora soporta un subnivel `Modelos` con disclosure nativo y links `Vista general` (`#/admin/modelos`), `Nuevo modelo` (`#/admin/modelos/nuevo`) y `Editar catálogo` (`#/admin/modelos/editar`);
+- `Panel Admin` ahora soporta un subnivel `Modelos` con disclosure nativo y links `Vista general` (`#/admin/modelos`), `Nuevo modelo` (`#/admin/modelos/nuevo`) y `Editar modelo` (`#/admin/modelos/editar`);
 - disclosure nativo con `<details>/<summary>` y links semánticos `<a>`;
 - el enlace activo debe seguir usando `aria-current="page"`;
 - el grupo `Panel Admin` solo aparece cuando la superficie recibe `isAdmin`, sin alterar guards ni acceso a datos.

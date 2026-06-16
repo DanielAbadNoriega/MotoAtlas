@@ -39,11 +39,39 @@ function getReviewAspectsGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getMotorcyclesGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 describe('Supabase public motorcycle schema', () => {
   it('permite leer motos públicas también con sesión autenticada', () => {
     expect(schemaSql).toContain('create policy "Public motorcycles are readable"');
     expect(schemaSql).toContain('to anon, authenticated');
     expect(schemaSql).toContain('grant select on public.motorcycles to anon, authenticated;');
+  });
+
+  it('permite a admins autenticados actualizar motos mediante policy is_admin', () => {
+    expect(schemaSql).toContain('alter table public.motorcycles enable row level security;');
+    expect(schemaSql).toContain('drop policy if exists "Admins can update motorcycles" on public.motorcycles;');
+    expect(schemaSql).toContain('create policy "Admins can update motorcycles"');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toContain('with check (public.is_admin())');
+  });
+
+  it('concede permisos de actualización solo a nivel de columna y no abre escritura a anon ni no-admin', () => {
+    const grants = getMotorcyclesGrantStatements();
+
+    expect(grants).toEqual([
+      'grant select on public.motorcycles to anon, authenticated;',
+      'grant update ( brand, model, year, description, description_locked, segment, license, engine_type, displacement_cc, power_hp, torque_nm, wet_weight_kg, seat_height_mm, fuel_tank_liters, price_eur, price_source, image_url, image_source, image_locked, specs_source, scores_source, pros_cons_source, reliability_source, abs_cornering, traction_control, riding_modes, cruise_control, quickshifter, heated_grips, tubeless_wheels, is_a2_compatible, is_a2_limited_version, limited_power_hp, original_power_hp ) on public.motorcycles to authenticated;',
+    ]);
+
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+insert\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+(anon|authenticated)/);
   });
 });
 
@@ -804,6 +832,149 @@ describe('Supabase create_motorcycle_review_with_aspects RPC function', () => {
 
   it('inserta review con status pending y source user', () => {
     expect(schemaSql).toMatch(/'user',\s*false,\s*'pending'/);
+  });
+});
+
+describe('Supabase create_admin_motorcycle RPC function', () => {
+  it('crea la función RPC con signature correcta y retorno motorcycles', () => {
+    expect(schemaSql).toContain('create or replace function public.create_admin_motorcycle(');
+    expect(schemaSql).toContain('p_id text');
+    expect(schemaSql).toContain('p_brand text');
+    expect(schemaSql).toContain('p_model text');
+    expect(schemaSql).toContain('p_year integer');
+    expect(schemaSql).toContain('p_description text');
+    expect(schemaSql).toContain('p_segment motorcycle_segment');
+    expect(schemaSql).toContain('p_license motorcycle_license');
+    expect(schemaSql).toContain('p_engine_type motorcycle_engine_type');
+    expect(schemaSql).toContain('p_displacement_cc integer');
+    expect(schemaSql).toContain('p_power_hp numeric');
+    expect(schemaSql).toContain('p_torque_nm numeric');
+    expect(schemaSql).toContain('p_wet_weight_kg numeric');
+    expect(schemaSql).toContain('p_seat_height_mm integer');
+    expect(schemaSql).toContain('p_fuel_tank_liters numeric');
+    expect(schemaSql).toContain('p_price_eur integer');
+    expect(schemaSql).toContain('p_image_url text');
+    expect(schemaSql).toContain('p_description_locked boolean default false');
+    expect(schemaSql).toContain('p_image_locked boolean default false');
+    expect(schemaSql).toContain('p_price_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_image_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_specs_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_scores_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_pros_cons_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_reliability_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_abs_cornering boolean default false');
+    expect(schemaSql).toContain('p_traction_control boolean default false');
+    expect(schemaSql).toContain('p_riding_modes boolean default false');
+    expect(schemaSql).toContain('p_cruise_control boolean default false');
+    expect(schemaSql).toContain('p_quickshifter boolean default false');
+    expect(schemaSql).toContain('p_heated_grips boolean default false');
+    expect(schemaSql).toContain('p_tubeless_wheels boolean default false');
+    expect(schemaSql).toContain('p_is_a2_compatible boolean default false');
+    expect(schemaSql).toContain('p_is_a2_limited_version boolean default false');
+    expect(schemaSql).toContain('p_limited_power_hp numeric default null');
+    expect(schemaSql).toContain('p_original_power_hp numeric default null');
+  });
+
+  it('retorna motorcycles y usa security definer con search_path public', () => {
+    expect(schemaSql).toContain('returns public.motorcycles');
+    expect(schemaSql).toContain('language plpgsql');
+    expect(schemaSql).toContain('security definer');
+    expect(schemaSql).toContain('set search_path = public');
+  });
+
+  it('valida que el caller sea admin mediante public.is_admin()', () => {
+    expect(schemaSql).toContain('if not public.is_admin() then');
+    expect(schemaSql).toContain("raise exception 'Only admins can create motorcycles.'");
+  });
+
+  it('valida campos obligatorios no vacíos', () => {
+    expect(schemaSql).toContain("raise exception 'id es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'brand es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'model es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'description es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'image_url es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'id no puede contener espacios.'");
+  });
+
+  it('inserta en public.motorcycles con returning *', () => {
+    expect(schemaSql).toMatch(/insert into public\.motorcycles\s*\(/);
+    expect(schemaSql).toContain('returning * into v_motorcycle');
+    expect(schemaSql).toContain('return v_motorcycle');
+    expect(schemaSql).not.toMatch(/return query select/);
+  });
+
+  it('revoca execute de public y anon, concede solo a authenticated', () => {
+    expect(schemaSql).toContain('revoke execute on function public.create_admin_motorcycle(');
+    expect(schemaSql).toMatch(/revoke execute on function public\.create_admin_motorcycle\([^)]+\) from public;/);
+    expect(schemaSql).toMatch(/revoke execute on function public\.create_admin_motorcycle\([^)]+\) from anon;/);
+    expect(schemaSql).toContain('grant execute on function public.create_admin_motorcycle(');
+    expect(schemaSql).toMatch(/grant execute on function public\.create_admin_motorcycle\([^)]+\) to authenticated;/);
+    expect(schemaSql).not.toMatch(/grant execute on function public\.create_admin_motorcycle\([^)]+\) to anon;/);
+  });
+
+  it('no expone INSERT grants directos en public.motorcycles a anon ni authenticated', () => {
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+insert\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+(anon|authenticated)/);
+  });
+
+  it('no agrega INSERT RLS policy en public.motorcycles', () => {
+    expect(normalizedSchemaSql).not.toMatch(/create\s+policy[^;]+on\s+public\.motorcycles[^;]+\bfor\s+insert\b/);
+  });
+});
+
+describe('Supabase motorcycle image storage', () => {
+  it('define el bucket motorcycle-images como público con límite de 5 MB y tipos MIME permitidos', () => {
+    expect(schemaSql).toContain("insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)");
+    expect(schemaSql).toContain("'motorcycle-images'");
+    expect(schemaSql).toContain("true");
+    expect(schemaSql).toContain("5242880");
+    expect(schemaSql).toContain("array['image/jpeg', 'image/png', 'image/webp']");
+    expect(schemaSql).toContain("on conflict (id) do nothing");
+  });
+
+  it('permite SELECT público en storage.objects para motorcycle-images', () => {
+    expect(schemaSql).toContain('drop policy if exists "Public motorcycle images are readable" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Public motorcycle images are readable"');
+    expect(schemaSql).toContain('on storage.objects for select');
+    expect(schemaSql).toContain('to anon, authenticated');
+    expect(schemaSql).toContain("using (bucket_id = 'motorcycle-images')");
+  });
+
+  it('restringe INSERT en storage.objects a admins autenticados via public.is_admin()', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can upload motorcycle images" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Admins can upload motorcycle images"');
+    expect(schemaSql).toContain('on storage.objects for insert');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("bucket_id = 'motorcycle-images'");
+  });
+
+  it('restringe UPDATE en storage.objects a admins autenticados via public.is_admin()', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can update motorcycle images" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Admins can update motorcycle images"');
+    expect(schemaSql).toContain('on storage.objects for update');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("bucket_id = 'motorcycle-images'");
+  });
+
+  it('restringe DELETE en storage.objects a admins autenticados via public.is_admin()', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can delete motorcycle images" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Admins can delete motorcycle images"');
+    expect(schemaSql).toContain('on storage.objects for delete');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("bucket_id = 'motorcycle-images'");
+  });
+
+  it('no expone INSERT/UPDATE/DELETE en storage.objects a anon ni authenticated sin admin', () => {
+    // No policy grants write to anon
+    expect(normalizedSchemaSql).not.toMatch(/on storage\.objects for insert to anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/on storage\.objects for update to anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/on storage\.objects for delete to anon\b/);
+    // No policy grants write to all authenticated without admin guard
+    const insertAuthPolicies = normalizedSchemaSql.match(/on storage\.objects for insert to authenticated[^;]*with check[^;]*bucket_id\s*=\s*'motorcycle-images'[^;]*public\.is_admin\(\)/g);
+    expect(insertAuthPolicies).not.toBeNull();
+    expect(insertAuthPolicies?.length).toBeGreaterThanOrEqual(1);
   });
 });
 
