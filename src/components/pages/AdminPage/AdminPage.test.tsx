@@ -2463,6 +2463,16 @@ describe('AdminPage', () => {
       expect(screen.queryByLabelText('Image URL')).not.toBeInTheDocument();
     });
 
+    it('upload mode renderiza el trigger visual y estado vacío', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      expect(screen.getByText('Seleccionar imagen')).toBeInTheDocument();
+      expect(screen.getByText('Ningún archivo seleccionado')).toBeInTheDocument();
+    });
+
     function selectFile(input: HTMLElement, file: File) {
       fireEvent.change(input, { target: { files: [file] } });
     }
@@ -2480,7 +2490,7 @@ describe('AdminPage', () => {
 
       expect(createObjectURLSpy).toHaveBeenCalledWith(file);
       expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toHaveAttribute('src', 'blob:mock-preview-url');
-      expect(screen.getByText(/test-image\.jpg/)).toBeInTheDocument();
+      expect(screen.getAllByText(/test-image\.jpg/)).toHaveLength(2);
     });
 
     it('seleccionar PNG válido muestra preview', async () => {

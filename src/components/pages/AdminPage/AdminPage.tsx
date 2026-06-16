@@ -1225,7 +1225,16 @@ function AdminModelFormBody({
                     <span className="material-symbols-outlined" aria-hidden="true">upload</span>
                     Seleccionar imagen del modelo
                   </span>
-                  <input id="admin-model-image-file" className="account-page__button account-page__button--glass admin-page__model-action-button" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                  <div className="admin-page__image-file-control">
+                    <input id="admin-model-image-file" type="file" className="admin-page__image-file-input" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                    <label htmlFor="admin-model-image-file" className="admin-page__image-file-trigger">
+                      <span className="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
+                      Seleccionar imagen
+                    </label>
+                    <span className="admin-page__image-file-name" aria-live="polite">
+                      {selectedFile ? `${selectedFile.name} - ${formatFileSize(selectedFile.size)}` : 'Ningún archivo seleccionado'}
+                    </span>
+                  </div>
                 </div>
 
                 {fileError ? (
@@ -1235,7 +1244,6 @@ function AdminModelFormBody({
                 {previewBlobUrl && selectedFile ? (
                   <div className="admin-page__model-field admin-page__model-field--full">
                     <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto' }} />
-                    <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
                     <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
                       <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
                       {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
