@@ -921,6 +921,63 @@ describe('Supabase create_admin_motorcycle RPC function', () => {
   });
 });
 
+describe('Supabase motorcycle image storage', () => {
+  it('define el bucket motorcycle-images como público con límite de 5 MB y tipos MIME permitidos', () => {
+    expect(schemaSql).toContain("insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)");
+    expect(schemaSql).toContain("'motorcycle-images'");
+    expect(schemaSql).toContain("true");
+    expect(schemaSql).toContain("5242880");
+    expect(schemaSql).toContain("array['image/jpeg', 'image/png', 'image/webp']");
+    expect(schemaSql).toContain("on conflict (id) do nothing");
+  });
+
+  it('permite SELECT público en storage.objects para motorcycle-images', () => {
+    expect(schemaSql).toContain('drop policy if exists "Public motorcycle images are readable" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Public motorcycle images are readable"');
+    expect(schemaSql).toContain('on storage.objects for select');
+    expect(schemaSql).toContain('to anon, authenticated');
+    expect(schemaSql).toContain("using (bucket_id = 'motorcycle-images')");
+  });
+
+  it('restringe INSERT en storage.objects a admins autenticados via public.is_admin()', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can upload motorcycle images" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Admins can upload motorcycle images"');
+    expect(schemaSql).toContain('on storage.objects for insert');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("bucket_id = 'motorcycle-images'");
+  });
+
+  it('restringe UPDATE en storage.objects a admins autenticados via public.is_admin()', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can update motorcycle images" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Admins can update motorcycle images"');
+    expect(schemaSql).toContain('on storage.objects for update');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("bucket_id = 'motorcycle-images'");
+  });
+
+  it('restringe DELETE en storage.objects a admins autenticados via public.is_admin()', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can delete motorcycle images" on storage.objects;');
+    expect(schemaSql).toContain('create policy "Admins can delete motorcycle images"');
+    expect(schemaSql).toContain('on storage.objects for delete');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('public.is_admin()');
+    expect(schemaSql).toContain("bucket_id = 'motorcycle-images'");
+  });
+
+  it('no expone INSERT/UPDATE/DELETE en storage.objects a anon ni authenticated sin admin', () => {
+    // No policy grants write to anon
+    expect(normalizedSchemaSql).not.toMatch(/on storage\.objects for insert to anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/on storage\.objects for update to anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/on storage\.objects for delete to anon\b/);
+    // No policy grants write to all authenticated without admin guard
+    const insertAuthPolicies = normalizedSchemaSql.match(/on storage\.objects for insert to authenticated[^;]*with check[^;]*bucket_id\s*=\s*'motorcycle-images'[^;]*public\.is_admin\(\)/g);
+    expect(insertAuthPolicies).not.toBeNull();
+    expect(insertAuthPolicies?.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
 describe('Supabase schema reload', () => {
   it('recarga PostgREST después de aplicar políticas', () => {
     expect(schemaSql).toContain("notify pgrst, 'reload schema';");
