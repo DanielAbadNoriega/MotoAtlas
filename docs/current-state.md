@@ -3,7 +3,7 @@
 ## Último estado estable
 
 - Rama actual: `feature/admin-models-studio`
-- Último bloque validado: **Admin Models Image Upload Flow + UI polish + Section Radar** aprobado.
+- Último bloque validado: **Admin Models post-publish navigation + App-level in-memory catalog sync** aprobado.
 - Alcance validado:
   - **Fase 6A**: Supabase Storage bucket `motorcycle-images` con public read + admin-only insert/update/delete policies. 5 MB max. Allow MIME types: `image/jpeg`, `image/png`, `image/webp`.
   - **Fase 6B**: `adminMotorcycleImageUploadService.ts` con `uploadMotorcycleImage` (fetch direct a Supabase Storage REST, body es el raw File, no multipart/form-data). Upload path `{motorcycleId}/{uuid}.{extension}`. Public URL `/storage/v1/object/public/motorcycle-images/{objectPath}`. Extensión preservada: jpeg→`.jpg`, png→`.png`, webp→`.webp`. Anon key + Bearer access token (no service role). UUID via `globalThis.crypto?.randomUUID?.()` con fallback. `deleteMotorcycleImage` existe pero no está cableado en UI.
@@ -13,15 +13,17 @@
   - **Custom file input UI**: reemplazado el file input nativo por control custom MotoAtlas-styled con botón `Subir imagen` y filename visible.
   - **Sticky Section Radar**: navegación Stitch-inspired entre secciones del form, con marcadores numerados, tracks de progreso verticales con relleno rojo, sticky glass strip y scroll horizontal en mobile.
   - **Section progress indicators**: cada sección en el radar muestra completitud basada en campos requeridos del draft.
+  - **Post-publish navigation**: create success navega a `#/motos/{createdBike.id}` y edit success navega a `#/motos/{motorcycleId}`. La navegación ocurre solo tras éxito real del servicio; fallos de validación, upload o servicio no navegan.
+  - **App-level in-memory catalog sync**: `App.tsx` mantiene `handleMotorcyclesChange`; cuando admin create/edit devuelve un `Bike`, el catálogo en memoria se actualiza inmutablemente (replace por `id` existente o append si es nuevo) sin refresh completo del navegador.
   - **Manual browser smoke**: flujo completo (create + upload + publish + edit + upload + publish) verificado manualmente por el desarrollador sin blockers.
   - Hardening: `globalThis.crypto?.randomUUID?.()` + tests for `globalThis.crypto` undefined. Explicit already-uploaded assertion.
-- Tests: 1299 passed (77 files)
+- Tests: 1302 passed (77 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Focused checks más recientes:
-  - `src/services/adminMotorcycleImageUploadService.test.ts` + `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/shared/images/getMotorcycleImage.test.ts` → `194` tests passing (upload service + admin page + image resolver)
-  - suite completa → `1299` tests passing
-- Sin cambios en schema/RLS fuera de Fase 5A/6A. Sin navegación automática post-publicación. Sin delete/replace cleanup en UI. Sin WebP conversion. Sin IntersectionObserver active section tracking (pospuesto).
+  - focused Admin Models post-publish sync / navigation → `196` tests passing
+  - suite completa → `1302` tests passing
+- Sin cambios en schema/RLS fuera de Fase 5A/6A. Sin delete/replace cleanup en UI. Sin WebP conversion. Sin IntersectionObserver active section tracking (pospuesto).
 
 ## Implementado
 
@@ -63,7 +65,7 @@
 - Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
 - Admin protegido por sesión + rol (`user_profiles.role = admin`).
 - quick links de cuenta/admin ya no se documentan como listas planas aisladas: `.account-page__quick-links` soporta grupos `Mi cuenta` y `Panel Admin`, con disclosure nativo `<details>/<summary>`, anchors semánticos y el mismo orden en superficies de cuenta y admin. El plumbing extra de `isAdmin` en páginas de cuenta solo habilita la visibilidad del grupo compartido, sin cambiar guards ni acceso a datos.
-- Admin Models Studio — **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar implementadas**. Persistencia operativa via `createAdminMotorcycle` / `updateAdminMotorcycle` con validación cliente compartida (`validateAdminModelDraftForPublish`). Image upload via Supabase Storage `motorcycle-images` bucket con `uploadMotorcycleImage`. Modos `URL manual` y `Subir archivo` con preview local, MIME/size validation, explicit upload y auto-upload antes de publicar. File input nativo reemplazado por control custom MotoAtlas-styled con filename visible. Sticky Section Radar con marcadores numerados, tracks de progreso verticales y scroll horizontal en mobile. `imageLocked` se activa automáticamente al subir. Sin delete/replace cleanup en UI. Sin WebP conversion. Sin navegación automática post-publicación. Sin refactor App-level de catálogo tras create/edit. Sin IntersectionObserver active section tracking.
+- Admin Models Studio — **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar + post-publish navigation + App-level in-memory catalog sync implementadas**. Persistencia operativa via `createAdminMotorcycle` / `updateAdminMotorcycle` con validación cliente compartida (`validateAdminModelDraftForPublish`). Image upload via Supabase Storage `motorcycle-images` bucket con `uploadMotorcycleImage`. Modos `URL manual` y `Subir archivo` con preview local, MIME/size validation, explicit upload y auto-upload antes de publicar. File input nativo reemplazado por control custom MotoAtlas-styled con filename visible. Sticky Section Radar con marcadores numerados, tracks de progreso verticales y scroll horizontal en mobile. `imageLocked` se activa automáticamente al subir. Tras publish exitoso, create navega a `#/motos/{createdBike.id}`, edit navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh. Sin delete/replace cleanup en UI. Sin WebP conversion. Sin IntersectionObserver active section tracking.
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - `#/admin/solicitudes` **Fase 1 implementada** (rama `feature/admin-requests-phase-1`, sin cambios de schema/RLS) sobre la base auditada en `feature/admin-requests-audit`. Capacidades verificadas:
@@ -282,7 +284,7 @@
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
 - Backlog P2 Auth: repetir opcionalmente el smoke del signup público directo cuando se libere el rate limit `429` de Supabase email y mantener auditorías periódicas si en el futuro aparecen nuevas funciones `security definer`.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
-- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar implementadas**. Quedan pendientes: delete/replace cleanup en UI, navegación automática post-publicación, refactor App-level de catálogo tras create/edit, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
+- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar + post-publish navigation + App-level in-memory catalog sync implementadas**. Quedan pendientes: delete/replace cleanup en UI, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
@@ -306,7 +308,7 @@
 
 ## Siguiente paso
 
-- **Admin Models Studio**: Fases 1 a 6C.4 completadas (persistencia + image upload/storage) más UI polish (file input custom + Section Radar). Siguientes fases recomendadas: delete/replace cleanup en UI, navegación automática post-publicación, refactor App-level de catálogo tras create/edit, A2 fields en draft si aplica, WebP conversion opcional, IntersectionObserver active section tracking.
+- **Admin Models Studio**: Fases 1 a 6C.4 completadas (persistencia + image upload/storage) más UI polish (file input custom + Section Radar) y post-publish navigation + App-level in-memory catalog sync cerrados. Siguientes fases recomendadas: delete/replace cleanup en UI, A2 fields en draft si aplica, WebP conversion opcional, IntersectionObserver active section tracking.
 
 ## Decisiones importantes
 

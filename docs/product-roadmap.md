@@ -18,18 +18,17 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1298 tests passing` (77 files).
+- Baseline validado actual: `1302 tests passing` (77 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models Image Upload Flow + UI polish (file input custom) + Section Radar (Quality Gate aprobado: 1298 tests, typecheck clean). Manual browser smoke completado con éxito.
+- Último bloque estable validado: Admin Models post-publish navigation + App-level in-memory catalog sync (Quality Gate aprobado: 1302 tests, typecheck clean). Manual browser smoke previo de create/edit + upload + publish completado con éxito.
 
 ## 3. Foco inmediato recomendado
 
 1. Admin Models Studio — delete/replace cleanup en UI de imagen.
-2. Navegación automática post-publicación y refactor App-level de catálogo.
-3. IntersectionObserver active section tracking (futuro polish opcional).
+2. IntersectionObserver active section tracking (futuro polish opcional).
+3. WebP conversion opcional durante upload.
 4. A2 fields en draft si aplica.
-5. WebP conversion opcional durante upload.
-6. Schema/RLS quedan fuera hasta necesidad explícita.
+5. Schema/RLS quedan fuera hasta necesidad explícita.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -68,7 +67,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar implementadas / delete/replace + navegación automática + WebP conversion + IntersectionObserver pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync implementadas / delete/replace + WebP conversion + IntersectionObserver pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -77,7 +76,8 @@ Nota de estado:
 - `#/admin/modelos/{motorcycleId}/editar` edita modelos reales vía `updateAdminMotorcycle` con validación cliente compartida;
 - **Persistencia operativa**: `adminMotorcycleService.ts` con `createAdminMotorcycle` y `updateAdminMotorcycle`.
 - **Validación cliente**: `validateAdminModelDraftForPublish` compartida entre create y edit. Create valida modeloId obligatorio y sin espacios; edit no lo exige.
-- **Sin**: delete/replace cleanup en UI (upload service existe pero no cableado), navegación automática post-publicación, refactor App-level de catálogo, WebP conversion, IntersectionObserver active section tracking.
+- **Sin**: delete/replace cleanup en UI (upload service existe pero no cableado), WebP conversion, IntersectionObserver active section tracking.
+- **Post-publish cerrado**: create publish success navega a `#/motos/{createdBike.id}`, edit publish success navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh completo, reemplazando por `id` o haciendo append si la moto es nueva.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
 Propósito:
@@ -160,8 +160,8 @@ Fases propuestas:
    - Section progress indicators: cada sección muestra completitud según campos requeridos del draft.
    - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` existe pero no cableado en UI.
-   - Quality Gate: 1298 tests, typecheck clean.
-   - Pendiente: delete/replace cleanup en UI, WebP conversion opcional, navegación automática post-publicación, refactor App-level de catálogo, A2 fields en draft si aplica, IntersectionObserver active section tracking.
+   - Quality Gate: 1302 tests, typecheck clean.
+   - Pendiente: delete/replace cleanup en UI, WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
 
 Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;

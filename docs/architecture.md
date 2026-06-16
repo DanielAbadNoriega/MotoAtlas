@@ -409,6 +409,9 @@ Funciones:
 - `Subir imagen` → `uploadMotorcycleImage` → `draft.imageUrl = publicUrl` + `draft.imageLocked = true`.
 - `Publicar modelo` con archivo pendiente → auto-upload → publish con URL retornada.
 - `imageLocked` protege la imagen curada contra sobrescritura en futuras sincronizaciones.
+- Tras publish exitoso, create navega a `#/motos/{createdBike.id}` y edit navega a `#/motos/{motorcycleId}`.
+- `App.tsx` mantiene el catálogo resuelto en estado local y expone `handleMotorcyclesChange`: si el servicio devuelve una moto existente, la reemplaza inmutablemente por `id`; si devuelve una nueva, la agrega con append inmutable.
+- No se introdujo store global nuevo: el sync post-publish vive en estado local de `App.tsx` y evita refresh completo del navegador.
 
 **Section Radar en UI:**
 - Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.
