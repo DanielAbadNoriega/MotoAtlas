@@ -9,9 +9,9 @@
 | `#/admin/reviews` | Garaje: reviews agrupadas por modelo |
 | `#/admin/reviews/[motorcycleId]` | Reviews de una moto concreta |
 | `#/admin/modelos` | Hub de gestión de modelos |
-| `#/admin/modelos/nuevo` | Creación de nuevo modelo (UI-only scaffold) |
-| `#/admin/modelos/editar` | Búsqueda/selección de modelos para editar (UI-only) |
-| `#/admin/modelos/[motorcycleId]/editar` | Formulario de edición de modelo (UI-only, prefilled desde la moto seleccionada) |
+| `#/admin/modelos/nuevo` | Creación de nuevo modelo (persiste con `createAdminMotorcycle`) |
+| `#/admin/modelos/editar` | Búsqueda/selección de modelos para editar |
+| `#/admin/modelos/[motorcycleId]/editar` | Formulario de edición de modelo (persiste con `updateAdminMotorcycle`, prefilled desde la moto seleccionada) |
 
 Protección:
 - Acceso restringido a usuarios con `user_profiles.role === 'admin'` (comprobado por `useAuth` y RLS en backend).
@@ -45,11 +45,11 @@ Hub admin de navegación con submenú `Modelos` en el sidebar: `Vista general`, 
 
 ### `#/admin/modelos/nuevo`
 
-Scaffold UI-only de alta de modelo. Hero preview estilo `BikeDetailPage`, secciones Stitch colapsables con tooltips, footer de acciones locales (Descartar, Guardar, Vista previa, Publicar). Sin persistencia real.
+Creación de nuevo modelo con persistencia real vía `createAdminMotorcycle`. Hero preview estilo `BikeDetailPage`, secciones Stitch colapsables con tooltips, footer de acciones locales (Descartar, Guardar, Vista previa, Publicar). Validación cliente compartida (`validateAdminModelDraftForPublish`) antes de publicar: modeloId obligatorio y sin espacios, marca, modelo, descripción, segmento, carnet, tipo de motor, año, cilindrada, potencia, torque, peso, altura asiento, depósito, precio, imagen URL (obligatoria + formato `/` o `http(s)://`).
 
-### `#/admin/modelos/editar` (UI-only)
+### `#/admin/modelos/editar`
 
-Selección y búsqueda de modelos existentes para editar. **Sin persistencia, ni servicios.**
+Selección y búsqueda de modelos existentes para editar.
 
 **Layout:**
 - AccountReviewsPage-style sidebar con panel de filtros responsive (sheet/drawer en mobile, permanente en desktop)
@@ -70,9 +70,9 @@ Selección y búsqueda de modelos existentes para editar. **Sin persistencia, ni
 - Las cards reciben `motorcycles` resueltos desde App (`AdminEditModelsPage({ motorcycles })`), alineando imágenes con SearchPage/MotorcycleGarageCard.
 - `MotorcycleImage` recibe el bike directamente sin forzar `getMotorcycleLocalImageUrl`.
 
-### `#/admin/modelos/[motorcycleId]/editar` (UI-only)
+### `#/admin/modelos/[motorcycleId]/editar`
 
-Formulario de edición de modelo que reutiliza `AdminModelFormBody` (misma estructura visual/estructural que `#/admin/modelos/nuevo`). Campos prefilled desde la moto seleccionada vía `motorcycles.find()` (resueltos desde App).
+Formulario de edición de modelo que reutiliza `AdminModelFormBody` (misma estructura visual/estructural que `#/admin/modelos/nuevo`). Campos prefilled desde la moto seleccionada vía `motorcycles.find()` (resueltos desde App). Persiste cambios con `updateAdminMotorcycle` tras validación cliente compartida. Edit NO valida modeloId (solo create).
 
 **Copy del edit mode:**
 - title: `Editar modelo`
@@ -80,18 +80,25 @@ Formulario de edición de modelo que reutiliza `AdminModelFormBody` (misma estru
 - status/kicker: `Editando {brand} {model} {year}`
 - heading interno: `Workspace de edición`
 
-**Footer (4 acciones locales):**
+**Footer (4 acciones):**
 - Descartar cambios (resetea al draft original)
 - Guardar borrador (local)
 - Vista previa (local)
-- Publicar modelo (local)
+- Publicar modelo (persiste con `updateAdminMotorcycle`)
+
+**Validación cliente aplicada (create y edit):**
+- `validateAdminModelDraftForPublish` compartida entre ambos flujos.
+- Create valida modeloId obligatorio y sin espacios.
+- Edit omite validación de modeloId.
+- Imágenes locales `/images/...` aceptadas.
 
 **Sin:**
-- create/update services
-- schema/RLS/Supabase changes
-- upload/storage
+- image upload/storage
+- navegación automática post-publicación
+- refactor App-level de catálogo tras create/edit
+- A2 fields en draft
 
-**Futuro:** Fase 5 (persistencia/seguridad), Fase 6 (image workflow). El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** Fase 6 (image workflow), navegación automática, refactor App-level. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 

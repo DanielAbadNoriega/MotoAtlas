@@ -192,6 +192,26 @@ using (true);
 
 grant select on public.motorcycles to anon, authenticated;
 
+drop policy if exists "Admins can update motorcycles" on public.motorcycles;
+create policy "Admins can update motorcycles"
+on public.motorcycles
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+grant update (
+  brand, model, year, description, description_locked,
+  segment, license, engine_type, displacement_cc,
+  power_hp, torque_nm, wet_weight_kg, seat_height_mm,
+  fuel_tank_liters, price_eur, price_source,
+  image_url, image_source, image_locked,
+  specs_source, scores_source, pros_cons_source, reliability_source,
+  abs_cornering, traction_control, riding_modes, cruise_control,
+  quickshifter, heated_grips, tubeless_wheels,
+  is_a2_compatible, is_a2_limited_version, limited_power_hp, original_power_hp
+) on public.motorcycles to authenticated;
+
 create table if not exists public.motorcycle_reviews (
   id uuid primary key default gen_random_uuid(),
   motorcycle_id text not null references public.motorcycles(id) on delete cascade,
@@ -1087,6 +1107,132 @@ begin
   return v_review;
 end;
 $$;
+
+create or replace function public.create_admin_motorcycle(
+  p_id text,
+  p_brand text,
+  p_model text,
+  p_year integer,
+  p_description text,
+  p_segment motorcycle_segment,
+  p_license motorcycle_license,
+  p_engine_type motorcycle_engine_type,
+  p_displacement_cc integer,
+  p_power_hp numeric,
+  p_torque_nm numeric,
+  p_wet_weight_kg numeric,
+  p_seat_height_mm integer,
+  p_fuel_tank_liters numeric,
+  p_price_eur integer,
+  p_image_url text,
+  p_description_locked boolean default false,
+  p_image_locked boolean default false,
+  p_price_source motorcycle_data_source default 'manual',
+  p_image_source motorcycle_data_source default 'manual',
+  p_specs_source motorcycle_data_source default 'manual',
+  p_scores_source motorcycle_data_source default 'estimated',
+  p_pros_cons_source motorcycle_data_source default 'estimated',
+  p_reliability_source motorcycle_data_source default 'estimated',
+  p_abs_cornering boolean default false,
+  p_traction_control boolean default false,
+  p_riding_modes boolean default false,
+  p_cruise_control boolean default false,
+  p_quickshifter boolean default false,
+  p_heated_grips boolean default false,
+  p_tubeless_wheels boolean default false,
+  p_is_a2_compatible boolean default false,
+  p_is_a2_limited_version boolean default false,
+  p_limited_power_hp numeric default null,
+  p_original_power_hp numeric default null
+) returns public.motorcycles
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_motorcycle public.motorcycles;
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can create motorcycles.';
+  end if;
+
+  if p_id is null or length(trim(p_id)) = 0 then
+    raise exception 'id es obligatorio.';
+  end if;
+
+  if p_id ~ '\s' then
+    raise exception 'id no puede contener espacios.';
+  end if;
+
+  if p_brand is null or length(trim(p_brand)) = 0 then
+    raise exception 'brand es obligatorio.';
+  end if;
+
+  if p_model is null or length(trim(p_model)) = 0 then
+    raise exception 'model es obligatorio.';
+  end if;
+
+  if p_description is null or length(trim(p_description)) = 0 then
+    raise exception 'description es obligatorio.';
+  end if;
+
+  if p_image_url is null or length(trim(p_image_url)) = 0 then
+    raise exception 'image_url es obligatorio.';
+  end if;
+
+  insert into public.motorcycles (
+    id, brand, model, year, description, description_locked,
+    segment, license, engine_type, displacement_cc,
+    power_hp, torque_nm, wet_weight_kg, seat_height_mm,
+    fuel_tank_liters, price_eur, image_url, image_locked,
+    price_source, image_source, specs_source, scores_source,
+    pros_cons_source, reliability_source,
+    abs_cornering, traction_control, riding_modes, cruise_control,
+    quickshifter, heated_grips, tubeless_wheels,
+    is_a2_compatible, is_a2_limited_version, limited_power_hp, original_power_hp
+  ) values (
+    trim(p_id), trim(p_brand), trim(p_model), p_year, trim(p_description), p_description_locked,
+    p_segment, p_license, p_engine_type, p_displacement_cc,
+    p_power_hp, p_torque_nm, p_wet_weight_kg, p_seat_height_mm,
+    p_fuel_tank_liters, p_price_eur, trim(p_image_url), p_image_locked,
+    p_price_source, p_image_source, p_specs_source, p_scores_source,
+    p_pros_cons_source, p_reliability_source,
+    p_abs_cornering, p_traction_control, p_riding_modes, p_cruise_control,
+    p_quickshifter, p_heated_grips, p_tubeless_wheels,
+    p_is_a2_compatible, p_is_a2_limited_version, p_limited_power_hp, p_original_power_hp
+  )
+  returning * into v_motorcycle;
+
+  return v_motorcycle;
+end;
+$$;
+
+revoke execute on function public.create_admin_motorcycle(
+  text, text, text, integer, text, motorcycle_segment, motorcycle_license,
+  motorcycle_engine_type, integer, numeric, numeric, numeric, integer,
+  numeric, integer, text, boolean, boolean, motorcycle_data_source,
+  motorcycle_data_source, motorcycle_data_source, motorcycle_data_source,
+  motorcycle_data_source, motorcycle_data_source, boolean, boolean, boolean,
+  boolean, boolean, boolean, boolean, boolean, boolean, numeric, numeric
+) from public;
+
+revoke execute on function public.create_admin_motorcycle(
+  text, text, text, integer, text, motorcycle_segment, motorcycle_license,
+  motorcycle_engine_type, integer, numeric, numeric, numeric, integer,
+  numeric, integer, text, boolean, boolean, motorcycle_data_source,
+  motorcycle_data_source, motorcycle_data_source, motorcycle_data_source,
+  motorcycle_data_source, motorcycle_data_source, boolean, boolean, boolean,
+  boolean, boolean, boolean, boolean, boolean, boolean, numeric, numeric
+) from anon;
+
+grant execute on function public.create_admin_motorcycle(
+  text, text, text, integer, text, motorcycle_segment, motorcycle_license,
+  motorcycle_engine_type, integer, numeric, numeric, numeric, integer,
+  numeric, integer, text, boolean, boolean, motorcycle_data_source,
+  motorcycle_data_source, motorcycle_data_source, motorcycle_data_source,
+  motorcycle_data_source, motorcycle_data_source, boolean, boolean, boolean,
+  boolean, boolean, boolean, boolean, boolean, boolean, numeric, numeric
+) to authenticated;
 
 revoke execute on function public.create_motorcycle_review_with_aspects(
   text, text, integer, text, integer, integer, text, text[], text[], jsonb

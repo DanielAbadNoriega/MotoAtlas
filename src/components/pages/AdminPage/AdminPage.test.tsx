@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
   getReviewReports,
@@ -57,10 +58,17 @@ vi.mock('../../../services/motorcycleReviewService', () => ({
   getReviewAspectsByReviewIds: vi.fn(),
 }));
 
+vi.mock('../../../services/adminMotorcycleService', () => ({
+  createAdminMotorcycle: vi.fn(),
+  updateAdminMotorcycle: vi.fn(),
+}));
+
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
 const getAllReviewsMock = vi.mocked(getAllReviews);
 const getReviewAspectsByReviewIdsMock = vi.mocked(getReviewAspectsByReviewIds);
+const updateAdminMotorcycleMock = vi.mocked(updateAdminMotorcycle);
+const createAdminMotorcycleMock = vi.mocked(createAdminMotorcycle);
 const resolveReportWithReviewStatusMock = vi.mocked(resolveReportWithReviewStatus);
 const updateReviewReportStatusMock = vi.mocked(updateReviewReportStatus);
 const getAdminPendingRepliesMock = vi.mocked(getAdminPendingReplies);
@@ -246,6 +254,36 @@ describe('AdminPage', () => {
     getAllModelRequestsMock.mockReset().mockResolvedValue(requestFixtures);
     updateModelRequestStatusMock.mockReset().mockResolvedValue(undefined);
     getReviewAspectsByReviewIdsMock.mockReset().mockResolvedValue([]);
+    updateAdminMotorcycleMock.mockReset().mockResolvedValue({
+      id: 'bmw-f-900-gs-2024', brand: 'BMW', model: 'F 900 GS', year: 2024,
+      segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+      displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
+      fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+      description: 'Test', descriptionLocked: false,
+      specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+      scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+      isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+      officialUrl: null,
+      useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+      features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+      pros: [], cons: [],
+      reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+    });
+    createAdminMotorcycleMock.mockReset().mockResolvedValue({
+      id: 'new-model', brand: 'Test', model: 'Model', year: 2025,
+      segment: 'naked' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+      displacementCc: 500, powerHp: 50, torqueNm: 45, wetWeightKg: 180, seatHeightMm: 800,
+      fuelTankLiters: 15, priceEur: 8000, imageUrl: '/test.jpg', imageLocked: false,
+      description: 'Test', descriptionLocked: false,
+      specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+      scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+      isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+      officialUrl: null,
+      useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+      features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+      pros: [], cons: [],
+      reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+    });
     mockAuth();
   });
 
@@ -1723,7 +1761,7 @@ describe('AdminPage', () => {
     expect(within(previewSection as HTMLElement).getByText('110 CV')).toBeInTheDocument();
   });
 
-  it('mantiene las acciones del footer como locales sin llamar servicios', async () => {
+  it('mantiene Guardar borrador y Vista previa como acciones locales sin llamar servicios', async () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
 
@@ -1739,12 +1777,212 @@ describe('AdminPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Vista previa' }));
     expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+  });
+
+  it('publicar modelo en create llama a createAdminMotorcycle y muestra éxito', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Trail travel.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
-    expect(getReviewReportsMock).not.toHaveBeenCalled();
-    expect(getAllReviewsMock).not.toHaveBeenCalled();
-    expect(getAllModelRequestsMock).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(createAdminMotorcycleMock).toHaveBeenCalledWith(
+        expect.objectContaining({ brand: 'Ducati', model: 'DesertX', powerHp: 110 }),
+        'admin-token',
+      );
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Modelo publicado correctamente.');
+  });
+
+  it('publicar modelo en create muestra error si falla createAdminMotorcycle', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    createAdminMotorcycleMock.mockRejectedValueOnce(new Error('connection failed'));
+
+    await user.type(screen.getByLabelText('Marca'), 'Test');
+    await user.type(screen.getByLabelText('Modelo'), 'Moto');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test model.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '500');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '50');
+    await user.type(screen.getByLabelText('Torque (nm)'), '45');
+    await user.type(screen.getByLabelText('Peso (kg)'), '180');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '800');
+    await user.type(screen.getByLabelText('Depósito (l)'), '15');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('connection failed');
+    });
+  });
+
+  it('publicar modelo en create no ejecuta servicio sin sesión activa', () => {
+    mockAuth({
+      user: null,
+      session: null,
+      profile: null,
+      isAuthenticated: false,
+      isAdmin: false,
+    });
+    render(<AdminNewModelPage />);
+
+    expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con modeloId vacío muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El ID del modelo es obligatorio.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con modeloId con espacios muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+    await user.type(screen.getByLabelText('ID sugerido'), 'invalid id with spaces');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El ID del modelo no puede contener espacios.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish sin marca muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'test-model');
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('La marca es obligatoria.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con año inválido muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'test-model');
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El año debe ser un número entre 1900 y 2100.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish acepta imageUrl local comenzando con /', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'valid-model');
+    await user.type(screen.getByLabelText('Marca'), 'Yamaha');
+    await user.type(screen.getByLabelText('Modelo'), 'MT-07');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '689');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '73');
+    await user.type(screen.getByLabelText('Torque (nm)'), '68');
+    await user.type(screen.getByLabelText('Peso (kg)'), '184');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '805');
+    await user.type(screen.getByLabelText('Depósito (l)'), '14');
+    await user.type(screen.getByLabelText('Image URL'), '/images/motorcycles/mt-07.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(createAdminMotorcycleMock).toHaveBeenCalled();
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Modelo publicado correctamente.');
+  });
+
+  it('edit publish con potencia inválida muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+    await user.clear(screen.getByLabelText('Potencia (hp)'));
+    await user.type(screen.getByLabelText('Potencia (hp)'), '0');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('La potencia debe ser un número mayor a 0.');
+    });
+    expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('edit publish no requiere validación de modeloId', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+    });
   });
 
   it('renderiza la página de selección de modelos para editar', () => {
@@ -2259,7 +2497,7 @@ describe('AdminPage', () => {
       expect(screen.getByRole('link', { name: 'Volver a selección de modelos' })).toHaveAttribute('href', '#/admin/modelos/editar');
     });
 
-    it('las acciones del footer son locales sin llamar servicios', async () => {
+    it('las acciones de borrador y vista previa son locales sin llamar servicios', async () => {
       const user = userEvent.setup();
       render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
@@ -2268,9 +2506,65 @@ describe('AdminPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Vista previa' }));
       expect(screen.getByRole('status')).toHaveTextContent('Vista previa actualizada.');
+    });
+
+    it('publicar modelo llama a updateAdminMotorcycle y muestra éxito', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      updateAdminMotorcycleMock.mockResolvedValueOnce({
+        id: existingId, brand: 'BMW', model: 'F 900 GS', year: 2024,
+        segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+        displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
+        fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+        description: 'Test', descriptionLocked: false,
+        specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+        scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+        isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+        officialUrl: null,
+        useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+        features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+        pros: [], cons: [],
+        reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+      });
 
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
-      expect(screen.getByRole('status')).toHaveTextContent('Publicación pendiente de persistencia.');
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalledWith(
+          existingId,
+          expect.objectContaining({ brand: 'BMW', model: 'F 900 GS' }),
+          'admin-token',
+        );
+      });
+      expect(screen.getByRole('status')).toHaveTextContent('Modelo actualizado correctamente.');
+    });
+
+    it('publicar modelo muestra error si falla updateAdminMotorcycle', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      updateAdminMotorcycleMock.mockRejectedValueOnce(new Error('permission denied'));
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('permission denied');
+      });
+    });
+
+    it('publicar modelo no se ejecuta si el admin guard no permite el render', () => {
+      mockAuth({
+        user: null,
+        session: null,
+        profile: null,
+        isAuthenticated: false,
+        isAdmin: false,
+      });
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
+      expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
     });
   });
 });

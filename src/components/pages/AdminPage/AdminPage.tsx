@@ -33,6 +33,12 @@ import {
   MotorcycleReviewRidingStyle,
   MotorcycleReviewStatus,
 } from '../../../services/motorcycleReviewService';
+import {
+  createAdminMotorcycle,
+  updateAdminMotorcycle,
+  type AdminMotorcycleCreatePayload,
+  type AdminMotorcycleUpdatePayload,
+} from '../../../services/adminMotorcycleService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -846,6 +852,8 @@ type AdminModelFormBodyProps = Readonly<{
   onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
   onDiscardChanges: () => void;
   onLocalAction: (message: string) => void;
+  onPublish?: () => void;
+  saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
   workspaceHeadingId: string;
@@ -861,6 +869,8 @@ function AdminModelFormBody({
   onFeatureToggle,
   onDiscardChanges,
   onLocalAction,
+  onPublish,
+  saving,
   toolbarKicker,
   workspaceHeading,
   workspaceHeadingId,
@@ -906,7 +916,7 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
                 Año
               </span>
-              <input id="admin-model-year" type="number" min="1900" max="2100" value={draft.year} onChange={(event) => onDraftFieldChange('year', event.target.value)} placeholder="2026" />
+              <input id="admin-model-year" aria-label="Año" type="number" min="1900" max="2100" value={draft.year} onChange={(event) => onDraftFieldChange('year', event.target.value)} placeholder="2026" />
             </label>
 
             <label className="admin-page__model-field" htmlFor="admin-model-id">
@@ -918,7 +928,7 @@ function AdminModelFormBody({
                   description={`Sugerencia automática: ${suggestedModelId || 'marca-modelo-2026'}`}
                 />
               </span>
-              <input id="admin-model-id" type="text" value={draft.modelId} onChange={(event) => onDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
+              <input id="admin-model-id" aria-label="ID sugerido" type="text" value={draft.modelId} onChange={(event) => onDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
             </label>
 
             <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-description">
@@ -974,7 +984,7 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">memory</span>
                 Tipo de motor
               </span>
-              <select id="admin-model-engine-type" value={draft.engineType} onChange={(event) => onDraftFieldChange('engineType', event.target.value)}>
+              <select id="admin-model-engine-type" aria-label="Tipo de motor" value={draft.engineType} onChange={(event) => onDraftFieldChange('engineType', event.target.value)}>
                 <option value="">Seleccionar arquitectura</option>
                 {adminModelEngineTypeOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -987,7 +997,7 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('engine')}</span>
                 Cilindrada (cc)
               </span>
-              <input id="admin-model-displacement" type="number" min="0" value={draft.displacementCc} onChange={(event) => onDraftFieldChange('displacementCc', event.target.value)} placeholder="895" />
+              <input id="admin-model-displacement" aria-label="Cilindrada (cc)" type="number" min="0" value={draft.displacementCc} onChange={(event) => onDraftFieldChange('displacementCc', event.target.value)} placeholder="895" />
             </label>
 
             <label className="admin-page__model-field" htmlFor="admin-model-power">
@@ -1003,7 +1013,7 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('torque')}</span>
                 Torque (nm)
               </span>
-              <input id="admin-model-torque" type="number" min="0" step="0.1" value={draft.torqueNm} onChange={(event) => onDraftFieldChange('torqueNm', event.target.value)} placeholder="93" />
+              <input id="admin-model-torque" aria-label="Torque (nm)" type="number" min="0" step="0.1" value={draft.torqueNm} onChange={(event) => onDraftFieldChange('torqueNm', event.target.value)} placeholder="93" />
             </label>
 
             <label className="admin-page__model-field" htmlFor="admin-model-weight">
@@ -1011,7 +1021,7 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('weight')}</span>
                 Peso (kg)
               </span>
-              <input id="admin-model-weight" type="number" min="0" step="0.1" value={draft.wetWeightKg} onChange={(event) => onDraftFieldChange('wetWeightKg', event.target.value)} placeholder="219" />
+              <input id="admin-model-weight" aria-label="Peso (kg)" type="number" min="0" step="0.1" value={draft.wetWeightKg} onChange={(event) => onDraftFieldChange('wetWeightKg', event.target.value)} placeholder="219" />
             </label>
 
             <label className="admin-page__model-field" htmlFor="admin-model-seat-height">
@@ -1019,7 +1029,7 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('seatHeight')}</span>
                 Altura asiento (mm)
               </span>
-              <input id="admin-model-seat-height" type="number" min="0" value={draft.seatHeightMm} onChange={(event) => onDraftFieldChange('seatHeightMm', event.target.value)} placeholder="870" />
+              <input id="admin-model-seat-height" aria-label="Altura asiento (mm)" type="number" min="0" value={draft.seatHeightMm} onChange={(event) => onDraftFieldChange('seatHeightMm', event.target.value)} placeholder="870" />
             </label>
 
             <label className="admin-page__model-field" htmlFor="admin-model-fuel-tank">
@@ -1027,7 +1037,7 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">{getMotorcycleTechnicalIcon('fuelTank')}</span>
                 Depósito (l)
               </span>
-              <input id="admin-model-fuel-tank" type="number" min="0" step="0.1" value={draft.fuelTankLiters} onChange={(event) => onDraftFieldChange('fuelTankLiters', event.target.value)} placeholder="14.5" />
+              <input id="admin-model-fuel-tank" aria-label="Depósito (l)" type="number" min="0" step="0.1" value={draft.fuelTankLiters} onChange={(event) => onDraftFieldChange('fuelTankLiters', event.target.value)} placeholder="14.5" />
             </label>
           </div>
         </AdminModelSection>
@@ -1136,7 +1146,7 @@ function AdminModelFormBody({
             <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
             Vista previa
           </button>
-          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" onClick={() => onLocalAction('Publicación pendiente de persistencia.')}>
+          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" disabled={saving} onClick={onPublish ?? (() => onLocalAction('Publicación pendiente de persistencia.'))}>
             <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
             Publicar modelo
           </button>
@@ -1149,6 +1159,10 @@ function AdminModelFormBody({
 export function AdminNewModelPage() {
   const [draft, setDraft] = useState<AdminModelDraft>(emptyAdminModelDraft);
   const [localStatus, setLocalStatus] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState('');
+
+  const { session } = useAuth();
 
   const suggestedModelId = useMemo(() => buildSuggestedModelId(draft), [draft]);
 
@@ -1172,12 +1186,48 @@ export function AdminNewModelPage() {
 
   const handleLocalAction = useCallback((message: string) => {
     setLocalStatus(message);
+    if (message !== 'Publicación pendiente de persistencia.') {
+      setPublishError('');
+    }
   }, []);
 
   const handleDiscardChanges = useCallback(() => {
     setDraft(emptyAdminModelDraft);
     setLocalStatus('Cambios descartados.');
+    setPublishError('');
   }, []);
+
+  const handlePublish = useCallback(async () => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setPublishError('No hay sesión activa para publicar.');
+      return;
+    }
+
+    const validation = validateAdminModelDraftForPublish(draft, { mode: 'create', modelId: suggestedModelId });
+    if (!validation.isValid) {
+      setPublishError(validation.message);
+      setLocalStatus(validation.message);
+      return;
+    }
+
+    setSaving(true);
+    setPublishError('');
+    setLocalStatus('Publicando modelo...');
+
+    try {
+      const payload = draftToCreatePayload(draft, suggestedModelId);
+      await createAdminMotorcycle(payload, accessToken);
+      setLocalStatus('Modelo publicado correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
+      setPublishError(message);
+      setLocalStatus(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, suggestedModelId, session?.access_token]);
 
   return (
     <AdminModelsWorkspace
@@ -1186,6 +1236,7 @@ export function AdminNewModelPage() {
       title="Nuevo modelo"
       titleId="admin-models-new-title"
     >
+      {publishError ? <p className="admin-page__model-status admin-page__model-status--error" role="alert">{publishError}</p> : null}
       <AdminModelFormBody
         draft={draft}
         suggestedModelId={suggestedModelId}
@@ -1195,6 +1246,8 @@ export function AdminNewModelPage() {
         onFeatureToggle={handleFeatureToggle}
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
+        onPublish={handlePublish}
+        saving={saving}
         toolbarKicker="Borrador local"
         workspaceHeading="Workspace de creación"
         workspaceHeadingId="admin-models-new-workspace-title"
@@ -1943,6 +1996,241 @@ export function AdminEditModelsPage({ motorcycles }: Readonly<{ motorcycles: rea
   );
 }
 
+function draftToUpdatePayload(draft: AdminModelDraft): AdminMotorcycleUpdatePayload {
+  const payload: Record<string, unknown> = {};
+
+  if (draft.brand.trim()) {
+    payload.brand = draft.brand.trim();
+  }
+
+  if (draft.model.trim()) {
+    payload.model = draft.model.trim();
+  }
+
+  const year = parseInt(draft.year, 10);
+  if (!Number.isNaN(year) && year >= 1900 && year <= 2100) {
+    payload.year = year;
+  }
+
+  if (draft.description.trim()) {
+    payload.description = draft.description.trim();
+  }
+
+  if (draft.segment) {
+    payload.segment = draft.segment;
+  }
+
+  if (draft.license) {
+    payload.license = draft.license;
+  }
+
+  if (draft.engineType) {
+    payload.engineType = draft.engineType;
+  }
+
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  if (!Number.isNaN(displacementCc) && displacementCc > 0) {
+    payload.displacementCc = displacementCc;
+  }
+
+  const powerHp = parseFloat(draft.powerHp);
+  if (!Number.isNaN(powerHp) && powerHp > 0) {
+    payload.powerHp = powerHp;
+  }
+
+  const torqueNm = parseFloat(draft.torqueNm);
+  if (!Number.isNaN(torqueNm) && torqueNm > 0) {
+    payload.torqueNm = torqueNm;
+  }
+
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  if (!Number.isNaN(wetWeightKg) && wetWeightKg > 0) {
+    payload.wetWeightKg = wetWeightKg;
+  }
+
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  if (!Number.isNaN(seatHeightMm) && seatHeightMm > 0) {
+    payload.seatHeightMm = seatHeightMm;
+  }
+
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  if (!Number.isNaN(fuelTankLiters) && fuelTankLiters > 0) {
+    payload.fuelTankLiters = fuelTankLiters;
+  }
+
+  if (!draft.pricePending) {
+    const priceEur = parseInt(draft.priceEur, 10);
+    if (!Number.isNaN(priceEur) && priceEur >= 0) {
+      payload.priceEur = priceEur;
+    }
+  }
+
+  if (draft.imageUrl.trim()) {
+    payload.imageUrl = draft.imageUrl.trim();
+  }
+
+  payload.imageLocked = draft.imageLocked;
+  payload.descriptionLocked = false;
+  payload.priceSource = 'manual';
+  payload.imageSource = 'manual';
+  payload.specsSource = 'manual';
+  payload.scoresSource = 'estimated';
+  payload.prosConsSource = 'estimated';
+  payload.reliabilitySource = 'estimated';
+  payload.absCornering = draft.features.absCornering;
+  payload.tractionControl = draft.features.tractionControl;
+  payload.ridingModes = draft.features.ridingModes;
+  payload.cruiseControl = draft.features.cruiseControl;
+  payload.quickshifter = draft.features.quickshifter;
+  payload.heatedGrips = draft.features.heatedGrips;
+  payload.tubelessWheels = draft.features.tubelessWheels;
+
+  return payload as AdminMotorcycleUpdatePayload;
+}
+
+function draftToCreatePayload(draft: AdminModelDraft, modelId: string): AdminMotorcycleCreatePayload {
+  const id = draft.modelId.trim() || modelId || '';
+  const brand = draft.brand.trim() || '';
+  const model = draft.model.trim() || '';
+  const year = parseInt(draft.year, 10);
+  const description = draft.description.trim();
+  const segment = draft.segment || '';
+  const license = draft.license || '';
+  const engineType = draft.engineType || '';
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  const powerHp = parseFloat(draft.powerHp);
+  const torqueNm = parseFloat(draft.torqueNm);
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  const priceEur = draft.pricePending ? 0 : parseInt(draft.priceEur, 10) || 0;
+  const imageUrl = draft.imageUrl.trim() || '';
+
+  return {
+    id,
+    brand,
+    model,
+    year: Number.isNaN(year) ? 0 : year,
+    description,
+    segment,
+    license,
+    engineType,
+    displacementCc: Number.isNaN(displacementCc) ? 0 : displacementCc,
+    powerHp: Number.isNaN(powerHp) ? 0 : powerHp,
+    torqueNm: Number.isNaN(torqueNm) ? 0 : torqueNm,
+    wetWeightKg: Number.isNaN(wetWeightKg) ? 0 : wetWeightKg,
+    seatHeightMm: Number.isNaN(seatHeightMm) ? 0 : seatHeightMm,
+    fuelTankLiters: Number.isNaN(fuelTankLiters) ? 0 : fuelTankLiters,
+    priceEur,
+    imageUrl,
+    imageLocked: draft.imageLocked,
+    descriptionLocked: false,
+    priceSource: 'manual',
+    imageSource: 'manual',
+    specsSource: 'manual',
+    scoresSource: 'estimated',
+    prosConsSource: 'estimated',
+    reliabilitySource: 'estimated',
+    absCornering: draft.features.absCornering,
+    tractionControl: draft.features.tractionControl,
+    ridingModes: draft.features.ridingModes,
+    cruiseControl: draft.features.cruiseControl,
+    quickshifter: draft.features.quickshifter,
+    heatedGrips: draft.features.heatedGrips,
+    tubelessWheels: draft.features.tubelessWheels,
+  };
+}
+
+type ValidationResult =
+  | { isValid: true }
+  | { isValid: false; message: string };
+
+function validateAdminModelDraftForPublish(
+  draft: AdminModelDraft,
+  options: { mode: 'create' | 'edit'; modelId?: string },
+): ValidationResult {
+  if (options.mode === 'create') {
+    const id = draft.modelId.trim() || options.modelId || '';
+    if (!id) {
+      return { isValid: false, message: 'El ID del modelo es obligatorio.' };
+    }
+    if (id.includes(' ')) {
+      return { isValid: false, message: 'El ID del modelo no puede contener espacios.' };
+    }
+  }
+
+  if (!draft.brand.trim()) {
+    return { isValid: false, message: 'La marca es obligatoria.' };
+  }
+  if (!draft.model.trim()) {
+    return { isValid: false, message: 'El modelo es obligatorio.' };
+  }
+  if (!draft.description.trim()) {
+    return { isValid: false, message: 'La descripción es obligatoria.' };
+  }
+  if (!draft.segment) {
+    return { isValid: false, message: 'El segmento es obligatorio.' };
+  }
+  if (!draft.license) {
+    return { isValid: false, message: 'El carnet es obligatorio.' };
+  }
+  if (!draft.engineType) {
+    return { isValid: false, message: 'El tipo de motor es obligatorio.' };
+  }
+
+  const year = parseInt(draft.year, 10);
+  if (Number.isNaN(year) || year < 1900 || year > 2100) {
+    return { isValid: false, message: 'El año debe ser un número entre 1900 y 2100.' };
+  }
+
+  const displacementCc = parseInt(draft.displacementCc, 10);
+  if (Number.isNaN(displacementCc) || displacementCc <= 0) {
+    return { isValid: false, message: 'La cilindrada debe ser un número mayor a 0.' };
+  }
+
+  const powerHp = parseFloat(draft.powerHp);
+  if (Number.isNaN(powerHp) || powerHp <= 0) {
+    return { isValid: false, message: 'La potencia debe ser un número mayor a 0.' };
+  }
+
+  const torqueNm = parseFloat(draft.torqueNm);
+  if (Number.isNaN(torqueNm) || torqueNm <= 0) {
+    return { isValid: false, message: 'El par motor debe ser un número mayor a 0.' };
+  }
+
+  const wetWeightKg = parseFloat(draft.wetWeightKg);
+  if (Number.isNaN(wetWeightKg) || wetWeightKg <= 0) {
+    return { isValid: false, message: 'El peso debe ser un número mayor a 0.' };
+  }
+
+  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+  if (Number.isNaN(seatHeightMm) || seatHeightMm <= 0) {
+    return { isValid: false, message: 'La altura del asiento debe ser un número mayor a 0.' };
+  }
+
+  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+  if (Number.isNaN(fuelTankLiters) || fuelTankLiters <= 0) {
+    return { isValid: false, message: 'La capacidad del depósito debe ser un número mayor a 0.' };
+  }
+
+  if (!draft.pricePending) {
+    const priceEur = parseInt(draft.priceEur, 10);
+    if (Number.isNaN(priceEur) || priceEur < 0) {
+      return { isValid: false, message: 'El precio debe ser un número igual o mayor a 0.' };
+    }
+  }
+
+  const imageUrl = draft.imageUrl.trim();
+  if (!imageUrl) {
+    return { isValid: false, message: 'La URL de imagen es obligatoria.' };
+  }
+  if (!imageUrl.startsWith('/') && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+    return { isValid: false, message: 'La URL de imagen debe ser una URL absoluta o una ruta local comenzando con /.' };
+  }
+
+  return { isValid: true };
+}
+
 export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[] }>) {
   const originalDraft = useMemo(() => {
     if (!motorcycleId) {
@@ -1955,6 +2243,10 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
 
   const [draft, setDraft] = useState<AdminModelDraft | undefined>(originalDraft);
   const [localStatus, setLocalStatus] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [publishError, setPublishError] = useState('');
+
+  const { session } = useAuth();
 
   const suggestedModelId = useMemo(() => draft ? buildSuggestedModelId(draft) : '', [draft]);
 
@@ -1982,14 +2274,52 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
 
   const handleLocalAction = useCallback((message: string) => {
     setLocalStatus(message);
+    if (message !== 'Publicación pendiente de persistencia.') {
+      setPublishError('');
+    }
   }, []);
 
   const handleDiscardChanges = useCallback(() => {
     if (originalDraft) {
       setDraft({ ...originalDraft });
       setLocalStatus('Cambios descartados.');
+      setPublishError('');
     }
   }, [originalDraft]);
+
+  const handlePublish = useCallback(async () => {
+    if (!draft) return;
+
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      setPublishError('No hay sesión activa para publicar.');
+      return;
+    }
+
+    const validation = validateAdminModelDraftForPublish(draft, { mode: 'edit' });
+    if (!validation.isValid) {
+      setPublishError(validation.message);
+      setLocalStatus(validation.message);
+      return;
+    }
+
+    setSaving(true);
+    setPublishError('');
+    setLocalStatus('Publicando modelo...');
+
+    try {
+      const payload = draftToUpdatePayload(draft);
+      await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
+      setLocalStatus('Modelo actualizado correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
+      setPublishError(message);
+      setLocalStatus(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [draft, motorcycleId, session?.access_token]);
 
   if (!motorcycleId || !originalDraft) {
     return (
@@ -2019,6 +2349,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
       title="Editar modelo"
       titleId="admin-models-edit-title"
     >
+      {publishError ? <p className="admin-page__model-status admin-page__model-status--error" role="alert">{publishError}</p> : null}
       <AdminModelFormBody
         draft={safeDraft}
         suggestedModelId={suggestedModelId}
@@ -2028,6 +2359,8 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
         onFeatureToggle={handleFeatureToggle}
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
+        onPublish={handlePublish}
+        saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"
         workspaceHeadingId="admin-models-edit-workspace-title"
