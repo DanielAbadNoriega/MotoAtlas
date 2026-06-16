@@ -1819,7 +1819,7 @@ describe('AdminPage', () => {
 
   it('publicar modelo en create muestra error si falla createAdminMotorcycle', async () => {
     const user = userEvent.setup();
-    render(<AdminNewModelPage />);
+    render(<AdminNewModelPage onMotorcyclesChange={vi.fn()} />);
 
     createAdminMotorcycleMock.mockRejectedValueOnce(new Error('connection failed'));
 
@@ -1843,6 +1843,7 @@ describe('AdminPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('connection failed');
     });
+    expect(window.location.hash).toBe('');
   });
 
   it('publicar modelo en create no ejecuta servicio sin sesión activa', () => {
@@ -1967,9 +1968,53 @@ describe('AdminPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Modelo publicado correctamente.');
   });
 
+  it('create publish success navega a la ficha del modelo creado', async () => {
+    const createdId = 'yamaha-mt-07-2025';
+    createAdminMotorcycleMock.mockResolvedValueOnce({ id: createdId, brand: 'Yamaha', model: 'MT-07', year: 2025, segment: 'naked' as const, license: 'A' as const, engineType: 'parallel-twin' as const, displacementCc: 689, powerHp: 73, torqueNm: 68, wetWeightKg: 184, seatHeightMm: 805, fuelTankLiters: 14, priceEur: 7490, imageUrl: '/images/mt-07.webp', imageLocked: false, description: 'Naked motorcycle.', descriptionLocked: false, specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const, scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const, isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null, officialUrl: null, useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 }, features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false }, pros: [], cons: [], reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 } } as unknown as Bike);
+    const user = userEvent.setup();
+    render(<AdminNewModelPage onMotorcyclesChange={vi.fn()} />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), createdId);
+    await user.type(screen.getByLabelText('Marca'), 'Yamaha');
+    await user.type(screen.getByLabelText('Modelo'), 'MT-07');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Naked motorcycle.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '689');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '73');
+    await user.type(screen.getByLabelText('Torque (nm)'), '68');
+    await user.type(screen.getByLabelText('Peso (kg)'), '184');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '805');
+    await user.type(screen.getByLabelText('Depósito (l)'), '14');
+    await user.type(screen.getByLabelText('Image URL'), '/images/mt-07.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(createAdminMotorcycleMock).toHaveBeenCalled();
+    });
+    expect(window.location.hash).toBe(`#/motos/${createdId}`);
+  });
+
+  it('create publish validation failure no navega', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage onMotorcyclesChange={vi.fn()} />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'test-model');
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('La marca es obligatoria.');
+    });
+    expect(window.location.hash).toBe('');
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
   it('edit publish con potencia inválida muestra error de validación', async () => {
     const user = userEvent.setup();
-    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} onMotorcyclesChange={vi.fn()} />);
 
     await user.clear(screen.getByLabelText('Potencia (hp)'));
     await user.type(screen.getByLabelText('Potencia (hp)'), '0');
@@ -1984,7 +2029,7 @@ describe('AdminPage', () => {
 
   it('edit publish no requiere validación de modeloId', async () => {
     const user = userEvent.setup();
-    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} onMotorcyclesChange={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
@@ -2813,7 +2858,7 @@ describe('AdminPage', () => {
     async function setupCreateWithFile() {
       stubURL();
       const user = userEvent.setup();
-      render(<AdminNewModelPage />);
+      render(<AdminNewModelPage onMotorcyclesChange={vi.fn()} />);
 
       await fillCreateForm(user);
 
@@ -2828,7 +2873,7 @@ describe('AdminPage', () => {
     async function setupEditWithFile() {
       stubURL();
       const user = userEvent.setup();
-      render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+      render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} onMotorcyclesChange={vi.fn()} />);
 
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
@@ -2842,7 +2887,7 @@ describe('AdminPage', () => {
       createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id', brand: 'Ducati', model: 'DesertX', year: 2025, segment: 'trail', license: 'A', engineType: 'parallel-twin', displacementCc: 937, powerHp: 110, torqueNm: 92, wetWeightKg: 210, seatHeightMm: 875, fuelTankLiters: 21, priceEur: 15000, imageUrl: '/images/ducati-desertx.webp', imageLocked: true } as unknown as Bike);
       stubURL();
       const user = userEvent.setup();
-      render(<AdminNewModelPage />);
+      render(<AdminNewModelPage onMotorcyclesChange={vi.fn()} />);
 
       await fillCreateForm(user);
       await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
@@ -2953,6 +2998,7 @@ describe('AdminPage', () => {
       });
       expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
       expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+      expect(window.location.hash).toBe('');
     });
 
     it('missing access token previene upload y publish', async () => {
@@ -2971,7 +3017,7 @@ describe('AdminPage', () => {
 
       stubURL();
       const user = userEvent.setup();
-      render(<AdminNewModelPage />);
+      render(<AdminNewModelPage onMotorcyclesChange={vi.fn()} />);
 
       await fillCreateForm(user);
       await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
@@ -3017,7 +3063,7 @@ describe('AdminPage', () => {
   describe('AdminEditMotorcyclePage — #/admin/modelos/{motorcycleId}/editar', () => {
     const existingId = 'bmw-f-900-gs-2024';
     const unknownId = 'non-existent-motorcycle';
-    const sharedProps = { motorcycles: bikeCatalog };
+    const sharedProps = { motorcycles: bikeCatalog, onMotorcyclesChange: vi.fn() };
 
     it('renderiza el formulario de edición con modo edit para un modelo existente', () => {
       render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
@@ -3138,7 +3184,35 @@ describe('AdminPage', () => {
       expect(screen.getByRole('status')).toHaveTextContent('Modelo actualizado correctamente.');
     });
 
-    it('publicar modelo muestra error si falla updateAdminMotorcycle', async () => {
+    it('edit publish success navega a la ficha del modelo editado', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      updateAdminMotorcycleMock.mockResolvedValueOnce({
+        id: existingId, brand: 'BMW', model: 'F 900 GS', year: 2024,
+        segment: 'trail' as const, license: 'A' as const, engineType: 'parallel-twin' as const,
+        displacementCc: 895, powerHp: 105, torqueNm: 92, wetWeightKg: 219, seatHeightMm: 815,
+        fuelTankLiters: 15, priceEur: 12490, imageUrl: '/bmw.jpg', imageLocked: false,
+        description: 'Test', descriptionLocked: false,
+        specsSource: 'manual' as const, priceSource: 'manual' as const, imageSource: 'manual' as const,
+        scoresSource: 'estimated' as const, prosConsSource: 'estimated' as const, reliabilitySource: 'estimated' as const,
+        isA2Compatible: false, isA2LimitedVersion: false, limitedPowerHp: null, originalPowerHp: null,
+        officialUrl: null,
+        useScores: { beginner: 0, city: 0, funFactor: 0, offroad: 0, passenger: 0, sport: 0, touring: 0 },
+        features: { absCornering: false, cruiseControl: false, heatedGrips: false, quickshifter: false, ridingModes: false, tractionControl: false, tubelessWheels: false },
+        pros: [], cons: [],
+        reliabilityReports: { commonIssues: [], reportCount: 0, reliabilityScore: 0 },
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+      });
+      expect(window.location.hash).toBe(`#/motos/${existingId}`);
+    });
+
+    it('edit publish service failure no navega', async () => {
       const user = userEvent.setup();
       render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
@@ -3149,6 +3223,7 @@ describe('AdminPage', () => {
       await waitFor(() => {
         expect(screen.getByRole('alert')).toHaveTextContent('permission denied');
       });
+      expect(window.location.hash).toBe('');
     });
 
     it('publicar modelo no se ejecuta si el admin guard no permite el render', () => {

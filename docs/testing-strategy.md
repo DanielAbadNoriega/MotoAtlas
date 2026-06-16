@@ -3,10 +3,10 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1298` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1302` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
-  - `src/services/adminMotorcycleImageUploadService.test.ts` + `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/shared/images/getMotorcycleImage.test.ts` → `193` tests passing (upload service, admin page create/edit/publish, image resolver).
-  - suite completa → `1298` tests passing.
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/App.test.tsx` → 196 tests passing (Admin Models post-publish navigation + App-level catalog sync).
+  - suite completa → `1302` tests passing.
 
 ## Stack actual
 
@@ -378,9 +378,9 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1298` tests passing (77 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `1302` tests passing (77 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 - Cobertura Admin Models Studio persistencia:
-  - `src/components/pages/AdminPage/AdminPage.test.tsx` → `128` tests cubriendo create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks.
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` → cobertura de create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks, navegación post-publicación y sync App-level del catálogo en memoria.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.
   - Admin create/edit publish validan que el servicio no se llama cuando la validación falla.
   - Edit publish no requiere modeloId; create sí.
@@ -469,6 +469,9 @@ Cobertura actual relevante:
   - explicit `Subir imagen` + publish posterior no re-upload (assert `toHaveBeenCalledTimes(1)`).
   - creación/fallback de `modelId` para la ruta de upload.
   - auto-upload usa `motorcycleId` de ruta en edit mode.
+  - create publish success navega a `#/motos/{createdBike.id}` y edit publish success navega a `#/motos/{motorcycleId}` solo tras éxito real del servicio.
+  - validation failure, upload failure y service failure no navegan.
+  - `App.tsx` + `AdminPage` cubren el sync App-level del catálogo en memoria: replace inmutable por `id` existente o append inmutable para una moto nueva, sin refresh completo del navegador.
   - custom file input UI cubierto por tests de render general de AdminPage (el input oculto + label estilizado se renderizan correctamente).
   - Section Radar: el sticky bar con marcadores numerados se renderiza en el form; el scroll-to-section vía `scrollIntoView` se prueba como comportamiento observable en los tests de navegación de AdminPage.
   - Section progress indicators: el tracking de completitud por sección se deriva de `validateAdminModelDraftForPublish` y se renderiza condicionalmente según el estado del draft.

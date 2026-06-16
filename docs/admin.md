@@ -120,6 +120,13 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - Si el archivo ya fue subido explícitamente, no se vuelve a subir.
 - Si está en modo URL manual, no se intenta subir.
 
+**Navegación y sync tras publicar:**
+- Create success: el admin navega a `#/motos/{createdBike.id}`.
+- Edit success: el admin navega a `#/motos/{motorcycleId}`.
+- La navegación ocurre solo después del éxito real del servicio.
+- Fallos de validación, upload o servicio no navegan.
+- `App.tsx` sincroniza el catálogo en memoria sin refresh completo: reemplaza inmutablemente la moto existente por `id` o hace append si la moto creada es nueva.
+
 **Section Radar (Stitch-inspired):**
 - Barra de navegación sticky entre el hero y el formulario.
 - Marcadores numerados (01–N) para cada sección del formulario.
@@ -130,14 +137,12 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - No hay tracking activo de sección actual (sin IntersectionObserver por ahora).
 
 **Sin:**
-- navegación automática post-publicación
-- refactor App-level de catálogo tras create/edit
 - A2 fields en draft
 - delete/replace cleanup en UI
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Futuro:** delete/replace cleanup, navegación automática, refactor App-level, WebP conversion, IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** delete/replace cleanup, WebP conversion, IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 
