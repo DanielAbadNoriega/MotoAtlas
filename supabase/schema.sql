@@ -192,6 +192,26 @@ using (true);
 
 grant select on public.motorcycles to anon, authenticated;
 
+drop policy if exists "Admins can update motorcycles" on public.motorcycles;
+create policy "Admins can update motorcycles"
+on public.motorcycles
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+grant update (
+  brand, model, year, description, description_locked,
+  segment, license, engine_type, displacement_cc,
+  power_hp, torque_nm, wet_weight_kg, seat_height_mm,
+  fuel_tank_liters, price_eur, price_source,
+  image_url, image_source, image_locked,
+  specs_source, scores_source, pros_cons_source, reliability_source,
+  abs_cornering, traction_control, riding_modes, cruise_control,
+  quickshifter, heated_grips, tubeless_wheels,
+  is_a2_compatible, is_a2_limited_version, limited_power_hp, original_power_hp
+) on public.motorcycles to authenticated;
+
 create table if not exists public.motorcycle_reviews (
   id uuid primary key default gen_random_uuid(),
   motorcycle_id text not null references public.motorcycles(id) on delete cascade,

@@ -39,11 +39,39 @@ function getReviewAspectsGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getMotorcyclesGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 describe('Supabase public motorcycle schema', () => {
   it('permite leer motos públicas también con sesión autenticada', () => {
     expect(schemaSql).toContain('create policy "Public motorcycles are readable"');
     expect(schemaSql).toContain('to anon, authenticated');
     expect(schemaSql).toContain('grant select on public.motorcycles to anon, authenticated;');
+  });
+
+  it('permite a admins autenticados actualizar motos mediante policy is_admin', () => {
+    expect(schemaSql).toContain('alter table public.motorcycles enable row level security;');
+    expect(schemaSql).toContain('drop policy if exists "Admins can update motorcycles" on public.motorcycles;');
+    expect(schemaSql).toContain('create policy "Admins can update motorcycles"');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('to authenticated');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toContain('with check (public.is_admin())');
+  });
+
+  it('concede permisos de actualización solo a nivel de columna y no abre escritura a anon ni no-admin', () => {
+    const grants = getMotorcyclesGrantStatements();
+
+    expect(grants).toEqual([
+      'grant select on public.motorcycles to anon, authenticated;',
+      'grant update ( brand, model, year, description, description_locked, segment, license, engine_type, displacement_cc, power_hp, torque_nm, wet_weight_kg, seat_height_mm, fuel_tank_liters, price_eur, price_source, image_url, image_source, image_locked, specs_source, scores_source, pros_cons_source, reliability_source, abs_cornering, traction_control, riding_modes, cruise_control, quickshifter, heated_grips, tubeless_wheels, is_a2_compatible, is_a2_limited_version, limited_power_hp, original_power_hp ) on public.motorcycles to authenticated;',
+    ]);
+
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+delete\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+(anon|authenticated)/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+insert\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+(anon|authenticated)/);
   });
 });
 
