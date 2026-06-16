@@ -378,7 +378,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1231` tests passing (76 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `1298` tests passing (77 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 - Cobertura Admin Models Studio persistencia:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → `128` tests cubriendo create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.
@@ -459,7 +459,7 @@ Cobertura actual relevante:
   - `upsertReactionSummaryById`
 - `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` cubre paridad de metadatos en podio de `#/comunidad`:
   - las cards compactas 2 y 3 mantienen visible en DOM el span `año · segmento · cilindrada`.
-- `src/components/pages/AdminPage/AdminPage.test.tsx` cubre image upload flow en Admin Models Studio:
+- `src/components/pages/AdminPage/AdminPage.test.tsx` cubre image upload flow + custom file input + Section Radar en Admin Models Studio:
   - modo URL manual: publish no llama a `uploadMotorcycleImage`.
   - modo upload: auto-upload antes de create publish y antes de edit publish.
   - create payload usa URL pública retornada y `imageLocked: true`.
@@ -469,6 +469,9 @@ Cobertura actual relevante:
   - explicit `Subir imagen` + publish posterior no re-upload (assert `toHaveBeenCalledTimes(1)`).
   - creación/fallback de `modelId` para la ruta de upload.
   - auto-upload usa `motorcycleId` de ruta en edit mode.
+  - custom file input UI cubierto por tests de render general de AdminPage (el input oculto + label estilizado se renderizan correctamente).
+  - Section Radar: el sticky bar con marcadores numerados se renderiza en el form; el scroll-to-section vía `scrollIntoView` se prueba como comportamiento observable en los tests de navegación de AdminPage.
+  - Section progress indicators: el tracking de completitud por sección se deriva de `validateAdminModelDraftForPublish` y se renderiza condicionalmente según el estado del draft.
 
 Pendiente/riesgo menor:
 - Existe reporte de flaky aislado en `AdminPage` (`no muestra paginación cuando hay 6 reportes o menos`); no se observó relación con consolidación de reacciones.

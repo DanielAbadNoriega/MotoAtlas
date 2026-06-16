@@ -405,10 +405,15 @@ Funciones:
 
 **Flujo en UI:**
 - Modo `URL manual`: input `type="url"`, checkbox `imageLocked`.
-- Modo `Subir archivo`: file input + preview + botón `Subir imagen`.
+- Modo `Subir archivo`: file input custom MotoAtlas-styled (label estilizado + filename visible) + preview + botón `Subir imagen`.
 - `Subir imagen` → `uploadMotorcycleImage` → `draft.imageUrl = publicUrl` + `draft.imageLocked = true`.
 - `Publicar modelo` con archivo pendiente → auto-upload → publish con URL retornada.
 - `imageLocked` protege la imagen curada contra sobrescritura en futuras sincronizaciones.
+
+**Section Radar en UI:**
+- Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.
+- Navegación con `scrollIntoView` (sin hash anchors ni IntersectionObserver).
+- Scroll horizontal en mobile, glass strip sticky.
 
 **Persistencia:**
 - `motorcycles.image_url` almacena la URL pública de la imagen subida.

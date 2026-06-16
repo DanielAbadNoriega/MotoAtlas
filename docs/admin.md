@@ -95,18 +95,19 @@ Formulario de edición de modelo que reutiliza `AdminModelFormBody` (misma estru
 
 **Sección de imagen del modelo:**
 
-El formulario tiene una sección `Imagen` con modo de selección:
+El formulario tiene una sección `Imagen` con modo de selección (`role="radiogroup"` con botones `role="radio"` y `aria-checked`):
 
 - **URL manual**: input `type="url"` + checkbox `Imagen bloqueada / curada`. Válido para enlazar imágenes ya publicadas.
-- **Subir archivo**: file input con accept `image/jpeg,image/png,image/webp`. Validación local de tipo y tamaño (5 MB max). Preview local con `URL.createObjectURL`. Object URL cleanup en unmount/replacement.
+- **Subir archivo**: file input con accept `image/jpeg,image/png,image/webp`. Validación local de tipo y tamaño (5 MB max). Preview local con `URL.createObjectURL`. Object URL cleanup en unmount/replacement. El native file input button fue reemplazado por un control custom MotoAtlas-styled con `Seleccionar archivo` como trigger visual y el nombre del archivo seleccionado visible.
 
 **Acción `Subir imagen`:**
 - Aparece solo cuando hay un archivo válido seleccionado.
+- Texto cambia a `Subiendo imagen...` durante upload. Deshabilitado durante upload o sin handler.
 - Sube a Supabase Storage `motorcycle-images` via `uploadMotorcycleImage`.
 - Requiere `session.access_token`. Missing token lanza error controlado.
 - En create mode usa `draft.modelId.trim()` o fallback `suggestedModelId` como ID de ruta.
 - En edit mode usa el `motorcycleId` de la ruta.
-- Éxito: `draft.imageUrl = publicUrl`, `draft.imageLocked = true`.
+- Éxito: `draft.imageUrl = publicUrl`, `draft.imageLocked = true`. Status: `Imagen subida correctamente.`
 - Error: `role="alert"` con mensaje. Preview y archivo se conservan para retry.
 - No persiste el modelo (no llama a create/update).
 
@@ -119,14 +120,24 @@ El formulario tiene una sección `Imagen` con modo de selección:
 - Si el archivo ya fue subido explícitamente, no se vuelve a subir.
 - Si está en modo URL manual, no se intenta subir.
 
+**Section Radar (Stitch-inspired):**
+- Barra de navegación sticky entre el hero y el formulario.
+- Marcadores numerados (01–N) para cada sección del formulario.
+- Tracks de progreso verticales a la izquierda de cada marcador, con relleno rojo proporcional a la completitud de campos requeridos de esa sección.
+- Fondo glass translúcido con efecto sticky al hacer scroll.
+- Scroll horizontal en mobile si las secciones no entran en el viewport.
+- No usa hash anchors ni modifica la URL. El scroll a sección es puramente JS (`scrollIntoView` con offset).
+- No hay tracking activo de sección actual (sin IntersectionObserver por ahora).
+
 **Sin:**
 - navegación automática post-publicación
 - refactor App-level de catálogo tras create/edit
 - A2 fields en draft
 - delete/replace cleanup en UI
 - WebP conversion opcional
+- IntersectionObserver active section tracking
 
-**Futuro:** delete/replace cleanup, navegación automática, refactor App-level, WebP conversion. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** delete/replace cleanup, navegación automática, refactor App-level, WebP conversion, IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 

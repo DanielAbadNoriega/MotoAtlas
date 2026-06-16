@@ -229,6 +229,32 @@ Secciones residuales cerradas:
 - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
 - `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab y, en rama `feature/bike-detail-technical-spec-cards`, cerradas con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`. El SCSS huérfano de `quick-specs`, `features`, `feature-list` y el `h2` legacy de `__specs` fue eliminado. `SpecCard` local fue reemplazado por `TechnicalSpecCard` shared (presentacional, sin fetch, no conoce `BikeDetailPage`).
 
+## Admin Models Studio — Custom file input UI
+
+El formulario de `#/admin/modelos/nuevo` y `#/admin/modelos/{motorcycleId}/editar` en su sección `Imagen` modo `Subir archivo` usa un patrón de file input custom:
+
+- El `<input type="file">` nativo se oculta (`display: none`) pero sigue siendo accesible mediante un `<label>` estilizado con `htmlFor` apuntando al `id` del input oculto.
+- El label simula un botón MotoAtlas-styled con texto `Seleccionar archivo`.
+- Un span adyacente muestra el nombre del archivo seleccionado en tiempo real vía `onChange` → `fileName`.
+- Si no hay archivo, el span muestra `Ningún archivo seleccionado` con opacidad reducida.
+- El botón `Subir imagen` se habilita solo cuando hay un archivo válido seleccionado.
+- La preview de imagen usa `URL.createObjectURL(file)` y se limpia con `revokeObjectURL` en unmount o al reemplazar el archivo.
+- Validación local de MIME type (`image/jpeg`, `image/png`, `image/webp`) y tamaño (5 MB max).
+
+Este patrón mantiene la accesibilidad del file input nativo mientras unifica la estética con el resto del formulario dark/premium.
+
+## Admin Models Studio — Section Radar (Stitch-inspired)
+
+El formulario admin de modelos incorpora una navegación interna tipo radar para saltar entre secciones sin scroll manual:
+
+- **Sticky glass strip**: una barra horizontal se fija entre el hero y el formulario al hacer scroll (`position: sticky; top: var(--navbar-height)`), con fondo glass translúcido y borde inferior sutil.
+- **Marcadores numerados**: cada sección tiene un `01`, `02`, etc. con `font-variant-numeric: tabular-nums` para ancho estable.
+- **Tracks de progreso verticales**: a la izquierda de cada número, una línea vertical delgada cuyo relleno rojo varía según el porcentaje de campos requeridos completados en esa sección. Si no hay campos requeridos o están todos completos, el track se muestra completamente relleno.
+- **Filas/grupos**: las secciones se agrupan visualmente dentro del radar (ej. "Especificaciones" agrupa motor, rendimiento y ergonomía).
+- **Scroll horizontal en mobile**: si las secciones exceden el ancho del viewport, el radar permite scroll horizontal con overflow-x.
+- **Sin hash anchors**: la navegación usa `scrollIntoView({ behavior: 'smooth', block: 'start' })` con un offset para compensar la altura del navbar + radar. No modifica `window.location.hash` para no interferir con el routing de la app.
+- **Sin active tracking**: no hay IntersectionObserver para marcar la sección actual como activa. Queda como polish futuro opcional.
+
 ## Datos demo para QA visual
 
 Estado: mejora de realismo del generador mock implementada y validada; toggle admin de datos demo implementado y validado para dev/preview.

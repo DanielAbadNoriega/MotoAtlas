@@ -20,15 +20,16 @@ Implementado (baseline actual):
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
 - Baseline validado actual: `1298 tests passing` (77 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models Image Upload Flow (Fases 6A-6C.4) (Quality Gate aprobado: 1298 tests, typecheck clean).
+- Último bloque estable validado: Admin Models Image Upload Flow + UI polish (file input custom) + Section Radar (Quality Gate aprobado: 1298 tests, typecheck clean). Manual browser smoke completado con éxito.
 
 ## 3. Foco inmediato recomendado
 
 1. Admin Models Studio — delete/replace cleanup en UI de imagen.
 2. Navegación automática post-publicación y refactor App-level de catálogo.
-3. A2 fields en draft si aplica.
-4. WebP conversion opcional durante upload.
-5. Schema/RLS quedan fuera hasta necesidad explícita.
+3. IntersectionObserver active section tracking (futuro polish opcional).
+4. A2 fields en draft si aplica.
+5. WebP conversion opcional durante upload.
+6. Schema/RLS quedan fuera hasta necesidad explícita.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -67,7 +68,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) implementadas / delete/replace + navegación automática + WebP conversion pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar implementadas / delete/replace + navegación automática + WebP conversion + IntersectionObserver pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -76,7 +77,7 @@ Nota de estado:
 - `#/admin/modelos/{motorcycleId}/editar` edita modelos reales vía `updateAdminMotorcycle` con validación cliente compartida;
 - **Persistencia operativa**: `adminMotorcycleService.ts` con `createAdminMotorcycle` y `updateAdminMotorcycle`.
 - **Validación cliente**: `validateAdminModelDraftForPublish` compartida entre create y edit. Create valida modeloId obligatorio y sin espacios; edit no lo exige.
-- **Sin**: delete/replace cleanup en UI (upload service existe pero no cableado), navegación automática post-publicación, refactor App-level de catálogo, WebP conversion.
+- **Sin**: delete/replace cleanup en UI (upload service existe pero no cableado), navegación automática post-publicación, refactor App-level de catálogo, WebP conversion, IntersectionObserver active section tracking.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
 Propósito:
@@ -145,18 +146,22 @@ Fases propuestas:
    - `aria-label` añadidos a form fields que faltaban;
    - `npm run typecheck` clean, `1231 tests passing`.
 
-6. **Image workflow** — **implementado (Fases 6A-6C.4)**
+6. **Image workflow + UI polish** — **implementado (Fases 6A-6C.4 + file input custom + Section Radar)**
    - Supabase Storage bucket `motorcycle-images` con public read + admin-only write policies.
    - `adminMotorcycleImageUploadService.ts` con `uploadMotorcycleImage` (fetch a Supabase Storage REST).
    - Upload path `{motorcycleId}/{uuid}.{extension}`, public URL `/storage/v1/object/public/motorcycle-images/{objectPath}`.
    - Extensión preservada: jpeg→`.jpg`, png→`.png`, webp→`.webp`.
    - Anon key + Bearer access token (no service role). UUID via `globalThis.crypto?.randomUUID?.()` con fallback.
    - UI: modo `URL manual` y `Subir archivo` con preview local, MIME/size validation.
+   - Custom file input UI: reemplazado el native file button por control MotoAtlas-styled con filename visible.
    - Explicit `Subir imagen` wired to service. Success: `draft.imageUrl = publicUrl`, `draft.imageLocked = true`.
    - Auto-upload selected pending image before publish. Already-uploaded image no re-upload. Failure prevents publish.
+   - Sticky Section Radar: navegación Stitch-inspired entre secciones del form, marcadores numerados, tracks de progreso verticales con relleno rojo, sticky glass strip y scroll horizontal en mobile.
+   - Section progress indicators: cada sección muestra completitud según campos requeridos del draft.
+   - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` existe pero no cableado en UI.
    - Quality Gate: 1298 tests, typecheck clean.
-   - Pendiente: delete/replace cleanup en UI, WebP conversion opcional, navegación automática post-publicación, refactor App-level de catálogo, A2 fields en draft si aplica.
+   - Pendiente: delete/replace cleanup en UI, WebP conversion opcional, navegación automática post-publicación, refactor App-level de catálogo, A2 fields en draft si aplica, IntersectionObserver active section tracking.
 
 Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;
