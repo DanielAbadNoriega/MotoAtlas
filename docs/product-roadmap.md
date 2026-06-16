@@ -18,15 +18,16 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1189 tests passing`.
+- Baseline validado actual: `1231 tests passing` (76 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models edit form route + image source alignment (Quality Gate aprobado: 1189 tests, typecheck clean).
+- Último bloque estable validado: Admin Models Persistence 5A-5C.1 (Quality Gate aprobado: 1231 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
-1. Admin Models Studio — Fase 5: persistencia/seguridad. Fase 4 (edit model form) UI-only ya implementada.
-2. Después, refinado visual del hub `#/admin/modelos`.
-3. Schema/RLS quedan fuera hasta auditoría específica.
+1. Admin Models Studio — Fase 6: image upload/storage.
+2. Navegación automática post-publicación y refactor App-level de catálogo.
+3. A2 fields en draft si aplica.
+4. Schema/RLS quedan fuera hasta necesidad explícita.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -65,38 +66,27 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fase 1, 2, 3 y 4 implementadas (UI-only) / Fases 5+ pendientes**.
+Estado: **Fase 1, 2, 3, 4 (UI) + Fase 5A (persistencia backend) + Fase 5B.1 (edit publica) + Fase 5B.2 (create publica) + Fase 5C.1 (validación cliente) implementadas / Fase 6+ pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
-- `#/admin/modelos/nuevo` tiene un scaffold UI completo de alta de modelo (hero preview, secciones Stitch, tooltips, footer de acciones locales);
-- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar: AccountReviewsPage-style sidebar con 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos), filtros alineados con contratos compartidos de iconos, cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard`. Las cards usan los mismos `motorcycles` resueltos desde App, alineando imágenes con SearchPage/MotorcycleGarageCard. **UI-only**: sin persistencia, sin servicios;
-- `#/admin/modelos/{motorcycleId}/editar` implementa el formulario de edición prefilled desde la moto seleccionada, reutilizando `AdminModelFormBody` (misma estructura que create). Footer con 4 acciones locales. **UI-only**: sin persistencia, sin servicios;
+- `#/admin/modelos/nuevo` crea modelos reales vía `createAdminMotorcycle` con validación cliente compartida;
+- `#/admin/modelos/editar` implementa la selección/búsqueda de modelos para editar: AccountReviewsPage-style sidebar con 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos), filtros alineados con contratos compartidos de iconos, cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard`. Las cards usan los mismos `motorcycles` resueltos desde App, alineando imágenes con SearchPage/MotorcycleGarageCard;
+- `#/admin/modelos/{motorcycleId}/editar` edita modelos reales vía `updateAdminMotorcycle` con validación cliente compartida;
+- **Persistencia operativa**: `adminMotorcycleService.ts` con `createAdminMotorcycle` y `updateAdminMotorcycle`.
+- **Validación cliente**: `validateAdminModelDraftForPublish` compartida entre create y edit. Create valida modeloId obligatorio y sin espacios; edit no lo exige.
+- **Sin**: image upload/storage, navegación automática post-publicación, refactor App-level de catálogo.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
 Propósito:
 - evitar la edición manual de JSON como flujo principal a largo plazo;
 - permitir a perfiles admin crear, revisar y editar entradas del catálogo de motos desde la UI interna;
-- mantener separados UI, seguridad y persistencia real hasta que exista una revisión explícita de schema/RLS/servicios.
 
-No es:
-- una landing pública;
-- una nueva área de marketing;
-- una feature funcional completa ahora mismo (solo existe la base mínima de rutas y navegación).
-
-Rutas propuestas:
+Rutas operativas:
 - `#/admin/modelos`
 - `#/admin/modelos/nuevo`
 - `#/admin/modelos/editar`
 - `#/admin/modelos/[motorcycleId]/editar`
-
-Dirección visual:
-- usar Stitch primero como base de exploración visual;
-- inspiración de lenguaje visual: `ReviewModal`, pero convertida en página admin full-size y no modal;
-- dark premium technical form;
-- HUD/glass grouped cards;
-- secciones técnicas claras;
-- UI estrictamente interna/admin.
 
 Fases propuestas:
 
@@ -116,41 +106,47 @@ Fases propuestas:
    - sin schema changes;
    - sin persistencia real.
 
-2. **Create model page UI** — **implementada como UI-only scaffold**
-   - `#/admin/modelos/nuevo` tiene un formulario completo de alta de modelo, UI-only;
+2. **Create model page UI** — **implementada (Fase 2: UI standalone, Fase 5B.2: persistencia)**
+   - `#/admin/modelos/nuevo` crea modelos reales vía `createAdminMotorcycle`;
    - hero preview live al estilo `BikeDetailPage` sin CTAs ni `Borrador sin guardar`;
    - secciones Stitch con título técnico centrado, líneas horizontales y tooltips accesibles `(i)`;
    - field-level tooltips para copy auxiliar (ej. `ID sugerido`);
    - secciones colapsables con `<details open>` / `<summary>` nativo;
-   - footer de 4 acciones locales: Descartar cambios, Guardar borrador, Vista previa, Publicar modelo;
-   - todas las acciones son locales (solo actualizan estado local o resetean draft);
+   - footer de 4 acciones: Descartar cambios, Guardar borrador, Vista previa, Publicar modelo (persiste);
+   - validación cliente compartida (`validateAdminModelDraftForPublish`) antes de publicar;
+   - create valida modeloId obligatorio y sin espacios;
    - `Imagen bloqueada / curada` con tooltip explicativo;
-   - sin persistencia real, sin servicios, sin schema/RLS/Supabase, sin upload de imágenes.
+   - sin image upload/storage.
 
-3. **Edit model search/list page** — **implementada como UI-only**
+3. **Edit model search/list page** — **implementada (Fase 3: UI standalone)**
    - búsqueda/listado con AccountReviewsPage-style sidebar y 10 grupos de filtro (Marca, Segmento, Carnet, Precio, Potencia, Peso, Altura asiento, Electrónica, Uso recomendado, Calidad de datos);
    - filtros alineados con contratos compartidos: segmento usa iconos de `motorcycleSegmentFilterOptions`, carnet no inventa iconos, electrónica usa `getMotorcycleTechnicalIcon('electronics')`;
    - resultados como cards admin dedicadas estructuralmente alineadas con `AccountReviewMotorcycleSummaryCard` (imagen, overlay, h2, brand/year, CTA `Editar modelo`);
    - CTA hacia `#/admin/modelos/{motorcycleId}/editar`;
-   - cards usan los mismos `motorcycles` resueltos desde App, alineando imágenes con SearchPage/MotorcycleGarageCard;
-   - sin persistencia real, sin servicios, sin schema/RLS/Supabase.
+   - cards usan los mismos `motorcycles` resueltos desde App, alineando imágenes con SearchPage/MotorcycleGarageCard.
 
-4. **Edit model form** — **implementada como UI-only**
+4. **Edit model form** — **implementada (Fase 4: UI standalone, Fase 5B.1: persistencia)**
    - reutiliza `AdminModelFormBody` (misma arquitectura visual/estructural que create);
    - campos precargados desde la moto seleccionada vía `motorcycles.find()` (resueltos desde App);
    - create/edit alineados sin drift;
-   - footer con 4 acciones locales: Descartar cambios, Guardar borrador, Vista previa, Publicar modelo;
-   - sin persistencia real, sin servicios, sin schema/RLS/Supabase.
+   - footer con 4 acciones: Descartar cambios, Guardar borrador, Vista previa, Publicar modelo (persiste vía `updateAdminMotorcycle`);
+   - edit NO valida modeloId;
+   - validación cliente compartida antes de publicar.
 
-5. **Persistence / security** — pendiente
-   - añadir create/update services solo tras revisión explícita de schema/RLS/seguridad;
-   - permisos admin-only;
-   - nunca `service role key` en frontend;
-   - decidir si las escrituras vivirán bajo RLS/policies admin directas o vía backend/edge functions protegidas;
-   - tests futuros para permisos, errores y paths de fallo.
+5. **Persistence / security** — **implementado (Fases 5A-5C.1)**
+   - admin-only UPDATE RLS/grants para `public.motorcycles`;
+   - create-only RPC `public.create_admin_motorcycle(...)`;
+   - frontend service layer `adminMotorcycleService.ts` con `createAdminMotorcycle` y `updateAdminMotorcycle`;
+   - shared client-side validation `validateAdminModelDraftForPublish` para create y edit;
+   - create valida modeloId obligatorio y sin espacios;
+   - edit no valida modeloId;
+   - imágenes locales `/images/...` aceptadas;
+   - `aria-label` añadidos a form fields que faltaban;
+   - `npm run typecheck` clean, `1231 tests passing`.
+   - Pendiente para siguiente evolución: image upload/storage, navegación automática post-publicación, refactor App-level de catálogo, A2 fields en draft si aplica.
 
 6. **Image workflow future** — pendiente
-   - primero URL/preview de imagen;
+   - primero URL/preview de imagen (ya operativo con la validación actual);
    - upload/normalización/`image_locked` como fase posterior;
    - respetar el pipeline de imágenes existente y no sobrescribir assets curados/locked.
 
@@ -158,13 +154,15 @@ Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;
 - `Calidad de datos` es candidato a eliminación en esta pantalla de selección admin si no aporta valor operativo.
 
-Notas de testing futuro (no implementado ahora):
-- proteger rutas admin por rol;
-- validar render de la landing;
-- validar CTAs create/edit y sus rutas;
-- validar búsqueda simplificada de edición;
-- validar form validation;
-- validar ausencia de write paths no autorizados.
+Notas de testing (implementado en Fase 5C.1):
+- proteger rutas admin por rol (ya existente);
+- validar render de la landing (ya existente);
+- validar CTAs create/edit y sus rutas (ya existente);
+- validar form validation (creado en Fase 5C.1: modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada);
+- validar ausencia de write paths no autorizados (auth guard existente);
+- edit publish con potencia inválida bloquea `updateAdminMotorcycle`;
+- edit publish no requiere modeloId;
+- valid edit llama a `updateAdminMotorcycle`.
 
 ### Home — Reemplazo de `FeaturedBikes` / `BikeCard` (legacy temporal)
 
