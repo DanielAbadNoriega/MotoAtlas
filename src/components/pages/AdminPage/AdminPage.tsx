@@ -853,7 +853,7 @@ type AdminModelFormBodyProps = Readonly<{
   onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
   onDiscardChanges: () => void;
   onLocalAction: (message: string) => void;
-  onPublish?: () => void;
+  onPublish?: (autoUploadedUrl?: string) => void;
   onUploadImage?: (file: File) => Promise<string>;
   saving?: boolean;
   toolbarKicker: string;
@@ -917,6 +917,7 @@ function AdminModelFormBody({
       return;
     }
 
+    setHasUploadedImage(false);
     const blobUrl = URL.createObjectURL(file);
     setPreviewBlobUrl(blobUrl);
     setSelectedFile(file);
@@ -932,6 +933,7 @@ function AdminModelFormBody({
   }, [previewBlobUrl]);
 
   const [isUploading, setIsUploading] = useState(false);
+  const [hasUploadedImage, setHasUploadedImage] = useState(false);
 
   const handleImageUpload = useCallback(async () => {
     if (!onUploadImage || !selectedFile) return;
@@ -941,6 +943,7 @@ function AdminModelFormBody({
 
     try {
       const publicUrl = await onUploadImage(selectedFile);
+      setHasUploadedImage(true);
       onDraftFieldChange('imageUrl', publicUrl);
       onDraftCheckboxChange('imageLocked', true);
       onLocalAction('Imagen subida correctamente.');
@@ -951,6 +954,32 @@ function AdminModelFormBody({
       setIsUploading(false);
     }
   }, [onUploadImage, selectedFile, onDraftFieldChange, onDraftCheckboxChange, onLocalAction]);
+
+  const handlePublishWithAutoUpload = useCallback(async () => {
+    if (!onPublish) return;
+
+    if (selectedFile && onUploadImage && !hasUploadedImage) {
+      setIsUploading(true);
+      setFileError(null);
+
+      try {
+        const publicUrl = await onUploadImage(selectedFile);
+        setHasUploadedImage(true);
+        onDraftFieldChange('imageUrl', publicUrl);
+        onDraftCheckboxChange('imageLocked', true);
+        setIsUploading(false);
+        await onPublish(publicUrl);
+        return;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
+        setFileError(message);
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    await onPublish();
+  }, [onPublish, onUploadImage, selectedFile, hasUploadedImage, onDraftFieldChange, onDraftCheckboxChange]);
 
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
@@ -1266,9 +1295,9 @@ function AdminModelFormBody({
             <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
             Vista previa
           </button>
-          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" disabled={saving} onClick={onPublish ?? (() => onLocalAction('Publicación pendiente de persistencia.'))}>
+          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" disabled={saving || isUploading} onClick={handlePublishWithAutoUpload}>
             <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
-            Publicar modelo
+            {isUploading ? 'Subiendo imagen previa...' : 'Publicar modelo'}
           </button>
         </footer>
       </form>
@@ -1317,7 +1346,7 @@ export function AdminNewModelPage() {
     setPublishError('');
   }, []);
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = useCallback(async (autoUploadedUrl?: string) => {
     const accessToken = session?.access_token;
 
     if (!accessToken) {
@@ -1325,7 +1354,11 @@ export function AdminNewModelPage() {
       return;
     }
 
-    const validation = validateAdminModelDraftForPublish(draft, { mode: 'create', modelId: suggestedModelId });
+    const effectiveDraft = autoUploadedUrl
+      ? { ...draft, imageUrl: autoUploadedUrl, imageLocked: true }
+      : draft;
+
+    const validation = validateAdminModelDraftForPublish(effectiveDraft, { mode: 'create', modelId: suggestedModelId });
     if (!validation.isValid) {
       setPublishError(validation.message);
       setLocalStatus(validation.message);
@@ -1337,7 +1370,7 @@ export function AdminNewModelPage() {
     setLocalStatus('Publicando modelo...');
 
     try {
-      const payload = draftToCreatePayload(draft, suggestedModelId);
+      const payload = draftToCreatePayload(effectiveDraft, suggestedModelId);
       await createAdminMotorcycle(payload, accessToken);
       setLocalStatus('Modelo publicado correctamente.');
     } catch (error) {
@@ -2424,7 +2457,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
     }
   }, [originalDraft]);
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = useCallback(async (autoUploadedUrl?: string) => {
     if (!draft) return;
 
     const accessToken = session?.access_token;
@@ -2434,7 +2467,11 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
       return;
     }
 
-    const validation = validateAdminModelDraftForPublish(draft, { mode: 'edit' });
+    const effectiveDraft = autoUploadedUrl
+      ? { ...draft, imageUrl: autoUploadedUrl, imageLocked: true }
+      : draft;
+
+    const validation = validateAdminModelDraftForPublish(effectiveDraft, { mode: 'edit' });
     if (!validation.isValid) {
       setPublishError(validation.message);
       setLocalStatus(validation.message);
@@ -2446,7 +2483,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
     setLocalStatus('Publicando modelo...');
 
     try {
-      const payload = draftToUpdatePayload(draft);
+      const payload = draftToUpdatePayload(effectiveDraft);
       await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
       setLocalStatus('Modelo actualizado correctamente.');
     } catch (error) {

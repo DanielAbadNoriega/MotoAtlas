@@ -226,8 +226,21 @@ describe('uploadMotorcycleImage', () => {
 
   it('genera UUID válido incluso sin crypto.randomUUID', async () => {
     stubSupabaseEnv();
-    stubCrypto();
-    vi.stubGlobal('crypto', {}); // sin randomUUID
+    vi.stubGlobal('crypto', {}); // existe pero sin randomUUID
+    const file = createFile('moto.jpg', 'image/jpeg');
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const url = await uploadMotorcycleImage(file, 'honda-cbr600rr-2026', 'session-token');
+
+    const pathSegment = url.split('/').pop()!;
+    const uuidPart = pathSegment.replace(/\.jpg$/, '');
+    expect(uuidPart).toMatch(UUID_REGEX);
+  });
+
+  it('genera UUID válido cuando globalThis.crypto es undefined', async () => {
+    stubSupabaseEnv();
+    vi.stubGlobal('crypto', undefined); // crypto completamente ausente
     const file = createFile('moto.jpg', 'image/jpeg');
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}));
     vi.stubGlobal('fetch', fetchMock);

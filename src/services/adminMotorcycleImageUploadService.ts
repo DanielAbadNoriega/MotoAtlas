@@ -68,9 +68,8 @@ function assertFile(file: File) {
 }
 
 function generateUUID(): string {
-  if (typeof crypto?.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
+  const uuid = globalThis.crypto?.randomUUID?.();
+  if (uuid) return uuid;
 
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
