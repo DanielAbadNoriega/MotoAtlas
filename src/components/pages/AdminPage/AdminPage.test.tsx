@@ -1785,10 +1785,18 @@ describe('AdminPage', () => {
 
     await user.type(screen.getByLabelText('Marca'), 'Ducati');
     await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Año'), '2025');
     await user.type(screen.getByLabelText('Descripción'), 'Trail travel.');
     await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
     await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
     await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
@@ -1809,8 +1817,18 @@ describe('AdminPage', () => {
 
     await user.type(screen.getByLabelText('Marca'), 'Test');
     await user.type(screen.getByLabelText('Modelo'), 'Moto');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test model.');
     await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
     await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '500');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '50');
+    await user.type(screen.getByLabelText('Torque (nm)'), '45');
+    await user.type(screen.getByLabelText('Peso (kg)'), '180');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '800');
+    await user.type(screen.getByLabelText('Depósito (l)'), '15');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
@@ -1831,6 +1849,140 @@ describe('AdminPage', () => {
 
     expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
     expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con modeloId vacío muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El ID del modelo es obligatorio.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con modeloId con espacios muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+    await user.type(screen.getByLabelText('ID sugerido'), 'invalid id with spaces');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El ID del modelo no puede contener espacios.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish sin marca muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'test-model');
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('La marca es obligatoria.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish con año inválido muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'test-model');
+    await user.type(screen.getByLabelText('Marca'), 'Ducati');
+    await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '937');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '110');
+    await user.type(screen.getByLabelText('Torque (nm)'), '92');
+    await user.type(screen.getByLabelText('Peso (kg)'), '210');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
+    await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('El año debe ser un número entre 1900 y 2100.');
+    });
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('create publish acepta imageUrl local comenzando con /', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.type(screen.getByLabelText('ID sugerido'), 'valid-model');
+    await user.type(screen.getByLabelText('Marca'), 'Yamaha');
+    await user.type(screen.getByLabelText('Modelo'), 'MT-07');
+    await user.type(screen.getByLabelText('Año'), '2025');
+    await user.type(screen.getByLabelText('Descripción'), 'Test.');
+    await user.selectOptions(screen.getByLabelText('Segmento'), 'naked');
+    await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
+    await user.selectOptions(screen.getByLabelText('Tipo de motor'), 'parallel-twin');
+    await user.type(screen.getByLabelText('Cilindrada (cc)'), '689');
+    await user.type(screen.getByLabelText('Potencia (hp)'), '73');
+    await user.type(screen.getByLabelText('Torque (nm)'), '68');
+    await user.type(screen.getByLabelText('Peso (kg)'), '184');
+    await user.type(screen.getByLabelText('Altura asiento (mm)'), '805');
+    await user.type(screen.getByLabelText('Depósito (l)'), '14');
+    await user.type(screen.getByLabelText('Image URL'), '/images/motorcycles/mt-07.webp');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(createAdminMotorcycleMock).toHaveBeenCalled();
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Modelo publicado correctamente.');
+  });
+
+  it('edit publish con potencia inválida muestra error de validación', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+    await user.clear(screen.getByLabelText('Potencia (hp)'));
+    await user.type(screen.getByLabelText('Potencia (hp)'), '0');
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('La potencia debe ser un número mayor a 0.');
+    });
+    expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
+  it('edit publish no requiere validación de modeloId', async () => {
+    const user = userEvent.setup();
+    render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+    await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+    await waitFor(() => {
+      expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+    });
   });
 
   it('renderiza la página de selección de modelos para editar', () => {
