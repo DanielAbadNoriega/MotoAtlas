@@ -988,10 +988,6 @@ function AdminModelFormBody({
           <h2 id={workspaceHeadingId}>{workspaceHeading}</h2>
       </header>
 
-      {localStatus ? (
-        <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
-      ) : null}
-
       <AdminModelHeroPreview draft={draft} />
 
       <form className="admin-page__model-form" aria-label={formLabel} onSubmit={(event) => event.preventDefault()}>
@@ -1238,7 +1234,7 @@ function AdminModelFormBody({
 
                 {previewBlobUrl && selectedFile ? (
                   <div className="admin-page__model-field admin-page__model-field--full">
-                    <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px' }} />
+                    <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto' }} />
                     <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
                     <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
                       <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
@@ -1301,6 +1297,10 @@ function AdminModelFormBody({
           </button>
         </footer>
       </form>
+      
+      {localStatus ? (
+        <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
+      ) : null}
     </section>
   );
 }
@@ -1422,7 +1422,7 @@ export function AdminNewModelPage() {
         workspaceHeading="Workspace de creación"
         workspaceHeadingId="admin-models-new-workspace-title"
         formLabel="Formulario de nuevo modelo"
-      />
+        />
     </AdminModelsWorkspace>
   );
 }
