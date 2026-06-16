@@ -39,6 +39,7 @@ import {
   type AdminMotorcycleCreatePayload,
   type AdminMotorcycleUpdatePayload,
 } from '../../../services/adminMotorcycleService';
+import { uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -292,10 +293,10 @@ function AdminModelInfoTooltip({ ariaLabel, description }: AdminModelInfoTooltip
 }
 
 function AdminModelHeroPreview({ draft }: Readonly<{ draft: AdminModelDraft }>) {
-  const brandLabel = draft.brand.trim() || 'Marca';
-  const modelLabel = draft.model.trim() || 'Modelo';
-  const description = draft.description.trim() || 'Descripción pendiente de completar';
-  const previewImageSrc = draft.imageUrl.trim() || adminModelPreviewPlaceholderImage;
+  const brandLabel = (draft.brand ?? '').trim() || 'Marca';
+  const modelLabel = (draft.model ?? '').trim() || 'Modelo';
+  const description = (draft.description ?? '').trim() || 'Descripción pendiente de completar';
+  const previewImageSrc = (draft.imageUrl ?? '').trim() || adminModelPreviewPlaceholderImage;
   const previewTitle = `${brandLabel} ${modelLabel}`;
 
   return (
@@ -853,6 +854,7 @@ type AdminModelFormBodyProps = Readonly<{
   onDiscardChanges: () => void;
   onLocalAction: (message: string) => void;
   onPublish?: () => void;
+  onUploadImage?: (file: File) => Promise<string>;
   saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
@@ -870,6 +872,7 @@ function AdminModelFormBody({
   onDiscardChanges,
   onLocalAction,
   onPublish,
+  onUploadImage,
   saving,
   toolbarKicker,
   workspaceHeading,
@@ -927,6 +930,27 @@ function AdminModelFormBody({
       }
     };
   }, [previewBlobUrl]);
+
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = useCallback(async () => {
+    if (!onUploadImage || !selectedFile) return;
+
+    setIsUploading(true);
+    setFileError(null);
+
+    try {
+      const publicUrl = await onUploadImage(selectedFile);
+      onDraftFieldChange('imageUrl', publicUrl);
+      onDraftCheckboxChange('imageLocked', true);
+      onLocalAction('Imagen subida correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
+      setFileError(message);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [onUploadImage, selectedFile, onDraftFieldChange, onDraftCheckboxChange, onLocalAction]);
 
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
@@ -1187,6 +1211,10 @@ function AdminModelFormBody({
                   <div className="admin-page__model-field admin-page__model-field--full">
                     <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px' }} />
                     <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                    <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
+                      <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                      {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
+                    </button>
                   </div>
                 ) : null}
               </>
@@ -1321,6 +1349,22 @@ export function AdminNewModelPage() {
     }
   }, [draft, suggestedModelId, session?.access_token]);
 
+  const handleUploadImage = useCallback(async (file: File) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para subir la imagen.');
+    }
+
+    const resolvedId = draft.modelId.trim() || suggestedModelId;
+
+    if (!resolvedId) {
+      throw new Error('El ID del modelo es obligatorio para subir la imagen.');
+    }
+
+    return uploadMotorcycleImage(file, resolvedId, accessToken);
+  }, [draft.modelId, suggestedModelId, session?.access_token]);
+
   return (
     <AdminModelsWorkspace
       activeModelsItem="new"
@@ -1339,6 +1383,7 @@ export function AdminNewModelPage() {
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
         onPublish={handlePublish}
+        onUploadImage={handleUploadImage}
         saving={saving}
         toolbarKicker="Borrador local"
         workspaceHeading="Workspace de creación"
@@ -2413,6 +2458,16 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
     }
   }, [draft, motorcycleId, session?.access_token]);
 
+  const handleUploadImage = useCallback(async (file: File) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para subir la imagen.');
+    }
+
+    return uploadMotorcycleImage(file, motorcycleId!, accessToken);
+  }, [motorcycleId, session?.access_token]);
+
   if (!motorcycleId || !originalDraft) {
     return (
       <AdminModelsWorkspace
@@ -2452,6 +2507,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
         onPublish={handlePublish}
+        onUploadImage={handleUploadImage}
         saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"

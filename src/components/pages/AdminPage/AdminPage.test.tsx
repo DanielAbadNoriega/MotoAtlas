@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
+import { uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
   getReviewReports,
@@ -28,7 +29,7 @@ import {
   type ModelRequest,
   type ModelRequestStatus,
 } from '../../../services/modelRequestService';
-import { createAuthState, createAuthUser, createSession, createUserProfile, mockAdminAuthState } from '../../../test/fixtures/auth';
+import { adminProfileFixture, adminUserFixture, createAuthState, createAuthUser, createSession, createUserProfile, mockAdminAuthState } from '../../../test/fixtures/auth';
 
 vi.mock('../../../features/auth', () => ({
   useAuth: vi.fn(),
@@ -62,6 +63,12 @@ vi.mock('../../../services/adminMotorcycleService', () => ({
   createAdminMotorcycle: vi.fn(),
   updateAdminMotorcycle: vi.fn(),
 }));
+
+vi.mock('../../../services/adminMotorcycleImageUploadService', () => ({
+  uploadMotorcycleImage: vi.fn(),
+}));
+
+const uploadMotorcycleImageMock = vi.mocked(uploadMotorcycleImage);
 
 const useAuthMock = vi.mocked(useAuth);
 const getReviewReportsMock = vi.mocked(getReviewReports);
@@ -2556,6 +2563,200 @@ describe('AdminPage', () => {
       selectFile(fileInput, file);
 
       expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+    });
+  });
+
+  describe('upload wiring — explicit Subir imagen action', () => {
+    const publicUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/moto-id/uuid.jpg';
+    let createObjectURLSpy: ReturnType<typeof vi.fn>;
+    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+
+    function stubURL() {
+      createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-preview');
+      revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    }
+
+    afterEach(() => {
+      createObjectURLSpy?.mockRestore();
+      revokeObjectURLSpy?.mockRestore();
+      uploadMotorcycleImageMock.mockReset();
+    });
+
+    function selectFile(input: HTMLElement, file: File) {
+      fireEvent.change(input, { target: { files: [file] } });
+    }
+
+    async function setupCreateWithFile() {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Marca'), 'Ducati');
+      await user.type(screen.getByLabelText('Modelo'), 'DesertX');
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      return { user, file };
+    }
+
+    async function setupEditWithFile() {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      return { user, file };
+    }
+
+    it('upload mode renderiza Subir imagen tras seleccionar archivo válido', async () => {
+      const user = userEvent.setup();
+      stubURL();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      selectFile(fileInput, new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' }));
+
+      expect(screen.getByRole('button', { name: 'Subir imagen' })).toBeInTheDocument();
+    });
+
+    it('create upload pasa modelId de draft.modelId a uploadMotorcycleImage', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user, file } = await setupCreateWithFile();
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx-2025');
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(file, 'ducati-desertx-2025', 'admin-token');
+      });
+    });
+
+    it('create upload fallback a suggestedModelId cuando draft.modelId está vacío', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user, file } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(file, expect.stringContaining('ducati-desertx'), 'admin-token');
+      });
+    });
+
+    it('edit upload pasa motorcycleId de ruta a uploadMotorcycleImage', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user, file } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(uploadMotorcycleImageMock).toHaveBeenCalledWith(file, 'bmw-f-900-gs-2024', 'admin-token');
+      });
+    });
+
+    it('upload exitoso actualiza Image URL y marca Imagen bloqueada', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue(publicUrl);
+      expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/ })).toBeChecked();
+    });
+
+    it('upload exitoso en edit actualiza Image URL y marca Imagen bloqueada', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue(publicUrl);
+      expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/ })).toBeChecked();
+    });
+
+    it('upload error muestra role alert sin perder preview', async () => {
+      uploadMotorcycleImageMock.mockRejectedValueOnce(new Error('Storage error'));
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Storage error');
+      });
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+    });
+
+    it('upload permite reintentar tras error', async () => {
+      uploadMotorcycleImageMock.mockRejectedValueOnce(new Error('Network error'));
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Network error');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+    });
+
+    it('upload sin access token muestra error controlado', async () => {
+      useAuthMock.mockReturnValue(createAuthState({
+        user: adminUserFixture,
+        session: null,
+        profile: adminProfileFixture,
+        isAuthenticated: true,
+        isAdmin: true,
+        isLoading: false,
+        signIn: signInMock,
+        signUp: signUpMock,
+        signOut: signOutMock,
+        refreshProfile: refreshProfileMock,
+      }));
+
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('No hay sesión activa para subir la imagen.');
+      });
+
+      expect(uploadMotorcycleImageMock).not.toHaveBeenCalled();
+    });
+
+    it('upload no llama a createAdminMotorcycle ni updateAdminMotorcycle', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+      });
+
+      expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+      expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
     });
   });
 
