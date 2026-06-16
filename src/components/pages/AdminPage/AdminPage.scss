@@ -132,7 +132,7 @@
     border-radius: $radius-lg;
     color: $color-on-surface;
     display: inline-flex;
-    margin: 0;
+    margin: 0 auto;
     padding: 0.8rem 1rem;
     width: fit-content;
   }
@@ -1550,6 +1550,17 @@
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.container-actions {
+  display: flex;
+  gap: 1.5rem;
+
+  > button[aria-checked*="true"] {
+    background: rgba($color-accent-container, 0.1);
+    border-color: rgba($color-accent-container, 0.46);
+    color: $color-on-surface;
   }
 }
 

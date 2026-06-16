@@ -1244,4 +1244,52 @@ grant execute on function public.create_motorcycle_review_with_aspects(
   text, text, integer, text, integer, integer, text, text[], text[], jsonb
 ) to authenticated;
 
+-- Storage bucket for admin-uploaded motorcycle images
+-- Public bucket: images are served publicly as product catalog assets
+-- Admin-only write: only admin users can upload/update/delete
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'motorcycle-images',
+  'motorcycle-images',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do nothing;
+
+-- Public read: anyone can view motorcycle images
+drop policy if exists "Public motorcycle images are readable" on storage.objects;
+create policy "Public motorcycle images are readable"
+on storage.objects for select
+to anon, authenticated
+using (bucket_id = 'motorcycle-images');
+
+-- Admin-only insert: only admin users can upload new images
+drop policy if exists "Admins can upload motorcycle images" on storage.objects;
+create policy "Admins can upload motorcycle images"
+on storage.objects for insert
+to authenticated
+with check (
+  bucket_id = 'motorcycle-images'
+  and public.is_admin()
+);
+
+-- Admin-only update: only admin users can replace uploaded images
+drop policy if exists "Admins can update motorcycle images" on storage.objects;
+create policy "Admins can update motorcycle images"
+on storage.objects for update
+to authenticated
+using (bucket_id = 'motorcycle-images' and public.is_admin())
+with check (bucket_id = 'motorcycle-images' and public.is_admin());
+
+-- Admin-only delete: only admin users can remove uploaded images
+drop policy if exists "Admins can delete motorcycle images" on storage.objects;
+create policy "Admins can delete motorcycle images"
+on storage.objects for delete
+to authenticated
+using (
+  bucket_id = 'motorcycle-images'
+  and public.is_admin()
+);
+
 notify pgrst, 'reload schema';

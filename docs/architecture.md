@@ -374,6 +374,47 @@ npm run sync:images
 5. Si Supabase tiene `image_locked = true`, no sobrescribe `image_url`.
 6. En tests se mockea Supabase; nunca se conecta a la base real.
 
+### Upload de imágenes desde Admin Models Studio
+
+El admin puede subir imágenes para modelos del catálogo via Supabase Storage.
+
+**Bucket:**
+- `motorcycle-images` — bucket público para imágenes del catálogo.
+- Public read: cualquiera puede leer objetos.
+- Admin-only insert/update/delete: verificado via RLS policies con `public.is_admin()`.
+- Límite: 5 MB por archivo.
+- Tipos permitidos: `image/jpeg`, `image/png`, `image/webp`.
+
+**Servicio:**
+```txt
+src/services/adminMotorcycleImageUploadService.ts
+```
+
+Funciones:
+- `uploadMotorcycleImage(file, motorcycleId, accessToken)`: sube un archivo a `{motorcycleId}/{uuid}.{extension}`, retorna URL pública.
+- `deleteMotorcycleImage(objectPath, accessToken)`: elimina un objeto del bucket (no cableado en UI).
+
+**Arquitectura:**
+- No usa `supabase-js` ni `service_role_key`. Usa fetch directo a Supabase Storage REST.
+- Autenticación: `apikey` (anon key) + `Authorization: Bearer {accessToken}` (sesión del admin).
+- MIME to extension mapping: `image/jpeg → .jpg`, `image/png → .png`, `image/webp → .webp`.
+- UUIDs generados con `globalThis.crypto?.randomUUID?.()`. Fallback local UUID v4 con `Math.random`.
+- Object path: `{motorcycleId}/{uuid}.{extension}`.
+- Public URL: `{supabaseUrl}/storage/v1/object/public/motorcycle-images/{objectPath}`.
+- No hay conversión/compresión de imagen. El archivo se sube tal cual.
+
+**Flujo en UI:**
+- Modo `URL manual`: input `type="url"`, checkbox `imageLocked`.
+- Modo `Subir archivo`: file input + preview + botón `Subir imagen`.
+- `Subir imagen` → `uploadMotorcycleImage` → `draft.imageUrl = publicUrl` + `draft.imageLocked = true`.
+- `Publicar modelo` con archivo pendiente → auto-upload → publish con URL retornada.
+- `imageLocked` protege la imagen curada contra sobrescritura en futuras sincronizaciones.
+
+**Persistencia:**
+- `motorcycles.image_url` almacena la URL pública de la imagen subida.
+- `motorcycles.image_locked` almacena el flag de protección.
+- `motorcycles.image_source` se mantiene según el pipeline existente.
+
 ## 6. Routing
 
 La app mantiene hash routing para desarrollo y compatibilidad, pero también entiende rutas limpias SEO.

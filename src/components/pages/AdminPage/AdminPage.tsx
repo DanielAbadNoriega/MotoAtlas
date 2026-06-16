@@ -39,6 +39,7 @@ import {
   type AdminMotorcycleCreatePayload,
   type AdminMotorcycleUpdatePayload,
 } from '../../../services/adminMotorcycleService';
+import { uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -292,10 +293,10 @@ function AdminModelInfoTooltip({ ariaLabel, description }: AdminModelInfoTooltip
 }
 
 function AdminModelHeroPreview({ draft }: Readonly<{ draft: AdminModelDraft }>) {
-  const brandLabel = draft.brand.trim() || 'Marca';
-  const modelLabel = draft.model.trim() || 'Modelo';
-  const description = draft.description.trim() || 'Descripción pendiente de completar';
-  const previewImageSrc = draft.imageUrl.trim() || adminModelPreviewPlaceholderImage;
+  const brandLabel = (draft.brand ?? '').trim() || 'Marca';
+  const modelLabel = (draft.model ?? '').trim() || 'Modelo';
+  const description = (draft.description ?? '').trim() || 'Descripción pendiente de completar';
+  const previewImageSrc = (draft.imageUrl ?? '').trim() || adminModelPreviewPlaceholderImage;
   const previewTitle = `${brandLabel} ${modelLabel}`;
 
   return (
@@ -852,7 +853,8 @@ type AdminModelFormBodyProps = Readonly<{
   onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
   onDiscardChanges: () => void;
   onLocalAction: (message: string) => void;
-  onPublish?: () => void;
+  onPublish?: (autoUploadedUrl?: string) => void;
+  onUploadImage?: (file: File) => Promise<string>;
   saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
@@ -870,22 +872,121 @@ function AdminModelFormBody({
   onDiscardChanges,
   onLocalAction,
   onPublish,
+  onUploadImage,
   saving,
   toolbarKicker,
   workspaceHeading,
   workspaceHeadingId,
   formLabel,
 }: AdminModelFormBodyProps) {
+  const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const maxFileSize = 5 * 1024 * 1024;
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  const handleFileSelect = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setFileError(null);
+
+    if (!file) {
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    if (!acceptedMimeTypes.includes(file.type)) {
+      setFileError('Tipo de archivo no soportado. Usa: JPEG, PNG o WebP.');
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    if (file.size > maxFileSize) {
+      setFileError('El archivo supera el límite de 5 MB.');
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    setHasUploadedImage(false);
+    const blobUrl = URL.createObjectURL(file);
+    setPreviewBlobUrl(blobUrl);
+    setSelectedFile(file);
+  }, []);
+
+  useEffect(() => {
+    const url = previewBlobUrl;
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [previewBlobUrl]);
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [hasUploadedImage, setHasUploadedImage] = useState(false);
+
+  const handleImageUpload = useCallback(async () => {
+    if (!onUploadImage || !selectedFile) return;
+
+    setIsUploading(true);
+    setFileError(null);
+
+    try {
+      const publicUrl = await onUploadImage(selectedFile);
+      setHasUploadedImage(true);
+      onDraftFieldChange('imageUrl', publicUrl);
+      onDraftCheckboxChange('imageLocked', true);
+      onLocalAction('Imagen subida correctamente.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
+      setFileError(message);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [onUploadImage, selectedFile, onDraftFieldChange, onDraftCheckboxChange, onLocalAction]);
+
+  const handlePublishWithAutoUpload = useCallback(async () => {
+    if (!onPublish) return;
+
+    if (selectedFile && onUploadImage && !hasUploadedImage) {
+      setIsUploading(true);
+      setFileError(null);
+
+      try {
+        const publicUrl = await onUploadImage(selectedFile);
+        setHasUploadedImage(true);
+        onDraftFieldChange('imageUrl', publicUrl);
+        onDraftCheckboxChange('imageLocked', true);
+        setIsUploading(false);
+        await onPublish(publicUrl);
+        return;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
+        setFileError(message);
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    await onPublish();
+  }, [onPublish, onUploadImage, selectedFile, hasUploadedImage, onDraftFieldChange, onDraftCheckboxChange]);
+
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
       <header className="admin-page__model-toolbar">
           <span className="admin-page__model-toolbar-kicker">{toolbarKicker}</span>
           <h2 id={workspaceHeadingId}>{workspaceHeading}</h2>
       </header>
-
-      {localStatus ? (
-        <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
-      ) : null}
 
       <AdminModelHeroPreview draft={draft} />
 
@@ -1081,24 +1182,68 @@ function AdminModelFormBody({
           description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
         >
           <div className="admin-page__model-field-grid">
-            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+            <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
               <span className="admin-page__model-label">
                 <span className="material-symbols-outlined" aria-hidden="true">image</span>
-                Image URL
+                Modo de imagen
               </span>
-              <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
-            </label>
+              <div className="container-actions" role="radiogroup" aria-label="Modo de selección de imagen">
+                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
+                  URL manual
+                </button>
+                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
+                  Subir archivo
+                </button>
+              </div>
+            </div>
 
-            <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-              <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
-              <span className="content">
-                Imagen bloqueada / curada
-                <AdminModelInfoTooltip
-                  ariaLabel="Más información sobre imagen bloqueada"
-                  description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
-                />
-              </span>
-            </label>
+            {imageMode === 'url' ? (
+              <>
+                <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+                  <span className="admin-page__model-label">
+                    <span className="material-symbols-outlined" aria-hidden="true">link_2</span>
+                    Image URL
+                  </span>
+                  <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
+                </label>
+
+                <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+                  <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
+                  <span className="content">
+                    Imagen bloqueada / curada
+                    <AdminModelInfoTooltip
+                      ariaLabel="Más información sobre imagen bloqueada"
+                      description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
+                    />
+                  </span>
+                </label>
+              </>
+            ) : (
+              <>
+                <div className="admin-page__model-field admin-page__model-field--full">
+                  <span className="admin-page__model-label">
+                    <span className="material-symbols-outlined" aria-hidden="true">upload</span>
+                    Seleccionar imagen del modelo
+                  </span>
+                  <input id="admin-model-image-file" className="account-page__button account-page__button--glass admin-page__model-action-button" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                </div>
+
+                {fileError ? (
+                  <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
+                ) : null}
+
+                {previewBlobUrl && selectedFile ? (
+                  <div className="admin-page__model-field admin-page__model-field--full">
+                    <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto' }} />
+                    <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                    <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
+                      <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                      {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
         </AdminModelSection>
 
@@ -1146,12 +1291,16 @@ function AdminModelFormBody({
             <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
             Vista previa
           </button>
-          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" disabled={saving} onClick={onPublish ?? (() => onLocalAction('Publicación pendiente de persistencia.'))}>
+          <button type="button" className="account-page__button admin-page__model-action-button admin-page__model-action-button--primary" disabled={saving || isUploading} onClick={handlePublishWithAutoUpload}>
             <span className="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
-            Publicar modelo
+            {isUploading ? 'Subiendo imagen previa...' : 'Publicar modelo'}
           </button>
         </footer>
       </form>
+      
+      {localStatus ? (
+        <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
+      ) : null}
     </section>
   );
 }
@@ -1197,7 +1346,7 @@ export function AdminNewModelPage() {
     setPublishError('');
   }, []);
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = useCallback(async (autoUploadedUrl?: string) => {
     const accessToken = session?.access_token;
 
     if (!accessToken) {
@@ -1205,7 +1354,11 @@ export function AdminNewModelPage() {
       return;
     }
 
-    const validation = validateAdminModelDraftForPublish(draft, { mode: 'create', modelId: suggestedModelId });
+    const effectiveDraft = autoUploadedUrl
+      ? { ...draft, imageUrl: autoUploadedUrl, imageLocked: true }
+      : draft;
+
+    const validation = validateAdminModelDraftForPublish(effectiveDraft, { mode: 'create', modelId: suggestedModelId });
     if (!validation.isValid) {
       setPublishError(validation.message);
       setLocalStatus(validation.message);
@@ -1217,7 +1370,7 @@ export function AdminNewModelPage() {
     setLocalStatus('Publicando modelo...');
 
     try {
-      const payload = draftToCreatePayload(draft, suggestedModelId);
+      const payload = draftToCreatePayload(effectiveDraft, suggestedModelId);
       await createAdminMotorcycle(payload, accessToken);
       setLocalStatus('Modelo publicado correctamente.');
     } catch (error) {
@@ -1228,6 +1381,22 @@ export function AdminNewModelPage() {
       setSaving(false);
     }
   }, [draft, suggestedModelId, session?.access_token]);
+
+  const handleUploadImage = useCallback(async (file: File) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para subir la imagen.');
+    }
+
+    const resolvedId = draft.modelId.trim() || suggestedModelId;
+
+    if (!resolvedId) {
+      throw new Error('El ID del modelo es obligatorio para subir la imagen.');
+    }
+
+    return uploadMotorcycleImage(file, resolvedId, accessToken);
+  }, [draft.modelId, suggestedModelId, session?.access_token]);
 
   return (
     <AdminModelsWorkspace
@@ -1247,12 +1416,13 @@ export function AdminNewModelPage() {
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
         onPublish={handlePublish}
+        onUploadImage={handleUploadImage}
         saving={saving}
         toolbarKicker="Borrador local"
         workspaceHeading="Workspace de creación"
         workspaceHeadingId="admin-models-new-workspace-title"
         formLabel="Formulario de nuevo modelo"
-      />
+        />
     </AdminModelsWorkspace>
   );
 }
@@ -2287,7 +2457,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
     }
   }, [originalDraft]);
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = useCallback(async (autoUploadedUrl?: string) => {
     if (!draft) return;
 
     const accessToken = session?.access_token;
@@ -2297,7 +2467,11 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
       return;
     }
 
-    const validation = validateAdminModelDraftForPublish(draft, { mode: 'edit' });
+    const effectiveDraft = autoUploadedUrl
+      ? { ...draft, imageUrl: autoUploadedUrl, imageLocked: true }
+      : draft;
+
+    const validation = validateAdminModelDraftForPublish(effectiveDraft, { mode: 'edit' });
     if (!validation.isValid) {
       setPublishError(validation.message);
       setLocalStatus(validation.message);
@@ -2309,7 +2483,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
     setLocalStatus('Publicando modelo...');
 
     try {
-      const payload = draftToUpdatePayload(draft);
+      const payload = draftToUpdatePayload(effectiveDraft);
       await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
       setLocalStatus('Modelo actualizado correctamente.');
     } catch (error) {
@@ -2320,6 +2494,16 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
       setSaving(false);
     }
   }, [draft, motorcycleId, session?.access_token]);
+
+  const handleUploadImage = useCallback(async (file: File) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para subir la imagen.');
+    }
+
+    return uploadMotorcycleImage(file, motorcycleId!, accessToken);
+  }, [motorcycleId, session?.access_token]);
 
   if (!motorcycleId || !originalDraft) {
     return (
@@ -2360,6 +2544,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
         onDiscardChanges={handleDiscardChanges}
         onLocalAction={handleLocalAction}
         onPublish={handlePublish}
+        onUploadImage={handleUploadImage}
         saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"

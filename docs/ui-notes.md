@@ -493,8 +493,15 @@ Características del formulario de `#/admin/modelos/nuevo` y `#/admin/modelos/{m
 - **Footer**: 4 botones — Descartar cambios, Guardar borrador (local), Vista previa (local), Publicar modelo (persiste en create/edit).
 - **Accesibilidad**: todos los inputs/selects del formulario tienen `aria-label` coincidente con el label visible.
 - **Feedback de errores**: errores de validación se muestran con `role="alert"` y mensajes descriptivos. Éxito/estado usa `role="status"` con `aria-live="polite"`.
-- **Campo `Imagen bloqueada / curada`**: checkbox con tooltip: `Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.`
-- **Sin upload de imágenes**: solo URL de imagen y notas locales. La subida real requiere backend/storage/security review posterior.
+- **Sección imagen**: modo `URL manual` (input `type="url"` + checkbox `Imagen bloqueada / curada`) o `Subir archivo` (file input, preview local con `URL.createObjectURL`, object URL cleanup en unmount/replacement).
+- **Modo de selección de imagen**: `role="radiogroup"` con botones `role="radio"` y `aria-checked`.
+- **Validación upload local**: tipo MIME (jpeg/png/webp) y tamaño (5 MB max). Errores con `role="alert"`.
+- **Preview upload**: `<img>` con `alt="Previsualización local del archivo seleccionado"` + nombre y tamaño del archivo.
+- **Subir imagen**: botón visible solo con archivo válido seleccionado. Texto cambia a `Subiendo imagen...` durante upload. Deshabilitado durante upload o sin handler.
+- **Upload exitoso**: `draft.imageUrl` y `draft.imageLocked` actualizados. Status con `role="status"` (`Imagen subida correctamente.`).
+- **Upload fallido**: `role="alert"` con mensaje de error. Preview y archivo se conservan para retry.
+- **Auto-upload al publicar**: si hay archivo seleccionado no subido, se sube antes de create/update. `imageLocked = true`. Fallo de upload previene publish.
+- **Sin SCSS nuevo**: las clases existentes `admin-page__model-*` cubren la sección de imagen (field, checkbox, field--full, status, label).
 
 Validación cliente (`validateAdminModelDraftForPublish`):
 - Compartida entre create y edit.
@@ -505,11 +512,11 @@ Validación cliente (`validateAdminModelDraftForPublish`):
 Dirección futura (pendiente):
 - objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON (base operativa implementada);
 - create/edit comparten la misma arquitectura visual y de formulario (`AdminModelFormBody`);
-- Fase 6 (image workflow) es el siguiente paso;
+- delete/replace cleanup en UI de imagen;
 - navegación automática post-publicación y refactor App-level de catálogo tras create/edit;
 - A2 fields en draft si aplica;
+- WebP conversion opcional durante upload;
 - el set definitivo de filtros de Fase 3 puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación en esta pantalla de selección admin;
-- el upload real de imágenes requiere backend/storage/security review y no debe implementarse desde frontend-only.
 
 ## Mi cuenta — Reviews
 
