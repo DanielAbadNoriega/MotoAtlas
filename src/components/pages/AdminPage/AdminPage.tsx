@@ -876,6 +876,58 @@ function AdminModelFormBody({
   workspaceHeadingId,
   formLabel,
 }: AdminModelFormBodyProps) {
+  const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const maxFileSize = 5 * 1024 * 1024;
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  const handleFileSelect = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setFileError(null);
+
+    if (!file) {
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    if (!acceptedMimeTypes.includes(file.type)) {
+      setFileError('Tipo de archivo no soportado. Usa: JPEG, PNG o WebP.');
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    if (file.size > maxFileSize) {
+      setFileError('El archivo supera el límite de 5 MB.');
+      setSelectedFile(null);
+      setPreviewBlobUrl(null);
+      return;
+    }
+
+    const blobUrl = URL.createObjectURL(file);
+    setPreviewBlobUrl(blobUrl);
+    setSelectedFile(file);
+  }, []);
+
+  useEffect(() => {
+    const url = previewBlobUrl;
+    return () => {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [previewBlobUrl]);
+
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
       <header className="admin-page__model-toolbar">
@@ -1081,24 +1133,64 @@ function AdminModelFormBody({
           description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
         >
           <div className="admin-page__model-field-grid">
-            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+            <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
               <span className="admin-page__model-label">
                 <span className="material-symbols-outlined" aria-hidden="true">image</span>
-                Image URL
+                Modo de imagen
               </span>
-              <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
-            </label>
+              <div role="radiogroup" aria-label="Modo de selección de imagen">
+                <button type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
+                  URL manual
+                </button>
+                <button type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
+                  Subir archivo
+                </button>
+              </div>
+            </div>
 
-            <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-              <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
-              <span className="content">
-                Imagen bloqueada / curada
-                <AdminModelInfoTooltip
-                  ariaLabel="Más información sobre imagen bloqueada"
-                  description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
-                />
-              </span>
-            </label>
+            {imageMode === 'url' ? (
+              <>
+                <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+                  <span className="admin-page__model-label">
+                    <span className="material-symbols-outlined" aria-hidden="true">image</span>
+                    Image URL
+                  </span>
+                  <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
+                </label>
+
+                <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+                  <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
+                  <span className="content">
+                    Imagen bloqueada / curada
+                    <AdminModelInfoTooltip
+                      ariaLabel="Más información sobre imagen bloqueada"
+                      description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
+                    />
+                  </span>
+                </label>
+              </>
+            ) : (
+              <>
+                <div className="admin-page__model-field admin-page__model-field--full">
+                  <span className="admin-page__model-label">
+                    <span className="material-symbols-outlined" aria-hidden="true">upload</span>
+                    Seleccionar imagen del modelo
+                  </span>
+                  <input id="admin-model-image-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                </div>
+
+                {fileError ? (
+                  <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
+                ) : null}
+
+                {previewBlobUrl && selectedFile ? (
+                  <div className="admin-page__model-field admin-page__model-field--full">
+                    <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px' }} />
+                    <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
         </AdminModelSection>
 

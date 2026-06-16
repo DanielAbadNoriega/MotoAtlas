@@ -1,6 +1,6 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
@@ -2414,6 +2414,149 @@ describe('AdminPage', () => {
 
     expect(screen.getByRole('button', { name: /Más información sobre imagen bloqueada/i })).toBeInTheDocument();
     expect(screen.getByText('Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.')).toBeInTheDocument();
+  });
+
+  describe('image upload UI shell — mode switch and local preview', () => {
+    let createObjectURLSpy: ReturnType<typeof vi.fn>;
+    let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+
+    function stubURL() {
+      createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-preview-url');
+      revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    }
+
+    afterEach(() => {
+      createObjectURLSpy?.mockRestore();
+      revokeObjectURLSpy?.mockRestore();
+    });
+
+    it('renderiza el mode switch con URL manual y Subir archivo', () => {
+      render(<AdminNewModelPage />);
+
+      expect(screen.getByRole('radio', { name: 'URL manual' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Subir archivo' })).toBeInTheDocument();
+    });
+
+    it('URL manual mode mantiene el input de Image URL funcional', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Image URL'), 'https://example.com/bike.webp');
+      expect(screen.getByLabelText('Image URL')).toHaveValue('https://example.com/bike.webp');
+    });
+
+    it('switching a Subir archivo muestra el input file', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      expect(screen.getByLabelText('Seleccionar imagen del modelo')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Image URL')).not.toBeInTheDocument();
+    });
+
+    function selectFile(input: HTMLElement, file: File) {
+      fireEvent.change(input, { target: { files: [file] } });
+    }
+
+    it('seleccionar JPEG válido muestra preview y metadatos', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test-image.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      expect(createObjectURLSpy).toHaveBeenCalledWith(file);
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toHaveAttribute('src', 'blob:mock-preview-url');
+      expect(screen.getByText(/test-image\.jpg/)).toBeInTheDocument();
+    });
+
+    it('seleccionar PNG válido muestra preview', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.png', { type: 'image/png' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toHaveAttribute('src', 'blob:mock-preview-url');
+    });
+
+    it('seleccionar WebP válido muestra preview', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.webp', { type: 'image/webp' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toHaveAttribute('src', 'blob:mock-preview-url');
+    });
+
+    it('tipo no soportado muestra role="alert" sin preview', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.gif', { type: 'image/gif' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByRole('alert')).toHaveTextContent('Tipo de archivo no soportado. Usa: JPEG, PNG o WebP.');
+      expect(screen.queryByAltText('Previsualización local del archivo seleccionado')).not.toBeInTheDocument();
+    });
+
+    it('archivo mayor a 5 MB muestra role="alert" sin preview', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const largeContent = new ArrayBuffer(6 * 1024 * 1024);
+      const file = new File([largeContent], 'large.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByRole('alert')).toHaveTextContent('El archivo supera el límite de 5 MB.');
+      expect(screen.queryByAltText('Previsualización local del archivo seleccionado')).not.toBeInTheDocument();
+    });
+
+    it('volver a URL manual preserva el valor del input Image URL', async () => {
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.type(screen.getByLabelText('Image URL'), 'https://example.com/bike.webp');
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      expect(screen.queryByLabelText('Image URL')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('radio', { name: 'URL manual' }));
+      expect(screen.getByLabelText('Image URL')).toHaveValue('https://example.com/bike.webp');
+    });
+
+    it('seleccionar archivo no llama al servicio de upload', async () => {
+      stubURL();
+      const user = userEvent.setup();
+      render(<AdminNewModelPage />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
+      const file = new File(['dummy'], 'test.jpg', { type: 'image/jpeg' });
+      selectFile(fileInput, file);
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+    });
   });
 
   describe('AdminEditMotorcyclePage — #/admin/modelos/{motorcycleId}/editar', () => {
