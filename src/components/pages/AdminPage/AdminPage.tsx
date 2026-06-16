@@ -1402,7 +1402,9 @@ function AdminModelFormBody({
   );
 }
 
-export function AdminNewModelPage() {
+type OnMotorcyclesChange = (bike: Bike) => void;
+
+export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp }: Readonly<{ onMotorcyclesChange?: OnMotorcyclesChange }> = {}) {
   const [draft, setDraft] = useState<AdminModelDraft>(emptyAdminModelDraft);
   const [localStatus, setLocalStatus] = useState('');
   const [saving, setSaving] = useState(false);
@@ -1468,8 +1470,10 @@ export function AdminNewModelPage() {
 
     try {
       const payload = draftToCreatePayload(effectiveDraft, suggestedModelId);
-      await createAdminMotorcycle(payload, accessToken);
+      const createdBike = await createAdminMotorcycle(payload, accessToken);
       setLocalStatus('Modelo publicado correctamente.');
+      onMotorcyclesChangeProp?.(createdBike);
+      window.location.hash = `#/motos/${createdBike.id}`;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
       setPublishError(message);
@@ -1477,7 +1481,7 @@ export function AdminNewModelPage() {
     } finally {
       setSaving(false);
     }
-  }, [draft, suggestedModelId, session?.access_token]);
+  }, [draft, suggestedModelId, session?.access_token, onMotorcyclesChangeProp]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;
@@ -2498,7 +2502,7 @@ function validateAdminModelDraftForPublish(
   return { isValid: true };
 }
 
-export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[] }>) {
+export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcyclesChange: onMotorcyclesChangeProp }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[]; onMotorcyclesChange?: OnMotorcyclesChange }>) {
   const originalDraft = useMemo(() => {
     if (!motorcycleId) {
       return undefined;
@@ -2581,8 +2585,10 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
 
     try {
       const payload = draftToUpdatePayload(effectiveDraft);
-      await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
+      const updatedBike = await updateAdminMotorcycle(motorcycleId!, payload, accessToken);
       setLocalStatus('Modelo actualizado correctamente.');
+      onMotorcyclesChangeProp?.(updatedBike);
+      window.location.hash = `#/motos/${motorcycleId}`;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al publicar el modelo.';
       setPublishError(message);
@@ -2590,7 +2596,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles }: Readonly<
     } finally {
       setSaving(false);
     }
-  }, [draft, motorcycleId, session?.access_token]);
+  }, [draft, motorcycleId, session?.access_token, onMotorcyclesChangeProp]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;

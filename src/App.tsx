@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AuthProvider } from './features/auth';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
@@ -100,6 +100,15 @@ function HomePage() {
 export function App() {
   const route = useAppRoute();
   const [motorcycles, setMotorcycles] = useState<readonly Bike[]>(bikeCatalog);
+
+  const handleMotorcyclesChange = useCallback((updatedBike: Bike) => {
+    setMotorcycles((prev) => {
+      if (prev.some((b) => b.id === updatedBike.id)) {
+        return prev.map((b) => b.id === updatedBike.id ? updatedBike : b);
+      }
+      return [...prev, updatedBike];
+    });
+  }, []);
   const legacyComparison = findBikeComparisonByHash(route);
   const legacyComparisonIds = legacyComparison?.bikes.map((bike) => bike.bikeId) ?? [];
   const bikeDetailId = getBikeDetailIdFromRoute(route, motorcycles);
@@ -331,9 +340,9 @@ export function App() {
       ) : isAdminModelsPage ? (
         <AdminModelsPage />
       ) : isAdminNewModelPage ? (
-        <AdminNewModelPage />
+        <AdminNewModelPage onMotorcyclesChange={handleMotorcyclesChange} />
       ) : isAdminEditMotorcyclePage ? (
-        <AdminEditMotorcyclePage motorcycleId={adminEditMotorcycleId} motorcycles={motorcycles} />
+        <AdminEditMotorcyclePage motorcycleId={adminEditMotorcycleId} motorcycles={motorcycles} onMotorcyclesChange={handleMotorcyclesChange} />
       ) : isAdminEditModelsPage ? (
         <AdminEditModelsPage motorcycles={motorcycles} />
       ) : isAdminPage ? (
