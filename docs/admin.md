@@ -91,14 +91,42 @@ Formulario de edición de modelo que reutiliza `AdminModelFormBody` (misma estru
 - Create valida modeloId obligatorio y sin espacios.
 - Edit omite validación de modeloId.
 - Imágenes locales `/images/...` aceptadas.
+- Image URL obligatoria para publish (tanto en URL manual como upload mode).
+
+**Sección de imagen del modelo:**
+
+El formulario tiene una sección `Imagen` con modo de selección:
+
+- **URL manual**: input `type="url"` + checkbox `Imagen bloqueada / curada`. Válido para enlazar imágenes ya publicadas.
+- **Subir archivo**: file input con accept `image/jpeg,image/png,image/webp`. Validación local de tipo y tamaño (5 MB max). Preview local con `URL.createObjectURL`. Object URL cleanup en unmount/replacement.
+
+**Acción `Subir imagen`:**
+- Aparece solo cuando hay un archivo válido seleccionado.
+- Sube a Supabase Storage `motorcycle-images` via `uploadMotorcycleImage`.
+- Requiere `session.access_token`. Missing token lanza error controlado.
+- En create mode usa `draft.modelId.trim()` o fallback `suggestedModelId` como ID de ruta.
+- En edit mode usa el `motorcycleId` de la ruta.
+- Éxito: `draft.imageUrl = publicUrl`, `draft.imageLocked = true`.
+- Error: `role="alert"` con mensaje. Preview y archivo se conservan para retry.
+- No persiste el modelo (no llama a create/update).
+
+**Auto-upload al publicar:**
+- Si el admin hace clic en `Publicar modelo` con un archivo seleccionado pero no subido:
+  - El archivo se sube automáticamente primero.
+  - La URL pública retornada se usa en el payload de create/update.
+  - `imageLocked` se fuerza a `true`.
+  - Si la subida falla, el publish no se ejecuta.
+- Si el archivo ya fue subido explícitamente, no se vuelve a subir.
+- Si está en modo URL manual, no se intenta subir.
 
 **Sin:**
-- image upload/storage
 - navegación automática post-publicación
 - refactor App-level de catálogo tras create/edit
 - A2 fields en draft
+- delete/replace cleanup en UI
+- WebP conversion opcional
 
-**Futuro:** Fase 6 (image workflow), navegación automática, refactor App-level. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** delete/replace cleanup, navegación automática, refactor App-level, WebP conversion. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 

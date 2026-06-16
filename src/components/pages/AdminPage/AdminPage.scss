@@ -1553,6 +1553,17 @@
   }
 }
 
+.container-actions {
+  display: flex;
+  gap: 1.5rem;
+
+  > button[aria-checked*="true"] {
+    background: rgba($color-accent-container, 0.1);
+    border-color: rgba($color-accent-container, 0.46);
+    color: $color-on-surface;
+  }
+}
+
 @media (max-width: $breakpoint-tablet) {
   .admin-page {
     &__dashboard-grid {

@@ -1191,11 +1191,11 @@ function AdminModelFormBody({
                 <span className="material-symbols-outlined" aria-hidden="true">image</span>
                 Modo de imagen
               </span>
-              <div role="radiogroup" aria-label="Modo de selección de imagen">
-                <button type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
+              <div className="container-actions" role="radiogroup" aria-label="Modo de selección de imagen">
+                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
                   URL manual
                 </button>
-                <button type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
+                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
                   Subir archivo
                 </button>
               </div>
@@ -1205,7 +1205,7 @@ function AdminModelFormBody({
               <>
                 <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
                   <span className="admin-page__model-label">
-                    <span className="material-symbols-outlined" aria-hidden="true">image</span>
+                    <span className="material-symbols-outlined" aria-hidden="true">link_2</span>
                     Image URL
                   </span>
                   <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
@@ -1229,7 +1229,7 @@ function AdminModelFormBody({
                     <span className="material-symbols-outlined" aria-hidden="true">upload</span>
                     Seleccionar imagen del modelo
                   </span>
-                  <input id="admin-model-image-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                  <input id="admin-model-image-file" className="account-page__button account-page__button--glass admin-page__model-action-button" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
                 </div>
 
                 {fileError ? (

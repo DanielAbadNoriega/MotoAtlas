@@ -18,16 +18,17 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1231 tests passing` (76 files).
+- Baseline validado actual: `1298 tests passing` (77 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models Persistence 5A-5C.1 (Quality Gate aprobado: 1231 tests, typecheck clean).
+- Último bloque estable validado: Admin Models Image Upload Flow (Fases 6A-6C.4) (Quality Gate aprobado: 1298 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
-1. Admin Models Studio — Fase 6: image upload/storage.
+1. Admin Models Studio — delete/replace cleanup en UI de imagen.
 2. Navegación automática post-publicación y refactor App-level de catálogo.
 3. A2 fields en draft si aplica.
-4. Schema/RLS quedan fuera hasta necesidad explícita.
+4. WebP conversion opcional durante upload.
+5. Schema/RLS quedan fuera hasta necesidad explícita.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -66,7 +67,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fase 1, 2, 3, 4 (UI) + Fase 5A (persistencia backend) + Fase 5B.1 (edit publica) + Fase 5B.2 (create publica) + Fase 5C.1 (validación cliente) implementadas / Fase 6+ pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) implementadas / delete/replace + navegación automática + WebP conversion pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -75,7 +76,7 @@ Nota de estado:
 - `#/admin/modelos/{motorcycleId}/editar` edita modelos reales vía `updateAdminMotorcycle` con validación cliente compartida;
 - **Persistencia operativa**: `adminMotorcycleService.ts` con `createAdminMotorcycle` y `updateAdminMotorcycle`.
 - **Validación cliente**: `validateAdminModelDraftForPublish` compartida entre create y edit. Create valida modeloId obligatorio y sin espacios; edit no lo exige.
-- **Sin**: image upload/storage, navegación automática post-publicación, refactor App-level de catálogo.
+- **Sin**: delete/replace cleanup en UI (upload service existe pero no cableado), navegación automática post-publicación, refactor App-level de catálogo, WebP conversion.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
 Propósito:
@@ -143,12 +144,19 @@ Fases propuestas:
    - imágenes locales `/images/...` aceptadas;
    - `aria-label` añadidos a form fields que faltaban;
    - `npm run typecheck` clean, `1231 tests passing`.
-   - Pendiente para siguiente evolución: image upload/storage, navegación automática post-publicación, refactor App-level de catálogo, A2 fields en draft si aplica.
 
-6. **Image workflow future** — pendiente
-   - primero URL/preview de imagen (ya operativo con la validación actual);
-   - upload/normalización/`image_locked` como fase posterior;
-   - respetar el pipeline de imágenes existente y no sobrescribir assets curados/locked.
+6. **Image workflow** — **implementado (Fases 6A-6C.4)**
+   - Supabase Storage bucket `motorcycle-images` con public read + admin-only write policies.
+   - `adminMotorcycleImageUploadService.ts` con `uploadMotorcycleImage` (fetch a Supabase Storage REST).
+   - Upload path `{motorcycleId}/{uuid}.{extension}`, public URL `/storage/v1/object/public/motorcycle-images/{objectPath}`.
+   - Extensión preservada: jpeg→`.jpg`, png→`.png`, webp→`.webp`.
+   - Anon key + Bearer access token (no service role). UUID via `globalThis.crypto?.randomUUID?.()` con fallback.
+   - UI: modo `URL manual` y `Subir archivo` con preview local, MIME/size validation.
+   - Explicit `Subir imagen` wired to service. Success: `draft.imageUrl = publicUrl`, `draft.imageLocked = true`.
+   - Auto-upload selected pending image before publish. Already-uploaded image no re-upload. Failure prevents publish.
+   - `deleteMotorcycleImage` existe pero no cableado en UI.
+   - Quality Gate: 1298 tests, typecheck clean.
+   - Pendiente: delete/replace cleanup en UI, WebP conversion opcional, navegación automática post-publicación, refactor App-level de catálogo, A2 fields en draft si aplica.
 
 Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;
