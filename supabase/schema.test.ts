@@ -835,6 +835,92 @@ describe('Supabase create_motorcycle_review_with_aspects RPC function', () => {
   });
 });
 
+describe('Supabase create_admin_motorcycle RPC function', () => {
+  it('crea la función RPC con signature correcta y retorno motorcycles', () => {
+    expect(schemaSql).toContain('create or replace function public.create_admin_motorcycle(');
+    expect(schemaSql).toContain('p_id text');
+    expect(schemaSql).toContain('p_brand text');
+    expect(schemaSql).toContain('p_model text');
+    expect(schemaSql).toContain('p_year integer');
+    expect(schemaSql).toContain('p_description text');
+    expect(schemaSql).toContain('p_segment motorcycle_segment');
+    expect(schemaSql).toContain('p_license motorcycle_license');
+    expect(schemaSql).toContain('p_engine_type motorcycle_engine_type');
+    expect(schemaSql).toContain('p_displacement_cc integer');
+    expect(schemaSql).toContain('p_power_hp numeric');
+    expect(schemaSql).toContain('p_torque_nm numeric');
+    expect(schemaSql).toContain('p_wet_weight_kg numeric');
+    expect(schemaSql).toContain('p_seat_height_mm integer');
+    expect(schemaSql).toContain('p_fuel_tank_liters numeric');
+    expect(schemaSql).toContain('p_price_eur integer');
+    expect(schemaSql).toContain('p_image_url text');
+    expect(schemaSql).toContain('p_description_locked boolean default false');
+    expect(schemaSql).toContain('p_image_locked boolean default false');
+    expect(schemaSql).toContain('p_price_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_image_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_specs_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_scores_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_pros_cons_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_reliability_source motorcycle_data_source default');
+    expect(schemaSql).toContain('p_abs_cornering boolean default false');
+    expect(schemaSql).toContain('p_traction_control boolean default false');
+    expect(schemaSql).toContain('p_riding_modes boolean default false');
+    expect(schemaSql).toContain('p_cruise_control boolean default false');
+    expect(schemaSql).toContain('p_quickshifter boolean default false');
+    expect(schemaSql).toContain('p_heated_grips boolean default false');
+    expect(schemaSql).toContain('p_tubeless_wheels boolean default false');
+    expect(schemaSql).toContain('p_is_a2_compatible boolean default false');
+    expect(schemaSql).toContain('p_is_a2_limited_version boolean default false');
+    expect(schemaSql).toContain('p_limited_power_hp numeric default null');
+    expect(schemaSql).toContain('p_original_power_hp numeric default null');
+  });
+
+  it('retorna motorcycles y usa security definer con search_path public', () => {
+    expect(schemaSql).toContain('returns public.motorcycles');
+    expect(schemaSql).toContain('language plpgsql');
+    expect(schemaSql).toContain('security definer');
+    expect(schemaSql).toContain('set search_path = public');
+  });
+
+  it('valida que el caller sea admin mediante public.is_admin()', () => {
+    expect(schemaSql).toContain('if not public.is_admin() then');
+    expect(schemaSql).toContain("raise exception 'Only admins can create motorcycles.'");
+  });
+
+  it('valida campos obligatorios no vacíos', () => {
+    expect(schemaSql).toContain("raise exception 'id es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'brand es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'model es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'description es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'image_url es obligatorio.'");
+    expect(schemaSql).toContain("raise exception 'id no puede contener espacios.'");
+  });
+
+  it('inserta en public.motorcycles con returning *', () => {
+    expect(schemaSql).toMatch(/insert into public\.motorcycles\s*\(/);
+    expect(schemaSql).toContain('returning * into v_motorcycle');
+    expect(schemaSql).toContain('return v_motorcycle');
+    expect(schemaSql).not.toMatch(/return query select/);
+  });
+
+  it('revoca execute de public y anon, concede solo a authenticated', () => {
+    expect(schemaSql).toContain('revoke execute on function public.create_admin_motorcycle(');
+    expect(schemaSql).toMatch(/revoke execute on function public\.create_admin_motorcycle\([^)]+\) from public;/);
+    expect(schemaSql).toMatch(/revoke execute on function public\.create_admin_motorcycle\([^)]+\) from anon;/);
+    expect(schemaSql).toContain('grant execute on function public.create_admin_motorcycle(');
+    expect(schemaSql).toMatch(/grant execute on function public\.create_admin_motorcycle\([^)]+\) to authenticated;/);
+    expect(schemaSql).not.toMatch(/grant execute on function public\.create_admin_motorcycle\([^)]+\) to anon;/);
+  });
+
+  it('no expone INSERT grants directos en public.motorcycles a anon ni authenticated', () => {
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+insert\s+on\s+(?:table\s+)?public\.motorcycles\s+to\s+(anon|authenticated)/);
+  });
+
+  it('no agrega INSERT RLS policy en public.motorcycles', () => {
+    expect(normalizedSchemaSql).not.toMatch(/create\s+policy[^;]+on\s+public\.motorcycles[^;]+\bfor\s+insert\b/);
+  });
+});
+
 describe('Supabase schema reload', () => {
   it('recarga PostgREST después de aplicar políticas', () => {
     expect(schemaSql).toContain("notify pgrst, 'reload schema';");
