@@ -99,6 +99,11 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 
 - **URL manual**: input `type="url"` + checkbox `Imagen bloqueada / curada`. Válido para enlazar imágenes ya publicadas.
 - **Subir archivo**: file input con accept `image/jpeg,image/png,image/webp`. Validación local de tipo y tamaño (5 MB max). Preview local con `URL.createObjectURL`. Object URL cleanup en unmount/replacement. El native file input button fue reemplazado por un control custom MotoAtlas-styled con `Seleccionar archivo` como trigger visual y el nombre del archivo seleccionado visible.
+- **Imagen actual**: cuando `draft.imageUrl` existe, create y edit muestran una preview actual del modelo.
+- **Quitar imagen del formulario**: si la imagen actual ya estaba persistida en Storage o viene de una URL manual/local, el admin puede quitarla del formulario o reemplazarla, pero no se borra físicamente en ese momento.
+- **Eliminar imagen actual**: si la imagen fue subida en la sesión actual y todavía no quedó persistida en el modelo, sí puede eliminarse inmediatamente desde Storage antes de publicar.
+- **Cleanup seguro al reemplazar**: si una edición reemplaza una imagen persistida del bucket, el objeto viejo se limpia solo después de un publish/update exitoso. Si el publish falla, la imagen vieja no se elimina.
+- **Protecciones**: URLs manuales externas, assets locales `/images/...` y el placeholder `motorcycle-technical-pending.jpg` son reemplazables, pero nunca se borran físicamente desde la UI admin. Además, solo se consideran borrables URLs del proyecto Supabase configurado con object paths seguros.
 
 **Acción `Subir imagen`:**
 - Aparece solo cuando hay un archivo válido seleccionado.
@@ -138,11 +143,11 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 
 **Sin:**
 - A2 fields en draft
-- delete/replace cleanup en UI
+- multi-image gallery
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Futuro:** delete/replace cleanup, WebP conversion, IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** multi-image gallery, WebP conversion, IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 

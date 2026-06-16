@@ -527,6 +527,7 @@ Características del formulario de `#/admin/modelos/nuevo` y `#/admin/modelos/{m
 - **Upload exitoso**: `draft.imageUrl` y `draft.imageLocked` actualizados. Status con `role="status"` (`Imagen subida correctamente.`).
 - **Upload fallido**: `role="alert"` con mensaje de error. Preview y archivo se conservan para retry.
 - **Auto-upload al publicar**: si hay archivo seleccionado no subido, se sube antes de create/update. `imageLocked = true`. Fallo de upload previene publish.
+- **Imagen actual + cleanup seguro**: cuando `draft.imageUrl` existe, create/edit muestran preview actual. Una imagen persistida de Storage puede quitarse del formulario sin borrado físico inmediato; una imagen subida en la sesión sí puede eliminarse antes de publicar. Si un edit reemplaza una imagen persistida del bucket, el objeto viejo se limpia solo después de publish/update exitoso. URLs manuales, assets locales `/images/...` y `motorcycle-technical-pending.jpg` nunca disparan borrado físico.
 - **Sin SCSS nuevo**: las clases existentes `admin-page__model-*` cubren la sección de imagen (field, checkbox, field--full, status, label).
 
 Validación cliente (`validateAdminModelDraftForPublish`):
@@ -538,8 +539,7 @@ Validación cliente (`validateAdminModelDraftForPublish`):
 Dirección futura (pendiente):
 - objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON (base operativa implementada);
 - create/edit comparten la misma arquitectura visual y de formulario (`AdminModelFormBody`);
-- delete/replace cleanup en UI de imagen;
-- navegación automática post-publicación y refactor App-level de catálogo tras create/edit;
+- multi-image gallery;
 - A2 fields en draft si aplica;
 - WebP conversion opcional durante upload;
 - el set definitivo de filtros de Fase 3 puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación en esta pantalla de selección admin;

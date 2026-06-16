@@ -392,7 +392,7 @@ src/services/adminMotorcycleImageUploadService.ts
 
 Funciones:
 - `uploadMotorcycleImage(file, motorcycleId, accessToken)`: sube un archivo a `{motorcycleId}/{uuid}.{extension}`, retorna URL pública.
-- `deleteMotorcycleImage(objectPath, accessToken)`: elimina un objeto del bucket (no cableado en UI).
+- `deleteMotorcycleImage(objectPath, accessToken)`: elimina un objeto del bucket cuando el object path ya fue validado como seguro.
 
 **Arquitectura:**
 - No usa `supabase-js` ni `service_role_key`. Usa fetch directo a Supabase Storage REST.
@@ -408,10 +408,17 @@ Funciones:
 - Modo `Subir archivo`: file input custom MotoAtlas-styled (label estilizado + filename visible) + preview + botón `Subir imagen`.
 - `Subir imagen` → `uploadMotorcycleImage` → `draft.imageUrl = publicUrl` + `draft.imageLocked = true`.
 - `Publicar modelo` con archivo pendiente → auto-upload → publish con URL retornada.
+- Si existe `draft.imageUrl`, create/edit muestran preview actual de imagen.
+- Una imagen persistida de Storage en edit mode puede quitarse del formulario sin borrado físico inmediato.
+- Una imagen subida en la sesión actual puede eliminarse inmediatamente antes del publish.
+- Si edit reemplaza una imagen persistida del bucket, el cleanup del objeto viejo se ejecuta **solo después** de un publish/update exitoso y nunca bloquea/revierte ese publish si falla el cleanup.
+- URLs manuales, assets locales `/images/...` y `motorcycle-technical-pending.jpg` nunca llaman a `deleteMotorcycleImage`.
+- La detección destructiva acepta únicamente URLs del proyecto Supabase configurado y object paths válidos/seguros; URLs de otro proyecto/dominio quedan fuera del cleanup.
 - `imageLocked` protege la imagen curada contra sobrescritura en futuras sincronizaciones.
 - Tras publish exitoso, create navega a `#/motos/{createdBike.id}` y edit navega a `#/motos/{motorcycleId}`.
 - `App.tsx` mantiene el catálogo resuelto en estado local y expone `handleMotorcyclesChange`: si el servicio devuelve una moto existente, la reemplaza inmutablemente por `id`; si devuelve una nueva, la agrega con append inmutable.
 - No se introdujo store global nuevo: el sync post-publish vive en estado local de `App.tsx` y evita refresh completo del navegador.
+- No se introdujeron cambios de schema/RLS/Supabase SQL para este hardening; toda la lógica vive en la UI admin y en el servicio Storage existente.
 
 **Section Radar en UI:**
 - Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.

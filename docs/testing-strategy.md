@@ -3,10 +3,10 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1302` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1315` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
-  - `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/App.test.tsx` → 196 tests passing (Admin Models post-publish navigation + App-level catalog sync).
-  - suite completa → `1302` tests passing.
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/services/adminMotorcycleImageUploadService.test.ts` → 202 tests passing (Admin Models image replace/delete cleanup hardening).
+  - suite completa → `1315` tests passing.
 
 ## Stack actual
 
@@ -336,6 +336,29 @@ window.location.hash = '#/comparador?bikes=id-1,id-2';
 
 Siempre limpiar o confiar en `setupTests` para aislamiento.
 
+## Admin Models Studio — image cleanup hardening
+
+Cobertura vigente:
+- preview actual renderiza cuando `draft.imageUrl` existe, tanto en create como en edit;
+- una imagen persistida de Storage en edit mode **no** se elimina físicamente al quitarla del formulario;
+- una imagen subida durante la sesión sí puede borrarse inmediatamente antes del publish;
+- al reemplazar una imagen persistida del bucket, el objeto viejo se limpia solo tras `updateAdminMotorcycle` exitoso;
+- un fallo de publish/update no elimina la imagen persistida vieja;
+- URLs manuales externas, assets locales `/images/...` y el placeholder `motorcycle-technical-pending.jpg` nunca llaman a `deleteMotorcycleImage`;
+- una URL de Storage de otro proyecto Supabase no dispara cleanup destructivo;
+- si la URL final resuelve al mismo object path que la imagen persistida original, el cleanup se omite;
+- el cleanup fallido después de un publish exitoso es no bloqueante y no revierte el publish;
+- `Descartar cambios` limpia estado local de selected file / session upload para no dejar reuploads accidentales pendientes.
+
+Comportamiento preservado por tests:
+- explicit `Subir imagen`;
+- auto-upload antes de publicar;
+- imagen ya subida no se re-sube;
+- `imageLocked = true` tras upload exitoso;
+- custom file input;
+- Section Radar;
+- navegación post-publish y sync del catálogo en memoria a nivel `App.tsx`.
+
 ## Riesgos a vigilar
 
 - Reviews: `pending` se inserta públicamente, pero solo `approved` se muestra. `rejected` y `hidden` no deben aparecer en UI pública.
@@ -378,12 +401,13 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1302` tests passing (77 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `1315` tests passing (77 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 - Cobertura Admin Models Studio persistencia:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → cobertura de create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks, navegación post-publicación y sync App-level del catálogo en memoria.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.
   - Admin create/edit publish validan que el servicio no se llama cuando la validación falla.
   - Edit publish no requiere modeloId; create sí.
+  - Hardening adicional de cleanup de imagen: `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/services/adminMotorcycleImageUploadService.test.ts` cubren delete seguro por tipo de URL/origen, cleanup diferido post-publish y reset de estado local.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
