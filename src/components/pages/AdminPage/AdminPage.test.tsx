@@ -1723,16 +1723,16 @@ describe('AdminPage', () => {
     expect(screen.getByRole('heading', { name: 'Nuevo modelo' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Workspace de creación' })).toBeInTheDocument();
     expect(screen.getByRole('form', { name: 'Formulario de nuevo modelo' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '01. IDENTIDAD_MODELO' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '03. MOTOR_RENDIMIENTO' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '04. ELECTRONICA_EQUIPAMIENTO' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '05. PRECIO_MERCADO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '01. MODELO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '03. MOTOR & RENDIMIENTO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '04. ELECTRONICA & EQUIPAMIENTO' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '05. PRECIO' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Descartar cambios' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Guardar borrador' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Vista previa' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Publicar modelo' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Nuevo modelo' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('button', { name: /Más información sobre 01\. IDENTIDAD_MODELO/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Más información sobre 01\. MODELO/i })).toBeInTheDocument();
     expect(screen.getByText('Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Más información sobre ID sugerido/i })).toBeInTheDocument();
     expect(screen.getByText(/^Sugerencia automática:/)).toBeInTheDocument();
@@ -2476,14 +2476,14 @@ describe('AdminPage', () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
 
-    const section = screen.getByText('01. IDENTIDAD_MODELO').closest('details');
+    const section = screen.getByText('01. MODELO').closest('details');
     expect(section).not.toBeNull();
     expect(section).toHaveAttribute('open');
 
-    await user.click(screen.getByText('01. IDENTIDAD_MODELO'));
+    await user.click(screen.getByText('01. MODELO'));
     expect(section).not.toHaveAttribute('open');
 
-    await user.click(screen.getByText('01. IDENTIDAD_MODELO'));
+    await user.click(screen.getByText('01. MODELO'));
     expect(section).toHaveAttribute('open');
   });
 
@@ -3371,6 +3371,7 @@ describe('AdminPage', () => {
     const existingId = 'bmw-f-900-gs-2024';
     const unknownId = 'non-existent-motorcycle';
     const sharedProps = { motorcycles: bikeCatalog, onMotorcyclesChange: vi.fn() };
+    const secondBike = bikeCatalog[1]!;
 
     it('renderiza el formulario de edición con modo edit para un modelo existente', () => {
       render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
@@ -3380,6 +3381,25 @@ describe('AdminPage', () => {
       expect(screen.getByRole('form', { name: 'Formulario de edición de modelo' })).toBeInTheDocument();
       expect(screen.getByText('Actualiza los datos disponibles de este modelo.')).toBeInTheDocument();
       expect(screen.getByText(/^Editando /)).toBeInTheDocument();
+    });
+
+    it('no crashea si el draft no está disponible al primer render y se inicializa cuando llega la moto', () => {
+      const { rerender } = render(
+        <AdminEditMotorcyclePage
+          motorcycleId={existingId}
+          motorcycles={[]}
+          onMotorcyclesChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getAllByRole('heading', { name: 'Cargando modelo...' }).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Preparando edición del modelo...').length).toBeGreaterThanOrEqual(1);
+
+      rerender(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      expect(screen.getByRole('heading', { name: 'Editar modelo' })).toBeInTheDocument();
+      expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
+      expect(screen.getByText(/^Editando BMW F 900 GS 2024$/)).toBeInTheDocument();
     });
 
     it('prefill los campos de identidad con los datos de la moto', () => {
@@ -3429,6 +3449,67 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
       expect(screen.getByRole('status')).toHaveTextContent('Cambios descartados.');
       expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
+    });
+
+    it('cambiar motorcycleId resetea el draft al nuevo modelo sin conservar edits previos', async () => {
+      const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:switch-preview');
+      const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+      const user = userEvent.setup();
+      const { rerender } = render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      await user.clear(screen.getByLabelText('Marca'));
+      await user.type(screen.getByLabelText('Marca'), 'Marca temporal');
+      expect(screen.getByLabelText('Marca')).toHaveValue('Marca temporal');
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'route-switch.jpg', { type: 'image/jpeg' })] },
+      });
+
+      expect(screen.getByText('Archivo seleccionado')).toBeInTheDocument();
+
+      rerender(
+        <AdminEditMotorcyclePage
+          motorcycleId={secondBike.id}
+          motorcycles={bikeCatalog}
+          onMotorcyclesChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByLabelText('Marca')).toHaveValue(secondBike.brand);
+      expect(screen.getByLabelText('Modelo')).toHaveValue(secondBike.model);
+      expect(screen.getByText(new RegExp(`^Editando ${secondBike.brand} ${secondBike.model} ${secondBike.year}$`))).toBeInTheDocument();
+      expect(screen.queryByText('Archivo seleccionado')).not.toBeInTheDocument();
+      expect(screen.queryByText(/route-switch\.jpg/)).not.toBeInTheDocument();
+
+      createObjectURLSpy.mockRestore();
+      revokeObjectURLSpy.mockRestore();
+    });
+
+    it('descartar cambios en edit limpia el archivo local pendiente y restaura el estado original', async () => {
+      const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:edit-preview');
+      const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+      const user = userEvent.setup();
+
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
+      fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
+        target: { files: [new File(['dummy'], 'edit-replacement.jpg', { type: 'image/jpeg' })] },
+      });
+
+      expect(screen.getByText('Archivo seleccionado')).toBeInTheDocument();
+      expect(screen.getAllByText(/edit-replacement\.jpg/).length).toBeGreaterThan(0);
+
+      await user.click(screen.getByRole('button', { name: 'Descartar cambios' }));
+
+      expect(screen.getByRole('status')).toHaveTextContent('Cambios descartados.');
+      expect(screen.queryByText('Archivo seleccionado')).not.toBeInTheDocument();
+      expect(screen.getByText('Ningún archivo seleccionado')).toBeInTheDocument();
+      expect(screen.getByLabelText('Marca')).toHaveValue('BMW');
+
+      createObjectURLSpy.mockRestore();
+      revokeObjectURLSpy.mockRestore();
     });
 
     it('unknown motorcycleId muestra estado not-found con CTA', () => {

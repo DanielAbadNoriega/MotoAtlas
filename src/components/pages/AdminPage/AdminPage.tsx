@@ -204,6 +204,13 @@ function createDraftFromBike(bike: Bike): AdminModelDraft {
   };
 }
 
+function cloneAdminModelDraft(draft: AdminModelDraft): AdminModelDraft {
+  return {
+    ...draft,
+    features: { ...draft.features },
+  };
+}
+
 function formatPreviewNumber(value: string, unit: string) {
   const parsed = Number(value);
 
@@ -1185,7 +1192,7 @@ function AdminModelFormBody({
   }
 
   const sectionNavItems = [
-    { id: 'admin-model-section-identity', label: 'Identidad', index: '01' },
+    { id: 'admin-model-section-identity', label: 'Modelo', index: '01' },
     { id: 'admin-model-section-classification', label: 'Clasificación', index: '02' },
     { id: 'admin-model-section-engine', label: 'Motor', index: '03' },
     { id: 'admin-model-section-electronics', label: 'Electrónica', index: '04' },
@@ -1231,7 +1238,7 @@ function AdminModelFormBody({
       <form className="admin-page__model-form" aria-label={formLabel} onSubmit={(event) => event.preventDefault()}>
         <AdminModelSection
           id="admin-model-section-identity"
-          technicalTitle="01. IDENTIDAD_MODELO"
+          technicalTitle="01. MODELO"
           description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
         >
           <div className="admin-page__model-field-grid">
@@ -1317,7 +1324,7 @@ function AdminModelFormBody({
 
         <AdminModelSection
           id="admin-model-section-engine"
-          technicalTitle="03. MOTOR_RENDIMIENTO"
+          technicalTitle="03. MOTOR & RENDIMIENTO"
           description="Bloque local de specs principales para alimentar el preview tipo ficha y preparar el contrato técnico futuro."
         >
           <div className="admin-page__model-field-grid">
@@ -1386,7 +1393,7 @@ function AdminModelFormBody({
 
         <AdminModelSection
           id="admin-model-section-electronics"
-          technicalTitle="04. ELECTRONICA_EQUIPAMIENTO"
+          technicalTitle="04. ELECTRONICA & EQUIPAMIENTO"
           description="Selección local de features típicas para revisar el layout de toggles antes de mapearlas al backend real."
         >
           <div className="admin-page__model-checkbox-grid">
@@ -1401,7 +1408,7 @@ function AdminModelFormBody({
 
         <AdminModelSection
           id="admin-model-section-market"
-          technicalTitle="05. PRECIO_MERCADO"
+          technicalTitle="05. PRECIO"
           description="Campos locales para validar copy, fallback de precio pendiente y decisiones de presentación antes de tocar persistencia."
         >
           <div className="admin-page__model-field-grid">
@@ -1422,12 +1429,22 @@ function AdminModelFormBody({
 
         <AdminModelSection
           id="admin-model-section-image"
-          technicalTitle="06. IMAGEN_CURACION"
+          technicalTitle="06. IMAGEN"
           description="Gestioná la imagen actual del modelo y prepará un reemplazo antes de publicar."
         >
           <div className="admin-page__model-field-grid">
             {currentImageUrl ? (
               <section className="admin-page__model-image-preview admin-page__model-field--full" aria-label="Imagen actual del modelo">
+                <div className="admin-page__model-image-preview-copy">
+                  <strong>Imagen actual</strong>
+                  <p>
+                    {currentImageIsSessionUpload
+                      ? 'Imagen subida en este borrador. Puedes eliminarla o reemplazarla antes de publicar.'
+                      : currentImageIsStorageAsset
+                        ? 'Imagen guardada en el modelo. Puedes quitarla del formulario o reemplazarla antes de publicar.'
+                        : 'Imagen activa en el formulario. Puedes reemplazarla o quitarla antes de publicar.'}
+                  </p>
+                </div>
                 <div className="admin-page__model-image-preview-media">
                   <img src={currentImageUrl} alt="Imagen actual del modelo" />
                   <button
@@ -1446,16 +1463,6 @@ function AdminModelFormBody({
                         ? 'Eliminar'
                         : 'Quitar'}
                   </button>
-                </div>
-                <div className="admin-page__model-image-preview-copy">
-                  <strong>Imagen actual</strong>
-                  <p>
-                    {currentImageIsSessionUpload
-                      ? 'Imagen subida en este borrador. Podés eliminarla o reemplazarla antes de publicar.'
-                      : currentImageIsStorageAsset
-                        ? 'Imagen guardada en el modelo. Podés quitarla del formulario o reemplazarla antes de publicar.'
-                        : 'Imagen activa en el formulario. Podés reemplazarla o quitarla antes de publicar.'}
-                  </p>
                 </div>
               </section>
             ) : (
@@ -1548,7 +1555,7 @@ function AdminModelFormBody({
 
         <AdminModelSection
           id="admin-model-section-sources"
-          technicalTitle="07. FUENTES_NOTAS"
+          technicalTitle="07. FUENTES & NOTAS"
           description="Campos de referencia local para preparar fuentes, URL oficial y notas editoriales antes de definir servicios reales."
         >
           <div className="admin-page__model-field-grid">
@@ -2730,8 +2737,35 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
   const [localStatus, setLocalStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [publishError, setPublishError] = useState('');
+  const initializedMotorcycleIdRef = useRef<string | undefined>(motorcycleId);
 
   const { session } = useAuth();
+
+  useEffect(() => {
+    const previousMotorcycleId = initializedMotorcycleIdRef.current;
+    const didMotorcycleChange = previousMotorcycleId !== motorcycleId;
+
+    if (!motorcycleId) {
+      initializedMotorcycleIdRef.current = undefined;
+      if (draft) {
+        setDraft(undefined);
+      }
+      return;
+    }
+
+    if (didMotorcycleChange) {
+      initializedMotorcycleIdRef.current = motorcycleId;
+      setLocalStatus('');
+      setPublishError('');
+      setSaving(false);
+      setDraft(originalDraft ? cloneAdminModelDraft(originalDraft) : undefined);
+      return;
+    }
+
+    if (!draft && originalDraft) {
+      setDraft(cloneAdminModelDraft(originalDraft));
+    }
+  }, [draft, motorcycleId, originalDraft]);
 
   const suggestedModelId = useMemo(() => draft ? buildSuggestedModelId(draft) : '', [draft]);
 
@@ -2766,7 +2800,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
 
   const handleDiscardChanges = useCallback(() => {
     if (originalDraft) {
-      setDraft({ ...originalDraft });
+      setDraft(cloneAdminModelDraft(originalDraft));
       setLocalStatus('Cambios descartados.');
       setPublishError('');
     }
@@ -2846,7 +2880,13 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     await deleteMotorcycleImage(objectPath, accessToken);
   }, [session?.access_token]);
 
-  if (!motorcycleId || !originalDraft) {
+  const isDraftLoading = Boolean(
+    motorcycleId
+    && !draft
+    && (motorcycles.length === 0 || Boolean(originalDraft)),
+  );
+
+  if (!motorcycleId) {
     return (
       <AdminModelsWorkspace
         activeModelsItem="edit"
@@ -2864,7 +2904,42 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     );
   }
 
-  const safeDraft = draft!;
+  if (isDraftLoading) {
+    return (
+      <AdminModelsWorkspace
+        activeModelsItem="edit"
+        description="Preparando edición del modelo..."
+        title="Cargando modelo..."
+        titleId="admin-models-edit-loading-title"
+      >
+        <article className="account-page__empty-state">
+          <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">progress_activity</span>
+          <h2>Cargando modelo...</h2>
+          <p>Preparando edición del modelo...</p>
+        </article>
+      </AdminModelsWorkspace>
+    );
+  }
+
+  if (!originalDraft || !draft) {
+    return (
+      <AdminModelsWorkspace
+        activeModelsItem="edit"
+        description="Seleccionar modelo para editar"
+        title="Modelo no encontrado"
+        titleId="admin-models-edit-notfound-title"
+      >
+        <article className="account-page__empty-state">
+          <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">edit_note</span>
+          <h2>Modelo no encontrado</h2>
+          <p>No se encontró un modelo con el identificador especificado.</p>
+          <a className="account-page__button" href="#/admin/modelos/editar">Volver a selección de modelos</a>
+        </article>
+      </AdminModelsWorkspace>
+    );
+  }
+
+  const safeDraft = draft;
   const kickerText = `Editando ${safeDraft.brand} ${safeDraft.model} ${safeDraft.year}`;
 
   return (
@@ -2876,6 +2951,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     >
       {publishError ? <p className="admin-page__model-status admin-page__model-status--error" role="alert">{publishError}</p> : null}
       <AdminModelFormBody
+        key={motorcycleId}
         draft={safeDraft}
         suggestedModelId={suggestedModelId}
         localStatus={localStatus}
