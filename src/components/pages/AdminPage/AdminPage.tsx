@@ -118,6 +118,7 @@ type AdminModelFeatureKey = keyof BikeFeatures;
 type AdminModelSectionProps = Readonly<{
   children: ReactNode;
   description?: string;
+  id: string;
   technicalTitle: string;
 }>;
 
@@ -240,9 +241,9 @@ function getPreviewBadgeIcon(segment: BikeSegment | '') {
   return segment ? segmentIcons[segment] : 'category';
 }
 
-function AdminModelSection({ children, description, technicalTitle }: AdminModelSectionProps) {
+function AdminModelSection({ children, description, id, technicalTitle }: AdminModelSectionProps) {
   return (
-    <details className="admin-page__model-section" open>
+    <details className="admin-page__model-section" id={id} open>
       <summary className="admin-page__model-section-header">
         <div className="admin-page__model-section-heading">
           <span className="admin-page__model-section-line" aria-hidden="true" />
@@ -981,6 +982,61 @@ function AdminModelFormBody({
     await onPublish();
   }, [onPublish, onUploadImage, selectedFile, hasUploadedImage, onDraftFieldChange, onDraftCheckboxChange]);
 
+  function scrollToSection(sectionId: string) {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+    if (el instanceof HTMLDetailsElement && !el.open) {
+      el.open = true;
+    }
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function getSectionProgress(sectionId: string): number {
+    switch (sectionId) {
+      case 'admin-model-section-identity': {
+        const filled = [draft.brand, draft.model, draft.year, draft.description].filter(Boolean).length;
+        return filled / 4;
+      }
+      case 'admin-model-section-classification': {
+        const filled = [draft.segment, draft.license].filter(Boolean).length;
+        return filled / 2;
+      }
+      case 'admin-model-section-engine': {
+        const fields = [draft.engineType, draft.displacementCc, draft.powerHp, draft.torqueNm, draft.wetWeightKg, draft.seatHeightMm, draft.fuelTankLiters];
+        return fields.filter(Boolean).length / fields.length;
+      }
+      case 'admin-model-section-electronics': {
+        const checked = Object.values(draft.features).filter(Boolean).length;
+        return checked / Object.keys(draft.features).length;
+      }
+      case 'admin-model-section-market': {
+        return draft.priceEur ? 1 : 0;
+      }
+      case 'admin-model-section-image': {
+        if (imageMode === 'upload') return (selectedFile || hasUploadedImage) ? 1 : 0;
+        return draft.imageUrl ? 1 : 0;
+      }
+      case 'admin-model-section-sources': {
+        const fields = [draft.officialUrl, draft.sourceNotes, draft.internalNotes];
+        return fields.filter(Boolean).length / fields.length;
+      }
+      default:
+        return 0;
+    }
+  }
+
+  const sectionNavItems = [
+    { id: 'admin-model-section-identity', label: 'Identidad', index: '01' },
+    { id: 'admin-model-section-classification', label: 'Clasificación', index: '02' },
+    { id: 'admin-model-section-engine', label: 'Motor', index: '03' },
+    { id: 'admin-model-section-electronics', label: 'Electrónica', index: '04' },
+    { id: 'admin-model-section-market', label: 'Mercado', index: '05' },
+    { id: 'admin-model-section-image', label: 'Imagen', index: '06' },
+    { id: 'admin-model-section-sources', label: 'Fuentes', index: '07' },
+  ] as const;
+
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
       <header className="admin-page__model-toolbar">
@@ -990,8 +1046,34 @@ function AdminModelFormBody({
 
       <AdminModelHeroPreview draft={draft} />
 
+      <nav className="admin-page__section-radar" aria-label="Secciones del formulario">
+        <ul className="admin-page__section-radar-list">
+          {sectionNavItems.map((item) => {
+            const progress = getSectionProgress(item.id);
+            const progressPct = Math.round(progress * 100);
+            return (
+              <li key={item.id} className="admin-page__section-radar-item">
+                <button
+                  type="button"
+                  className="admin-page__section-radar-btn"
+                  aria-label={`${item.label}, ${progressPct}% completado`}
+                  onClick={() => scrollToSection(item.id)}
+                >
+                  <span className="admin-page__section-radar-index" aria-hidden="true">{item.index}</span>
+                  <span className="admin-page__section-radar-track" aria-hidden="true">
+                    <span className="admin-page__section-radar-fill" style={{ height: `${progressPct}%` }} />
+                  </span>
+                  <span className="admin-page__section-radar-label">{item.label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
       <form className="admin-page__model-form" aria-label={formLabel} onSubmit={(event) => event.preventDefault()}>
         <AdminModelSection
+          id="admin-model-section-identity"
           technicalTitle="01. IDENTIDAD_MODELO"
           description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
         >
@@ -1043,6 +1125,7 @@ function AdminModelFormBody({
         </AdminModelSection>
 
         <AdminModelSection
+          id="admin-model-section-classification"
           technicalTitle="02. CLASIFICACION"
           description="Define la taxonomía base y el carnet objetivo antes de empezar a cargar números o copy técnico."
         >
@@ -1076,6 +1159,7 @@ function AdminModelFormBody({
         </AdminModelSection>
 
         <AdminModelSection
+          id="admin-model-section-engine"
           technicalTitle="03. MOTOR_RENDIMIENTO"
           description="Bloque local de specs principales para alimentar el preview tipo ficha y preparar el contrato técnico futuro."
         >
@@ -1144,6 +1228,7 @@ function AdminModelFormBody({
         </AdminModelSection>
 
         <AdminModelSection
+          id="admin-model-section-electronics"
           technicalTitle="04. ELECTRONICA_EQUIPAMIENTO"
           description="Selección local de features típicas para revisar el layout de toggles antes de mapearlas al backend real."
         >
@@ -1158,6 +1243,7 @@ function AdminModelFormBody({
         </AdminModelSection>
 
         <AdminModelSection
+          id="admin-model-section-market"
           technicalTitle="05. PRECIO_MERCADO"
           description="Campos locales para validar copy, fallback de precio pendiente y decisiones de presentación antes de tocar persistencia."
         >
@@ -1178,6 +1264,7 @@ function AdminModelFormBody({
         </AdminModelSection>
 
         <AdminModelSection
+          id="admin-model-section-image"
           technicalTitle="06. IMAGEN_CURACION"
           description="Solo URL de imagen y notas locales. No hay upload ni normalización real en esta fase."
         >
@@ -1241,9 +1328,10 @@ function AdminModelFormBody({
                   <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
                 ) : null}
 
-                {previewBlobUrl && selectedFile ? (
+                  {previewBlobUrl && selectedFile ? (
                   <div className="admin-page__model-field admin-page__model-field--full">
                     <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" style={{ maxWidth: '100%', maxHeight: '300px', margin: '0 auto' }} />
+                    <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
                     <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
                       <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
                       {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
@@ -1256,6 +1344,7 @@ function AdminModelFormBody({
         </AdminModelSection>
 
         <AdminModelSection
+          id="admin-model-section-sources"
           technicalTitle="07. FUENTES_NOTAS"
           description="Campos de referencia local para preparar fuentes, URL oficial y notas editoriales antes de definir servicios reales."
         >
