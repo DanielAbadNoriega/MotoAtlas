@@ -111,9 +111,9 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
 - El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
 - "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
-- **No hay UI de galería persistida**, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards.
-- El **contrato backend actual visible en UI sigue siendo single-image** a través de `motorcycles.image_url`, `image_locked` e `image_source`.
-- Ya existe la base backend de galería: tabla `public.motorcycle_images` + `adminMotorcycleGalleryService` para metadata DB-only. Esa capa no sube archivos, no borra objetos de Storage y todavía no está conectada al modal.
+- **Galería de solo lectura conectada**: al abrir el modal en edit mode (modelo ya persistido), se cargan imágenes desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería con cards que muestran `url`, `altText`, `isPrimary`, `source` y `sortOrder`. No hay datos falsos ni mock gallery cards.
+- La galería es de solo lectura: subir, editar metadata, reordenar y borrar quedan para una fase posterior.
+- El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
 **Acción `Subir imagen`:**
 - Aparece solo cuando hay un archivo válido seleccionado.
@@ -153,11 +153,11 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 
 **Sin:**
 - A2 fields en draft
-- multi-image gallery
+- galería completa (subir, editar, reordenar, borrar)
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Futuro:** conectar el modal a la galería real (`motorcycle_images`), listar imágenes, crear records desde uploads, elegir primaria, reordenar, coordinar borrado record/Storage, WebP conversion e IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** completar la galería con creación de records desde uploads, elección de primaria desde la galería, reorden, borrado coordinado record/Storage, WebP conversion e IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 
@@ -202,4 +202,4 @@ Sobre respuestas:
 
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración.
-- Multi-image gallery real: ya tiene data model `motorcycle_images`, RLS y `adminMotorcycleGalleryService`; falta la UI modal/galería multi-imagen con listado real, creación de records, selección de imagen primaria, reorden y eliminación individual coordinada con Storage.
+- Galería multi-imagen completa: la lectura ya está conectada al modal en modo solo lectura. Falta creación de records desde uploads, selección de imagen primaria desde la galería, reorden y eliminación individual coordinada con Storage.
