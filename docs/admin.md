@@ -111,9 +111,9 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
 - El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
 - "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
-- **No hay persistencia de galería**, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards.
-- El **contrato backend actual sigue siendo single-image** a través de los campos de imagen de motorcycle existentes.
-- Futuro soporte de galería pendiente y requerirá data model / RLS / services `motorcycle_images` dedicados.
+- **No hay UI de galería persistida**, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards.
+- El **contrato backend actual visible en UI sigue siendo single-image** a través de `motorcycles.image_url`, `image_locked` e `image_source`.
+- Ya existe la base backend de galería: tabla `public.motorcycle_images` + `adminMotorcycleGalleryService` para metadata DB-only. Esa capa no sube archivos, no borra objetos de Storage y todavía no está conectada al modal.
 
 **Acción `Subir imagen`:**
 - Aparece solo cuando hay un archivo válido seleccionado.
@@ -157,7 +157,7 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Futuro:** multi-image gallery, WebP conversion, IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** conectar el modal a la galería real (`motorcycle_images`), listar imágenes, crear records desde uploads, elegir primaria, reordenar, coordinar borrado record/Storage, WebP conversion e IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 
@@ -202,4 +202,4 @@ Sobre respuestas:
 
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración.
-- Multi-image gallery real: requiere data model `motorcycle_images`, RLS, services y UI modal/galería multi-imagen con selección de imagen primaria y reorden/eliminación individual.
+- Multi-image gallery real: ya tiene data model `motorcycle_images`, RLS y `adminMotorcycleGalleryService`; falta la UI modal/galería multi-imagen con listado real, creación de records, selección de imagen primaria, reorden y eliminación individual coordinada con Storage.

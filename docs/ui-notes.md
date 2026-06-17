@@ -267,10 +267,11 @@ La gestión de imágenes del formulario admin de modelos se ha refactorizado mov
 - Sin Tailwind copiado, sin leakage global
 
 **Contrato actual:**
-- No hay persistencia de galería multi-imagen
+- No hay UI de galería multi-imagen persistida
 - No hay datos falsos de galería, thumbnails demo, arrays demo, mock gallery cards
-- Backend sigue siendo single-image a través de campos `image_url`, `image_locked`, `image_source` de `motorcycles`
-- Futura galería real requerirá data model `motorcycle_images`, RLS, services y UI dedicada
+- La UI actual sigue siendo single-image a través de `image_url`, `image_locked`, `image_source` de `motorcycles`
+- La base backend real ya existe (`public.motorcycle_images` + `adminMotorcycleGalleryService`), pero el modal todavía no la consume
+- La galería dedicada sigue pendiente a nivel de UI/workflow (listado real, primaria, reorden, borrado coordinado)
 
 ## Admin Models Studio — Section Radar (Stitch-inspired)
 

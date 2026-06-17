@@ -3,7 +3,7 @@
 ## Último estado estable
 
 - Rama actual: `feature/admin-models-image-replace-cleanup`
-- Último bloque validado: **Admin Models image replace/delete cleanup hardening** aprobado.
+- Último bloque validado: **Admin Models motorcycle image gallery schema + service foundation** aprobado.
 - Alcance validado:
   - **Fase 6A**: Supabase Storage bucket `motorcycle-images` con public read + admin-only insert/update/delete policies. 5 MB max. Allow MIME types: `image/jpeg`, `image/png`, `image/webp`.
   - **Fase 6B**: `adminMotorcycleImageUploadService.ts` con `uploadMotorcycleImage` y `deleteMotorcycleImage` (fetch direct a Supabase Storage REST, body raw `File` para upload). Upload path `{motorcycleId}/{uuid}.{extension}`. Public URL `/storage/v1/object/public/motorcycle-images/{objectPath}`. Extensión preservada: jpeg→`.jpg`, png→`.png`, webp→`.webp`. Anon key + Bearer access token (no service role). UUID via `globalThis.crypto?.randomUUID?.()` con fallback.
@@ -19,13 +19,15 @@
   - **Manual browser smoke**: flujo completo (create + upload + publish + edit + upload + publish) verificado manualmente por el desarrollador sin blockers.
   - **Discard/reset cleanup**: descartar cambios limpia también estado local de archivo seleccionado / session upload para no dejar reuploads accidentales pendientes.
   - Hardening: `globalThis.crypto?.randomUUID?.()` + tests for `globalThis.crypto` undefined. Explicit already-uploaded assertion.
-- Tests: 1324 passed (77 files)
+  - **Multi-image gallery schema/RLS foundation**: nueva tabla aditiva `public.motorcycle_images` con `storage_path` nullable pero seguro, `created_by` nullable, FK a `public.motorcycles(id)` con cascade delete, `source` tipado con `public.motorcycle_data_source`, índices por `motorcycle_id` y `(motorcycle_id, sort_order)`, unique partial index para una sola imagen primaria por moto y RLS con lectura pública condicionada por existencia de la moto padre + escritura admin vía `public.is_admin()`. Sin backfill y sin tocar el contrato actual `motorcycles.image_url` / `image_locked` / `image_source`.
+  - **Gallery service layer**: `adminMotorcycleGalleryService.ts` añade `getAdminMotorcycleGalleryImages`, `createAdminMotorcycleGalleryImage`, `updateAdminMotorcycleGalleryImage` y `deleteAdminMotorcycleGalleryImageRecord` sobre `public.motorcycle_images`. Gestiona solo metadata DB, mapea rows snake_case a objetos camelCase, preserva `storagePath`/`createdBy` nullables y no sube archivos ni borra objetos de Storage.
+- Tests: 1344 passed (78 files)
 - Typecheck: clean
 - `git diff --check`: clean
 - Focused checks más recientes:
-  - focused Admin Models image cleanup hardening → `202` tests passing
-  - suite completa → `1324` tests passing
-- Sin cambios en schema/RLS fuera de Fase 5A/6A. Quedan pendientes galería multiimagen, WebP conversion opcional, IntersectionObserver active section tracking y A2 fields en draft si aplica.
+  - focused schema + gallery service foundation → `2 files / 102 tests` passing
+  - suite completa → `1344` tests passing
+- El backend de galería multiimagen ya tiene base de schema/RLS + service layer. Quedan pendientes la conexión del modal a la galería real, listado/reorden/selección de primaria, creación de records desde uploads, borrado coordinado de records/Storage, WebP conversion opcional, IntersectionObserver active section tracking y A2 fields en draft si aplica.
 
 ## Implementado
 
@@ -67,7 +69,7 @@
 - Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
 - Admin protegido por sesión + rol (`user_profiles.role = admin`).
 - quick links de cuenta/admin ya no se documentan como listas planas aisladas: `.account-page__quick-links` soporta grupos `Mi cuenta` y `Panel Admin`, con disclosure nativo `<details>/<summary>`, anchors semánticos y el mismo orden en superficies de cuenta y admin. El plumbing extra de `isAdmin` en páginas de cuenta solo habilita la visibilidad del grupo compartido, sin cambiar guards ni acceso a datos.
-- Admin Models Studio — **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar + post-publish navigation + App-level in-memory catalog sync + image replace/delete cleanup hardening + image manager modal refactor implementadas**. Persistencia operativa via `createAdminMotorcycle` / `updateAdminMotorcycle` con validación cliente compartida (`validateAdminModelDraftForPublish`). Image upload via Supabase Storage `motorcycle-images` bucket con `uploadMotorcycleImage`. Modos `URL manual` y `Subir archivo` con preview local, MIME/size validation, explicit upload y auto-upload antes de publicar. File input nativo reemplazado por control custom MotoAtlas-styled con filename visible. Sticky Section Radar con marcadores numerados, tracks de progreso verticales y scroll horizontal en mobile. `imageLocked` se activa automáticamente al subir. La preview actual funciona en create/edit; imágenes persistidas de Storage se quitan del formulario sin borrado inmediato, las subidas en la sesión sí pueden eliminarse antes del publish, y la limpieza del objeto persistido viejo ocurre solo tras replacement publish exitoso. Tras publish exitoso, create navega a `#/motos/{createdBike.id}`, edit navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh. Quedan pendientes WebP conversion opcional, multi-image gallery, A2 fields en draft si aplica e IntersectionObserver active section tracking.
+- Admin Models Studio — **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar + post-publish navigation + App-level in-memory catalog sync + image replace/delete cleanup hardening + image manager modal refactor implementadas**. Persistencia operativa via `createAdminMotorcycle` / `updateAdminMotorcycle` con validación cliente compartida (`validateAdminModelDraftForPublish`). Image upload via Supabase Storage `motorcycle-images` bucket con `uploadMotorcycleImage`. Modos `URL manual` y `Subir archivo` con preview local, MIME/size validation, explicit upload y auto-upload antes de publicar. File input nativo reemplazado por control custom MotoAtlas-styled con filename visible. Sticky Section Radar con marcadores numerados, tracks de progreso verticales y scroll horizontal en mobile. `imageLocked` se activa automáticamente al subir. La preview actual funciona en create/edit; imágenes persistidas de Storage se quitan del formulario sin borrado inmediato, las subidas en la sesión sí pueden eliminarse antes del publish, y la limpieza del objeto persistido viejo ocurre solo tras replacement publish exitoso. Tras publish exitoso, create navega a `#/motos/{createdBike.id}`, edit navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh. Quedan pendientes la conexión del modal a `motorcycle_images`, listado/reorden/selección de imagen primaria, creación de gallery records desde uploads, borrado coordinado de records/Storage, WebP conversion opcional, A2 fields en draft si aplica e IntersectionObserver active section tracking.
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
 - `#/admin/solicitudes` **Fase 1 implementada** (rama `feature/admin-requests-phase-1`, sin cambios de schema/RLS) sobre la base auditada en `feature/admin-requests-audit`. Capacidades verificadas:
@@ -213,7 +215,7 @@
 ### Catálogo / imágenes
 - Pipeline base de imágenes operativo: assets locales por `motorcycle.id` en `public/images/motorcycles/*.webp`.
 - Scripts de normalización + sync con dry-run (`normalize:images:*`, `sync:images:*`) documentados y activos.
-- Contrato actual de imagen: sincronización de `image_url`/`image_source` y respeto de `image_locked` para no pisar curación manual.
+- Contrato actual de imagen: `motorcycles.image_url` sigue siendo la imagen primaria desnormalizada usada por cards, buscador, ficha y fallbacks; `image_source` y `image_locked` siguen gobernando el flujo single-image actual y la curación manual.
 
 ### Taxonomía de segmentos (Fase 0-3.1) — base cerrada
 
@@ -286,7 +288,7 @@
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
 - Backlog P2 Auth: repetir opcionalmente el smoke del signup público directo cuando se libere el rate limit `429` de Supabase email y mantener auditorías periódicas si en el futuro aparecen nuevas funciones `security definer`.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
-- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar + post-publish navigation + App-level in-memory catalog sync + image replace/delete cleanup hardening + image manager modal refactor implementadas**. Quedan pendientes: multi-image gallery, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
+- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fases 1 a 5C.1 (persistencia/validación) + Fase 6A (Storage bucket/policies) + Fase 6B (upload service) + Fase 6C.2 (upload UI shell) + Fase 6C.3 (explicit upload) + Fase 6C.4 (auto-upload before publish) + file input UI polish + Section Radar + post-publish navigation + App-level in-memory catalog sync + image replace/delete cleanup hardening + image manager modal refactor implementadas**. Quedan pendientes: conexión UI del modal a `motorcycle_images`, listado/reorden/selección de primaria, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
@@ -310,7 +312,7 @@
 
 ## Siguiente paso
 
-- **Admin Models Studio**: Fases 1 a 6C.4 completadas (persistencia + image upload/storage) más UI polish (file input custom + Section Radar), post-publish navigation + App-level in-memory catalog sync, image replace/delete cleanup hardening y **image manager modal refactor** cerrados. Siguientes fases recomendadas: multi-image gallery, A2 fields en draft si aplica, WebP conversion opcional, IntersectionObserver active section tracking.
+- **Admin Models Studio**: Fases 1 a 6C.4 completadas (persistencia + image upload/storage) más UI polish (file input custom + Section Radar), post-publish navigation + App-level in-memory catalog sync, image replace/delete cleanup hardening y **image manager modal refactor** cerrados. Siguientes fases recomendadas: conectar el modal al backend real de galería (`motorcycle_images` + `adminMotorcycleGalleryService`), añadir listado/reorden/selección de primaria, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
 
 ## Decisiones importantes
 
