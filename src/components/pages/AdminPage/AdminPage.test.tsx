@@ -1783,6 +1783,63 @@ describe('AdminPage', () => {
     expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', 'https://cdn.motoatlas.test/current-image.webp');
   });
 
+  it('mantiene visible la entrada del formulario para imagen y el trigger del gestor', () => {
+    render(<AdminNewModelPage />);
+
+    expect(screen.getByRole('region', { name: 'Imagen actual del modelo' })).toBeInTheDocument();
+    expect(screen.getByText('Imagen no disponible')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Gestionar imágenes' })).toBeInTheDocument();
+  });
+
+  it('abrir Gestionar imágenes muestra el modal shell sin galería fake', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Galería de imágenes' })).toBeInTheDocument();
+    expect(screen.getByText('Gestiona la imagen principal y la biblioteca visual del modelo.')).toBeInTheDocument();
+    expect(screen.getByText('La gestión completa de imagen se integrará en este modal en la siguiente fase.')).toBeInTheDocument();
+    expect(screen.getByText('Por ahora, la imagen principal se sigue gestionando desde el bloque del formulario.')).toBeInTheDocument();
+    expect(screen.getByText('El soporte multiimagen se añadirá sobre la futura galería persistente.')).toBeInTheDocument();
+    expect(screen.queryByText(/Imagen 4/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Imagen 5/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/8 imágenes/i)).not.toBeInTheDocument();
+  });
+
+  it('el botón de cerrar cierra el modal de imágenes', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+    await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('Cancelar cierra el modal de imágenes', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('Guardar cambios cierra el modal de imágenes sin publicar', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+    expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+  });
+
   it('mantiene Guardar borrador y Vista previa como acciones locales sin llamar servicios', async () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
@@ -3427,6 +3484,16 @@ describe('AdminPage', () => {
       expect(previewSection).not.toBeNull();
       expect(within(previewSection as HTMLElement).getByText('105 CV')).toBeInTheDocument();
       expect(screen.getByRole('img', { name: 'Preview local de BMW F 900 GS' })).toBeInTheDocument();
+    });
+
+    it('el modal de imágenes en edit muestra el badge del modelo disponible', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText('BMW · F 900 GS · 2024')).toBeInTheDocument();
     });
 
     it('preserva las mismas cuatro acciones en el footer', () => {

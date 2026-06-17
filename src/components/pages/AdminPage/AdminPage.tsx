@@ -962,6 +962,7 @@ function AdminModelFormBody({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -1022,6 +1023,20 @@ function AdminModelFormBody({
       }
     };
   }, [previewBlobUrl]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!isImageManagerOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsImageManagerOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isImageManagerOpen]);
 
   const [isUploading, setIsUploading] = useState(false);
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
@@ -1179,8 +1194,8 @@ function AdminModelFormBody({
         return draft.priceEur ? 1 : 0;
       }
       case 'admin-model-section-image': {
-        if (imageMode === 'upload') return (selectedFile || hasUploadedImage) ? 1 : 0;
-        return draft.imageUrl ? 1 : 0;
+        const hasImage = draft.imageUrl || selectedFile || hasUploadedImage;
+        return hasImage ? 1 : 0;
       }
       case 'admin-model-section-sources': {
         const fields = [draft.officialUrl, draft.sourceNotes, draft.internalNotes];
@@ -1200,6 +1215,10 @@ function AdminModelFormBody({
     { id: 'admin-model-section-image', label: 'Imagen', index: '06' },
     { id: 'admin-model-section-sources', label: 'Fuentes', index: '07' },
   ] as const;
+
+  const imageModalBadge = [draft.brand.trim(), draft.model.trim(), draft.year.trim()]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
@@ -1469,10 +1488,19 @@ function AdminModelFormBody({
               <section className="admin-page__model-image-preview admin-page__model-image-preview--empty admin-page__model-field--full" aria-label="Imagen actual del modelo">
                 <div className="admin-page__model-image-preview-copy">
                   <strong>Imagen no disponible</strong>
-                  <p>Elegí una URL o subí un archivo para continuar con el formulario.</p>
+                  <p>Elige una URL o sube un archivo para continuar con el formulario.</p>
                 </div>
               </section>
             )}
+            <div className="admin-model__image-manager-trigger admin-page__model-field--full">
+              <button
+                type="button"
+                className="account-page__button account-page__button--glass admin-page__model-action-button admin-model__image-manager-button"
+                onClick={() => setIsImageManagerOpen(true)}
+              >
+                Gestionar imágenes
+              </button>
+            </div>
 
             <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
               <span className="admin-page__model-label">
@@ -1608,6 +1636,58 @@ function AdminModelFormBody({
       {localStatus ? (
         <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
       ) : null}
+
+      {isImageManagerOpen && (
+        <div className="admin-model__image-modal-backdrop">
+          <div className="admin-model__image-modal" role="dialog" aria-modal="true" aria-labelledby="image-manager-title">
+            <header className="admin-model__image-modal-header">
+              <div className="admin-model__image-modal-title-group">
+                <span className="admin-model__image-modal-kicker">ADMIN IMAGE STUDIO</span>
+                <h2 id="image-manager-title">Galería de imágenes</h2>
+                {imageModalBadge ? (
+                  <span className="admin-model__image-modal-badge">{imageModalBadge}</span>
+                ) : null}
+                <p className="admin-model__image-modal-subtitle">Gestiona la imagen principal y la biblioteca visual del modelo.</p>
+              </div>
+              <button
+                type="button"
+                className="admin-model__image-modal-close"
+                aria-label="Cerrar gestor de imágenes"
+                onClick={() => setIsImageManagerOpen(false)}
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">close</span>
+              </button>
+            </header>
+            <div className="admin-model__image-modal-body">
+              <div className="admin-model__image-modal-placeholder">
+                <span className="material-symbols-outlined" aria-hidden="true">imagesmode</span>
+                <div>
+                  <strong>Gestor visual en preparación</strong>
+                  <p>La gestión completa de imagen se integrará en este modal en la siguiente fase.</p>
+                  <p>Por ahora, la imagen principal se sigue gestionando desde el bloque del formulario.</p>
+                </div>
+              </div>
+              <p className="admin-model__image-modal-note">El soporte multiimagen se añadirá sobre la futura galería persistente.</p>
+            </div>
+            <footer className="admin-model__image-modal-footer">
+              <button
+                type="button"
+                className="account-page__button account-page__button--glass"
+                onClick={() => setIsImageManagerOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="account-page__button"
+                onClick={() => setIsImageManagerOpen(false)}
+              >
+                Guardar cambios
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
