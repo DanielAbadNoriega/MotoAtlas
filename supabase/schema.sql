@@ -804,6 +804,91 @@ grant select on table public.user_profiles to authenticated;
 grant insert (id, display_name, avatar_url) on public.user_profiles to authenticated;
 grant update (display_name, avatar_url) on public.user_profiles to authenticated;
 
+create table if not exists public.motorcycle_images (
+  id uuid primary key default gen_random_uuid(),
+  motorcycle_id text not null references public.motorcycles(id) on delete cascade,
+  url text not null check (length(trim(url)) > 0),
+  storage_path text null check (
+    storage_path is null
+    or (
+      length(trim(storage_path)) > 0
+      and storage_path = trim(storage_path)
+      and position('..' in storage_path) = 0
+    )
+  ),
+  alt_text text,
+  is_primary boolean not null default false,
+  sort_order integer not null default 0 check (sort_order >= 0),
+  source public.motorcycle_data_source not null default 'manual',
+  created_by uuid null references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists motorcycle_images_motorcycle_id_idx on public.motorcycle_images (motorcycle_id);
+create index if not exists motorcycle_images_motorcycle_id_sort_order_idx on public.motorcycle_images (motorcycle_id, sort_order);
+create unique index if not exists motorcycle_images_one_primary_per_motorcycle
+  on public.motorcycle_images (motorcycle_id)
+  where is_primary = true;
+
+drop trigger if exists set_motorcycle_images_updated_at on public.motorcycle_images;
+create trigger set_motorcycle_images_updated_at
+before update on public.motorcycle_images
+for each row
+execute function public.set_updated_at();
+
+alter table public.motorcycle_images enable row level security;
+
+drop policy if exists "Public motorcycle images are readable" on public.motorcycle_images;
+create policy "Public motorcycle images are readable"
+on public.motorcycle_images
+for select
+to anon, authenticated
+using (
+  exists (
+    select 1
+    from public.motorcycles m
+    where m.id = motorcycle_images.motorcycle_id
+  )
+);
+
+drop policy if exists "Admins can read all motorcycle images" on public.motorcycle_images;
+create policy "Admins can read all motorcycle images"
+on public.motorcycle_images
+for select
+to authenticated
+using (public.is_admin());
+
+drop policy if exists "Admins can insert motorcycle images" on public.motorcycle_images;
+create policy "Admins can insert motorcycle images"
+on public.motorcycle_images
+for insert
+to authenticated
+with check (public.is_admin());
+
+drop policy if exists "Admins can update motorcycle images" on public.motorcycle_images;
+create policy "Admins can update motorcycle images"
+on public.motorcycle_images
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+drop policy if exists "Admins can delete motorcycle images" on public.motorcycle_images;
+create policy "Admins can delete motorcycle images"
+on public.motorcycle_images
+for delete
+to authenticated
+using (public.is_admin());
+
+revoke all on table public.motorcycle_images from anon;
+revoke all on table public.motorcycle_images from authenticated;
+
+grant select on public.motorcycle_images to anon, authenticated;
+grant insert (motorcycle_id, url, storage_path, alt_text, is_primary, sort_order, source, created_by) on public.motorcycle_images to authenticated;
+grant update (motorcycle_id, url, storage_path, alt_text, is_primary, sort_order, source) on public.motorcycle_images to authenticated;
+grant delete on public.motorcycle_images to authenticated;
+
 drop policy if exists "Admins can read all motorcycle reviews" on public.motorcycle_reviews;
 create policy "Admins can read all motorcycle reviews"
 on public.motorcycle_reviews
