@@ -40,6 +40,11 @@ import {
   type AdminMotorcycleUpdatePayload,
 } from '../../../services/adminMotorcycleService';
 import { deleteMotorcycleImage, MOTORCYCLE_IMAGE_BUCKET, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
+import {
+  createAdminMotorcycleGalleryImage,
+  getAdminMotorcycleGalleryImages,
+  type AdminMotorcycleGalleryImage,
+} from '../../../services/adminMotorcycleGalleryService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -176,6 +181,7 @@ const emptyAdminModelDraft: AdminModelDraft = {
 };
 
 const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-model-creating.jpg';
+const adminModelTechnicalPlaceholderImage = '/images/placeholders/motorcycle-technical-pending.jpg';
 
 function createDraftFromBike(bike: Bike): AdminModelDraft {
   return {
@@ -865,12 +871,28 @@ type AdminModelFormBodyProps = Readonly<{
   onLocalAction: (message: string) => void;
   onPublish?: (autoUploadedUrl?: string) => void;
   onUploadImage?: (file: File) => Promise<string>;
+  onCreateGalleryRecord?: (input: {
+    motorcycleId: string;
+    url: string;
+    storagePath: string;
+    isPrimary: boolean;
+    sortOrder: number;
+    source: MotorcycleDataSource;
+  }) => Promise<AdminMotorcycleGalleryImage>;
+  onPersistedImageGalleryStateChange?: (isGalleryBacked: boolean) => void;
   onDeleteImage?: (objectPath: string) => Promise<void>;
   saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
   workspaceHeadingId: string;
   formLabel: string;
+}>;
+
+type AdminModelLibraryImage = Readonly<{
+  key: string;
+  url: string;
+  kind: 'gallery' | 'draft' | 'persisted' | 'placeholder';
+  galleryImage?: AdminMotorcycleGalleryImage;
 }>;
 
 const motorcycleImageBucketPublicPath = `/storage/v1/object/public/${MOTORCYCLE_IMAGE_BUCKET}/`;
@@ -938,6 +960,107 @@ function getMotorcycleImageObjectPath(imageUrl: string): string | null {
   }
 }
 
+function appendGalleryImage(
+  currentImages: readonly AdminMotorcycleGalleryImage[],
+  nextImage: AdminMotorcycleGalleryImage,
+): readonly AdminMotorcycleGalleryImage[] {
+  const existingIndex = currentImages.findIndex((image) => image.id === nextImage.id);
+  const images = existingIndex >= 0
+    ? currentImages.map((image, index) => (index === existingIndex ? nextImage : image))
+    : [...currentImages, nextImage];
+
+  return [...images].sort((left, right) => {
+    if (left.sortOrder !== right.sortOrder) {
+      return left.sortOrder - right.sortOrder;
+    }
+
+    return left.createdAt.localeCompare(right.createdAt);
+  });
+}
+
+function getNextGallerySortOrder(images: readonly AdminMotorcycleGalleryImage[]): number {
+  if (images.length === 0) {
+    return 0;
+  }
+
+  return images.reduce((maxSortOrder, image) => Math.max(maxSortOrder, image.sortOrder), 0) + 1;
+}
+
+function getGalleryImageSourceLabel(source: MotorcycleDataSource): string {
+  switch (source) {
+    case 'api':
+      return 'Importación';
+    case 'manual':
+      return 'Manual';
+    case 'user':
+      return 'Usuario';
+    case 'estimated':
+      return 'Estimado';
+    case 'placeholder':
+      return 'Placeholder';
+    default:
+      return 'Manual';
+  }
+}
+
+function getCurrentImageOriginLabel(imageUrl: string): string {
+  const trimmedUrl = imageUrl.trim();
+
+  if (!trimmedUrl) {
+    return 'Pendiente';
+  }
+
+  if (getMotorcycleImageObjectPath(trimmedUrl)) {
+    return 'Storage MotoAtlas';
+  }
+
+  if (trimmedUrl.startsWith('/images/')) {
+    return 'Catálogo local';
+  }
+
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    return 'URL externa';
+  }
+
+  return 'Borrador local';
+}
+
+function formatGalleryImageDate(value: string): string {
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Fecha pendiente';
+  }
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(parsedDate);
+}
+
+function getGalleryImageAssetName(value: string): string | null {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const withoutQuery = trimmedValue.split(/[?#]/, 1)[0] ?? trimmedValue;
+  const segments = withoutQuery.split('/').filter(Boolean);
+  const lastSegment = segments.length > 0 ? segments[segments.length - 1] : null;
+
+  if (!lastSegment) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(lastSegment);
+  } catch {
+    return lastSegment;
+  }
+}
+
 function AdminModelFormBody({
   draft,
   suggestedModelId,
@@ -951,6 +1074,8 @@ function AdminModelFormBody({
   onLocalAction,
   onPublish,
   onUploadImage,
+  onCreateGalleryRecord,
+  onPersistedImageGalleryStateChange,
   onDeleteImage,
   saving,
   toolbarKicker,
@@ -963,6 +1088,13 @@ function AdminModelFormBody({
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<readonly AdminMotorcycleGalleryImage[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const [galleryBackedUploadUrls, setGalleryBackedUploadUrls] = useState<readonly string[]>([]);
+  const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
+  const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
+  const { session, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -1038,8 +1170,90 @@ function AdminModelFormBody({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isImageManagerOpen]);
 
+  // Fetch gallery images when modal opens in edit mode
+  useEffect(() => {
+    if (!isImageManagerOpen) {
+      setGalleryLoading(false);
+      setGalleryError(null);
+      setGalleryInfoCardKeys(new Set());
+      stableLibraryKeyRef.current.clear();
+      return;
+    }
+
+    if (!draft.modelId.trim()) {
+      return;
+    }
+
+    let cancelled = false;
+    setGalleryLoading(true);
+    setGalleryError(null);
+
+    getAdminMotorcycleGalleryImages(draft.modelId, session?.access_token)
+      .then((images) => {
+        if (!cancelled) {
+          setGalleryImages(images);
+          setGalleryLoading(false);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setGalleryError(error instanceof Error ? error.message : 'Error al cargar la galería');
+          setGalleryLoading(false);
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [isImageManagerOpen, draft.modelId, session?.access_token]);
+
   const [isUploading, setIsUploading] = useState(false);
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
+  const [sessionUploadedImageUrl, setSessionUploadedImageUrl] = useState<string | null>(null);
+  const [isDeletingCurrentImage, setIsDeletingCurrentImage] = useState(false);
+
+  const maybeCreateGalleryRecordForUpload = useCallback(async (publicUrl: string) => {
+    const trimmedModelId = draft.modelId.trim();
+    const storagePath = getMotorcycleImageObjectPath(publicUrl);
+
+    if (!onCreateGalleryRecord || !trimmedModelId || !storagePath) {
+      return { galleryImage: null, warningMessage: null };
+    }
+
+    const existingImage = galleryImages.find((image) =>
+      image.url === publicUrl || (image.storagePath && image.storagePath === storagePath),
+    );
+
+    if (existingImage) {
+      setGalleryBackedUploadUrls((currentUrls) => (
+        currentUrls.includes(publicUrl) ? currentUrls : [...currentUrls, publicUrl]
+      ));
+
+      return { galleryImage: existingImage, warningMessage: null };
+    }
+
+    try {
+      const galleryImage = await onCreateGalleryRecord({
+        motorcycleId: trimmedModelId,
+        url: publicUrl,
+        storagePath,
+        isPrimary: false,
+        sortOrder: getNextGallerySortOrder(galleryImages),
+        source: 'manual',
+      });
+
+      setGalleryImages((currentImages) => appendGalleryImage(currentImages, galleryImage));
+      setGalleryBackedUploadUrls((currentUrls) => (
+        currentUrls.includes(publicUrl) ? currentUrls : [...currentUrls, publicUrl]
+      ));
+
+      return { galleryImage, warningMessage: null };
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'Error al registrar la imagen en la galería.';
+      return {
+        galleryImage: null,
+        warningMessage: `Imagen subida correctamente, pero no se pudo registrar en la galería. ${reason}`,
+      };
+    }
+  }, [draft.modelId, galleryImages, onCreateGalleryRecord]);
 
   const handleImageUpload = useCallback(async () => {
     if (!onUploadImage || !selectedFile) return;
@@ -1053,14 +1267,22 @@ function AdminModelFormBody({
       setSessionUploadedImageUrl(publicUrl);
       onDraftFieldChange('imageUrl', publicUrl);
       onDraftCheckboxChange('imageLocked', true);
-      onLocalAction('Imagen subida correctamente.');
+      const { warningMessage } = await maybeCreateGalleryRecordForUpload(publicUrl);
+      onLocalAction(warningMessage ?? 'Imagen subida correctamente.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
       setFileError(message);
     } finally {
       setIsUploading(false);
     }
-  }, [onUploadImage, selectedFile, onDraftFieldChange, onDraftCheckboxChange, onLocalAction]);
+  }, [
+    maybeCreateGalleryRecordForUpload,
+    onDraftCheckboxChange,
+    onDraftFieldChange,
+    onLocalAction,
+    onUploadImage,
+    selectedFile,
+  ]);
 
   const handlePublishWithAutoUpload = useCallback(async () => {
     if (!onPublish) return;
@@ -1075,6 +1297,10 @@ function AdminModelFormBody({
         setSessionUploadedImageUrl(publicUrl);
         onDraftFieldChange('imageUrl', publicUrl);
         onDraftCheckboxChange('imageLocked', true);
+        const { warningMessage } = await maybeCreateGalleryRecordForUpload(publicUrl);
+        if (warningMessage) {
+          onLocalAction(warningMessage);
+        }
         setIsUploading(false);
         await onPublish(publicUrl);
         return;
@@ -1087,14 +1313,22 @@ function AdminModelFormBody({
     }
 
     await onPublish();
-  }, [onPublish, onUploadImage, selectedFile, hasUploadedImage, onDraftFieldChange, onDraftCheckboxChange]);
+  }, [
+    hasUploadedImage,
+    maybeCreateGalleryRecordForUpload,
+    onDraftCheckboxChange,
+    onDraftFieldChange,
+    onLocalAction,
+    onPublish,
+    onUploadImage,
+    selectedFile,
+  ]);
 
   const currentImageUrl = draft.imageUrl.trim();
   const persistedImageUrlTrimmed = persistedImageUrl.trim();
   const currentImageObjectPath = getMotorcycleImageObjectPath(currentImageUrl);
   const currentImageIsStorageAsset = Boolean(currentImageObjectPath);
-  const [sessionUploadedImageUrl, setSessionUploadedImageUrl] = useState<string | null>(null);
-  const [isDeletingCurrentImage, setIsDeletingCurrentImage] = useState(false);
+  const persistedImageObjectPath = getMotorcycleImageObjectPath(persistedImageUrlTrimmed);
 
   useEffect(() => {
     if (!currentImageUrl || (persistedImageUrlTrimmed && currentImageUrl === persistedImageUrlTrimmed)) {
@@ -1102,17 +1336,46 @@ function AdminModelFormBody({
     }
   }, [currentImageUrl, persistedImageUrlTrimmed]);
 
+  const currentImageHasGalleryRecord = Boolean(
+    currentImageUrl
+    && (
+      galleryBackedUploadUrls.includes(currentImageUrl)
+      || galleryImages.some((image) => image.url === currentImageUrl)
+    ),
+  );
+
+  useEffect(() => {
+    if (!onPersistedImageGalleryStateChange) {
+      return;
+    }
+
+    const isGalleryBacked = Boolean(
+      persistedImageUrlTrimmed
+      && galleryImages.some((image) => (
+        image.url === persistedImageUrlTrimmed
+        || (persistedImageObjectPath && image.storagePath === persistedImageObjectPath)
+      )),
+    );
+
+    onPersistedImageGalleryStateChange(isGalleryBacked);
+  }, [
+    galleryImages,
+    onPersistedImageGalleryStateChange,
+    persistedImageObjectPath,
+    persistedImageUrlTrimmed,
+  ]);
+
   const currentImageIsSessionUpload = Boolean(
     currentImageObjectPath
     && sessionUploadedImageUrl
     && currentImageUrl === sessionUploadedImageUrl,
-  );
+  ) && !currentImageHasGalleryRecord;
 
   const handleRemoveCurrentImage = useCallback(async () => {
     const restorePersistedImage = currentImageIsSessionUpload
       && persistedImageUrlTrimmed
       && persistedImageUrlTrimmed !== currentImageUrl;
-    const nextImageUrl = restorePersistedImage ? persistedImageUrlTrimmed : '';
+    const nextImageUrl = restorePersistedImage ? persistedImageUrlTrimmed : adminModelTechnicalPlaceholderImage;
     const nextImageLocked = restorePersistedImage ? persistedImageLocked : false;
 
     if (!currentImageUrl) return;
@@ -1156,6 +1419,7 @@ function AdminModelFormBody({
   const handleDiscardChangesClick = useCallback(() => {
     setFileError(null);
     setSessionUploadedImageUrl(null);
+    setGalleryBackedUploadUrls([]);
     setIsDeletingCurrentImage(false);
     resetSelectedUploadState();
     onDiscardChanges();
@@ -1219,6 +1483,95 @@ function AdminModelFormBody({
   const imageModalBadge = [draft.brand.trim(), draft.model.trim(), draft.year.trim()]
     .filter(Boolean)
     .join(' · ');
+  const currentImagePreviewUrl = currentImageUrl || '';
+  const currentImageOriginLabel = getCurrentImageOriginLabel(currentImagePreviewUrl);
+  const currentImageStatusLabel = currentImagePreviewUrl
+    ? (draft.imageLocked ? 'Portada bloqueada' : 'Portada activa')
+    : 'Sin portada';
+  const currentImageSupportCopy = currentImagePreviewUrl
+    ? 'Esta imagen sigue siendo la portada activa que usa el modelo en el flujo actual.'
+    : 'Define una imagen principal desde URL manual o archivo local para preparar la portada del modelo.';
+  const libraryImages = useMemo<readonly AdminModelLibraryImage[]>(() => {
+    const entries = new Map<string, AdminModelLibraryImage>();
+    const getStableKey = (url: string): string => {
+      const existing = stableLibraryKeyRef.current.get(url);
+      if (existing) {
+        return existing;
+      }
+      const nextKey = `lib-${stableLibraryKeyRef.current.size}`;
+      stableLibraryKeyRef.current.set(url, nextKey);
+      return nextKey;
+    };
+
+    const registerImage = (entry: AdminModelLibraryImage) => {
+      const trimmedUrl = entry.url.trim();
+      if (!trimmedUrl || entries.has(trimmedUrl)) {
+        return;
+      }
+
+      entries.set(trimmedUrl, {
+        ...entry,
+        key: getStableKey(trimmedUrl),
+        url: trimmedUrl,
+      });
+    };
+
+    galleryImages.forEach((image) => {
+      registerImage({
+        key: `gallery-${image.id}`,
+        url: image.url,
+        kind: 'gallery',
+        galleryImage: image,
+      });
+    });
+
+    if (persistedImageUrlTrimmed) {
+      registerImage({
+        key: 'persisted-model-image',
+        url: persistedImageUrlTrimmed,
+        kind: 'persisted',
+      });
+    }
+
+    if (currentImagePreviewUrl) {
+      registerImage({
+        key: 'draft-current-image',
+        url: currentImagePreviewUrl,
+        kind: 'draft',
+      });
+    }
+
+    registerImage({
+      key: 'technical-placeholder-image',
+      url: adminModelTechnicalPlaceholderImage,
+      kind: 'placeholder',
+    });
+
+    return [...entries.values()];
+  }, [currentImagePreviewUrl, galleryImages, persistedImageUrlTrimmed]);
+
+  const handleUseLibraryImageAsCover = useCallback((nextImageUrl: string) => {
+    onDraftFieldChange('imageUrl', nextImageUrl);
+    setFileError(null);
+    setSelectedFile(null);
+    setPreviewBlobUrl(null);
+    setHasUploadedImage(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [onDraftFieldChange]);
+
+  const handleToggleGalleryCardInfo = useCallback((cardKey: string) => {
+    setGalleryInfoCardKeys((current) => {
+      const next = new Set(current);
+      if (next.has(cardKey)) {
+        next.delete(cardKey);
+      } else {
+        next.add(cardKey);
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
@@ -1570,7 +1923,7 @@ function AdminModelFormBody({
                 {imageModalBadge ? (
                   <span className="admin-model__image-modal-badge">{imageModalBadge}</span>
                 ) : null}
-                <p className="admin-model__image-modal-subtitle">Gestiona la imagen principal y la biblioteca visual del modelo.</p>
+                <p className="admin-model__image-modal-subtitle">Visualiza la galería de imágenes y gestiona la imagen principal del modelo.</p>
               </div>
               <button
                 type="button"
@@ -1582,117 +1935,362 @@ function AdminModelFormBody({
               </button>
             </header>
             <div className="admin-model__image-modal-body">
-              <div className="admin-model__image-modal-placeholder">
-                <span className="material-symbols-outlined" aria-hidden="true">imagesmode</span>
-                <div>
-                  <strong>Gestor visual en preparación</strong>
-                  <p>La gestión completa de imagen se integrará en este modal en la siguiente fase.</p>
-                  <p>Por ahora, la imagen principal se sigue gestionando desde el bloque del formulario.</p>
-                </div>
-              </div>
-              <div className="admin-model__image-modal-controls">
-                <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--selector" aria-labelledby="image-manager-source-title">
-                  <div className="admin-model__image-modal-control-header">
-                    <p id="image-manager-source-title" className="admin-model__image-modal-control-title">Fuente principal</p>
-                    <p className="admin-model__image-modal-helper">Elige si vas a curar la portada con una URL manual o con un archivo local.</p>
-                  </div>
-                  <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
-                    <div className="container-actions admin-model__image-modal-mode-switch" role="radiogroup" aria-label="Modo de selección de imagen">
-                      <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
-                        URL manual
-                      </button>
-                      <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
-                        Subir archivo
-                      </button>
+              <div className="admin-model__image-modal-workspace">
+                <section className="admin-model__image-modal-primary-panel" aria-label="Portada activa del modelo">
+                  <header className="admin-model__image-modal-primary-header">
+                      <p className="admin-model__image-modal-section-label">{currentImageStatusLabel}</p>
+                      <h3>Imagen principal del modelo</h3>
+                  </header>
+
+                  {currentImagePreviewUrl ? (
+                    <div className="admin-model__image-modal-primary-card">
+                      <div className="admin-model__image-modal-primary-media">
+                        <img src={currentImagePreviewUrl} alt="Portada activa del modelo" loading="lazy" />
+                        <div className="admin-model__image-modal-primary-media-overlay">
+                          <span className="admin-model__image-modal-primary-chip">
+                            <span className="material-symbols-outlined" aria-hidden="true">imagesmode</span>
+                            {currentImageOriginLabel}
+                          </span>
+                          {draft.imageLocked ? (
+                            <span className="admin-model__image-modal-primary-chip admin-model__image-modal-primary-chip--locked">
+                              <span className="material-symbols-outlined" aria-hidden="true">lock</span>
+                              Bloqueada
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="admin-model__image-modal-primary-copy">
+                        <p>{currentImageSupportCopy}</p>
+                        <dl className="admin-model__image-modal-primary-meta">
+                          <div>
+                            <dt>Origen</dt>
+                            <dd>{currentImageOriginLabel}</dd>
+                          </div>
+                          <div>
+                            <dt>Estado</dt>
+                            <dd>{draft.imageLocked ? 'Curada manualmente' : 'Editable'}</dd>
+                          </div>
+                        </dl>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="admin-model__image-modal-primary-card admin-model__image-modal-primary-card--empty">
+                      <span className="material-symbols-outlined" aria-hidden="true">image_search</span>
+                      <div>
+                        <strong>Sin portada definida</strong>
+                        <p>{currentImageSupportCopy}</p>
+                      </div>
+                    </div>
+                  )}
                 </section>
 
-                {fileError ? (
-                  <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--alert">
-                    <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
-                  </section>
-                ) : null}
+                <section className="admin-model__image-modal-library" aria-label="Biblioteca visual del modelo">
+                  <header className="admin-model__image-modal-gallery-header">
+                    <div className="admin-model__image-modal-gallery-title-group">
+                      <p className="admin-model__image-modal-section-label">Biblioteca visual</p>
+                      <p className="admin-model__image-modal-helper">Selecciona una imagen como portada activa.</p>
+                    </div>
+                    <span className="admin-model__image-modal-gallery-count">{libraryImages.length}</span>
+                  </header>
 
-                {imageMode === 'url' ? (
-                  <>
-                    <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--url" aria-labelledby="image-manager-url-title">
-                      <div className="admin-model__image-modal-control-header">
-                        <p id="image-manager-url-title" className="admin-model__image-modal-control-title">URL principal</p>
-                        <p className="admin-model__image-modal-helper">Usa una ruta curada del catálogo o una URL externa válida para preparar la portada.</p>
+                  {!draft.modelId.trim() ? (
+                    <div className="admin-model__image-modal-placeholder">
+                      <span className="material-symbols-outlined" aria-hidden="true">imagesmode</span>
+                      <div>
+                        <strong>Galería persistente pendiente</strong>
+                        <p>Cuando el modelo exista se cargarán aquí sus imágenes persistidas. Mientras tanto, puedes preparar la portada con la biblioteca disponible.</p>
                       </div>
-                      <div className="admin-page__model-field-grid">
-                        <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
-                          <span className="admin-page__model-label">
-                            <span className="material-symbols-outlined" aria-hidden="true">link_2</span>
-                            Image URL
-                          </span>
-                          <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
-                        </label>
+                    </div>
+                  ) : null}
+
+                  {galleryLoading ? (
+                    <div className="admin-model__image-modal-loading" role="status" aria-live="polite">
+                      <span className="material-symbols-outlined" aria-hidden="true">sync</span>
+                      <div>
+                        <strong>Cargando galería</strong>
+                        <p>Cargando galería de imágenes...</p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {galleryError ? (
+                    <div className="admin-model__image-modal-error" role="alert">
+                      <span className="material-symbols-outlined" aria-hidden="true">warning</span>
+                      <div>
+                        <strong>No se pudo cargar la galería</strong>
+                        <p>{galleryError}</p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {libraryImages.length === 0 ? (
+                    <div className="admin-model__image-modal-empty">
+                      <span className="material-symbols-outlined" aria-hidden="true">photo_library</span>
+                      <div>
+                        <strong>Sin imágenes disponibles</strong>
+                        <p>Aún no hay recursos visuales listos para reutilizar como portada.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <section className="admin-model__image-modal-gallery" aria-label="Galería de imágenes del modelo">
+                      <div className="admin-model__image-modal-gallery-grid">
+                        {libraryImages.map((image) => {
+                          const galleryImage = image.galleryImage;
+                          const isCurrentCover = currentImagePreviewUrl === image.url;
+                          const isOriginalPersisted = persistedImageUrlTrimmed === image.url;
+                          const isPlaceholderOption = adminModelTechnicalPlaceholderImage === image.url;
+                          const isGalleryRecord = Boolean(galleryImage);
+                          const isInfoOpen = galleryInfoCardKeys.has(image.key);
+                          const assetName = getGalleryImageAssetName(galleryImage?.storagePath || image.url);
+                          const cardTitle = galleryImage?.altText?.trim()
+                            || (isPlaceholderOption
+                              ? 'Placeholder técnico MotoAtlas'
+                              : image.kind === 'persisted'
+                                ? 'Portada guardada'
+                                : image.kind === 'draft'
+                                  ? 'Portada en edición'
+                                  : assetName
+                                    || 'Imagen disponible');
+                          const cardEyebrow = isPlaceholderOption
+                            ? 'Fallback técnico'
+                            : isGalleryRecord
+                              ? 'Registro persistido'
+                              : image.kind === 'persisted'
+                                ? 'Referencia guardada'
+                                : 'Cobertura activa';
+                          const cardFacts = [
+                            assetName ? { label: 'Archivo', value: assetName } : null,
+                            galleryImage ? { label: 'Fuente', value: getGalleryImageSourceLabel(galleryImage.source) } : null,
+                            galleryImage ? { label: 'Orden', value: `#${galleryImage.sortOrder}` } : null,
+                            galleryImage ? { label: 'Alta', value: formatGalleryImageDate(galleryImage.createdAt) } : null,
+                          ].filter(Boolean) as ReadonlyArray<{ label: string; value: string }>;
+                          const actionLabel = isCurrentCover ? `Portada actual: ${cardTitle}` : `Usar como portada: ${cardTitle}`;
+
+                          return (
+                            <article
+                              key={image.key}
+                              className={`admin-model__image-modal-gallery-card${isInfoOpen ? ' admin-model__image-modal-gallery-card--info-open' : ''}`}
+                              aria-label={cardTitle}
+                              data-library-image-url={image.url}
+                            >
+                              <button
+                                type="button"
+                                className="admin-model__image-modal-gallery-card-action"
+                                aria-label={actionLabel}
+                                title={isCurrentCover ? 'Portada actual' : 'Usar como portada'}
+                                disabled={isCurrentCover}
+                                onClick={() => handleUseLibraryImageAsCover(image.url)}
+                              >
+                                <span className="material-symbols-outlined" aria-hidden="true">
+                                  {isCurrentCover ? 'check_circle' : 'wallpaper'}
+                                </span>
+                              </button>
+                              <div className="admin-model__image-modal-gallery-card-stage">
+                                <div className="admin-model__image-modal-gallery-card-face admin-model__image-modal-gallery-card-face--front">
+                                  <div className="admin-model__image-modal-gallery-card-media">
+                                    <img src={image.url} alt={cardTitle} loading="lazy" />
+                                    <div className="admin-model__image-modal-gallery-card-overlays">
+                                      <div className="admin-model__image-modal-gallery-card-badge-column">
+                                        <span className="admin-model__image-modal-gallery-card-handle-slot material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                                        <div className="admin-model__image-modal-gallery-card-badges">
+                                          {isCurrentCover ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--current"
+                                              role="img"
+                                              aria-label="Portada actual"
+                                              title="Portada actual"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                            </span>
+                                          ) : null}
+                                          {galleryImage?.isPrimary ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--primary"
+                                              role="img"
+                                              aria-label="Principal en galería"
+                                              title="Principal en galería"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">star</span>
+                                            </span>
+                                          ) : null}
+                                          {isOriginalPersisted && !isCurrentCover ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge"
+                                              role="img"
+                                              aria-label="Imagen persistida del modelo"
+                                              title="Imagen persistida del modelo"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">history</span>
+                                            </span>
+                                          ) : null}
+                                          {isPlaceholderOption ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge"
+                                              role="img"
+                                              aria-label="Placeholder técnico"
+                                              title="Placeholder técnico"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">construction</span>
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="admin-model__image-modal-gallery-card-info-toggle"
+                                    aria-label={`Ver detalles de ${cardTitle}`}
+                                    aria-expanded={isInfoOpen}
+                                    title="Ver detalles"
+                                    onClick={() => handleToggleGalleryCardInfo(image.key)}
+                                  >
+                                    <span className="material-symbols-outlined" aria-hidden="true">info</span>
+                                  </button>
+                                </div>
+                                <div className="admin-model__image-modal-gallery-card-face admin-model__image-modal-gallery-card-face--back">
+                                  <div className="admin-model__image-modal-gallery-card-info">
+                                    <p className="admin-model__image-modal-gallery-card-eyebrow">{cardEyebrow}</p>
+                                    <h4>{cardTitle}</h4>
+                                    {cardFacts.length > 0 ? (
+                                      <dl className="admin-model__image-modal-gallery-card-facts">
+                                        {cardFacts.map((fact) => (
+                                          <div key={`${image.key}-${fact.label}`}>
+                                            <dt>{fact.label}</dt>
+                                            <dd title={fact.value}>{fact.value}</dd>
+                                          </div>
+                                        ))}
+                                      </dl>
+                                    ) : (
+                                      <p className="admin-model__image-modal-gallery-card-note">
+                                        Selecciona esta imagen para actualizar la portada activa del formulario.
+                                      </p>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="admin-model__image-modal-gallery-card-info-toggle admin-model__image-modal-gallery-card-info-toggle--back"
+                                    aria-label={`Ocultar detalles de ${cardTitle}`}
+                                    aria-expanded={isInfoOpen}
+                                    title="Volver a la imagen"
+                                    onClick={() => handleToggleGalleryCardInfo(image.key)}
+                                  >
+                                    <span className="material-symbols-outlined" aria-hidden="true">image</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </article>
+                          );
+                        })}
                       </div>
                     </section>
+                  )}
+                </section>
 
-                    <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--lock" aria-labelledby="image-manager-lock-title">
-                      <div className="admin-model__image-modal-control-header">
-                        <p id="image-manager-lock-title" className="admin-model__image-modal-control-title">Bloqueo y curación</p>
-                        <p className="admin-model__image-modal-helper">Fija esta portada manual cuando no quieras que futuras sincronizaciones la sustituyan.</p>
-                      </div>
-                      <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-                        <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
-                        <span className="content">
-                          Imagen bloqueada / curada
-                          <AdminModelInfoTooltip
-                            ariaLabel="Más información sobre imagen bloqueada"
-                            description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
-                          />
-                        </span>
-                      </label>
-                    </section>
-                  </>
-                ) : (
-                  <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--upload" aria-labelledby="image-manager-upload-title">
+                <div className="admin-model__image-modal-controls">
+                  <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--selector" aria-labelledby="image-manager-source-title">
                     <div className="admin-model__image-modal-control-header">
-                      <p id="image-manager-upload-title" className="admin-model__image-modal-control-title">Carga local</p>
-                      <p className="admin-model__image-modal-helper">Selecciona un archivo JPG, PNG o WebP para previsualizarlo y subirlo cuando el borrador esté listo.</p>
+                      <p id="image-manager-source-title" className="admin-model__image-modal-control-title">Fuente principal</p>
+                      <p className="admin-model__image-modal-helper">Elige si vas a curar la portada con una URL manual o con un archivo local.</p>
                     </div>
-                    <div className="admin-page__model-field-grid">
-                      <div className="admin-page__model-field admin-page__model-field--full">
-                        <span className="admin-page__model-label">
-                          <span className="material-symbols-outlined" aria-hidden="true">upload</span>
-                          Seleccionar imagen del modelo
-                        </span>
-                        <div className="admin-page__image-file-control">
-                          <input ref={fileInputRef} id="admin-model-image-file" type="file" className="admin-page__image-file-input" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
-                          <label htmlFor="admin-model-image-file" className="admin-page__image-file-trigger">
-                            <span className="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
-                            Seleccionar imagen
-                          </label>
-                          <span className="admin-page__image-file-name" aria-live="polite">
-                            {selectedFile ? `${selectedFile.name} - ${formatFileSize(selectedFile.size)}` : 'Ningún archivo seleccionado'}
-                          </span>
-                        </div>
+                    <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
+                      <div className="container-actions admin-model__image-modal-mode-switch" role="radiogroup" aria-label="Modo de selección de imagen">
+                        <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
+                          URL manual
+                        </button>
+                        <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
+                          Subir archivo
+                        </button>
                       </div>
-
-                      {previewBlobUrl && selectedFile ? (
-                        <div className="admin-page__model-image-preview admin-page__model-field--full">
-                          <div className="admin-page__model-image-preview-media admin-page__model-image-preview-media--candidate">
-                            <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" />
-                          </div>
-                          <div className="admin-page__model-image-preview-copy">
-                            <strong>Archivo seleccionado</strong>
-                            <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
-                          </div>
-                          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
-                            <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
-                            {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
-                          </button>
-                        </div>
-                      ) : null}
                     </div>
+                    {fileError ? (
+                      <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--alert">
+                        <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
+                      </section>
+                    ) : null}
+
+                    {imageMode === 'url' ? (
+                      <>
+                        <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--url" aria-labelledby="image-manager-url-title">
+                          <div className="admin-model__image-modal-control-header">
+                            <p id="image-manager-url-title" className="admin-model__image-modal-control-title">URL principal</p>
+                            <p className="admin-model__image-modal-helper">Usa una ruta curada del catálogo o una URL externa válida para preparar la portada.</p>
+                          </div>
+                          <div className="admin-page__model-field-grid">
+                            <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+                              <span className="admin-page__model-label">
+                                <span className="material-symbols-outlined" aria-hidden="true">link_2</span>
+                                Image URL
+                              </span>
+                              <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
+                            </label>
+                          </div>
+                        </section>
+
+                        <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--lock" aria-labelledby="image-manager-lock-title">
+                          <div className="admin-model__image-modal-control-header">
+                            <p id="image-manager-lock-title" className="admin-model__image-modal-control-title">Bloqueo y curación</p>
+                            <p className="admin-model__image-modal-helper">Fija esta portada manual cuando no quieras que futuras sincronizaciones la sustituyan.</p>
+                          </div>
+                          <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+                            <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
+                            <span className="content">
+                              Imagen bloqueada / curada
+                              <AdminModelInfoTooltip
+                                ariaLabel="Más información sobre imagen bloqueada"
+                                description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
+                              />
+                            </span>
+                          </label>
+                        </section>
+                      </>
+                    ) : (
+                      <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--upload" aria-labelledby="image-manager-upload-title">
+                        <div className="admin-model__image-modal-control-header">
+                          <p id="image-manager-upload-title" className="admin-model__image-modal-control-title">Carga local</p>
+                          <p className="admin-model__image-modal-helper">Selecciona un archivo JPG, PNG o WebP para previsualizarlo y subirlo cuando el borrador esté listo.</p>
+                        </div>
+                        <div className="admin-page__model-field-grid">
+                          <div className="admin-page__model-field admin-page__model-field--full">
+                            <span className="admin-page__model-label">
+                              <span className="material-symbols-outlined" aria-hidden="true">upload</span>
+                              Seleccionar imagen del modelo
+                            </span>
+                            <div className="admin-page__image-file-control">
+                              <input ref={fileInputRef} id="admin-model-image-file" type="file" className="admin-page__image-file-input" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                              <label htmlFor="admin-model-image-file" className="admin-page__image-file-trigger">
+                                <span className="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
+                                Seleccionar imagen
+                              </label>
+                              <span className="admin-page__image-file-name" aria-live="polite">
+                                {selectedFile ? `${selectedFile.name} - ${formatFileSize(selectedFile.size)}` : 'Ningún archivo seleccionado'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {previewBlobUrl && selectedFile ? (
+                            <div className="admin-page__model-image-preview admin-page__model-field--full">
+                              <div className="admin-page__model-image-preview-media admin-page__model-image-preview-media--candidate">
+                                <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" />
+                              </div>
+                              <div className="admin-page__model-image-preview-copy">
+                                <strong>Archivo seleccionado</strong>
+                                <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                              </div>
+                              <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
+                                <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                                {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      </section>
+                    )}
                   </section>
-                )}
+
+                  <p className="admin-model__image-modal-note">La biblioteca permite reutilizar imágenes como portada. La gestión avanzada de galería llegará en una fase posterior.</p>
+                </div>
               </div>
-              <p className="admin-model__image-modal-note">El soporte multiimagen se añadirá sobre la futura galería persistente.</p>
             </div>
             <footer className="admin-model__image-modal-footer">
               <button
@@ -1724,8 +2322,10 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
   const [localStatus, setLocalStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [publishError, setPublishError] = useState('');
+  const [sessionUploadedStorageImageUrl, setSessionUploadedStorageImageUrl] = useState<string | null>(null);
+  const [hasCreatedGalleryRecordForSessionUpload, setHasCreatedGalleryRecordForSessionUpload] = useState(false);
 
-  const { session } = useAuth();
+  const { session, user } = useAuth();
 
   const suggestedModelId = useMemo(() => buildSuggestedModelId(draft), [draft]);
 
@@ -1758,6 +2358,8 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
     setDraft(emptyAdminModelDraft);
     setLocalStatus('Cambios descartados.');
     setPublishError('');
+    setSessionUploadedStorageImageUrl(null);
+    setHasCreatedGalleryRecordForSessionUpload(false);
   }, []);
 
   const handlePublish = useCallback(async (autoUploadedUrl?: string) => {
@@ -1786,7 +2388,33 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
     try {
       const payload = draftToCreatePayload(effectiveDraft, suggestedModelId);
       const createdBike = await createAdminMotorcycle(payload, accessToken);
-      setLocalStatus('Modelo publicado correctamente.');
+      let publishStatus = 'Modelo publicado correctamente.';
+      const currentImageUrl = effectiveDraft.imageUrl.trim();
+      const uploadedStorageObjectPath = sessionUploadedStorageImageUrl
+        && currentImageUrl === sessionUploadedStorageImageUrl
+        && !hasCreatedGalleryRecordForSessionUpload
+        ? getMotorcycleImageObjectPath(sessionUploadedStorageImageUrl)
+        : null;
+
+      if (uploadedStorageObjectPath) {
+        try {
+          await createAdminMotorcycleGalleryImage({
+            motorcycleId: createdBike.id,
+            url: currentImageUrl,
+            storagePath: uploadedStorageObjectPath,
+            isPrimary: false,
+            sortOrder: 0,
+            source: 'manual',
+            createdBy: user?.id ?? null,
+          }, accessToken);
+          setHasCreatedGalleryRecordForSessionUpload(true);
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : 'No se pudo registrar la imagen en la galería.';
+          publishStatus = `Modelo publicado correctamente. La imagen se subió, pero no se pudo registrar en la galería. ${reason}`;
+        }
+      }
+
+      setLocalStatus(publishStatus);
       onMotorcyclesChangeProp?.(createdBike);
       window.location.hash = `#/motos/${createdBike.id}`;
     } catch (error) {
@@ -1796,7 +2424,15 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
     } finally {
       setSaving(false);
     }
-  }, [draft, suggestedModelId, session?.access_token, onMotorcyclesChangeProp]);
+  }, [
+    draft,
+    hasCreatedGalleryRecordForSessionUpload,
+    onMotorcyclesChangeProp,
+    sessionUploadedStorageImageUrl,
+    session?.access_token,
+    suggestedModelId,
+    user?.id,
+  ]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;
@@ -1811,7 +2447,10 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
       throw new Error('El ID del modelo es obligatorio para subir la imagen.');
     }
 
-    return uploadMotorcycleImage(file, resolvedId, accessToken);
+    const publicUrl = await uploadMotorcycleImage(file, resolvedId, accessToken);
+    setSessionUploadedStorageImageUrl(publicUrl);
+    setHasCreatedGalleryRecordForSessionUpload(false);
+    return publicUrl;
   }, [draft.modelId, suggestedModelId, session?.access_token]);
 
   const handleDeleteImage = useCallback(async (objectPath: string) => {
@@ -2842,9 +3481,10 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
   const [localStatus, setLocalStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [publishError, setPublishError] = useState('');
+  const [persistedImageHasGalleryRecord, setPersistedImageHasGalleryRecord] = useState(false);
   const initializedMotorcycleIdRef = useRef<string | undefined>(motorcycleId);
 
-  const { session } = useAuth();
+  const { session, user } = useAuth();
 
   useEffect(() => {
     const previousMotorcycleId = initializedMotorcycleIdRef.current;
@@ -2852,6 +3492,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
 
     if (!motorcycleId) {
       initializedMotorcycleIdRef.current = undefined;
+      setPersistedImageHasGalleryRecord(false);
       if (draft) {
         setDraft(undefined);
       }
@@ -2863,6 +3504,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
       setLocalStatus('');
       setPublishError('');
       setSaving(false);
+      setPersistedImageHasGalleryRecord(false);
       setDraft(originalDraft ? cloneAdminModelDraft(originalDraft) : undefined);
       return;
     }
@@ -2949,6 +3591,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         && nextImageUrl
         && nextImageUrl !== originalPersistedImageUrl
         && nextImageObjectPath !== originalPersistedObjectPath
+        && !persistedImageHasGalleryRecord
       ) {
         void deleteMotorcycleImage(originalPersistedObjectPath, accessToken).catch(() => undefined);
       }
@@ -2963,7 +3606,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     } finally {
       setSaving(false);
     }
-  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, session?.access_token]);
+  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, persistedImageHasGalleryRecord, session?.access_token]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;
@@ -2974,6 +3617,38 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
 
     return uploadMotorcycleImage(file, motorcycleId!, accessToken);
   }, [motorcycleId, session?.access_token]);
+
+  const handleCreateGalleryRecord = useCallback(async ({
+    motorcycleId: targetMotorcycleId,
+    url,
+    storagePath,
+    isPrimary,
+    sortOrder,
+    source,
+  }: {
+    motorcycleId: string;
+    url: string;
+    storagePath: string;
+    isPrimary: boolean;
+    sortOrder: number;
+    source: MotorcycleDataSource;
+  }) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para registrar la imagen en la galería.');
+    }
+
+    return createAdminMotorcycleGalleryImage({
+      motorcycleId: targetMotorcycleId,
+      url,
+      storagePath,
+      isPrimary,
+      sortOrder,
+      source,
+      createdBy: user?.id ?? null,
+    }, accessToken);
+  }, [session?.access_token, user?.id]);
 
   const handleDeleteImage = useCallback(async (objectPath: string) => {
     const accessToken = session?.access_token;
@@ -3069,6 +3744,8 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         onLocalAction={handleLocalAction}
         onPublish={handlePublish}
         onUploadImage={handleUploadImage}
+        onCreateGalleryRecord={handleCreateGalleryRecord}
+        onPersistedImageGalleryStateChange={setPersistedImageHasGalleryRecord}
         onDeleteImage={handleDeleteImage}
         saving={saving}
         toolbarKicker={kickerText}

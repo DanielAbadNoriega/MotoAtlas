@@ -425,9 +425,9 @@ Funciones:
 - El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
 - El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
 - "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
-- **No hay persistencia de galería**, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards.
-- El **contrato backend actual sigue siendo single-image** a través de los campos de imagen de motorcycle existentes (`image_url`, `image_locked`, `image_source`).
-- Futuro soporte de galería pendiente y requerirá data model / RLS / services `motorcycle_images` dedicados.
+- **Galería conectada con creación de records**: el modal carga imágenes desde `getAdminMotorcycleGalleryImages` en edit mode. Edit mode explicit upload sube a Storage y crea un `motorcycle_images` record. Create mode crea el record tras publish exitoso. URLs manuales y locales no crean records. Un guard evita Storage delete de imágenes respaldadas por gallery records.
+- **Gallery card visual polish + stable ordering**: las cards usan flip `rotateY`, info por botón no hover, multi-info simultáneo, header compacto. El orden de librería es estable vía keys URL-based con `useRef<Map<string, string>>` — seleccionar portada no reordena las cards. Cover fallback seguro a `motorcycle-technical-pending.jpg`.
+- El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
 **Section Radar en UI:**
 - Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.
@@ -435,9 +435,10 @@ Funciones:
 - Scroll horizontal en mobile, glass strip sticky.
 
 **Persistencia:**
-- `motorcycles.image_url` almacena la URL pública de la imagen subida.
+- `motorcycles.image_url` almacena la URL pública de la imagen subida y sigue siendo el campo fuente para la imagen primaria actual en UI.
 - `motorcycles.image_locked` almacena el flag de protección.
 - `motorcycles.image_source` se mantiene según el pipeline existente.
+- `motorcycle_images` no sustituye ese contrato: añade una capa paralela de metadata de galería que el modal admin ya consume y alimenta desde uploads.
 
 ## 6. Routing
 

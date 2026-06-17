@@ -111,9 +111,11 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
 - El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
 - "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
-- **No hay persistencia de galería**, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards.
-- El **contrato backend actual sigue siendo single-image** a través de los campos de imagen de motorcycle existentes.
-- Futuro soporte de galería pendiente y requerirá data model / RLS / services `motorcycle_images` dedicados.
+- **Galería conectada con creación de records**: el modal carga imágenes desde `getAdminMotorcycleGalleryImages` en edit mode. El upload explícito en edit mode sube a Storage y crea un registro en `motorcycle_images` (`isPrimary: false`, `source: 'manual'`), que se añade al estado local. En create mode, el record se crea tras publish exitoso. URLs manuales y assets locales no crean records. Un guard evita borrar de Storage imágenes que ya tienen gallery record.
+- **Gallery card visual polish**: cards minimalistas con icon-only/current-cover indicators, tooltips accesibles `aria-label`. Info panel controlado por botón (no hover). Múltiples cards pueden mostrar info simultáneamente (`galleriaInfoCardKeys: Set<string>`). Flip card con `rotateY` (revolving-door), no `rotateX`. `prefers-reduced-motion` respetado. Header compacto (gap, padding, helper copy reducidos). Metadata compacta.
+- **Stable library ordering**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Cada URL recibe un key React estable (`lib-0`, `lib-1`, ...) en su primera aparición, reutilizado en todos los renders. `persisted` registrado antes que `draft` para que cuando ambas URLs coinciden, el label sea `Portada guardada` en vez de `Portada en edición`. El cambio es React reconciliation únicamente — no muta gallery state ni `sortOrder`. `currentImagePreviewUrl` sigue siendo la fuente de verdad de la portada activa; no depende del orden de galería.
+- **Cover fallback**: si se elimina la portada actual y `draft.imageUrl` quedaría vacío, se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback.
+- El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
 **Acción `Subir imagen`:**
 - Aparece solo cuando hay un archivo válido seleccionado.
@@ -153,11 +155,11 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 
 **Sin:**
 - A2 fields en draft
-- multi-image gallery
+- galería completa (seleccionar primaria, reordenar, borrar desde UI)
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Futuro:** multi-image gallery, WebP conversion, IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** elección de primaria desde la galería, reorden, borrado coordinado record/Storage desde UI, WebP conversion e IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 
@@ -202,4 +204,4 @@ Sobre respuestas:
 
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración.
-- Multi-image gallery real: requiere data model `motorcycle_images`, RLS, services y UI modal/galería multi-imagen con selección de imagen primaria y reorden/eliminación individual.
+- Galería multi-imagen completa: la lectura está conectada, los records se crean desde uploads admin, las gallery cards tienen polish visual y el orden es estable. Falta selección de imagen primaria desde la galería, reorden explícito drag-and-drop y eliminación individual coordinada con Storage.
