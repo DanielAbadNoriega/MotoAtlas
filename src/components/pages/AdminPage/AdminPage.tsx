@@ -1039,6 +1039,28 @@ function formatGalleryImageDate(value: string): string {
   }).format(parsedDate);
 }
 
+function getGalleryImageAssetName(value: string): string | null {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const withoutQuery = trimmedValue.split(/[?#]/, 1)[0] ?? trimmedValue;
+  const segments = withoutQuery.split('/').filter(Boolean);
+  const lastSegment = segments.length > 0 ? segments[segments.length - 1] : null;
+
+  if (!lastSegment) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(lastSegment);
+  } catch {
+    return lastSegment;
+  }
+}
+
 function AdminModelFormBody({
   draft,
   suggestedModelId,
@@ -1070,6 +1092,8 @@ function AdminModelFormBody({
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [galleryBackedUploadUrls, setGalleryBackedUploadUrls] = useState<readonly string[]>([]);
+  const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
+  const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
   const { session, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -1151,6 +1175,8 @@ function AdminModelFormBody({
     if (!isImageManagerOpen) {
       setGalleryLoading(false);
       setGalleryError(null);
+      setGalleryInfoCardKeys(new Set());
+      stableLibraryKeyRef.current.clear();
       return;
     }
 
@@ -1467,6 +1493,15 @@ function AdminModelFormBody({
     : 'Define una imagen principal desde URL manual o archivo local para preparar la portada del modelo.';
   const libraryImages = useMemo<readonly AdminModelLibraryImage[]>(() => {
     const entries = new Map<string, AdminModelLibraryImage>();
+    const getStableKey = (url: string): string => {
+      const existing = stableLibraryKeyRef.current.get(url);
+      if (existing) {
+        return existing;
+      }
+      const nextKey = `lib-${stableLibraryKeyRef.current.size}`;
+      stableLibraryKeyRef.current.set(url, nextKey);
+      return nextKey;
+    };
 
     const registerImage = (entry: AdminModelLibraryImage) => {
       const trimmedUrl = entry.url.trim();
@@ -1476,6 +1511,7 @@ function AdminModelFormBody({
 
       entries.set(trimmedUrl, {
         ...entry,
+        key: getStableKey(trimmedUrl),
         url: trimmedUrl,
       });
     };
@@ -1489,19 +1525,19 @@ function AdminModelFormBody({
       });
     });
 
+    if (persistedImageUrlTrimmed) {
+      registerImage({
+        key: 'persisted-model-image',
+        url: persistedImageUrlTrimmed,
+        kind: 'persisted',
+      });
+    }
+
     if (currentImagePreviewUrl) {
       registerImage({
         key: 'draft-current-image',
         url: currentImagePreviewUrl,
         kind: 'draft',
-      });
-    }
-
-    if (persistedImageUrlTrimmed && persistedImageUrlTrimmed !== currentImagePreviewUrl) {
-      registerImage({
-        key: 'persisted-model-image',
-        url: persistedImageUrlTrimmed,
-        kind: 'persisted',
       });
     }
 
@@ -1524,6 +1560,18 @@ function AdminModelFormBody({
       fileInputRef.current.value = '';
     }
   }, [onDraftFieldChange]);
+
+  const handleToggleGalleryCardInfo = useCallback((cardKey: string) => {
+    setGalleryInfoCardKeys((current) => {
+      const next = new Set(current);
+      if (next.has(cardKey)) {
+        next.delete(cardKey);
+      } else {
+        next.add(cardKey);
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
@@ -1940,9 +1988,9 @@ function AdminModelFormBody({
                   <header className="admin-model__image-modal-gallery-header">
                     <div className="admin-model__image-modal-gallery-title-group">
                       <p className="admin-model__image-modal-section-label">Biblioteca visual</p>
-                      <p className="admin-model__image-modal-helper">Selecciona una imagen disponible para usarla como portada actual. La metadata avanzada de galería seguirá gestionándose en fases posteriores.</p>
+                      <p className="admin-model__image-modal-helper">Selecciona una imagen como portada activa.</p>
                     </div>
-                    <span className="admin-model__image-modal-gallery-count">{libraryImages.length} opciones</span>
+                    <span className="admin-model__image-modal-gallery-count">{libraryImages.length}</span>
                   </header>
 
                   {!draft.modelId.trim() ? (
@@ -1992,82 +2040,144 @@ function AdminModelFormBody({
                           const isOriginalPersisted = persistedImageUrlTrimmed === image.url;
                           const isPlaceholderOption = adminModelTechnicalPlaceholderImage === image.url;
                           const isGalleryRecord = Boolean(galleryImage);
+                          const isInfoOpen = galleryInfoCardKeys.has(image.key);
+                          const assetName = getGalleryImageAssetName(galleryImage?.storagePath || image.url);
                           const cardTitle = galleryImage?.altText?.trim()
                             || (isPlaceholderOption
                               ? 'Placeholder técnico MotoAtlas'
                               : image.kind === 'persisted'
-                                ? 'Imagen original del modelo'
+                                ? 'Portada guardada'
                                 : image.kind === 'draft'
-                                  ? 'Imagen actual del borrador'
-                                  : 'Imagen disponible');
-                          const cardMeta = [
-                            isGalleryRecord ? 'Galería' : null,
-                            isPlaceholderOption ? 'Placeholder técnico' : null,
-                            !isGalleryRecord && image.kind === 'draft' ? 'Imagen actual' : null,
-                            isOriginalPersisted ? 'Imagen original' : null,
-                            galleryImage ? getGalleryImageSourceLabel(galleryImage.source) : getCurrentImageOriginLabel(image.url),
-                            galleryImage ? `Orden ${galleryImage.sortOrder}` : null,
-                          ].filter(Boolean) as string[];
+                                  ? 'Portada en edición'
+                                  : assetName
+                                    || 'Imagen disponible');
+                          const cardEyebrow = isPlaceholderOption
+                            ? 'Fallback técnico'
+                            : isGalleryRecord
+                              ? 'Registro persistido'
+                              : image.kind === 'persisted'
+                                ? 'Referencia guardada'
+                                : 'Cobertura activa';
+                          const cardFacts = [
+                            assetName ? { label: 'Archivo', value: assetName } : null,
+                            galleryImage ? { label: 'Fuente', value: getGalleryImageSourceLabel(galleryImage.source) } : null,
+                            galleryImage ? { label: 'Orden', value: `#${galleryImage.sortOrder}` } : null,
+                            galleryImage ? { label: 'Alta', value: formatGalleryImageDate(galleryImage.createdAt) } : null,
+                          ].filter(Boolean) as ReadonlyArray<{ label: string; value: string }>;
                           const actionLabel = isCurrentCover ? `Portada actual: ${cardTitle}` : `Usar como portada: ${cardTitle}`;
 
                           return (
-                            <article key={image.key} className="admin-model__image-modal-gallery-card" aria-label={cardTitle}>
-                              <div className="admin-model__image-modal-gallery-card-media">
-                                <img src={image.url} alt={cardTitle} loading="lazy" />
-                                <div className="admin-model__image-modal-gallery-card-overlays">
-                                  <div className="admin-model__image-modal-gallery-card-badges">
-                                    {isCurrentCover ? (
-                                      <span className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--current">
-                                        <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
-                                        Portada actual
-                                      </span>
-                                    ) : null}
-                                    {galleryImage?.isPrimary ? (
-                                      <span className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--primary">
-                                        <span className="material-symbols-outlined" aria-hidden="true">star</span>
-                                        Principal
-                                      </span>
-                                    ) : null}
-                                    {isOriginalPersisted && !isCurrentCover ? (
-                                      <span className="admin-model__image-modal-gallery-card-badge">
-                                        <span className="material-symbols-outlined" aria-hidden="true">history</span>
-                                        Imagen original
-                                      </span>
-                                    ) : null}
-                                    {isPlaceholderOption ? (
-                                      <span className="admin-model__image-modal-gallery-card-badge">
-                                        <span className="material-symbols-outlined" aria-hidden="true">construction</span>
-                                        Placeholder técnico
-                                      </span>
-                                    ) : null}
+                            <article
+                              key={image.key}
+                              className={`admin-model__image-modal-gallery-card${isInfoOpen ? ' admin-model__image-modal-gallery-card--info-open' : ''}`}
+                              aria-label={cardTitle}
+                              data-library-image-url={image.url}
+                            >
+                              <button
+                                type="button"
+                                className="admin-model__image-modal-gallery-card-action"
+                                aria-label={actionLabel}
+                                title={isCurrentCover ? 'Portada actual' : 'Usar como portada'}
+                                disabled={isCurrentCover}
+                                onClick={() => handleUseLibraryImageAsCover(image.url)}
+                              >
+                                <span className="material-symbols-outlined" aria-hidden="true">
+                                  {isCurrentCover ? 'check_circle' : 'wallpaper'}
+                                </span>
+                              </button>
+                              <div className="admin-model__image-modal-gallery-card-stage">
+                                <div className="admin-model__image-modal-gallery-card-face admin-model__image-modal-gallery-card-face--front">
+                                  <div className="admin-model__image-modal-gallery-card-media">
+                                    <img src={image.url} alt={cardTitle} loading="lazy" />
+                                    <div className="admin-model__image-modal-gallery-card-overlays">
+                                      <div className="admin-model__image-modal-gallery-card-badge-column">
+                                        <span className="admin-model__image-modal-gallery-card-handle-slot material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+                                        <div className="admin-model__image-modal-gallery-card-badges">
+                                          {isCurrentCover ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--current"
+                                              role="img"
+                                              aria-label="Portada actual"
+                                              title="Portada actual"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">visibility</span>
+                                            </span>
+                                          ) : null}
+                                          {galleryImage?.isPrimary ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--primary"
+                                              role="img"
+                                              aria-label="Principal en galería"
+                                              title="Principal en galería"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">star</span>
+                                            </span>
+                                          ) : null}
+                                          {isOriginalPersisted && !isCurrentCover ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge"
+                                              role="img"
+                                              aria-label="Imagen persistida del modelo"
+                                              title="Imagen persistida del modelo"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">history</span>
+                                            </span>
+                                          ) : null}
+                                          {isPlaceholderOption ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge"
+                                              role="img"
+                                              aria-label="Placeholder técnico"
+                                              title="Placeholder técnico"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">construction</span>
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                  {galleryImage ? (
-                                    <span className="admin-model__image-modal-gallery-card-order">#{galleryImage.sortOrder}</span>
-                                  ) : null}
+                                  <button
+                                    type="button"
+                                    className="admin-model__image-modal-gallery-card-info-toggle"
+                                    aria-label={`Ver detalles de ${cardTitle}`}
+                                    aria-expanded={isInfoOpen}
+                                    title="Ver detalles"
+                                    onClick={() => handleToggleGalleryCardInfo(image.key)}
+                                  >
+                                    <span className="material-symbols-outlined" aria-hidden="true">info</span>
+                                  </button>
                                 </div>
-                              </div>
-                              <div className="admin-model__image-modal-gallery-card-info">
-                                <h4>{cardTitle}</h4>
-                                <div className="admin-model__image-modal-gallery-card-meta">
-                                  {cardMeta.map((item) => <span key={`${image.key}-${item}`}>{item}</span>)}
-                                  {galleryImage ? <span>{formatGalleryImageDate(galleryImage.createdAt)}</span> : null}
-                                  {galleryImage?.storagePath ? <span title={galleryImage.storagePath}>Storage</span> : null}
+                                <div className="admin-model__image-modal-gallery-card-face admin-model__image-modal-gallery-card-face--back">
+                                  <div className="admin-model__image-modal-gallery-card-info">
+                                    <p className="admin-model__image-modal-gallery-card-eyebrow">{cardEyebrow}</p>
+                                    <h4>{cardTitle}</h4>
+                                    {cardFacts.length > 0 ? (
+                                      <dl className="admin-model__image-modal-gallery-card-facts">
+                                        {cardFacts.map((fact) => (
+                                          <div key={`${image.key}-${fact.label}`}>
+                                            <dt>{fact.label}</dt>
+                                            <dd title={fact.value}>{fact.value}</dd>
+                                          </div>
+                                        ))}
+                                      </dl>
+                                    ) : (
+                                      <p className="admin-model__image-modal-gallery-card-note">
+                                        Selecciona esta imagen para actualizar la portada activa del formulario.
+                                      </p>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="admin-model__image-modal-gallery-card-info-toggle admin-model__image-modal-gallery-card-info-toggle--back"
+                                    aria-label={`Ocultar detalles de ${cardTitle}`}
+                                    aria-expanded={isInfoOpen}
+                                    title="Volver a la imagen"
+                                    onClick={() => handleToggleGalleryCardInfo(image.key)}
+                                  >
+                                    <span className="material-symbols-outlined" aria-hidden="true">image</span>
+                                  </button>
                                 </div>
-                                {galleryImage?.storagePath ? (
-                                  <p className="admin-model__image-modal-gallery-card-path" title={galleryImage.storagePath}>{galleryImage.storagePath}</p>
-                                ) : null}
-                                <button
-                                  type="button"
-                                  className="account-page__button account-page__button--glass admin-model__image-modal-gallery-card-action"
-                                  aria-label={actionLabel}
-                                  disabled={isCurrentCover}
-                                  onClick={() => handleUseLibraryImageAsCover(image.url)}
-                                >
-                                  <span className="material-symbols-outlined" aria-hidden="true">
-                                    {isCurrentCover ? 'check_circle' : 'photo_library'}
-                                  </span>
-                                  {isCurrentCover ? 'Portada actual' : 'Usar como portada'}
-                                </button>
                               </div>
                             </article>
                           );

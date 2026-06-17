@@ -2941,7 +2941,6 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
-      expect(screen.getByText('Galería (3)')).toBeInTheDocument();
       expect(screen.getByRole('article', { name: 'Nueva vista lateral' })).toBeInTheDocument();
       expect(getAdminMotorcycleGalleryImagesMock).toHaveBeenCalledTimes(1);
     });
@@ -4194,6 +4193,19 @@ describe('AdminPage', () => {
           createdAt: '2026-01-02T00:00:00.000Z',
           updatedAt: '2026-01-02T00:00:00.000Z',
         },
+        {
+          id: 'img-3',
+          motorcycleId: 'bmw-f-900-gs-2024',
+          url: '/storage/v1/object/public/motorcycle-images/bmw-3.webp',
+          storagePath: 'bmw-3.webp',
+          altText: 'BMW F 900 GS detalle',
+          isPrimary: false,
+          sortOrder: 2,
+          source: 'api',
+          createdBy: null,
+          createdAt: '2026-01-03T00:00:00.000Z',
+          updatedAt: '2026-01-03T00:00:00.000Z',
+        },
       ];
 
       it('al abrir modal en edit mode llama al servicio de galería', async () => {
@@ -4223,15 +4235,29 @@ describe('AdminPage', () => {
 
         const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
         const cards = within(galleryRegion).getAllByRole('article');
-        expect(cards.length).toBe(4);
-        expect(screen.getByText('Galería (4)')).toBeInTheDocument();
-        expect(screen.getByText('#0')).toBeInTheDocument();
-        expect(screen.getByText('#1')).toBeInTheDocument();
-        expect(screen.getByText('Importación')).toBeInTheDocument();
-        expect(screen.getByText('Manual')).toBeInTheDocument();
-        expect(screen.getAllByText('Principal').length).toBeGreaterThanOrEqual(1);
-        expect(screen.getByRole('article', { name: 'Imagen actual del borrador' })).toBeInTheDocument();
+        expect(cards.length).toBe(5);
+        expect(screen.getByRole('article', { name: 'BMW F 900 GS lateral' })).toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'BMW F 900 GS trasera' })).toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'BMW F 900 GS detalle' })).toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'Portada guardada' })).toBeInTheDocument();
         expect(screen.getByRole('article', { name: 'Placeholder técnico MotoAtlas' })).toBeInTheDocument();
+        expect(screen.getByRole('img', { name: 'Portada actual' })).toBeInTheDocument();
+        expect(screen.getByRole('img', { name: 'Placeholder técnico' })).toBeInTheDocument();
+      });
+
+      it('elimina labels ruidosos visibles pero mantiene estados accesibles en la galería', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        expect(within(galleryRegion).queryByText('Imagen actual')).not.toBeInTheDocument();
+        expect(within(galleryRegion).queryByText('Imagen original')).not.toBeInTheDocument();
+        expect(within(galleryRegion).queryByText('Catálogo local')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Portada actual: Portada guardada' })).toBeDisabled();
+        expect(screen.getByRole('img', { name: 'Placeholder técnico' })).toBeInTheDocument();
       });
 
       it('renderiza el workspace del modal con portada, biblioteca y controles en ese orden', async () => {
@@ -4258,8 +4284,8 @@ describe('AdminPage', () => {
         await user.clear(screen.getByLabelText('Image URL'));
         await user.type(screen.getByLabelText('Image URL'), 'https://cdn.example.com/admin-cover.webp');
 
-        expect(screen.getByRole('article', { name: 'Imagen actual del borrador' })).toBeInTheDocument();
-        expect(screen.getByRole('article', { name: 'Imagen original del modelo' })).toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'Portada en edición' })).toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'Portada guardada' })).toBeInTheDocument();
       });
 
       it('deduplica URLs cuando la portada actual ya existe como registro de galería', async () => {
@@ -4281,8 +4307,9 @@ describe('AdminPage', () => {
         await openImageManager(user);
 
         const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
-        expect(within(galleryRegion).getAllByRole('article').length).toBe(3);
+        expect(within(galleryRegion).getAllByRole('article').length).toBe(4);
         expect(within(galleryRegion).getAllByRole('article', { name: 'BMW F 900 GS lateral' })).toHaveLength(1);
+        expect(within(galleryRegion).getAllByRole('article', { name: 'BMW F 900 GS detalle' })).toHaveLength(1);
       });
 
       it('permite seleccionar una imagen de la biblioteca como portada actual sin crear registros nuevos', async () => {
@@ -4298,6 +4325,222 @@ describe('AdminPage', () => {
         expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
         expect(screen.getByAltText('Portada activa del modelo')).toHaveAttribute('src', technicalPlaceholderImage);
         expect(screen.getByRole('button', { name: 'Portada actual: Placeholder técnico MotoAtlas' })).toBeDisabled();
+      });
+
+      it('mantiene estable el orden de galería al seleccionar una portada existente', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        const getGalleryRecordOrder = () => within(galleryRegion)
+          .getAllByRole('article')
+          .map((card) => card.getAttribute('aria-label'))
+          .filter((label): label is string => typeof label === 'string' && label.startsWith('BMW F 900 GS'));
+
+        expect(getGalleryRecordOrder()).toEqual(['BMW F 900 GS lateral', 'BMW F 900 GS trasera', 'BMW F 900 GS detalle']);
+
+        await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS trasera' }));
+
+        expect(getGalleryRecordOrder()).toEqual(['BMW F 900 GS lateral', 'BMW F 900 GS trasera', 'BMW F 900 GS detalle']);
+        expect(screen.getByRole('button', { name: 'Portada actual: BMW F 900 GS trasera' })).toBeDisabled();
+      });
+
+      it('abre info al hacer click en Ver detalles de una card', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const infoButton = screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS lateral' });
+        await user.click(infoButton);
+
+        expect(screen.getByText('#0')).toBeInTheDocument();
+        expect(infoButton).toHaveAttribute('aria-expanded', 'true');
+      });
+
+      it('permite tener dos cards con info abierta simultáneamente', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        await user.click(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS lateral' }));
+        await user.click(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS trasera' }));
+
+        expect(screen.getByText('#0')).toBeInTheDocument();
+        expect(screen.getByText('#1')).toBeInTheDocument();
+      });
+
+      it('seleccionar portada NO reordena las cards de galería existentes', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        const getGalleryRecordOrder = () => within(galleryRegion)
+          .getAllByRole('article')
+          .map((card) => card.getAttribute('aria-label') ?? '')
+          .filter((label) => label.startsWith('BMW F 900 GS'));
+
+        expect(getGalleryRecordOrder()).toEqual([
+          'BMW F 900 GS lateral',
+          'BMW F 900 GS trasera',
+          'BMW F 900 GS detalle',
+        ]);
+
+        await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS trasera' }));
+
+        expect(getGalleryRecordOrder()).toEqual([
+          'BMW F 900 GS lateral',
+          'BMW F 900 GS trasera',
+          'BMW F 900 GS detalle',
+        ]);
+        expect(screen.getByRole('button', { name: 'Portada actual: BMW F 900 GS trasera' })).toBeDisabled();
+        expect(createAdminMotorcycleGalleryImageMock).not.toHaveBeenCalled();
+      });
+
+      it('seleccionar última imagen como portada no mueve ningún gallery record', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        const getGalleryRecordOrder = () => within(galleryRegion)
+          .getAllByRole('article')
+          .map((card) => card.getAttribute('aria-label') ?? '')
+          .filter((label) => label.startsWith('BMW F 900 GS'));
+
+        expect(getGalleryRecordOrder()).toEqual([
+          'BMW F 900 GS lateral',
+          'BMW F 900 GS trasera',
+          'BMW F 900 GS detalle',
+        ]);
+
+        await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS detalle' }));
+
+        expect(getGalleryRecordOrder()).toEqual([
+          'BMW F 900 GS lateral',
+          'BMW F 900 GS trasera',
+          'BMW F 900 GS detalle',
+        ]);
+        expect(screen.getByRole('button', { name: 'Portada actual: BMW F 900 GS detalle' })).toBeDisabled();
+      });
+
+      it('cierra solo la card cuyo info se clickea de nuevo', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        await user.click(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS lateral' }));
+        await user.click(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS trasera' }));
+
+        const card0CloseButton = screen.getByRole('button', { name: 'Ocultar detalles de BMW F 900 GS lateral' });
+        const card1BackButton = screen.getByRole('button', { name: 'Ocultar detalles de BMW F 900 GS trasera' });
+
+        expect(card0CloseButton).toHaveAttribute('aria-expanded', 'true');
+        expect(card1BackButton).toHaveAttribute('aria-expanded', 'true');
+
+        await user.click(card0CloseButton);
+
+        expect(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS lateral' })).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.getByRole('button', { name: 'Ocultar detalles de BMW F 900 GS trasera' })).toHaveAttribute('aria-expanded', 'true');
+      });
+
+      it('no abre info por hover — solo por click en botón explícito', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const card = screen.getByRole('article', { name: 'BMW F 900 GS lateral' });
+        await user.hover(card);
+
+        expect(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS lateral' })).toHaveAttribute('aria-expanded', 'false');
+      });
+
+      it('no muta el sortOrder al seleccionar una imagen como portada', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        await user.click(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS lateral' }));
+        expect(screen.getByText('#0')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Ocultar detalles de BMW F 900 GS lateral' }));
+
+        await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS trasera' }));
+        await user.click(screen.getByRole('button', { name: 'Ver detalles de BMW F 900 GS trasera' }));
+
+        expect(screen.getByText('#1')).toBeInTheDocument();
+        expect(galleryFixtures.map((image) => image.sortOrder)).toEqual([0, 1, 2]);
+        expect(createAdminMotorcycleGalleryImageMock).not.toHaveBeenCalled();
+      });
+
+      it('seleccionar portada NO reordena la librería completa (incluyendo no-gallery)', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        const getFullLibraryUrls = () => within(galleryRegion)
+          .getAllByRole('article')
+          .map((card) => card.getAttribute('data-library-image-url') ?? '');
+
+        const initialUrls = getFullLibraryUrls();
+
+        await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS trasera' }));
+
+        expect(getFullLibraryUrls()).toEqual(initialUrls);
+        expect(screen.getByRole('button', { name: 'Portada actual: BMW F 900 GS trasera' })).toBeDisabled();
+      });
+
+      it('seleccionar placeholder como portada no reordena la librería completa', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        const getFullLibraryUrls = () => within(galleryRegion)
+          .getAllByRole('article')
+          .map((card) => card.getAttribute('data-library-image-url') ?? '');
+
+        const initialUrls = getFullLibraryUrls();
+
+        const placeholderButton = screen.getByRole('button', { name: /Usar como portada: Placeholder técnico/ });
+        await user.click(placeholderButton);
+
+        expect(getFullLibraryUrls()).toEqual(initialUrls);
+        expect(screen.getByRole('button', { name: /Portada actual: Placeholder técnico/ })).toBeDisabled();
+      });
+
+      it('no llama a servicios de galería al seleccionar portada desde la librería', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+
+        await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS trasera' }));
+
+        expect(createAdminMotorcycleGalleryImageMock).not.toHaveBeenCalled();
+        expect(getAdminMotorcycleGalleryImagesMock).toHaveBeenCalledTimes(1); // solo en apertura
       });
 
       it('muestra loading state de galería sin romper el modal', async () => {
@@ -4319,7 +4562,7 @@ describe('AdminPage', () => {
         await openImageManager(user);
 
         expect(screen.queryByText('Sin imágenes disponibles')).not.toBeInTheDocument();
-        expect(screen.getByRole('article', { name: 'Imagen actual del borrador' })).toBeInTheDocument();
+        expect(screen.getByRole('article', { name: 'Portada guardada' })).toBeInTheDocument();
         expect(screen.getByRole('article', { name: 'Placeholder técnico MotoAtlas' })).toBeInTheDocument();
       });
 
