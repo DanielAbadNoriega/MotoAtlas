@@ -105,6 +105,16 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - **Cleanup seguro al reemplazar**: si una edición reemplaza una imagen persistida del bucket, el objeto viejo se limpia solo después de un publish/update exitoso. Si el publish falla, la imagen vieja no se elimina.
 - **Protecciones**: URLs manuales externas, assets locales `/images/...` y el placeholder `motorcycle-technical-pending.jpg` son reemplazables, pero nunca se borran físicamente desde la UI admin. Además, solo se consideran borrables URLs del proyecto Supabase configurado con object paths seguros.
 
+**Image manager modal (refactor):**
+
+- La preview a nivel formulario y el botón "Gestionar imágenes" permanecen **fuera del modal**.
+- El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
+- El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
+- "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
+- **No hay persistencia de galería**, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards.
+- El **contrato backend actual sigue siendo single-image** a través de los campos de imagen de motorcycle existentes.
+- Futuro soporte de galería pendiente y requerirá data model / RLS / services `motorcycle_images` dedicados.
+
 **Acción `Subir imagen`:**
 - Aparece solo cuando hay un archivo válido seleccionado.
 - Texto cambia a `Subiendo imagen...` durante upload. Deshabilitado durante upload o sin handler.
@@ -192,3 +202,4 @@ Sobre respuestas:
 
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración.
+- Multi-image gallery real: requiere data model `motorcycle_images`, RLS, services y UI modal/galería multi-imagen con selección de imagen primaria y reorden/eliminación individual.

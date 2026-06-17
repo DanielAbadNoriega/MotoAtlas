@@ -18,9 +18,9 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1315 tests passing` (77 files).
+- Baseline validado actual: `1324 tests passing` (77 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models image replace/delete cleanup hardening (Quality Gate aprobado: 1315 tests, typecheck clean).
+- Último bloque estable validado: Admin Models image replace/delete cleanup hardening + image manager modal refactor (Quality Gate aprobado: 1324 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
@@ -29,6 +29,8 @@ Implementado (baseline actual):
 3. WebP conversion opcional durante upload.
 4. A2 fields en draft si aplica.
 5. Schema/RLS quedan fuera hasta necesidad explícita.
+
+**Nota**: El image manager modal refactor ya está implementado (preview + trigger fuera del modal; controles URL/upload/imageLocked dentro del modal; dark premium admin layout con tonal surfaces, thin borders, SCSS scoped `admin-model__...`). No hay galería persistida, no hay datos de galería falsos, el contrato backend sigue siendo single-image. La multi-imagen real requiere data model / RLS / services aparte.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -67,7 +69,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening implementadas / multi-image gallery + WebP conversion + IntersectionObserver pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor implementadas / multi-image gallery + WebP conversion + IntersectionObserver pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -77,6 +79,7 @@ Nota de estado:
 - **Persistencia operativa**: `adminMotorcycleService.ts` con `createAdminMotorcycle` y `updateAdminMotorcycle`.
 - **Validación cliente**: `validateAdminModelDraftForPublish` compartida entre create y edit. Create valida modeloId obligatorio y sin espacios; edit no lo exige.
 - **Image cleanup cerrado**: preview actual disponible en create/edit; imágenes persistidas de Storage se pueden quitar del formulario sin borrado físico inmediato; imágenes subidas en la sesión se pueden eliminar antes de publicar; al reemplazar una imagen persistida del bucket, el objeto viejo se limpia solo después de publish/update exitoso. URLs manuales, assets locales `/images/...` y `motorcycle-technical-pending.jpg` nunca disparan borrado físico. La detección destructiva acepta solo URLs del proyecto Supabase configurado con object paths seguros.
+- **Image manager modal refactor**: la preview a nivel formulario y el botón trigger permanecen fuera del modal. El modal contiene los controles de imagen single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox imageLocked, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error. El modal usa dark premium admin layout inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global. "Guardar cambios" solo cierra el modal y mantiene cambios en draft; no publica. No hay persistencia de galería, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards. El contrato backend actual sigue siendo single-image a través de los campos de imagen de motorcycle existentes. Futuro soporte de galería pendiente y requerirá data model / RLS / services `motorcycle_images` dedicados.
 - **Sin**: multi-image gallery, WebP conversion, IntersectionObserver active section tracking.
 - **Post-publish cerrado**: create publish success navega a `#/motos/{createdBike.id}`, edit publish success navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh completo, reemplazando por `id` o haciendo append si la moto es nueva.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
@@ -161,7 +164,7 @@ Fases propuestas:
    - Section progress indicators: cada sección muestra completitud según campos requeridos del draft.
    - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` ya participa del cleanup seguro en UI solo para imágenes de sesión no persistidas y para cleanup diferido post-publish de imágenes persistidas reemplazadas.
-   - Quality Gate: 1315 tests, typecheck clean.
+   - Quality Gate: 1324 tests, typecheck clean.
    - Pendiente: multi-image gallery, WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
 
 Nota sobre el set de filtros de Fase 3:
