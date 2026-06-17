@@ -3,11 +3,11 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1349` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1358` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
-  - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery modal connection tests (read-only gallery fetch, loading, error, empty states).
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery record creation + read-only connection tests.
   - `src/services/adminMotorcycleGalleryService.test.ts` + `supabase/schema.test.ts` → 2 files / 102 tests passing (gallery schema + service foundation).
-  - suite completa → `1349` tests passing.
+  - suite completa → `1358` tests passing.
 
 ## Stack actual
 
@@ -50,8 +50,10 @@ Cobertura vigente:
 - el contrato single-image actual sigue intacto: `motorcycles.image_url`, `image_locked` e `image_source` no se modifican desde este servicio.
 
 Estado actual:
-- el image manager modal ya consume `adminMotorcycleGalleryService` en edit mode: carga imágenes reales con estados de carga, error, vacío y grid de galería;
-- la galería sigue siendo de solo lectura: no se pueden crear records desde uploads, seleccionar primaria, reordenar ni borrar desde el modal;
+- el image manager modal consume `adminMotorcycleGalleryService` en edit mode: carga imágenes reales con estados de carga, error, vacío y grid de galería;
+- el upload explícito en edit mode crea un gallery record tras subir a Storage; en create mode se crea tras publish exitoso;
+- los records se crean con `isPrimary: false` y `source: 'manual'`. URLs manuales y locales no crean records;
+- un guard evita el borrado Storage de imágenes respaldadas por gallery records;
 - no hay thumbnails demo, arrays fake ni mock gallery cards;
 - el contrato single-image (`motorcycles.image_url`) sigue intacto como imagen primaria para cards, buscador, ficha y fallbacks.
 
@@ -371,10 +373,11 @@ Cobertura vigente:
 - el modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox imageLocked, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error;
 - el modal usa dark premium admin layout inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global;
 - "Guardar cambios" solo cierra el modal y mantiene cambios en draft; no publica;
-- **la galería de solo lectura ya está conectada**: el modal consume `adminMotorcycleGalleryService` en edit mode, carga imágenes reales con estados de carga/error/vacío/grid y renderiza `url`, `altText`, `isPrimary`, `source` y `sortOrder`;
+- **la galería ahora crea records desde uploads**: edit mode explicit upload sube a Storage y crea `motorcycle_images` record (`isPrimary: false`, `source: 'manual'`). Create mode lo hace tras publish. Edit auto-upload antes de publish también crea el record. Un guard evita Storage delete de imágenes respaldadas por gallery records;
+- la galería de solo lectura ya está conectada: el modal carga imágenes reales con estados de carga/error/vacío/grid desde `getAdminMotorcycleGalleryImages`;
 - no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards;
 - el contrato single-image (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo la imagen primaria usada por cards, buscador, ficha y fallbacks;
-- la creación de gallery records desde uploads, selección de primaria, reorden y borrado coordinado quedan para fases posteriores.
+- selección de primaria, reorden y borrado coordinado quedan para fases posteriores.
 
 Comportamiento preservado por tests:
 - explicit `Subir imagen`;
@@ -427,7 +430,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1349` tests passing (78 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `1358` tests passing (78 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 - Cobertura Admin Models Studio persistencia:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → cobertura de create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks, navegación post-publicación y sync App-level del catálogo en memoria.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.

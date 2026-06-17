@@ -18,17 +18,17 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1349 tests passing` (78 files).
+- Baseline validado actual: `1358 tests passing` (78 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models read-only motorcycle image gallery modal connection (Quality Gate aprobado: 1349 tests, typecheck clean).
+- Último bloque estable validado: Admin Models motorcycle image gallery record creation from uploads (Quality Gate aprobado: 1358 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
-1. Completar la galería admin con escritura (creación de gallery records desde uploads, selección de primaria desde la galería, reorden, borrado coordinado records/Storage).
+1. Añadir selección de primaria desde la galería, reorden y borrado coordinado records/Storage.
 2. WebP conversion opcional durante upload.
 3. IntersectionObserver active section tracking y A2 fields en draft si aplica.
 
-**Nota**: El image manager modal refactor ya está implementado. La base backend de galería multiimagen existe (`public.motorcycle_images` + `adminMotorcycleGalleryService`). La UI de lectura ya está conectada al modal: al abrirlo en edit mode carga imágenes reales con estados de carga, error, vacío y grid de galería. `motorcycles.image_url` sigue siendo el contrato de imagen primaria usado por cards, buscador, ficha y fallbacks.
+**Nota**: El image manager modal refactor ya está implementado. La base backend de galería multiimagen existe (`public.motorcycle_images` + `adminMotorcycleGalleryService`). La galería ya carga imágenes reales y crea records desde uploads admin (edit mode inmediato, create mode post-publish). `motorcycles.image_url` sigue siendo el contrato de imagen primaria usado por cards, buscador, ficha y fallbacks.
 
 ## 4. P1 — UX pública / comunidad
 
@@ -67,7 +67,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection implementadas / galería completa (escribir, reordenar, borrar) + WebP conversion + IntersectionObserver pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection + gallery record creation implementadas / primary selection + reorder + delete + WebP conversion + IntersectionObserver pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -78,9 +78,10 @@ Nota de estado:
 - **Validación cliente**: `validateAdminModelDraftForPublish` compartida entre create y edit. Create valida modeloId obligatorio y sin espacios; edit no lo exige.
 - **Image cleanup cerrado**: preview actual disponible en create/edit; imágenes persistidas de Storage se pueden quitar del formulario sin borrado físico inmediato; imágenes subidas en la sesión se pueden eliminar antes de publicar; al reemplazar una imagen persistida del bucket, el objeto viejo se limpia solo después de publish/update exitoso. URLs manuales, assets locales `/images/...` y `motorcycle-technical-pending.jpg` nunca disparan borrado físico. La detección destructiva acepta solo URLs del proyecto Supabase configurado con object paths seguros.
 - **Image manager modal refactor**: la preview a nivel formulario y el botón trigger permanecen fuera del modal. El modal contiene los controles de imagen single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox imageLocked, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error. El modal usa dark premium admin layout inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global. "Guardar cambios" solo cierra el modal y mantiene cambios en draft; no publica.
-- **Read-only gallery connection**: el modal carga imágenes reales desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería. Sin datos falsos ni mock gallery cards. La nota del modal se actualizó a "La galería es de solo lectura."
+- **Gallery record creation**: edit mode explicit upload crea un `motorcycle_images` record tras Storage upload. Create mode crea el record tras publish exitoso. Edit auto-upload before publish también crea record. Gallery records se crean con `isPrimary: false`, `source: 'manual'`. URLs manuales y locales no crean records. Un guard evita Storage delete de imágenes respaldadas por gallery records.
+- **Read-only gallery connection**: el modal carga imágenes reales desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería. Sin datos falsos ni mock gallery cards.
 - **Gallery backend foundation**: existe la tabla `public.motorcycle_images` con RLS admin-safe, índices y unique partial index para imagen primaria; `adminMotorcycleGalleryService` gestiona solo metadata DB (`getAdminMotorcycleGalleryImages`, `createAdminMotorcycleGalleryImage`, `updateAdminMotorcycleGalleryImage`, `deleteAdminMotorcycleGalleryImageRecord`) y nunca sube archivos ni borra objetos de Storage. `motorcycles.image_url` sigue siendo el contrato desnormalizado de imagen primaria usado por cards, buscador, ficha y fallbacks.
-- **Sin**: galería completa (subir, reordenar, borrar), WebP conversion, IntersectionObserver active section tracking.
+- **Sin**: primary selection, reorder, delete gallery records, WebP conversion, IntersectionObserver.
 - **Post-publish cerrado**: create publish success navega a `#/motos/{createdBike.id}`, edit publish success navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh completo, reemplazando por `id` o haciendo append si la moto es nueva.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
@@ -165,7 +166,7 @@ Fases propuestas:
    - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` ya participa del cleanup seguro en UI solo para imágenes de sesión no persistidas y para cleanup diferido post-publish de imágenes persistidas reemplazadas.
    - Quality Gate: 1349 tests, typecheck clean.
-   - Pendiente: galería completa (creación de records desde uploads, selección de primaria, reorden, borrado coordinado), WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
+   - Pendiente: primary selection, reorder, delete gallery records, WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
 
 Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;

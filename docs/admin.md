@@ -111,8 +111,7 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
 - El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
 - "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
-- **Galería de solo lectura conectada**: al abrir el modal en edit mode (modelo ya persistido), se cargan imágenes desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería con cards que muestran `url`, `altText`, `isPrimary`, `source` y `sortOrder`. No hay datos falsos ni mock gallery cards.
-- La galería es de solo lectura: subir, editar metadata, reordenar y borrar quedan para una fase posterior.
+- **Galería conectada con creación de records**: el modal carga imágenes desde `getAdminMotorcycleGalleryImages` en edit mode. El upload explícito en edit mode sube a Storage y crea un registro en `motorcycle_images` (`isPrimary: false`, `source: 'manual'`), que se añade al estado local. En create mode, el record se crea tras publish exitoso. URLs manuales y assets locales no crean records. Un guard evita borrar de Storage imágenes que ya tienen gallery record.
 - El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
 **Acción `Subir imagen`:**
@@ -153,11 +152,11 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 
 **Sin:**
 - A2 fields en draft
-- galería completa (subir, editar, reordenar, borrar)
+- galería completa (seleccionar primaria, reordenar, borrar desde UI)
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Futuro:** completar la galería con creación de records desde uploads, elección de primaria desde la galería, reorden, borrado coordinado record/Storage, WebP conversion e IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Futuro:** elección de primaria desde la galería, reorden, borrado coordinado record/Storage desde UI, WebP conversion e IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 ## `#/admin/reviews`
 
@@ -202,4 +201,4 @@ Sobre respuestas:
 
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración.
-- Galería multi-imagen completa: la lectura ya está conectada al modal en modo solo lectura. Falta creación de records desde uploads, selección de imagen primaria desde la galería, reorden y eliminación individual coordinada con Storage.
+- Galería multi-imagen completa: la lectura está conectada y los records se crean desde uploads admin. Falta selección de imagen primaria desde la galería, reorden y eliminación individual coordinada con Storage.

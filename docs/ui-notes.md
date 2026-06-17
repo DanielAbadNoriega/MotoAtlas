@@ -267,9 +267,9 @@ La gestión de imágenes del formulario admin de modelos se ha refactorizado mov
 - Sin Tailwind copiado, sin leakage global
 
 **Contrato actual:**
-- **Galería de solo lectura conectada**: el modal carga imágenes reales desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería
+- **Galería conectada con creación de records**: el modal carga imágenes reales y los uploads en edit mode crean `motorcycle_images` records; create mode los crea tras publish
 - No hay datos falsos de galería, thumbnails demo, arrays demo, mock gallery cards
-- Subir, editar metadata, reordenar y borrar imágenes de la galería quedan para una fase posterior
+- Reordenar y borrar desde la UI quedan para una fase posterior
 - `motorcycles.image_url` sigue siendo el contrato single-image para cards, buscador, ficha y fallbacks
 
 ## Admin Models Studio — Section Radar (Stitch-inspired)
