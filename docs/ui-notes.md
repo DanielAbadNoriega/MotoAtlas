@@ -229,6 +229,69 @@ Secciones residuales cerradas:
 - `bike-detail__related` → integrado en CompareTab (Fases 5.1/5.2).
 - `bike-detail__quick-specs` y `bike-detail__features` parcialmente absorbidas por SpecificationsTab y, en rama `feature/bike-detail-technical-spec-cards`, cerradas con extracción de `TechnicalSpecCard` a `src/components/motorcycles/TechnicalSpecCard/`. El SCSS huérfano de `quick-specs`, `features`, `feature-list` y el `h2` legacy de `__specs` fue eliminado. `SpecCard` local fue reemplazado por `TechnicalSpecCard` shared (presentacional, sin fetch, no conoce `BikeDetailPage`).
 
+## Admin Models Studio — Custom file input UI
+
+El formulario de `#/admin/modelos/nuevo` y `#/admin/modelos/{motorcycleId}/editar` en su sección `Imagen` modo `Subir archivo` usa un patrón de file input custom:
+
+- El `<input type="file">` nativo se oculta (`display: none`) pero sigue siendo accesible mediante un `<label>` estilizado con `htmlFor` apuntando al `id` del input oculto.
+- El label simula un botón MotoAtlas-styled con texto `Seleccionar archivo`.
+- Un span adyacente muestra el nombre del archivo seleccionado en tiempo real vía `onChange` → `fileName`.
+- Si no hay archivo, el span muestra `Ningún archivo seleccionado` con opacidad reducida.
+- El botón `Subir imagen` se habilita solo cuando hay un archivo válido seleccionado.
+- La preview de imagen usa `URL.createObjectURL(file)` y se limpia con `revokeObjectURL` en unmount o al reemplazar el archivo.
+- Validación local de MIME type (`image/jpeg`, `image/png`, `image/webp`) y tamaño (5 MB max).
+
+Este patrón mantiene la accesibilidad del file input nativo mientras unifica la estética con el resto del formulario dark/premium.
+
+## Admin Models Studio — Image Manager Modal (refactor)
+
+La gestión de imágenes del formulario admin de modelos se ha refactorizado moviendo los controles de imagen a un modal dedicado, manteniendo la preview y el trigger fuera:
+
+**Fuera del modal (a nivel formulario):**
+- Preview de imagen actual / estado vacío
+- Copia del estado actual de la imagen
+- Botón "Eliminar imagen actual" (para imágenes de sesión no persistidas)
+- Botón trigger "Gestionar imágenes" para abrir el modal
+
+**Dentro del modal:**
+- Modo `URL manual` con input `type="url"` y checkbox `Imagen bloqueada / curada`
+- Modo `Subir archivo` con file input custom MotoAtlas-styled, preview local, validación MIME/size (5 MB), botón `Subir imagen`
+- Checkbox `imageLocked` para proteger imagen curada
+- Alertas de validación/error con `role="alert"`
+- Botón "Guardar cambios" que **solo cierra el modal y mantiene cambios en draft**; no publica
+
+**Estética del modal:**
+- Dark premium admin layout inspirado en referencia Stitch gallery modal
+- Tonal surfaces, thin borders
+- SCSS scoped `admin-model__...`
+- Sin Tailwind copiado, sin leakage global
+
+**Contrato actual:**
+- **Galería conectada con creación de records**: el modal carga imágenes reales y los uploads en edit mode crean `motorcycle_images` records; create mode los crea tras publish
+- No hay datos falsos de galería, thumbnails demo, arrays demo, mock gallery cards
+- Reordenar y borrar desde la UI quedan para una fase posterior
+- `motorcycles.image_url` sigue siendo el contrato single-image para cards, buscador, ficha y fallbacks
+
+**Galería visual — cards y orden estable:**
+- **Cards**: cards minimalistas con icon-only/current-cover indicators y tooltips accesibles. Cada card se renderiza como `<article>` con `aria-label` descriptivo y `data-library-image-url`.
+- **Flip card**: la card frontal contiene thumbnail, overlays e info button. La posterior contiene metadata expandida (filename, source, sortOrder, created date). El flip usa `rotateY(180deg)` con `perspective: 1000px` para efecto revolving-door. `prefers-reduced-motion` desactiva la animación.
+- **Info panel**: controlado por botón explícito (no hover). Múltiples cards pueden tener info abierta simultáneamente — estado gestionado con `Set<string>` y `aria-expanded` en vez de `aria-pressed`.
+- **Header compacto**: gap, padding y helper copy reducidos a una línea minimalista.
+- **Orden estable**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Cada URL recibe un key React estable (`lib-0`, `lib-1`, ...) en su primera aparición y se reutiliza en todos los renders. `persisted` se registra antes que `draft` para que cuando ambas URLs coinciden, el label sea `Portada guardada` (semánticamente más correcto que `Portada en edición`). Seleccionar portada no mueve ni reordena cards — el cambio es puramente React reconciliation.
+- **Cover fallback**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback si `draft.imageUrl` quedaría vacío.
+
+## Admin Models Studio — Section Radar (Stitch-inspired)
+
+El formulario admin de modelos incorpora una navegación interna tipo radar para saltar entre secciones sin scroll manual:
+
+- **Sticky glass strip**: una barra horizontal se fija entre el hero y el formulario al hacer scroll (`position: sticky; top: var(--navbar-height)`), con fondo glass translúcido y borde inferior sutil.
+- **Marcadores numerados**: cada sección tiene un `01`, `02`, etc. con `font-variant-numeric: tabular-nums` para ancho estable.
+- **Tracks de progreso verticales**: a la izquierda de cada número, una línea vertical delgada cuyo relleno rojo varía según el porcentaje de campos requeridos completados en esa sección. Si no hay campos requeridos o están todos completos, el track se muestra completamente relleno.
+- **Filas/grupos**: las secciones se agrupan visualmente dentro del radar (ej. "Especificaciones" agrupa motor, rendimiento y ergonomía).
+- **Scroll horizontal en mobile**: si las secciones exceden el ancho del viewport, el radar permite scroll horizontal con overflow-x.
+- **Sin hash anchors**: la navegación usa `scrollIntoView({ behavior: 'smooth', block: 'start' })` con un offset para compensar la altura del navbar + radar. No modifica `window.location.hash` para no interferir con el routing de la app.
+- **Sin active tracking**: no hay IntersectionObserver para marcar la sección actual como activa. Queda como polish futuro opcional.
+
 ## Datos demo para QA visual
 
 Estado: mejora de realismo del generador mock implementada y validada; toggle admin de datos demo implementado y validado para dev/preview.
@@ -501,6 +564,7 @@ Características del formulario de `#/admin/modelos/nuevo` y `#/admin/modelos/{m
 - **Upload exitoso**: `draft.imageUrl` y `draft.imageLocked` actualizados. Status con `role="status"` (`Imagen subida correctamente.`).
 - **Upload fallido**: `role="alert"` con mensaje de error. Preview y archivo se conservan para retry.
 - **Auto-upload al publicar**: si hay archivo seleccionado no subido, se sube antes de create/update. `imageLocked = true`. Fallo de upload previene publish.
+- **Imagen actual + cleanup seguro**: cuando `draft.imageUrl` existe, create/edit muestran preview actual. Una imagen persistida de Storage puede quitarse del formulario sin borrado físico inmediato; una imagen subida en la sesión sí puede eliminarse antes de publicar. Si un edit reemplaza una imagen persistida del bucket, el objeto viejo se limpia solo después de publish/update exitoso. URLs manuales, assets locales `/images/...` y `motorcycle-technical-pending.jpg` nunca disparan borrado físico.
 - **Sin SCSS nuevo**: las clases existentes `admin-page__model-*` cubren la sección de imagen (field, checkbox, field--full, status, label).
 
 Validación cliente (`validateAdminModelDraftForPublish`):
@@ -512,8 +576,7 @@ Validación cliente (`validateAdminModelDraftForPublish`):
 Dirección futura (pendiente):
 - objetivo: crear/editar motos del catálogo sin depender a largo plazo de edición manual de JSON (base operativa implementada);
 - create/edit comparten la misma arquitectura visual y de formulario (`AdminModelFormBody`);
-- delete/replace cleanup en UI de imagen;
-- navegación automática post-publicación y refactor App-level de catálogo tras create/edit;
+- multi-image gallery;
 - A2 fields en draft si aplica;
 - WebP conversion opcional durante upload;
 - el set definitivo de filtros de Fase 3 puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación en esta pantalla de selección admin;

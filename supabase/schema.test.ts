@@ -34,6 +34,11 @@ function getReviewRepliesGrantStatements() {
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
 }
 
+function getMotorcycleImagesGrantStatements() {
+  return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.motorcycle_images\s+to\s+[^;]+;/gi) ?? [])
+    .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
+}
+
 function getReviewAspectsGrantStatements() {
   return (schemaSql.match(/grant\s+[^;]+\s+on\s+(?:table\s+)?public\.motorcycle_review_aspects\s+to\s+[^;]+;/gi) ?? [])
     .map((statement) => statement.replace(/\s+/g, ' ').trim().toLowerCase());
@@ -918,6 +923,109 @@ describe('Supabase create_admin_motorcycle RPC function', () => {
 
   it('no agrega INSERT RLS policy en public.motorcycles', () => {
     expect(normalizedSchemaSql).not.toMatch(/create\s+policy[^;]+on\s+public\.motorcycles[^;]+\bfor\s+insert\b/);
+  });
+});
+
+describe('Supabase motorcycle_images gallery schema', () => {
+  it('crea la tabla public.motorcycle_images con columnas esperadas', () => {
+    expect(schemaSql).toContain('create table if not exists public.motorcycle_images');
+    expect(schemaSql).toContain('id uuid primary key default gen_random_uuid()');
+    expect(schemaSql).toContain('motorcycle_id text not null references public.motorcycles(id) on delete cascade');
+    expect(schemaSql).toContain('url text not null check (length(trim(url)) > 0)');
+    expect(schemaSql).toContain('storage_path text null check (');
+    expect(schemaSql).toContain('alt_text text');
+    expect(schemaSql).toContain('is_primary boolean not null default false');
+    expect(schemaSql).toContain('sort_order integer not null default 0 check (sort_order >= 0)');
+    expect(schemaSql).toContain("source public.motorcycle_data_source not null default 'manual'");
+    expect(schemaSql).toContain('created_by uuid null references auth.users(id) on delete set null');
+    expect(schemaSql).toContain('created_at timestamptz not null default now()');
+    expect(schemaSql).toContain('updated_at timestamptz not null default now()');
+  });
+
+  it('mantiene storage_path nullable pero con constraint segura', () => {
+    expect(schemaSql).toContain('storage_path text null check (');
+    expect(schemaSql).toContain('storage_path is null');
+    expect(schemaSql).toContain('length(trim(storage_path)) > 0');
+    expect(schemaSql).toContain('storage_path = trim(storage_path)');
+    expect(schemaSql).toContain("position('..' in storage_path) = 0");
+  });
+
+  it('mantiene created_by nullable para backfills o datos históricos futuros', () => {
+    expect(schemaSql).toContain('created_by uuid null references auth.users(id) on delete set null');
+  });
+
+  it('usa motorcycle_data_source y referencia motorcycles con cascade delete', () => {
+    expect(schemaSql).toContain("source public.motorcycle_data_source not null default 'manual'");
+    expect(schemaSql).toContain('motorcycle_id text not null references public.motorcycles(id) on delete cascade');
+  });
+
+  it('crea índices y unique partial index para la primaria por moto', () => {
+    expect(schemaSql).toContain('create index if not exists motorcycle_images_motorcycle_id_idx on public.motorcycle_images (motorcycle_id);');
+    expect(schemaSql).toContain('create index if not exists motorcycle_images_motorcycle_id_sort_order_idx on public.motorcycle_images (motorcycle_id, sort_order);');
+    expect(schemaSql).toContain('create unique index if not exists motorcycle_images_one_primary_per_motorcycle');
+    expect(schemaSql).toContain('on public.motorcycle_images (motorcycle_id)');
+    expect(schemaSql).toContain('where is_primary = true;');
+  });
+
+  it('incluye trigger updated_at reutilizando public.set_updated_at()', () => {
+    expect(schemaSql).toContain('drop trigger if exists set_motorcycle_images_updated_at on public.motorcycle_images;');
+    expect(schemaSql).toContain('create trigger set_motorcycle_images_updated_at');
+    expect(schemaSql).toContain('before update on public.motorcycle_images');
+    expect(schemaSql).toContain('execute function public.set_updated_at();');
+  });
+
+  it('activa RLS y no usa using (true) para lectura pública', () => {
+    expect(schemaSql).toContain('alter table public.motorcycle_images enable row level security;');
+    expect(schemaSql).toContain('drop policy if exists "Public motorcycle images are readable" on public.motorcycle_images;');
+    expect(schemaSql).toContain('create policy "Public motorcycle images are readable"');
+    expect(schemaSql).toContain('on public.motorcycle_images');
+    expect(schemaSql).toContain('for select');
+    expect(schemaSql).toContain('to anon, authenticated');
+    expect(schemaSql).toContain('from public.motorcycles m');
+    expect(schemaSql).toContain('where m.id = motorcycle_images.motorcycle_id');
+    expect(normalizedSchemaSql).not.toMatch(/on public\.motorcycle_images for select to anon, authenticated\b[^;]*using \(true\)/);
+  });
+
+  it('usa policies admin con public.is_admin() para select/insert/update/delete', () => {
+    expect(schemaSql).toContain('drop policy if exists "Admins can read all motorcycle images" on public.motorcycle_images;');
+    expect(schemaSql).toContain('create policy "Admins can read all motorcycle images"');
+    expect(schemaSql).toContain('using (public.is_admin())');
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can insert motorcycle images" on public.motorcycle_images;');
+    expect(schemaSql).toContain('create policy "Admins can insert motorcycle images"');
+    expect(schemaSql).toContain('for insert');
+    expect(schemaSql).toContain('with check (public.is_admin())');
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can update motorcycle images" on public.motorcycle_images;');
+    expect(schemaSql).toContain('create policy "Admins can update motorcycle images"');
+    expect(schemaSql).toContain('for update');
+    expect(schemaSql).toContain('using (public.is_admin())');
+    expect(schemaSql).toContain('with check (public.is_admin())');
+
+    expect(schemaSql).toContain('drop policy if exists "Admins can delete motorcycle images" on public.motorcycle_images;');
+    expect(schemaSql).toContain('create policy "Admins can delete motorcycle images"');
+    expect(schemaSql).toContain('for delete');
+  });
+
+  it('aplica grants mínimos y no bypassa RLS para escritura no admin', () => {
+    const grants = getMotorcycleImagesGrantStatements();
+
+    expect(schemaSql).toContain('revoke all on table public.motorcycle_images from anon;');
+    expect(schemaSql).toContain('revoke all on table public.motorcycle_images from authenticated;');
+    expect(grants).toEqual([
+      'grant select on public.motorcycle_images to anon, authenticated;',
+      'grant insert (motorcycle_id, url, storage_path, alt_text, is_primary, sort_order, source, created_by) on public.motorcycle_images to authenticated;',
+      'grant update (motorcycle_id, url, storage_path, alt_text, is_primary, sort_order, source) on public.motorcycle_images to authenticated;',
+      'grant delete on public.motorcycle_images to authenticated;',
+    ]);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+insert\s+on\s+(?:table\s+)?public\.motorcycle_images\s+to\s+anon\b/);
+    expect(normalizedSchemaSql).not.toMatch(/grant\s+update\s+on\s+(?:table\s+)?public\.motorcycle_images\s+to\s+anon\b/);
+  });
+
+  it('mantiene intacto el contrato single-image de motorcycles', () => {
+    expect(schemaSql).toContain('image_url text not null');
+    expect(schemaSql).toContain('image_locked boolean not null default false');
+    expect(schemaSql).toContain("image_source motorcycle_data_source not null default 'manual'");
   });
 });
 

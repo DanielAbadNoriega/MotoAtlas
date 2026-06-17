@@ -3,10 +3,11 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1298` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1358` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
-  - `src/services/adminMotorcycleImageUploadService.test.ts` + `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/shared/images/getMotorcycleImage.test.ts` → `193` tests passing (upload service, admin page create/edit/publish, image resolver).
-  - suite completa → `1298` tests passing.
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery record creation + read-only connection + gallery card visual polish + stable ordering regression tests. **220 tests** passing.
+  - `src/services/adminMotorcycleGalleryService.test.ts` + `supabase/schema.test.ts` → 2 files / 102 tests passing (gallery schema + service foundation).
+  - suite completa → `1358` tests passing.
 
 ## Stack actual
 
@@ -38,6 +39,23 @@ npm run test
 - Validación de modales/drawers con foco real y bloqueo de scroll en navegador.
 - Smoke test contra entorno staging de Supabase/Vercel, con datos de prueba controlados.
 - Flujos completos de login/registro/logout/admin contra staging controlado; los tests unitarios actuales usan mocks y no validan RLS desplegada.
+
+## Admin Models Studio — gallery schema + service foundation
+
+Cobertura vigente:
+- `supabase/schema.test.ts` valida la base de `public.motorcycle_images`: columnas esperadas, `storage_path` nullable pero seguro, `created_by` nullable, FK con cascade delete, `source` sobre `public.motorcycle_data_source`, índices por `motorcycle_id` y `(motorcycle_id, sort_order)`, unique partial index para una sola primaria y RLS/grants conservadores;
+- `src/services/adminMotorcycleGalleryService.test.ts` cubre el servicio REST tipado `adminMotorcycleGalleryService`: GET con filtro `motorcycle_id` y orden `sort_order.asc,created_at.asc`, POST/PATCH/DELETE con headers `apikey` + Bearer token, `Prefer: return=representation` en writes, mapping snake_case ↔ camelCase y preservación de `storagePath` / `createdBy` nullables;
+- los tests verifican errores controlados por env/token faltante y surfacing de errores API;
+- también fijan el contrato de que el servicio gestiona **solo metadata DB** y no importa/llama `adminMotorcycleImageUploadService`, no sube archivos y no borra objetos de Storage;
+- el contrato single-image actual sigue intacto: `motorcycles.image_url`, `image_locked` e `image_source` no se modifican desde este servicio.
+
+Estado actual:
+- el image manager modal consume `adminMotorcycleGalleryService` en edit mode: carga imágenes reales con estados de carga, error, vacío y grid de galería;
+- el upload explícito en edit mode crea un gallery record tras subir a Storage; en create mode se crea tras publish exitoso;
+- los records se crean con `isPrimary: false` y `source: 'manual'`. URLs manuales y locales no crean records;
+- un guard evita el borrado Storage de imágenes respaldadas por gallery records;
+- no hay thumbnails demo, arrays fake ni mock gallery cards;
+- el contrato single-image (`motorcycles.image_url`) sigue intacto como imagen primaria para cards, buscador, ficha y fallbacks.
 
 ## Convenciones para nuevos tests
 
@@ -336,6 +354,53 @@ window.location.hash = '#/comparador?bikes=id-1,id-2';
 
 Siempre limpiar o confiar en `setupTests` para aislamiento.
 
+## Admin Models Studio — image cleanup hardening + image manager modal refactor
+
+Cobertura vigente:
+- preview actual renderiza cuando `draft.imageUrl` existe, tanto en create como en edit;
+- una imagen persistida de Storage en edit mode **no** se elimina físicamente al quitarla del formulario;
+- una imagen subida durante la sesión sí puede borrarse inmediatamente antes del publish;
+- al reemplazar una imagen persistida del bucket, el objeto viejo se limpia solo tras `updateAdminMotorcycle` exitoso;
+- un fallo de publish/update no elimina la imagen persistida vieja;
+- URLs manuales externas, assets locales `/images/...` y el placeholder `motorcycle-technical-pending.jpg` nunca llaman a `deleteMotorcycleImage`;
+- una URL de Storage de otro proyecto Supabase no dispara cleanup destructivo;
+- si la URL final resuelve al mismo object path que la imagen persistida original, el cleanup se omite;
+- el cleanup fallido después de un publish exitoso es no bloqueante y no revierte el publish;
+- `Descartar cambios` limpia estado local de selected file / session upload para no dejar reuploads accidentales pendientes.
+
+**Image manager modal refactor** (implementado, sin cambios de schema/RLS):
+- la preview a nivel formulario y el botón "Gestionar imágenes" permanecen fuera del modal;
+- el modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox imageLocked, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error;
+- el modal usa dark premium admin layout inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global;
+- "Guardar cambios" solo cierra el modal y mantiene cambios en draft; no publica;
+- **la galería ahora crea records desde uploads**: edit mode explicit upload sube a Storage y crea `motorcycle_images` record (`isPrimary: false`, `source: 'manual'`). Create mode lo hace tras publish. Edit auto-upload antes de publish también crea el record. Un guard evita Storage delete de imágenes respaldadas por gallery records;
+- la galería de solo lectura ya está conectada: el modal carga imágenes reales con estados de carga/error/vacío/grid desde `getAdminMotorcycleGalleryImages`;
+- no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards;
+- el contrato single-image (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo la imagen primaria usada por cards, buscador, ficha y fallbacks;
+- selección de primaria, reorden y borrado coordinado quedan para fases posteriores.
+
+**Gallery card visual polish + stable ordering** (focused check validado):
+- gallery card flip `rotateY` con efecto revolving-door (no `rotateX`).
+- info panel controlado por botón (no hover), `aria-expanded` en vez de `aria-pressed`.
+- múltiples cards con info abierta simultáneamente (`galleriaInfoCardKeys: Set<string>`).
+- header de galería compacto (gap, padding, helper copy reducidos).
+- seleccionar portada NO reordena la librería completa (incluyendo entries no-gallery).
+- seleccionar placeholder como portada no reordena la librería.
+- seleccionar portada NO llama a servicios de galería.
+- `data-library-image-url` atributo en cada card para aserciones estables.
+- `sortOrder` no mutado al seleccionar portada.
+- flag `persisted` registrado antes que `draft` para label semántico correcto (`Portada guardada`).
+- 3 galería fixtures (lateral, trasera, detalle) para tests representativos de ordenamiento.
+
+Comportamiento preservado por tests:
+- explicit `Subir imagen`;
+- auto-upload antes de publicar;
+- imagen ya subida no se re-sube;
+- `imageLocked = true` tras upload exitoso;
+- custom file input;
+- Section Radar;
+- navegación post-publish y sync del catálogo en memoria a nivel `App.tsx`.
+
 ## Riesgos a vigilar
 
 - Reviews: `pending` se inserta públicamente, pero solo `approved` se muestra. `rejected` y `hidden` no deben aparecer en UI pública.
@@ -378,12 +443,13 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1231` tests passing (76 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `1358` tests passing (78 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 - Cobertura Admin Models Studio persistencia:
-  - `src/components/pages/AdminPage/AdminPage.test.tsx` → `128` tests cubriendo create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks.
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` → cobertura de create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks, navegación post-publicación y sync App-level del catálogo en memoria.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.
   - Admin create/edit publish validan que el servicio no se llama cuando la validación falla.
   - Edit publish no requiere modeloId; create sí.
+  - Hardening adicional de cleanup de imagen: `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/services/adminMotorcycleImageUploadService.test.ts` cubren delete seguro por tipo de URL/origen, cleanup diferido post-publish y reset de estado local.
 
 - `CommunityReviewsPage` valida que en no-auth `Útil N` siga visible en modo pasivo y que no aparezcan acciones falsas (`No útil`, `Reportar`, `Responder`).
 - `CommunityReviewsPage` valida la Fase B de `PageHero`: conserva `hero-community.png`, mantiene `h1` + `aria-labelledby` y no renderiza los CTAs retirados `Explorar reviews` / `Buscar moto para opinar`. La limpieza posterior de pureza no cambia el contrato visible: solo mueve el styling contextual fuera de `PageHero.scss`.
@@ -459,7 +525,7 @@ Cobertura actual relevante:
   - `upsertReactionSummaryById`
 - `src/components/pages/CommunityLandingPage/CommunityLandingPage.test.tsx` cubre paridad de metadatos en podio de `#/comunidad`:
   - las cards compactas 2 y 3 mantienen visible en DOM el span `año · segmento · cilindrada`.
-- `src/components/pages/AdminPage/AdminPage.test.tsx` cubre image upload flow en Admin Models Studio:
+- `src/components/pages/AdminPage/AdminPage.test.tsx` cubre image upload flow + custom file input + Section Radar en Admin Models Studio:
   - modo URL manual: publish no llama a `uploadMotorcycleImage`.
   - modo upload: auto-upload antes de create publish y antes de edit publish.
   - create payload usa URL pública retornada y `imageLocked: true`.
@@ -469,6 +535,12 @@ Cobertura actual relevante:
   - explicit `Subir imagen` + publish posterior no re-upload (assert `toHaveBeenCalledTimes(1)`).
   - creación/fallback de `modelId` para la ruta de upload.
   - auto-upload usa `motorcycleId` de ruta en edit mode.
+  - create publish success navega a `#/motos/{createdBike.id}` y edit publish success navega a `#/motos/{motorcycleId}` solo tras éxito real del servicio.
+  - validation failure, upload failure y service failure no navegan.
+  - `App.tsx` + `AdminPage` cubren el sync App-level del catálogo en memoria: replace inmutable por `id` existente o append inmutable para una moto nueva, sin refresh completo del navegador.
+  - custom file input UI cubierto por tests de render general de AdminPage (el input oculto + label estilizado se renderizan correctamente).
+  - Section Radar: el sticky bar con marcadores numerados se renderiza en el form; el scroll-to-section vía `scrollIntoView` se prueba como comportamiento observable en los tests de navegación de AdminPage.
+  - Section progress indicators: el tracking de completitud por sección se deriva de `validateAdminModelDraftForPublish` y se renderiza condicionalmente según el estado del draft.
 
 Pendiente/riesgo menor:
 - Existe reporte de flaky aislado en `AdminPage` (`no muestra paginación cuando hay 6 reportes o menos`); no se observó relación con consolidación de reacciones.

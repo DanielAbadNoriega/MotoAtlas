@@ -392,7 +392,7 @@ src/services/adminMotorcycleImageUploadService.ts
 
 Funciones:
 - `uploadMotorcycleImage(file, motorcycleId, accessToken)`: sube un archivo a `{motorcycleId}/{uuid}.{extension}`, retorna URL pública.
-- `deleteMotorcycleImage(objectPath, accessToken)`: elimina un objeto del bucket (no cableado en UI).
+- `deleteMotorcycleImage(objectPath, accessToken)`: elimina un objeto del bucket cuando el object path ya fue validado como seguro.
 
 **Arquitectura:**
 - No usa `supabase-js` ni `service_role_key`. Usa fetch directo a Supabase Storage REST.
@@ -405,15 +405,40 @@ Funciones:
 
 **Flujo en UI:**
 - Modo `URL manual`: input `type="url"`, checkbox `imageLocked`.
-- Modo `Subir archivo`: file input + preview + botón `Subir imagen`.
+- Modo `Subir archivo`: file input custom MotoAtlas-styled (label estilizado + filename visible) + preview + botón `Subir imagen`.
 - `Subir imagen` → `uploadMotorcycleImage` → `draft.imageUrl = publicUrl` + `draft.imageLocked = true`.
 - `Publicar modelo` con archivo pendiente → auto-upload → publish con URL retornada.
+- Si existe `draft.imageUrl`, create/edit muestran preview actual de imagen.
+- Una imagen persistida de Storage en edit mode puede quitarse del formulario sin borrado físico inmediato.
+- Una imagen subida en la sesión actual puede eliminarse inmediatamente antes del publish.
+- Si edit reemplaza una imagen persistida del bucket, el cleanup del objeto viejo se ejecuta **solo después** de un publish/update exitoso y nunca bloquea/revierte ese publish si falla el cleanup.
+- URLs manuales, assets locales `/images/...` y `motorcycle-technical-pending.jpg` nunca llaman a `deleteMotorcycleImage`.
+- La detección destructiva acepta únicamente URLs del proyecto Supabase configurado y object paths válidos/seguros; URLs de otro proyecto/dominio quedan fuera del cleanup.
 - `imageLocked` protege la imagen curada contra sobrescritura en futuras sincronizaciones.
+- Tras publish exitoso, create navega a `#/motos/{createdBike.id}` y edit navega a `#/motos/{motorcycleId}`.
+- `App.tsx` mantiene el catálogo resuelto en estado local y expone `handleMotorcyclesChange`: si el servicio devuelve una moto existente, la reemplaza inmutablemente por `id`; si devuelve una nueva, la agrega con append inmutable.
+- No se introdujo store global nuevo: el sync post-publish vive en estado local de `App.tsx` y evita refresh completo del navegador.
+- No se introdujeron cambios de schema/RLS/Supabase SQL para este hardening; toda la lógica vive en la UI admin y en el servicio Storage existente.
+
+**Image manager modal refactor (implementado):**
+- La preview a nivel formulario y el botón "Gestionar imágenes" permanecen **fuera del modal**.
+- El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
+- El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
+- "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
+- **Galería conectada con creación de records**: el modal carga imágenes desde `getAdminMotorcycleGalleryImages` en edit mode. Edit mode explicit upload sube a Storage y crea un `motorcycle_images` record. Create mode crea el record tras publish exitoso. URLs manuales y locales no crean records. Un guard evita Storage delete de imágenes respaldadas por gallery records.
+- **Gallery card visual polish + stable ordering**: las cards usan flip `rotateY`, info por botón no hover, multi-info simultáneo, header compacto. El orden de librería es estable vía keys URL-based con `useRef<Map<string, string>>` — seleccionar portada no reordena las cards. Cover fallback seguro a `motorcycle-technical-pending.jpg`.
+- El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
+
+**Section Radar en UI:**
+- Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.
+- Navegación con `scrollIntoView` (sin hash anchors ni IntersectionObserver).
+- Scroll horizontal en mobile, glass strip sticky.
 
 **Persistencia:**
-- `motorcycles.image_url` almacena la URL pública de la imagen subida.
+- `motorcycles.image_url` almacena la URL pública de la imagen subida y sigue siendo el campo fuente para la imagen primaria actual en UI.
 - `motorcycles.image_locked` almacena el flag de protección.
 - `motorcycles.image_source` se mantiene según el pipeline existente.
+- `motorcycle_images` no sustituye ese contrato: añade una capa paralela de metadata de galería que el modal admin ya consume y alimenta desde uploads.
 
 ## 6. Routing
 
