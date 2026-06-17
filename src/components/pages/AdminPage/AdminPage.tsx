@@ -40,6 +40,7 @@ import {
   type AdminMotorcycleUpdatePayload,
 } from '../../../services/adminMotorcycleService';
 import { deleteMotorcycleImage, MOTORCYCLE_IMAGE_BUCKET, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
+import { getAdminMotorcycleGalleryImages, type AdminMotorcycleGalleryImage } from '../../../services/adminMotorcycleGalleryService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -963,6 +964,10 @@ function AdminModelFormBody({
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<readonly AdminMotorcycleGalleryImage[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const { session } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -1037,6 +1042,40 @@ function AdminModelFormBody({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isImageManagerOpen]);
+
+  // Fetch gallery images when modal opens in edit mode
+  useEffect(() => {
+    if (!isImageManagerOpen) {
+      setGalleryImages([]);
+      setGalleryLoading(false);
+      setGalleryError(null);
+      return;
+    }
+
+    if (!draft.modelId.trim()) {
+      return;
+    }
+
+    let cancelled = false;
+    setGalleryLoading(true);
+    setGalleryError(null);
+
+    getAdminMotorcycleGalleryImages(draft.modelId, session?.access_token)
+      .then((images) => {
+        if (!cancelled) {
+          setGalleryImages(images);
+          setGalleryLoading(false);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setGalleryError(error instanceof Error ? error.message : 'Error al cargar la galería');
+          setGalleryLoading(false);
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [isImageManagerOpen, draft.modelId, session?.access_token]);
 
   const [isUploading, setIsUploading] = useState(false);
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
@@ -1570,7 +1609,7 @@ function AdminModelFormBody({
                 {imageModalBadge ? (
                   <span className="admin-model__image-modal-badge">{imageModalBadge}</span>
                 ) : null}
-                <p className="admin-model__image-modal-subtitle">Gestiona la imagen principal y la biblioteca visual del modelo.</p>
+                <p className="admin-model__image-modal-subtitle">Visualiza la galería de imágenes y gestiona la imagen principal del modelo.</p>
               </div>
               <button
                 type="button"
@@ -1582,14 +1621,64 @@ function AdminModelFormBody({
               </button>
             </header>
             <div className="admin-model__image-modal-body">
-              <div className="admin-model__image-modal-placeholder">
-                <span className="material-symbols-outlined" aria-hidden="true">imagesmode</span>
-                <div>
-                  <strong>Gestor visual en preparación</strong>
-                  <p>La gestión completa de imagen se integrará en este modal en la siguiente fase.</p>
-                  <p>Por ahora, la imagen principal se sigue gestionando desde el bloque del formulario.</p>
+              {(isImageManagerOpen && !draft.modelId.trim()) ? (
+                <div className="admin-model__image-modal-placeholder">
+                  <span className="material-symbols-outlined" aria-hidden="true">imagesmode</span>
+                  <div>
+                    <strong>Galería no disponible</strong>
+                    <p>La galería de imágenes estará disponible una vez que el modelo sea creado y guardado.</p>
+                    <p>Por ahora, la imagen principal se sigue gestionando desde el bloque del formulario.</p>
+                  </div>
                 </div>
-              </div>
+              ) : galleryLoading ? (
+                <div className="admin-model__image-modal-loading" role="status" aria-live="polite">
+                  <span className="material-symbols-outlined" aria-hidden="true">sync</span>
+                  <p>Cargando galería de imágenes...</p>
+                </div>
+              ) : galleryError ? (
+                <div className="admin-model__image-modal-error" role="alert">
+                  <span className="material-symbols-outlined" aria-hidden="true">warning</span>
+                  <p>{galleryError}</p>
+                </div>
+              ) : galleryImages.length === 0 ? (
+                <div className="admin-model__image-modal-empty">
+                  <span className="material-symbols-outlined" aria-hidden="true">photo_library</span>
+                  <div>
+                    <strong>Sin imágenes en galería</strong>
+                    <p>Este modelo aún no tiene imágenes adicionales. La imagen principal se gestiona desde la sección inferior.</p>
+                  </div>
+                </div>
+              ) : (
+                <section className="admin-model__image-modal-gallery" aria-label="Galería de imágenes del modelo">
+                  <header className="admin-model__image-modal-gallery-header">
+                    <span className="material-symbols-outlined" aria-hidden="true">collections</span>
+                    <h3>Galería ({galleryImages.length})</h3>
+                  </header>
+                  <div className="admin-model__image-modal-gallery-grid">
+                    {galleryImages.map((image) => (
+                      <article key={image.id} className="admin-model__image-modal-gallery-card" aria-label={image.altText ?? 'Imagen de galería'}>
+                        <div className="admin-model__image-modal-gallery-card-media">
+                          <img src={image.url} alt={image.altText ?? ''} loading="lazy" />
+                        </div>
+                        <div className="admin-model__image-modal-gallery-card-info">
+                          {image.isPrimary ? (
+                            <span className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--primary">
+                              <span className="material-symbols-outlined" aria-hidden="true">star</span>
+                              Principal
+                            </span>
+                          ) : null}
+                          <span className="admin-model__image-modal-gallery-card-source">
+                            {image.source === 'api' ? 'Importación' : image.source === 'manual' ? 'Manual' : image.source === 'user' ? 'Usuario' : image.source === 'estimated' ? 'Estimado' : 'Placeholder'}
+                          </span>
+                          <span className="admin-model__image-modal-gallery-card-order">
+                            #{image.sortOrder}
+                          </span>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
               <div className="admin-model__image-modal-controls">
                 <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--selector" aria-labelledby="image-manager-source-title">
                   <div className="admin-model__image-modal-control-header">
@@ -1692,7 +1781,7 @@ function AdminModelFormBody({
                   </section>
                 )}
               </div>
-              <p className="admin-model__image-modal-note">El soporte multiimagen se añadirá sobre la futura galería persistente.</p>
+              <p className="admin-model__image-modal-note">La galería es de solo lectura. La gestión completa (subir, editar, reordenar) se añadirá en una fase posterior.</p>
             </div>
             <footer className="admin-model__image-modal-footer">
               <button
