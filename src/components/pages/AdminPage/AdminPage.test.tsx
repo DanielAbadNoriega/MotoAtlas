@@ -249,6 +249,10 @@ function mockAuth(overrides: MockAuthOverrides = {}) {
   }) as never);
 }
 
+async function openImageManager(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+}
+
 describe('AdminPage', () => {
   beforeEach(() => {
     useAuthMock.mockReset();
@@ -1758,6 +1762,7 @@ describe('AdminPage', () => {
     await user.type(screen.getByLabelText('Marca'), 'Ducati');
     await user.type(screen.getByLabelText('Modelo'), 'DesertX');
     await user.type(screen.getByLabelText('Descripción'), 'Trail travel preparada para enlazar asfalto y tierra.');
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), 'https://cdn.motoatlas.test/desertx.webp');
     await user.selectOptions(screen.getByLabelText('Segmento'), 'adventure');
     await user.selectOptions(screen.getByLabelText('Carnet'), 'A');
@@ -1777,10 +1782,68 @@ describe('AdminPage', () => {
     const user = userEvent.setup();
     render(<AdminNewModelPage />);
 
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), 'https://cdn.motoatlas.test/current-image.webp');
 
     expect(screen.getByRole('region', { name: 'Imagen actual del modelo' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', 'https://cdn.motoatlas.test/current-image.webp');
+  });
+
+  it('mantiene visible la entrada del formulario para imagen y el trigger del gestor', () => {
+    render(<AdminNewModelPage />);
+
+    expect(screen.getByRole('region', { name: 'Imagen actual del modelo' })).toBeInTheDocument();
+    expect(screen.getByText('Imagen no disponible')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Gestionar imágenes' })).toBeInTheDocument();
+  });
+
+  it('abrir Gestionar imágenes muestra el modal shell sin galería fake', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Galería de imágenes' })).toBeInTheDocument();
+    expect(screen.getByText('Gestiona la imagen principal y la biblioteca visual del modelo.')).toBeInTheDocument();
+    expect(screen.getByText('La gestión completa de imagen se integrará en este modal en la siguiente fase.')).toBeInTheDocument();
+    expect(screen.getByText('Por ahora, la imagen principal se sigue gestionando desde el bloque del formulario.')).toBeInTheDocument();
+    expect(screen.getByText('El soporte multiimagen se añadirá sobre la futura galería persistente.')).toBeInTheDocument();
+    expect(screen.queryByText(/Imagen 4/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Imagen 5/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/8 imágenes/i)).not.toBeInTheDocument();
+  });
+
+  it('el botón de cerrar cierra el modal de imágenes', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+    await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('Cancelar cierra el modal de imágenes', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('Guardar cambios cierra el modal de imágenes sin publicar', async () => {
+    const user = userEvent.setup();
+    render(<AdminNewModelPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
+    expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
   });
 
   it('mantiene Guardar borrador y Vista previa como acciones locales sin llamar servicios', async () => {
@@ -1829,6 +1892,7 @@ describe('AdminPage', () => {
     await user.type(screen.getByLabelText('Peso (kg)'), '210');
     await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
     await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -1861,6 +1925,7 @@ describe('AdminPage', () => {
     await user.type(screen.getByLabelText('Peso (kg)'), '180');
     await user.type(screen.getByLabelText('Altura asiento (mm)'), '800');
     await user.type(screen.getByLabelText('Depósito (l)'), '15');
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -1914,6 +1979,7 @@ describe('AdminPage', () => {
     await user.type(screen.getByLabelText('Peso (kg)'), '210');
     await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
     await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
     await user.type(screen.getByLabelText('ID sugerido'), 'invalid id with spaces');
 
@@ -1955,6 +2021,7 @@ describe('AdminPage', () => {
     await user.type(screen.getByLabelText('Peso (kg)'), '210');
     await user.type(screen.getByLabelText('Altura asiento (mm)'), '875');
     await user.type(screen.getByLabelText('Depósito (l)'), '16');
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), '/images/test.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -1983,6 +2050,7 @@ describe('AdminPage', () => {
     await user.type(screen.getByLabelText('Peso (kg)'), '184');
     await user.type(screen.getByLabelText('Altura asiento (mm)'), '805');
     await user.type(screen.getByLabelText('Depósito (l)'), '14');
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), '/images/motorcycles/mt-07.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -2013,6 +2081,7 @@ describe('AdminPage', () => {
     await user.type(screen.getByLabelText('Peso (kg)'), '184');
     await user.type(screen.getByLabelText('Altura asiento (mm)'), '805');
     await user.type(screen.getByLabelText('Depósito (l)'), '14');
+    await openImageManager(user);
     await user.type(screen.getByLabelText('Image URL'), '/images/mt-07.webp');
 
     await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -2490,8 +2559,8 @@ describe('AdminPage', () => {
   it('muestra el tooltip de imagen bloqueada / curada', () => {
     render(<AdminNewModelPage />);
 
-    expect(screen.getByRole('button', { name: /Más información sobre imagen bloqueada/i })).toBeInTheDocument();
-    expect(screen.getByText('Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Más información sobre imagen bloqueada/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente.')).not.toBeInTheDocument();
   });
 
   describe('image upload UI shell — mode switch and local preview', () => {
@@ -2508,17 +2577,25 @@ describe('AdminPage', () => {
       revokeObjectURLSpy?.mockRestore();
     });
 
-    it('renderiza el mode switch con URL manual y Subir archivo', () => {
+    it('los controles de URL manual no son visibles hasta abrir el modal y luego aparecen dentro', async () => {
+      const user = userEvent.setup();
       render(<AdminNewModelPage />);
+
+      expect(screen.queryByRole('radio', { name: 'URL manual' })).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Image URL')).not.toBeInTheDocument();
+
+      await openImageManager(user);
 
       expect(screen.getByRole('radio', { name: 'URL manual' })).toBeInTheDocument();
       expect(screen.getByRole('radio', { name: 'Subir archivo' })).toBeInTheDocument();
+      expect(screen.getByLabelText('Image URL')).toBeInTheDocument();
     });
 
     it('URL manual mode mantiene el input de Image URL funcional', async () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.type(screen.getByLabelText('Image URL'), 'https://example.com/bike.webp');
       expect(screen.getByLabelText('Image URL')).toHaveValue('https://example.com/bike.webp');
     });
@@ -2527,6 +2604,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
 
       expect(screen.getByLabelText('Seleccionar imagen del modelo')).toBeInTheDocument();
@@ -2537,6 +2615,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
 
       expect(screen.getByText('Seleccionar imagen')).toBeInTheDocument();
@@ -2552,6 +2631,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
 
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
@@ -2568,6 +2648,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
 
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
@@ -2582,6 +2663,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
 
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
@@ -2595,6 +2677,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
 
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
@@ -2609,6 +2692,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
 
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
@@ -2624,6 +2708,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.type(screen.getByLabelText('Image URL'), 'https://example.com/bike.webp');
 
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
@@ -2638,6 +2723,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
       const file = new File(['dummy'], 'test.jpg', { type: 'image/jpeg' });
@@ -2675,6 +2761,7 @@ describe('AdminPage', () => {
       await user.type(screen.getByLabelText('Marca'), 'Ducati');
       await user.type(screen.getByLabelText('Modelo'), 'DesertX');
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
       const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
@@ -2688,6 +2775,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
       const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
@@ -2701,6 +2789,7 @@ describe('AdminPage', () => {
       stubURL();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
       selectFile(fileInput, new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' }));
@@ -2883,6 +2972,7 @@ describe('AdminPage', () => {
       await user.type(screen.getByLabelText('Marca'), 'Ducati');
       await user.type(screen.getByLabelText('Modelo'), 'DesertX');
       await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx-2025');
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
@@ -2919,6 +3009,7 @@ describe('AdminPage', () => {
 
       expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
       expect(screen.getByRole('status')).toHaveTextContent('Imagen quitada del formulario.');
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'URL manual' }));
       expect(screen.getByLabelText('Image URL')).toHaveValue('');
       expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/i })).not.toBeChecked();
@@ -2928,10 +3019,13 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.type(screen.getByLabelText('Image URL'), 'https://cdn.example.com/manual-image.webp');
+      await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
       await user.click(screen.getByRole('button', { name: 'Quitar imagen del formulario' }));
 
       expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'URL manual' }));
       expect(screen.getByLabelText('Image URL')).toHaveValue('');
     });
@@ -2942,6 +3036,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       renderEditWithBucketImage();
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
@@ -2967,6 +3062,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       renderEditWithBucketImage();
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
@@ -2977,6 +3073,7 @@ describe('AdminPage', () => {
         expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
       });
 
+      await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
       await waitFor(() => {
@@ -2997,6 +3094,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       renderEditWithBucketImage();
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
@@ -3007,6 +3105,7 @@ describe('AdminPage', () => {
         expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
       });
 
+      await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
       await waitFor(() => {
@@ -3021,10 +3120,12 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       renderEditWithBucketImage();
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'URL manual' }));
       const imageUrlInput = screen.getByLabelText('Image URL');
       await user.clear(imageUrlInput);
       await user.type(imageUrlInput, `${bucketUrl}?cache=2#preview`);
+      await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
       await waitFor(() => {
@@ -3053,6 +3154,7 @@ describe('AdminPage', () => {
         />,
       );
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' })] },
@@ -3063,6 +3165,7 @@ describe('AdminPage', () => {
         expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
       });
 
+      await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
       await waitFor(() => {
@@ -3083,6 +3186,7 @@ describe('AdminPage', () => {
       });
 
       expect(screen.getByRole('status')).toHaveTextContent('Imagen eliminada correctamente.');
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'URL manual' }));
       expect(screen.getByLabelText('Image URL')).toHaveValue('');
       expect(screen.getByRole('checkbox', { name: /Imagen bloqueada/i })).not.toBeChecked();
@@ -3106,6 +3210,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminNewModelPage />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'pending-upload.jpg', { type: 'image/jpeg' })] },
@@ -3169,6 +3274,7 @@ describe('AdminPage', () => {
 
       await fillCreateForm(user);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
       const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
@@ -3182,6 +3288,7 @@ describe('AdminPage', () => {
       const user = userEvent.setup();
       render(<AdminEditMotorcyclePage motorcycleId="bmw-f-900-gs-2024" motorcycles={bikeCatalog} onMotorcyclesChange={vi.fn()} />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
       const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
@@ -3198,7 +3305,9 @@ describe('AdminPage', () => {
 
       await fillCreateForm(user);
       await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+      await openImageManager(user);
       await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
+      await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
 
@@ -3328,8 +3437,8 @@ describe('AdminPage', () => {
 
       await fillCreateForm(user);
       await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+      await openImageManager(user);
       await user.type(screen.getByLabelText('Image URL'), '/images/ducati-desertx.webp');
-
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       const fileInput = screen.getByLabelText('Seleccionar imagen del modelo');
       const file = new File(['dummy'], 'bike.jpg', { type: 'image/jpeg' });
@@ -3429,6 +3538,16 @@ describe('AdminPage', () => {
       expect(screen.getByRole('img', { name: 'Preview local de BMW F 900 GS' })).toBeInTheDocument();
     });
 
+    it('el modal de imágenes en edit muestra el badge del modelo disponible', async () => {
+      const user = userEvent.setup();
+      render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+      await user.click(screen.getByRole('button', { name: 'Gestionar imágenes' }));
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText('BMW · F 900 GS · 2024')).toBeInTheDocument();
+    });
+
     it('preserva las mismas cuatro acciones en el footer', () => {
       render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
@@ -3461,6 +3580,7 @@ describe('AdminPage', () => {
       await user.type(screen.getByLabelText('Marca'), 'Marca temporal');
       expect(screen.getByLabelText('Marca')).toHaveValue('Marca temporal');
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'route-switch.jpg', { type: 'image/jpeg' })] },
@@ -3493,6 +3613,7 @@ describe('AdminPage', () => {
 
       render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
 
+      await openImageManager(user);
       await user.click(screen.getByRole('radio', { name: 'Subir archivo' }));
       fireEvent.change(screen.getByLabelText('Seleccionar imagen del modelo'), {
         target: { files: [new File(['dummy'], 'edit-replacement.jpg', { type: 'image/jpeg' })] },

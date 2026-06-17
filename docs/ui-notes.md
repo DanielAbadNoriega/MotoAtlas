@@ -243,6 +243,35 @@ El formulario de `#/admin/modelos/nuevo` y `#/admin/modelos/{motorcycleId}/edita
 
 Este patrón mantiene la accesibilidad del file input nativo mientras unifica la estética con el resto del formulario dark/premium.
 
+## Admin Models Studio — Image Manager Modal (refactor)
+
+La gestión de imágenes del formulario admin de modelos se ha refactorizado moviendo los controles de imagen a un modal dedicado, manteniendo la preview y el trigger fuera:
+
+**Fuera del modal (a nivel formulario):**
+- Preview de imagen actual / estado vacío
+- Copia del estado actual de la imagen
+- Botón "Eliminar imagen actual" (para imágenes de sesión no persistidas)
+- Botón trigger "Gestionar imágenes" para abrir el modal
+
+**Dentro del modal:**
+- Modo `URL manual` con input `type="url"` y checkbox `Imagen bloqueada / curada`
+- Modo `Subir archivo` con file input custom MotoAtlas-styled, preview local, validación MIME/size (5 MB), botón `Subir imagen`
+- Checkbox `imageLocked` para proteger imagen curada
+- Alertas de validación/error con `role="alert"`
+- Botón "Guardar cambios" que **solo cierra el modal y mantiene cambios en draft**; no publica
+
+**Estética del modal:**
+- Dark premium admin layout inspirado en referencia Stitch gallery modal
+- Tonal surfaces, thin borders
+- SCSS scoped `admin-model__...`
+- Sin Tailwind copiado, sin leakage global
+
+**Contrato actual:**
+- No hay persistencia de galería multi-imagen
+- No hay datos falsos de galería, thumbnails demo, arrays demo, mock gallery cards
+- Backend sigue siendo single-image a través de campos `image_url`, `image_locked`, `image_source` de `motorcycles`
+- Futura galería real requerirá data model `motorcycle_images`, RLS, services y UI dedicada
+
 ## Admin Models Studio — Section Radar (Stitch-inspired)
 
 El formulario admin de modelos incorpora una navegación interna tipo radar para saltar entre secciones sin scroll manual:

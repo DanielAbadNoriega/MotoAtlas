@@ -3,10 +3,10 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1315` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1324` tests passing (77 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` + `src/services/adminMotorcycleImageUploadService.test.ts` → 202 tests passing (Admin Models image replace/delete cleanup hardening).
-  - suite completa → `1315` tests passing.
+  - suite completa → `1324` tests passing.
 
 ## Stack actual
 
@@ -336,7 +336,7 @@ window.location.hash = '#/comparador?bikes=id-1,id-2';
 
 Siempre limpiar o confiar en `setupTests` para aislamiento.
 
-## Admin Models Studio — image cleanup hardening
+## Admin Models Studio — image cleanup hardening + image manager modal refactor
 
 Cobertura vigente:
 - preview actual renderiza cuando `draft.imageUrl` existe, tanto en create como en edit;
@@ -349,6 +349,15 @@ Cobertura vigente:
 - si la URL final resuelve al mismo object path que la imagen persistida original, el cleanup se omite;
 - el cleanup fallido después de un publish exitoso es no bloqueante y no revierte el publish;
 - `Descartar cambios` limpia estado local de selected file / session upload para no dejar reuploads accidentales pendientes.
+
+**Image manager modal refactor** (implementado, sin cambios de schema/RLS):
+- la preview a nivel formulario y el botón "Gestionar imágenes" permanecen fuera del modal;
+- el modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox imageLocked, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error;
+- el modal usa dark premium admin layout inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global;
+- "Guardar cambios" solo cierra el modal y mantiene cambios en draft; no publica;
+- no hay persistencia de galería, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards;
+- el contrato backend actual sigue siendo single-image a través de los campos de imagen de motorcycle existentes;
+- futura galería multi-imagen requiere data model / RLS / services `motorcycle_images` dedicados.
 
 Comportamiento preservado por tests:
 - explicit `Subir imagen`;
@@ -401,7 +410,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1315` tests passing (77 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `1324` tests passing (77 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 - Cobertura Admin Models Studio persistencia:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → cobertura de create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks, navegación post-publicación y sync App-level del catálogo en memoria.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.

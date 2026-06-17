@@ -962,6 +962,7 @@ function AdminModelFormBody({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const acceptedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -1022,6 +1023,20 @@ function AdminModelFormBody({
       }
     };
   }, [previewBlobUrl]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!isImageManagerOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsImageManagerOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isImageManagerOpen]);
 
   const [isUploading, setIsUploading] = useState(false);
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
@@ -1179,8 +1194,8 @@ function AdminModelFormBody({
         return draft.priceEur ? 1 : 0;
       }
       case 'admin-model-section-image': {
-        if (imageMode === 'upload') return (selectedFile || hasUploadedImage) ? 1 : 0;
-        return draft.imageUrl ? 1 : 0;
+        const hasImage = draft.imageUrl || selectedFile || hasUploadedImage;
+        return hasImage ? 1 : 0;
       }
       case 'admin-model-section-sources': {
         const fields = [draft.officialUrl, draft.sourceNotes, draft.internalNotes];
@@ -1200,6 +1215,10 @@ function AdminModelFormBody({
     { id: 'admin-model-section-image', label: 'Imagen', index: '06' },
     { id: 'admin-model-section-sources', label: 'Fuentes', index: '07' },
   ] as const;
+
+  const imageModalBadge = [draft.brand.trim(), draft.model.trim(), draft.year.trim()]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
@@ -1469,87 +1488,19 @@ function AdminModelFormBody({
               <section className="admin-page__model-image-preview admin-page__model-image-preview--empty admin-page__model-field--full" aria-label="Imagen actual del modelo">
                 <div className="admin-page__model-image-preview-copy">
                   <strong>Imagen no disponible</strong>
-                  <p>Elegí una URL o subí un archivo para continuar con el formulario.</p>
+                  <p>Elige una URL o sube un archivo para continuar con el formulario.</p>
                 </div>
               </section>
             )}
-
-            <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
-              <span className="admin-page__model-label">
-                <span className="material-symbols-outlined" aria-hidden="true">image</span>
-                Modo de imagen
-              </span>
-              <div className="container-actions" role="radiogroup" aria-label="Modo de selección de imagen">
-                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
-                  URL manual
-                </button>
-                <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
-                  Subir archivo
-                </button>
-              </div>
+            <div className="admin-model__image-manager-trigger admin-page__model-field--full">
+              <button
+                type="button"
+                className="account-page__button account-page__button--glass admin-page__model-action-button admin-model__image-manager-button"
+                onClick={() => setIsImageManagerOpen(true)}
+              >
+                Gestionar imágenes
+              </button>
             </div>
-
-            {fileError ? (
-              <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
-            ) : null}
-
-            {imageMode === 'url' ? (
-              <>
-                <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
-                  <span className="admin-page__model-label">
-                    <span className="material-symbols-outlined" aria-hidden="true">link_2</span>
-                    Image URL
-                  </span>
-                  <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
-                </label>
-
-                <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
-                  <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
-                  <span className="content">
-                    Imagen bloqueada / curada
-                    <AdminModelInfoTooltip
-                      ariaLabel="Más información sobre imagen bloqueada"
-                      description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
-                    />
-                  </span>
-                </label>
-              </>
-            ) : (
-              <>
-                <div className="admin-page__model-field admin-page__model-field--full">
-                  <span className="admin-page__model-label">
-                    <span className="material-symbols-outlined" aria-hidden="true">upload</span>
-                    Seleccionar imagen del modelo
-                  </span>
-                  <div className="admin-page__image-file-control">
-                    <input ref={fileInputRef} id="admin-model-image-file" type="file" className="admin-page__image-file-input" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
-                    <label htmlFor="admin-model-image-file" className="admin-page__image-file-trigger">
-                      <span className="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
-                      Seleccionar imagen
-                    </label>
-                    <span className="admin-page__image-file-name" aria-live="polite">
-                      {selectedFile ? `${selectedFile.name} - ${formatFileSize(selectedFile.size)}` : 'Ningún archivo seleccionado'}
-                    </span>
-                  </div>
-                </div>
-
-                  {previewBlobUrl && selectedFile ? (
-                  <div className="admin-page__model-image-preview admin-page__model-field--full">
-                    <div className="admin-page__model-image-preview-media admin-page__model-image-preview-media--candidate">
-                      <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" />
-                    </div>
-                    <div className="admin-page__model-image-preview-copy">
-                      <strong>Archivo seleccionado</strong>
-                      <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
-                    </div>
-                    <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
-                      <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
-                      {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
-                    </button>
-                  </div>
-                ) : null}
-              </>
-            )}
           </div>
         </AdminModelSection>
 
@@ -1608,6 +1559,160 @@ function AdminModelFormBody({
       {localStatus ? (
         <p className="admin-page__model-status" role="status" aria-live="polite">{localStatus}</p>
       ) : null}
+
+      {isImageManagerOpen && (
+        <div className="admin-model__image-modal-backdrop">
+          <div className="admin-model__image-modal" role="dialog" aria-modal="true" aria-labelledby="image-manager-title">
+            <header className="admin-model__image-modal-header">
+              <div className="admin-model__image-modal-title-group">
+                <span className="admin-model__image-modal-kicker">ADMIN IMAGE STUDIO</span>
+                <h2 id="image-manager-title">Galería de imágenes</h2>
+                {imageModalBadge ? (
+                  <span className="admin-model__image-modal-badge">{imageModalBadge}</span>
+                ) : null}
+                <p className="admin-model__image-modal-subtitle">Gestiona la imagen principal y la biblioteca visual del modelo.</p>
+              </div>
+              <button
+                type="button"
+                className="admin-model__image-modal-close"
+                aria-label="Cerrar gestor de imágenes"
+                onClick={() => setIsImageManagerOpen(false)}
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">close</span>
+              </button>
+            </header>
+            <div className="admin-model__image-modal-body">
+              <div className="admin-model__image-modal-placeholder">
+                <span className="material-symbols-outlined" aria-hidden="true">imagesmode</span>
+                <div>
+                  <strong>Gestor visual en preparación</strong>
+                  <p>La gestión completa de imagen se integrará en este modal en la siguiente fase.</p>
+                  <p>Por ahora, la imagen principal se sigue gestionando desde el bloque del formulario.</p>
+                </div>
+              </div>
+              <div className="admin-model__image-modal-controls">
+                <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--selector" aria-labelledby="image-manager-source-title">
+                  <div className="admin-model__image-modal-control-header">
+                    <p id="image-manager-source-title" className="admin-model__image-modal-control-title">Fuente principal</p>
+                    <p className="admin-model__image-modal-helper">Elige si vas a curar la portada con una URL manual o con un archivo local.</p>
+                  </div>
+                  <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
+                    <div className="container-actions admin-model__image-modal-mode-switch" role="radiogroup" aria-label="Modo de selección de imagen">
+                      <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
+                        URL manual
+                      </button>
+                      <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
+                        Subir archivo
+                      </button>
+                    </div>
+                  </div>
+                </section>
+
+                {fileError ? (
+                  <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--alert">
+                    <p role="alert" className="admin-page__model-field admin-page__model-field--full">{fileError}</p>
+                  </section>
+                ) : null}
+
+                {imageMode === 'url' ? (
+                  <>
+                    <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--url" aria-labelledby="image-manager-url-title">
+                      <div className="admin-model__image-modal-control-header">
+                        <p id="image-manager-url-title" className="admin-model__image-modal-control-title">URL principal</p>
+                        <p className="admin-model__image-modal-helper">Usa una ruta curada del catálogo o una URL externa válida para preparar la portada.</p>
+                      </div>
+                      <div className="admin-page__model-field-grid">
+                        <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-image-url">
+                          <span className="admin-page__model-label">
+                            <span className="material-symbols-outlined" aria-hidden="true">link_2</span>
+                            Image URL
+                          </span>
+                          <input id="admin-model-image-url" aria-label="Image URL" type="url" value={draft.imageUrl} onChange={(event) => onDraftFieldChange('imageUrl', event.target.value)} placeholder="https://.../motorcycle.webp" />
+                        </label>
+                      </div>
+                    </section>
+
+                    <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--lock" aria-labelledby="image-manager-lock-title">
+                      <div className="admin-model__image-modal-control-header">
+                        <p id="image-manager-lock-title" className="admin-model__image-modal-control-title">Bloqueo y curación</p>
+                        <p className="admin-model__image-modal-helper">Fija esta portada manual cuando no quieras que futuras sincronizaciones la sustituyan.</p>
+                      </div>
+                      <label className="admin-page__model-checkbox admin-page__model-checkbox--inline">
+                        <input type="checkbox" checked={draft.imageLocked} onChange={(event) => onDraftCheckboxChange('imageLocked', event.target.checked)} />
+                        <span className="content">
+                          Imagen bloqueada / curada
+                          <AdminModelInfoTooltip
+                            ariaLabel="Más información sobre imagen bloqueada"
+                            description="Evita que futuras sincronizaciones automáticas sustituyan esta imagen curada manualmente."
+                          />
+                        </span>
+                      </label>
+                    </section>
+                  </>
+                ) : (
+                  <section className="admin-model__image-modal-control-panel admin-model__image-modal-control-panel--upload" aria-labelledby="image-manager-upload-title">
+                    <div className="admin-model__image-modal-control-header">
+                      <p id="image-manager-upload-title" className="admin-model__image-modal-control-title">Carga local</p>
+                      <p className="admin-model__image-modal-helper">Selecciona un archivo JPG, PNG o WebP para previsualizarlo y subirlo cuando el borrador esté listo.</p>
+                    </div>
+                    <div className="admin-page__model-field-grid">
+                      <div className="admin-page__model-field admin-page__model-field--full">
+                        <span className="admin-page__model-label">
+                          <span className="material-symbols-outlined" aria-hidden="true">upload</span>
+                          Seleccionar imagen del modelo
+                        </span>
+                        <div className="admin-page__image-file-control">
+                          <input ref={fileInputRef} id="admin-model-image-file" type="file" className="admin-page__image-file-input" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar imagen del modelo" onChange={handleFileSelect} />
+                          <label htmlFor="admin-model-image-file" className="admin-page__image-file-trigger">
+                            <span className="material-symbols-outlined" aria-hidden="true">add_photo_alternate</span>
+                            Seleccionar imagen
+                          </label>
+                          <span className="admin-page__image-file-name" aria-live="polite">
+                            {selectedFile ? `${selectedFile.name} - ${formatFileSize(selectedFile.size)}` : 'Ningún archivo seleccionado'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {previewBlobUrl && selectedFile ? (
+                        <div className="admin-page__model-image-preview admin-page__model-field--full">
+                          <div className="admin-page__model-image-preview-media admin-page__model-image-preview-media--candidate">
+                            <img src={previewBlobUrl} alt="Previsualización local del archivo seleccionado" />
+                          </div>
+                          <div className="admin-page__model-image-preview-copy">
+                            <strong>Archivo seleccionado</strong>
+                            <p>{selectedFile.name} — {formatFileSize(selectedFile.size)}</p>
+                          </div>
+                          <button type="button" className="account-page__button account-page__button--glass admin-page__model-action-button" disabled={isUploading || !onUploadImage} onClick={handleImageUpload}>
+                            <span className="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                            {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </section>
+                )}
+              </div>
+              <p className="admin-model__image-modal-note">El soporte multiimagen se añadirá sobre la futura galería persistente.</p>
+            </div>
+            <footer className="admin-model__image-modal-footer">
+              <button
+                type="button"
+                className="account-page__button account-page__button--glass"
+                onClick={() => setIsImageManagerOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="account-page__button"
+                onClick={() => setIsImageManagerOpen(false)}
+              >
+                Guardar cambios
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

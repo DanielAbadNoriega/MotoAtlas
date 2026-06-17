@@ -420,6 +420,15 @@ Funciones:
 - No se introdujo store global nuevo: el sync post-publish vive en estado local de `App.tsx` y evita refresh completo del navegador.
 - No se introdujeron cambios de schema/RLS/Supabase SQL para este hardening; toda la lógica vive en la UI admin y en el servicio Storage existente.
 
+**Image manager modal refactor (implementado):**
+- La preview a nivel formulario y el botón "Gestionar imágenes" permanecen **fuera del modal**.
+- El modal contiene los controles single-image existentes: modo URL manual, modo upload archivo, input image URL, checkbox `imageLocked`, file input / trigger visual, preview archivo seleccionado, botón upload, alertas de validación/error.
+- El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
+- "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
+- **No hay persistencia de galería**, no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards.
+- El **contrato backend actual sigue siendo single-image** a través de los campos de imagen de motorcycle existentes (`image_url`, `image_locked`, `image_source`).
+- Futuro soporte de galería pendiente y requerirá data model / RLS / services `motorcycle_images` dedicados.
+
 **Section Radar en UI:**
 - Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.
 - Navegación con `scrollIntoView` (sin hash anchors ni IntersectionObserver).
