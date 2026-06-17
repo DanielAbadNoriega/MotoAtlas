@@ -272,6 +272,14 @@ La gestión de imágenes del formulario admin de modelos se ha refactorizado mov
 - Reordenar y borrar desde la UI quedan para una fase posterior
 - `motorcycles.image_url` sigue siendo el contrato single-image para cards, buscador, ficha y fallbacks
 
+**Galería visual — cards y orden estable:**
+- **Cards**: cards minimalistas con icon-only/current-cover indicators y tooltips accesibles. Cada card se renderiza como `<article>` con `aria-label` descriptivo y `data-library-image-url`.
+- **Flip card**: la card frontal contiene thumbnail, overlays e info button. La posterior contiene metadata expandida (filename, source, sortOrder, created date). El flip usa `rotateY(180deg)` con `perspective: 1000px` para efecto revolving-door. `prefers-reduced-motion` desactiva la animación.
+- **Info panel**: controlado por botón explícito (no hover). Múltiples cards pueden tener info abierta simultáneamente — estado gestionado con `Set<string>` y `aria-expanded` en vez de `aria-pressed`.
+- **Header compacto**: gap, padding y helper copy reducidos a una línea minimalista.
+- **Orden estable**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Cada URL recibe un key React estable (`lib-0`, `lib-1`, ...) en su primera aparición y se reutiliza en todos los renders. `persisted` se registra antes que `draft` para que cuando ambas URLs coinciden, el label sea `Portada guardada` (semánticamente más correcto que `Portada en edición`). Seleccionar portada no mueve ni reordena cards — el cambio es puramente React reconciliation.
+- **Cover fallback**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback si `draft.imageUrl` quedaría vacío.
+
 ## Admin Models Studio — Section Radar (Stitch-inspired)
 
 El formulario admin de modelos incorpora una navegación interna tipo radar para saltar entre secciones sin scroll manual:

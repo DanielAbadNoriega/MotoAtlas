@@ -426,6 +426,7 @@ Funciones:
 - El modal usa **dark premium admin layout** inspirado en referencia Stitch gallery: tonal surfaces, thin borders, SCSS scoped `admin-model__...`, sin Tailwind copiado, sin leakage global.
 - "Guardar cambios" **solo cierra el modal y mantiene cambios en draft**; no publica.
 - **Galería conectada con creación de records**: el modal carga imágenes desde `getAdminMotorcycleGalleryImages` en edit mode. Edit mode explicit upload sube a Storage y crea un `motorcycle_images` record. Create mode crea el record tras publish exitoso. URLs manuales y locales no crean records. Un guard evita Storage delete de imágenes respaldadas por gallery records.
+- **Gallery card visual polish + stable ordering**: las cards usan flip `rotateY`, info por botón no hover, multi-info simultáneo, header compacto. El orden de librería es estable vía keys URL-based con `useRef<Map<string, string>>` — seleccionar portada no reordena las cards. Cover fallback seguro a `motorcycle-technical-pending.jpg`.
 - El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
 **Section Radar en UI:**

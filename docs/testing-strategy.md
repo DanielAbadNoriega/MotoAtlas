@@ -5,7 +5,7 @@ MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni 
 Estado actual de suite:
 - `1358` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
-  - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery record creation + read-only connection tests.
+  - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery record creation + read-only connection + gallery card visual polish + stable ordering regression tests. **220 tests** passing.
   - `src/services/adminMotorcycleGalleryService.test.ts` + `supabase/schema.test.ts` → 2 files / 102 tests passing (gallery schema + service foundation).
   - suite completa → `1358` tests passing.
 
@@ -378,6 +378,19 @@ Cobertura vigente:
 - no hay datos falsos de galería, no hay thumbnails demo, no hay arrays demo de imágenes, no hay mock gallery cards;
 - el contrato single-image (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo la imagen primaria usada por cards, buscador, ficha y fallbacks;
 - selección de primaria, reorden y borrado coordinado quedan para fases posteriores.
+
+**Gallery card visual polish + stable ordering** (focused check validado):
+- gallery card flip `rotateY` con efecto revolving-door (no `rotateX`).
+- info panel controlado por botón (no hover), `aria-expanded` en vez de `aria-pressed`.
+- múltiples cards con info abierta simultáneamente (`galleriaInfoCardKeys: Set<string>`).
+- header de galería compacto (gap, padding, helper copy reducidos).
+- seleccionar portada NO reordena la librería completa (incluyendo entries no-gallery).
+- seleccionar placeholder como portada no reordena la librería.
+- seleccionar portada NO llama a servicios de galería.
+- `data-library-image-url` atributo en cada card para aserciones estables.
+- `sortOrder` no mutado al seleccionar portada.
+- flag `persisted` registrado antes que `draft` para label semántico correcto (`Portada guardada`).
+- 3 galería fixtures (lateral, trasera, detalle) para tests representativos de ordenamiento.
 
 Comportamiento preservado por tests:
 - explicit `Subir imagen`;

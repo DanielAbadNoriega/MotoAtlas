@@ -67,7 +67,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection + gallery record creation implementadas / primary selection + reorder + delete + WebP conversion + IntersectionObserver pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection + gallery record creation + gallery card visual polish + stable library ordering + cover fallback implementadas / primary selection + reorder + delete + WebP conversion + IntersectionObserver pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -81,6 +81,9 @@ Nota de estado:
 - **Gallery record creation**: edit mode explicit upload crea un `motorcycle_images` record tras Storage upload. Create mode crea el record tras publish exitoso. Edit auto-upload before publish también crea record. Gallery records se crean con `isPrimary: false`, `source: 'manual'`. URLs manuales y locales no crean records. Un guard evita Storage delete de imágenes respaldadas por gallery records.
 - **Read-only gallery connection**: el modal carga imágenes reales desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería. Sin datos falsos ni mock gallery cards.
 - **Gallery backend foundation**: existe la tabla `public.motorcycle_images` con RLS admin-safe, índices y unique partial index para imagen primaria; `adminMotorcycleGalleryService` gestiona solo metadata DB (`getAdminMotorcycleGalleryImages`, `createAdminMotorcycleGalleryImage`, `updateAdminMotorcycleGalleryImage`, `deleteAdminMotorcycleGalleryImageRecord`) y nunca sube archivos ni borra objetos de Storage. `motorcycles.image_url` sigue siendo el contrato desnormalizado de imagen primaria usado por cards, buscador, ficha y fallbacks.
+- **Gallery card visual polish**: cards más minimalistas, icon-only/current-cover indicators con tooltips, info panel por botón (no hover), multi-info simultáneo, flip `rotateY` con efecto revolving-door, header compacto, metadata compacta. `prefers-reduced-motion` respetado.
+- **Stable library ordering**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Seleccionar portada no mueve ni reordena cards de galería. El cambio es React reconciliation únicamente — no muta gallery state. `persisted` registrado antes que `draft` para label semántico correcto (`Portada guardada`).
+- **Cover fallback**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback seguro.
 - **Sin**: primary selection, reorder, delete gallery records, WebP conversion, IntersectionObserver.
 - **Post-publish cerrado**: create publish success navega a `#/motos/{createdBike.id}`, edit publish success navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh completo, reemplazando por `id` o haciendo append si la moto es nueva.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
