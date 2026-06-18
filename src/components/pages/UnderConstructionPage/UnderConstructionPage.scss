@@ -6,81 +6,198 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 60vh;
-  padding: 2rem;
+  min-height: min(820px, calc(100vh - 80px));
+  overflow: hidden;
+  padding: 8rem max($margin-desktop, calc((100vw - $max-width) / 2 + $margin-desktop)) 4rem;
+  position: relative;
   text-align: center;
 
+  &__media {
+    inset: 0;
+    position: absolute;
+
+    img {
+      filter: grayscale(0.32) contrast(1.1);
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.5;
+      width: 100%;
+    }
+  }
+
+  &::after {
+    background:
+      linear-gradient(to top,
+        $color-surface 0%,
+        rgba($color-surface, 0) 48%,
+        transparent 100%);
+    content: '';
+    inset: 0;
+    position: absolute;
+  }
+
   &__content {
-    max-width: 36rem;
+    max-width: 42rem;
+    position: relative;
+    width: 100%;
+    z-index: 1;
+  }
+
+  &__hero {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
   }
 
   &__status-label {
-    display: inline-block;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
+    @include technical-badge;
+
+    align-self: center;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    @include headline-xl;
+
+    color: #fff;
+    text-shadow: 0 5px 34px rgba(0, 0, 0, 0.95);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.6;
   }
 
   &__description {
-    margin-top: 1rem;
-    color: var(--color-text-muted, #666);
-    line-height: 1.6;
+    @include body-lg;
+
+    color: rgba(#fff, 0.8);
+    margin-top: 1.25rem;
+    max-width: 36rem;
+    text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
   }
 
   &__actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 1rem;
-    margin-top: 2rem;
+    justify-content: center;
+    margin-top: 2.5rem;
   }
 
   &__cta {
-    display: inline-flex;
+    @include label-caps;
+
     align-items: center;
+    background: transparent;
+    border: 1px solid rgba($color-outline, 0.72);
+    border-radius: $radius-lg;
+    color: $color-on-surface;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
     gap: 0.5rem;
+    justify-content: center;
+    min-height: 3.4rem;
+    padding: 0.95rem 1.5rem;
+    text-decoration: none;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+    transition:
+      background $transition-base,
+      border-color $transition-base,
+      filter $transition-base;
+
+    &--primary {
+      background: $color-accent-container;
+      border-color: $color-accent-container;
+      color: #fff;
+    }
+
+    &--secondary {
+      border-color: rgba($color-accent, 0.7);
+      color: $color-accent;
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: $color-accent;
+      filter: brightness(1.08);
+      outline: none;
+    }
   }
 
   &__roadmap {
-    margin-top: 3rem;
+    margin-top: 4rem;
     text-align: left;
+  }
+
+  h2 {
+    @include section-title;
+
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
   }
 
   &__roadmap-cards {
     display: grid;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
+    gap: 1.25rem;
+    margin-top: 2rem;
   }
 
   &__roadmap-card {
-    padding: 1.25rem;
-    border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-    border-radius: 0.5rem;
+    @include dashboard-card;
+
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    text-align: left;
 
     h3 {
+      @include headline-md;
+
+      color: #fff;
       margin: 0;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
     }
 
     p {
+      @include body-lg;
+
+      color: rgba(#fff, 0.7);
       margin-top: 0.5rem;
-      font-size: 0.9rem;
-      opacity: 0.75;
     }
   }
 
   &__roadmap-card-status {
-    display: inline-block;
+    @include mono-label;
+
+    align-self: flex-start;
     margin-top: 0.75rem;
-    font-size: 0.8rem;
     opacity: 0.5;
   }
 
   &__trust-message {
-    margin-top: 2.5rem;
-    font-size: 0.9rem;
+    @include body-lg;
+
+    color: rgba(#fff, 0.5);
     font-style: italic;
-    opacity: 0.6;
+    margin-top: 3rem;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
   }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .under-construction {
+    padding: 7rem $margin-tablet 4rem;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .under-construction {
+    min-height: 36rem;
+    padding: 6rem $margin-mobile 3rem;
+
+    &__actions {
+      display: grid;
+      width: 100%;
+    }
+  }
+
 }

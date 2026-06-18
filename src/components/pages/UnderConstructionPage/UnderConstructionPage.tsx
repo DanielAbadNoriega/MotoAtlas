@@ -1,9 +1,8 @@
-import type { ComponentProps } from 'react';
 import './UnderConstructionPage.scss';
 
 export type CtaItem = Readonly<{
   label: string;
-  href: ComponentProps<'a'>['href'];
+  href: string;
   variant?: 'primary' | 'secondary';
   icon?: string;
 }>;
@@ -23,6 +22,7 @@ export type RoadmapSection = Readonly<{
 export type UnderConstructionPageProps = Readonly<{
   title: string;
   description: string;
+  imageSrc?: string;
   statusLabel?: string;
   primaryCta: CtaItem;
   secondaryCtas?: readonly CtaItem[];
@@ -45,6 +45,7 @@ function CtaButton({ label, href, variant, icon }: CtaItem) {
 export function UnderConstructionPage({
   title,
   description,
+  imageSrc = '/images/placeholders/building-page-placeholder.png',
   statusLabel,
   primaryCta,
   secondaryCtas,
@@ -53,20 +54,26 @@ export function UnderConstructionPage({
 }: UnderConstructionPageProps) {
   return (
     <main className="under-construction" aria-labelledby="under-construction-title">
+      <div className="under-construction__media" aria-hidden="true">
+        <img src={imageSrc} alt="" />
+      </div>
+
       <div className="under-construction__content">
-        {statusLabel && (
-          <span className="under-construction__status-label">{statusLabel}</span>
-        )}
+        <div className="under-construction__hero">
+          {statusLabel && (
+            <span className="under-construction__status-label">{statusLabel}</span>
+          )}
 
-        <h1 id="under-construction-title">{title}</h1>
-        <p className="under-construction__description">{description}</p>
+          <h1 id="under-construction-title">{title}</h1>
+          <p className="under-construction__description">{description}</p>
 
-        <div className="under-construction__actions">
-          <CtaButton {...primaryCta} />
+          <div className="under-construction__actions">
+            <CtaButton {...primaryCta} />
 
-          {secondaryCtas?.map((cta) => (
-            <CtaButton key={cta.href + cta.label} {...cta} />
-          ))}
+            {secondaryCtas?.map((cta) => (
+              <CtaButton key={cta.href + cta.label} {...cta} />
+            ))}
+          </div>
         </div>
 
         {roadmap && (
