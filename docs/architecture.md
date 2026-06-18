@@ -429,6 +429,17 @@ Funciones:
 - **Gallery card visual polish + stable ordering**: las cards usan flip `rotateY`, info por botón no hover, multi-info simultáneo, header compacto. El orden de librería es estable vía keys URL-based con `useRef<Map<string, string>>` — seleccionar portada no reordena las cards. Cover fallback seguro a `motorcycle-technical-pending.jpg`.
 - El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
+**Galería — flujo de eliminación (pending-delete):**
+- Estado local `pendingDeleteImageIds: ReadonlySet<string>` en `AdminEditMotorcycleSection`.
+- Reflejado a `pendingDeleteImageIdsRef` para consumo desde `handlePublish`.
+- `handlePendingDeleteGalleryImage`: agrega ID al Set. Si coincide con portada actual (por URL exacta, storagePath o path derivado), resetea `draft.imageUrl` al placeholder y desbloquea la imagen.
+- `handleUndoPendingDelete`: quita ID del Set. No restaura cover automáticamente.
+- UI: card con clase `--pending-delete`, badge `delete_outline`, botón undo reemplaza al botón "Usar como portada".
+- Publish: (1) sincroniza `isPrimary` (currentPrimary desde lista completa, matchingRecord desde activas, orden: unset → set), (2) itera pending-images: `deleteAdminMotorcycleGalleryImageRecord` + `deleteMotorcycleImage` con de-duplicación de paths.
+- **Decisión de producto:** reemplazar pending-delete por eliminación inmediata con modal de confirmación, independiente del formulario del modelo. La galería debe ser un subsistema autónomo.
+- **Riesgo técnico:** `updateAdminMotorcycle` puede no ser ideal para actualizaciones aisladas de cover. Evaluar helper `updateAdminMotorcycleCover(motorcycleId, { imageUrl, imageLocked }, token)` antes de implementar eliminación inmediata.
+- **Refactor de AdminPage:** el archivo ha crecido demasiado. Se recomienda extraer hooks y componentes (ver `docs/admin.md` para descomposición propuesta).
+
 **Section Radar en UI:**
 - Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.
 - Navegación con `scrollIntoView` (sin hash anchors ni IntersectionObserver).

@@ -114,7 +114,7 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - **Galería conectada con creación de records**: el modal carga imágenes desde `getAdminMotorcycleGalleryImages` en edit mode. El upload explícito en edit mode sube a Storage y crea un registro en `motorcycle_images` (`isPrimary: false`, `source: 'manual'`), que se añade al estado local. En create mode, el record se crea tras publish exitoso. URLs manuales y assets locales no crean records. Un guard evita borrar de Storage imágenes que ya tienen gallery record.
 - **Gallery card visual polish**: cards minimalistas con icon-only/current-cover indicators, tooltips accesibles `aria-label`. Info panel controlado por botón (no hover). Múltiples cards pueden mostrar info simultáneamente (`galleriaInfoCardKeys: Set<string>`). Flip card con `rotateY` (revolving-door), no `rotateX`. `prefers-reduced-motion` respetado. Header compacto (gap, padding, helper copy reducidos). Metadata compacta.
 - **Stable library ordering**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Cada URL recibe un key React estable (`lib-0`, `lib-1`, ...) en su primera aparición, reutilizado en todos los renders. `persisted` registrado antes que `draft` para que cuando ambas URLs coinciden, el label sea `Portada guardada` en vez de `Portada en edición`. El cambio es React reconciliation únicamente — no muta gallery state ni `sortOrder`. `currentImagePreviewUrl` sigue siendo la fuente de verdad de la portada activa; no depende del orden de galería.
-- **Cover fallback**: si se elimina la portada actual y `draft.imageUrl` quedaría vacío, se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback.
+- **Cover fallback**: si se elimina la portada actual, se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback seguro.
 - El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
 **Acción `Subir imagen`:**
@@ -153,13 +153,46 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - No usa hash anchors ni modifica la URL. El scroll a sección es puramente JS (`scrollIntoView` con offset).
 - No hay tracking activo de sección actual (sin IntersectionObserver por ahora).
 
+**Implementado (gallery actions):**
+- **Pending-delete local state**: marcar imágenes de galería para eliminación diferida hasta publicar el formulario. Estado local en `pendingDeleteImageIds` (Set), sincronizado a ref para publish.
+- **Undo**: deshacer pending-delete por imagen. Reemplaza el botón "Usar como portada" en la misma posición.
+- **Badge pending-delete**: badge `delete_outline` + clase `--pending-delete` en la card.
+- **Primary sync**: al publicar, se unsetea `isPrimary` de la imagen eliminada (si era primaria) antes de setear la nueva, y se borra el pending-delete en orden correcto.
+- **Storage cleanup seguro**: borrado de Storage con de-duplicación de paths y guards (otro registro activo comparte el path, portada actual lo usa).
+- **Delete button visual style**: icono `delete_forever`, posicionado left-bottom, estilo stage button con hint destructivo sutil (`$color-error`).
+- **Card back info scroll/wrapping**: `overflow-y: auto` en back face y card-info, `overflow-wrap: break-word` en valores de metadata.
+
 **Sin:**
 - A2 fields en draft
-- galería completa (seleccionar primaria, reordenar, borrar desde UI)
+- selección de primaria desde la galería (solo desde card action button)
+- reorden drag-and-drop
+- eliminación inmediata independiente del formulario
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Futuro:** elección de primaria desde la galería, reorden, borrado coordinado record/Storage desde UI, WebP conversion e IntersectionObserver active section tracking. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+**Decisión de producto:** la galería de imágenes debe independizarse del formulario del modelo. Las acciones de galería (eliminar, reordenar) no deben depender de "Publicar modelo". El pending-delete actual es un paso intermedio que será reemplazado por confirmación inmediata con modal. Ver `docs/current-workstreams.md` — Workstream C.
+
+**Futuro:**
+1. Reemplazar pending-delete por eliminación inmediata con modal de confirmación.
+2. Drag-and-drop reorder con persistencia independiente.
+3. Multi-delete batch desde selección múltiple.
+4. Card back info simplificada (solo nombre, fecha; remover source y orden de la card normal).
+5. Refactor de AdminPage en componentes más pequeños (ver debajo).
+6. Elección de primaria desde la galería.
+7. WebP conversion opcional, IntersectionObserver active section tracking.
+8. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+
+**Deuda técnica — refactor de AdminPage:**
+`AdminPage.tsx` ha crecido hasta ser difícil de modificar con seguridad. Refactor propuesto:
+- Extracción gradual: helpers puros → hooks → componentes presentacionales.
+- No combinar refactor con cambios de comportamiento destructivo.
+- Descomposición futura:
+  - `AdminModelImageManagerModal`
+  - `AdminImageGalleryGrid`
+  - `AdminImageGalleryCard`
+  - `AdminImageUploadControls`
+  - `AdminGalleryDeleteConfirmationModal`
+  - hooks: `useAdminModelDraft`, `useAdminModelGallery`, `useAdminModelImageUpload`, `useAdminModelPrimarySync`, `useAdminModelGalleryDelete`, `useAdminModelPublish`
 
 ## `#/admin/reviews`
 
@@ -204,4 +237,5 @@ Sobre respuestas:
 
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración.
-- Galería multi-imagen completa: la lectura está conectada, los records se crean desde uploads admin, las gallery cards tienen polish visual y el orden es estable. Falta selección de imagen primaria desde la galería, reorden explícito drag-and-drop y eliminación individual coordinada con Storage.
+- Galería multi-imagen completa: la lectura está conectada, los records se crean desde uploads admin, las gallery cards tienen polish visual y el orden es estable. El borrado está implementado como pending-delete diferido (depende de publicación del formulario). La decisión de producto es migrar a eliminación inmediata con modal de confirmación (ver Workstream C en `docs/current-workstreams.md`).
+- Refactor de `AdminPage.tsx`: el archivo ha crecido demasiado. Se recomienda extracción gradual de helpers → hooks → componentes antes de agregar más lógica de galería.

@@ -269,7 +269,8 @@ La gestión de imágenes del formulario admin de modelos se ha refactorizado mov
 **Contrato actual:**
 - **Galería conectada con creación de records**: el modal carga imágenes reales y los uploads en edit mode crean `motorcycle_images` records; create mode los crea tras publish
 - No hay datos falsos de galería, thumbnails demo, arrays demo, mock gallery cards
-- Reordenar y borrar desde la UI quedan para una fase posterior
+- El borrado está implementado como pending-delete diferido (depende de publicación del formulario). Decisión de producto: migrar a eliminación inmediata con modal de confirmación.
+- Reorden drag-and-drop queda para fase posterior
 - `motorcycles.image_url` sigue siendo el contrato single-image para cards, buscador, ficha y fallbacks
 
 **Galería visual — cards y orden estable:**
@@ -278,7 +279,14 @@ La gestión de imágenes del formulario admin de modelos se ha refactorizado mov
 - **Info panel**: controlado por botón explícito (no hover). Múltiples cards pueden tener info abierta simultáneamente — estado gestionado con `Set<string>` y `aria-expanded` en vez de `aria-pressed`.
 - **Header compacto**: gap, padding y helper copy reducidos a una línea minimalista.
 - **Orden estable**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Cada URL recibe un key React estable (`lib-0`, `lib-1`, ...) en su primera aparición y se reutiliza en todos los renders. `persisted` se registra antes que `draft` para que cuando ambas URLs coinciden, el label sea `Portada guardada` (semánticamente más correcto que `Portada en edición`). Seleccionar portada no mueve ni reordena cards — el cambio es puramente React reconciliation.
-- **Cover fallback**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback si `draft.imageUrl` quedaría vacío.
+- **Cover fallback**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback seguro.
+- **Delete button**: icono `delete_forever` solo en imágenes con gallery record real. Botón posicionado left-bottom de la card, estilo stage button (`backdrop-filter: blur(10px)`, `border-radius: 999px`, mismo bg/border que info-toggle). Color `rgba($color-error, 0.8)` con hover `$color-error` + `background: rgba($color-error-container, 0.24)`. Visibilidad:
+  - visible para imágenes backed por gallery record;
+  - NO visible para el placeholder técnico (`motorcycle-technical-pending.jpg`);
+  - NO visible para entradas manuales/locales persistidas sin gallery record;
+  - NO visible para entradas en pending-delete.
+- **Card back info scroll**: back face con `overflow-y: auto`, card-info con `overflow-y: auto` y `min-height: 0`. Los valores `dd` usan `overflow-wrap: break-word` en vez de `white-space: nowrap` para que rutas largas no se corten. Gap reducido a 0.65rem.
+- **Pending-delete flow**: estado local `pendingDeleteImageIds` (Set). Al marcar, la card muestra badge `delete_outline`, clase `--pending-delete`, y el botón undo reemplaza a "Usar como portada". La eliminación real ocurre al publicar el formulario. Decisión de producto: migrar a eliminación inmediata con modal de confirmación.
 
 ## Admin Models Studio — Section Radar (Stitch-inspired)
 
