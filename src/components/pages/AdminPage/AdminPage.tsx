@@ -39,7 +39,7 @@ import {
   type AdminMotorcycleCreatePayload,
   type AdminMotorcycleUpdatePayload,
 } from '../../../services/adminMotorcycleService';
-import { deleteMotorcycleImage, MOTORCYCLE_IMAGE_BUCKET, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
+import { deleteMotorcycleImage, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import {
   createAdminMotorcycleGalleryImage,
   deleteAdminMotorcycleGalleryImageRecord,
@@ -47,6 +47,15 @@ import {
   updateAdminMotorcycleGalleryImage,
   type AdminMotorcycleGalleryImage,
 } from '../../../services/adminMotorcycleGalleryService';
+import {
+  adminModelTechnicalPlaceholderImage,
+  getActiveGalleryImages,
+  getGalleryImageCleanupObjectPath,
+  getMotorcycleImageObjectPath,
+  isCleanupPathSharedWithActiveImage,
+  isGalleryImageCurrentCover,
+  isImageBackedByGalleryRecord,
+} from './adminGalleryImageUtils';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
 import {
@@ -183,7 +192,6 @@ const emptyAdminModelDraft: AdminModelDraft = {
 };
 
 const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-model-creating.jpg';
-const adminModelTechnicalPlaceholderImage = '/images/placeholders/motorcycle-technical-pending.jpg';
 
 function createDraftFromBike(bike: Bike): AdminModelDraft {
   return {
@@ -899,71 +907,6 @@ type AdminModelLibraryImage = Readonly<{
   galleryImage?: AdminMotorcycleGalleryImage;
 }>;
 
-const motorcycleImageBucketPublicPath = `/storage/v1/object/public/${MOTORCYCLE_IMAGE_BUCKET}/`;
-
-function getConfiguredMotorcycleImageOrigin(): string | null {
-  const configuredUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-  if (!configuredUrl) {
-    return null;
-  }
-
-  try {
-    return new URL(configuredUrl, window.location.origin).origin;
-  } catch {
-    return null;
-  }
-}
-
-function isSafeMotorcycleImageObjectPath(objectPath: string): boolean {
-  if (!objectPath) {
-    return false;
-  }
-
-  if (objectPath.startsWith('/')) {
-    return false;
-  }
-
-  if (objectPath.includes('..')) {
-    return false;
-  }
-
-  return objectPath.includes('/');
-}
-
-function getMotorcycleImageObjectPath(imageUrl: string): string | null {
-  const trimmedUrl = imageUrl.trim();
-  if (!trimmedUrl) return null;
-
-  const configuredOrigin = getConfiguredMotorcycleImageOrigin();
-  const isAbsoluteHttpUrl = /^https?:\/\//i.test(trimmedUrl);
-
-  try {
-    const parsedUrl = new URL(trimmedUrl, window.location.origin);
-
-    if (!isAbsoluteHttpUrl && (!configuredOrigin || configuredOrigin !== window.location.origin)) {
-      return null;
-    }
-
-    if (parsedUrl.origin !== window.location.origin && configuredOrigin && parsedUrl.origin !== configuredOrigin) {
-      return null;
-    }
-
-    if (!parsedUrl.pathname.startsWith(motorcycleImageBucketPublicPath)) {
-      return null;
-    }
-
-    const objectPath = decodeURIComponent(parsedUrl.pathname.slice(motorcycleImageBucketPublicPath.length));
-    return isSafeMotorcycleImageObjectPath(objectPath) ? objectPath : null;
-  } catch {
-    if (!trimmedUrl.startsWith(motorcycleImageBucketPublicPath)) {
-      return null;
-    }
-
-    const objectPath = decodeURIComponent(trimmedUrl.slice(motorcycleImageBucketPublicPath.length));
-    return isSafeMotorcycleImageObjectPath(objectPath) ? objectPath : null;
-  }
-}
-
 function appendGalleryImage(
   currentImages: readonly AdminMotorcycleGalleryImage[],
   nextImage: AdminMotorcycleGalleryImage,
@@ -1457,20 +1400,7 @@ function AdminModelFormBody({
       return next;
     });
 
-    const galleryImageObjectPath = getMotorcycleImageObjectPath(galleryImage.url);
-    const matchesCoverByUrl = galleryImage.url === currentImageUrl;
-    const matchesCoverByStoragePath = Boolean(
-      currentImageObjectPath
-      && galleryImage.storagePath
-      && galleryImage.storagePath === currentImageObjectPath,
-    );
-    const matchesCoverByDerivedPath = Boolean(
-      currentImageObjectPath
-      && galleryImageObjectPath
-      && galleryImageObjectPath === currentImageObjectPath,
-    );
-
-    if (matchesCoverByUrl || matchesCoverByStoragePath || matchesCoverByDerivedPath) {
+    if (isGalleryImageCurrentCover(galleryImage, currentImageUrl, currentImageObjectPath)) {
       onDraftFieldChange('imageUrl', adminModelTechnicalPlaceholderImage);
       onDraftCheckboxChange('imageLocked', false);
     }
@@ -3717,20 +3647,12 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
       }
 
       const pendingDeleteIds = pendingDeleteImageIdsRef?.current ?? [];
-      const activeGalleryImages = pendingDeleteIds.length > 0
-        ? galleryImageList.filter((img) => !pendingDeleteIds.includes(img.id))
-        : galleryImageList;
+      const activeGalleryImages = getActiveGalleryImages(galleryImageList, pendingDeleteIds);
 
       const originalIsGalleryBacked = persistedImageHasGalleryRecord
         || (galleryImageList.length > 0
           && originalPersistedImageUrl.length > 0
-          && galleryImageList.some((img) =>
-            img.url === originalPersistedImageUrl
-            || (originalPersistedObjectPath && (
-              (img.storagePath && img.storagePath === originalPersistedObjectPath)
-              || getMotorcycleImageObjectPath(img.url) === originalPersistedObjectPath
-            ))
-          ));
+          && isImageBackedByGalleryRecord(originalPersistedImageUrl, galleryImageList));
 
       if (
         originalPersistedObjectPath
@@ -3769,16 +3691,12 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         for (const pendingImage of pendingImages) {
           await deleteAdminMotorcycleGalleryImageRecord(pendingImage.id, accessToken);
 
-          const pendingObjectPath = pendingImage.storagePath
-            || getMotorcycleImageObjectPath(pendingImage.url);
+          const pendingObjectPath = getGalleryImageCleanupObjectPath(pendingImage);
 
           if (pendingObjectPath && !processedCleanupPaths.has(pendingObjectPath)) {
             processedCleanupPaths.add(pendingObjectPath);
 
-            const isSharedWithActiveImage = activeGalleryImages.some(
-              (img) => (img.storagePath && img.storagePath === pendingObjectPath)
-                || getMotorcycleImageObjectPath(img.url) === pendingObjectPath,
-            );
+            const isSharedWithActiveImage = isCleanupPathSharedWithActiveImage(pendingObjectPath, activeGalleryImages);
 
             const isUsedByCurrentCover = nextImageObjectPath === pendingObjectPath;
 
