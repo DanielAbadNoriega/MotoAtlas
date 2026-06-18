@@ -15,9 +15,6 @@
        ocupe todo el ancho de la página (full-bleed) pero mantenga el
        contenido centrado. */
     padding-inline: 0;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
     background: linear-gradient(180deg, rgba($color-surface-low, 0.02), rgba($color-surface-lowest, 0.06));
 
     .page-hero__content {
@@ -2819,7 +2816,26 @@
       }
     }
 
-    &__model-image-preview-delete {
+  &__model-image-upload-status {
+    align-items: center;
+    background: rgba($color-surface-lowest, 0.9);
+    border: 1px solid rgba($color-outline-variant, 0.34);
+    border-radius: $radius-lg;
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+
+    .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 1.25rem;
+    }
+
+    &[role='alert'] .material-symbols-outlined {
+      color: $color-warning;
+    }
+  }
+
+  &__model-image-preview-delete {
       left: 0.75rem;
       right: auto;
     }
