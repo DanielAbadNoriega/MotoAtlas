@@ -316,7 +316,7 @@
 
 ## Siguiente paso
 
-- **Admin Models Studio**: Fases 1 a 6C.4 + UI polish + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + **read-only gallery connection + gallery record creation from uploads + gallery card polish + stable ordering + cover fallback** cerrados. Siguientes fases recomendadas: selección de primaria desde la galería, reorden, borrado coordinado records/Storage, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
+- **Admin Models Studio**: Fases 1 a 6C.4 + UI polish + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + **read-only gallery connection + gallery record creation from uploads + gallery card polish + stable ordering + cover fallback + gallery primary sync fallback fetch + upload UX (success/warning/inline feedback + duplicate prevention + stable ordering) + stale galleryImagesRef fix + edit publish cleanup order fix (gallery resolution before cleanup) + gallery-backed detection hardening (storagePath + URL-derived path)** cerrados. Siguientes fases recomendadas: selección de primaria desde la galería, reorden por drag-and-drop, borrado coordinado records/Storage, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
 
 ## Decisiones importantes
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type MutableRefObject, type ReactNode } from 'react';
 import adminHeroImage from '../../../assets/hero-admin.png';
 import { useAuth } from '../../../features/auth';
 import { bikeCatalog, findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
@@ -43,6 +43,7 @@ import { deleteMotorcycleImage, MOTORCYCLE_IMAGE_BUCKET, uploadMotorcycleImage }
 import {
   createAdminMotorcycleGalleryImage,
   getAdminMotorcycleGalleryImages,
+  updateAdminMotorcycleGalleryImage,
   type AdminMotorcycleGalleryImage,
 } from '../../../services/adminMotorcycleGalleryService';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
@@ -881,6 +882,7 @@ type AdminModelFormBodyProps = Readonly<{
   }) => Promise<AdminMotorcycleGalleryImage>;
   onPersistedImageGalleryStateChange?: (isGalleryBacked: boolean) => void;
   onDeleteImage?: (objectPath: string) => Promise<void>;
+  galleryImagesRef?: MutableRefObject<readonly AdminMotorcycleGalleryImage[]>;
   saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
@@ -1077,6 +1079,7 @@ function AdminModelFormBody({
   onCreateGalleryRecord,
   onPersistedImageGalleryStateChange,
   onDeleteImage,
+  galleryImagesRef,
   saving,
   toolbarKicker,
   workspaceHeading,
@@ -1093,6 +1096,7 @@ function AdminModelFormBody({
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [galleryBackedUploadUrls, setGalleryBackedUploadUrls] = useState<readonly string[]>([]);
   const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
+  const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'warning'; message: string } | null>(null);
   const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
   const { session, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -1142,6 +1146,7 @@ function AdminModelFormBody({
     }
 
     setHasUploadedImage(false);
+    setUploadStatus(null);
     const blobUrl = URL.createObjectURL(file);
     setPreviewBlobUrl(blobUrl);
     setSelectedFile(file);
@@ -1240,7 +1245,11 @@ function AdminModelFormBody({
         source: 'manual',
       });
 
-      setGalleryImages((currentImages) => appendGalleryImage(currentImages, galleryImage));
+      const nextGalleryImages = appendGalleryImage(galleryImages, galleryImage);
+      setGalleryImages(nextGalleryImages);
+      if (galleryImagesRef) {
+        galleryImagesRef.current = nextGalleryImages;
+      }
       setGalleryBackedUploadUrls((currentUrls) => (
         currentUrls.includes(publicUrl) ? currentUrls : [...currentUrls, publicUrl]
       ));
@@ -1268,7 +1277,11 @@ function AdminModelFormBody({
       onDraftFieldChange('imageUrl', publicUrl);
       onDraftCheckboxChange('imageLocked', true);
       const { warningMessage } = await maybeCreateGalleryRecordForUpload(publicUrl);
-      onLocalAction(warningMessage ?? 'Imagen subida correctamente.');
+      setUploadStatus({
+        type: warningMessage ? 'warning' : 'success',
+        message: warningMessage ?? 'Imagen subida correctamente y añadida a la galería.',
+      });
+      resetSelectedUploadState();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
       setFileError(message);
@@ -1279,8 +1292,8 @@ function AdminModelFormBody({
     maybeCreateGalleryRecordForUpload,
     onDraftCheckboxChange,
     onDraftFieldChange,
-    onLocalAction,
     onUploadImage,
+    resetSelectedUploadState,
     selectedFile,
   ]);
 
@@ -1301,12 +1314,14 @@ function AdminModelFormBody({
         if (warningMessage) {
           onLocalAction(warningMessage);
         }
+        resetSelectedUploadState();
         setIsUploading(false);
         await onPublish(publicUrl);
         return;
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Error al subir la imagen.';
         setFileError(message);
+        resetSelectedUploadState();
         setIsUploading(false);
         return;
       }
@@ -1321,6 +1336,7 @@ function AdminModelFormBody({
     onLocalAction,
     onPublish,
     onUploadImage,
+    resetSelectedUploadState,
     selectedFile,
   ]);
 
@@ -1365,6 +1381,12 @@ function AdminModelFormBody({
     persistedImageUrlTrimmed,
   ]);
 
+  useEffect(() => {
+    if (galleryImagesRef) {
+      galleryImagesRef.current = galleryImages;
+    }
+  }, [galleryImages, galleryImagesRef]);
+
   const currentImageIsSessionUpload = Boolean(
     currentImageObjectPath
     && sessionUploadedImageUrl
@@ -1383,6 +1405,7 @@ function AdminModelFormBody({
     if (!currentImageIsSessionUpload || !onDeleteImage || !currentImageObjectPath) {
       onDraftFieldChange('imageUrl', nextImageUrl);
       onDraftCheckboxChange('imageLocked', nextImageLocked);
+      setUploadStatus(null);
       onLocalAction('Imagen quitada del formulario.');
       return;
     }
@@ -1394,6 +1417,7 @@ function AdminModelFormBody({
       await onDeleteImage(currentImageObjectPath);
       onDraftFieldChange('imageUrl', nextImageUrl);
       onDraftCheckboxChange('imageLocked', nextImageLocked);
+      setUploadStatus(null);
       setSessionUploadedImageUrl(null);
       resetSelectedUploadState();
       onLocalAction('Imagen eliminada correctamente.');
@@ -1553,6 +1577,7 @@ function AdminModelFormBody({
   const handleUseLibraryImageAsCover = useCallback((nextImageUrl: string) => {
     onDraftFieldChange('imageUrl', nextImageUrl);
     setFileError(null);
+    setUploadStatus(null);
     setSelectedFile(null);
     setPreviewBlobUrl(null);
     setHasUploadedImage(false);
@@ -2283,6 +2308,15 @@ function AdminModelFormBody({
                               </button>
                             </div>
                           ) : null}
+
+                          {uploadStatus ? (
+                            <div className="admin-page__model-image-upload-status admin-page__model-field--full" role={uploadStatus.type === 'warning' ? 'alert' : 'status'} aria-live="polite">
+                              <span className="material-symbols-outlined" aria-hidden="true">
+                                {uploadStatus.type === 'success' ? 'check_circle' : 'warning'}
+                              </span>
+                              <span>{uploadStatus.message}</span>
+                            </div>
+                          ) : null}
                         </div>
                       </section>
                     )}
@@ -2402,7 +2436,7 @@ export function AdminNewModelPage({ onMotorcyclesChange: onMotorcyclesChangeProp
             motorcycleId: createdBike.id,
             url: currentImageUrl,
             storagePath: uploadedStorageObjectPath,
-            isPrimary: false,
+            isPrimary: true,
             sortOrder: 0,
             source: 'manual',
             createdBy: user?.id ?? null,
@@ -3482,6 +3516,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
   const [saving, setSaving] = useState(false);
   const [publishError, setPublishError] = useState('');
   const [persistedImageHasGalleryRecord, setPersistedImageHasGalleryRecord] = useState(false);
+  const galleryImagesRef = useRef<readonly AdminMotorcycleGalleryImage[]>([]);
   const initializedMotorcycleIdRef = useRef<string | undefined>(motorcycleId);
 
   const { session, user } = useAuth();
@@ -3586,14 +3621,52 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
       const nextImageUrl = effectiveDraft.imageUrl.trim();
       const nextImageObjectPath = getMotorcycleImageObjectPath(nextImageUrl);
 
+      const refImages = galleryImagesRef.current;
+      const galleryImageList = refImages.length > 0
+        ? refImages
+        : await getAdminMotorcycleGalleryImages(motorcycleId!, accessToken);
+
+      if (refImages.length === 0 && galleryImageList.length > 0) {
+        galleryImagesRef.current = galleryImageList;
+      }
+
+      const originalIsGalleryBacked = persistedImageHasGalleryRecord
+        || (galleryImageList.length > 0
+          && originalPersistedImageUrl.length > 0
+          && galleryImageList.some((img) =>
+            img.url === originalPersistedImageUrl
+            || (originalPersistedObjectPath && (
+              (img.storagePath && img.storagePath === originalPersistedObjectPath)
+              || getMotorcycleImageObjectPath(img.url) === originalPersistedObjectPath
+            ))
+          ));
+
       if (
         originalPersistedObjectPath
         && nextImageUrl
         && nextImageUrl !== originalPersistedImageUrl
         && nextImageObjectPath !== originalPersistedObjectPath
-        && !persistedImageHasGalleryRecord
+        && !originalIsGalleryBacked
       ) {
         void deleteMotorcycleImage(originalPersistedObjectPath, accessToken).catch(() => undefined);
+      }
+
+      if (galleryImageList.length > 0) {
+        const draftImageUrl = effectiveDraft.imageUrl.trim();
+        if (draftImageUrl) {
+          const currentPrimary = galleryImageList.find((img) => img.isPrimary);
+          const matchingRecord = galleryImageList.find((img) => img.url === draftImageUrl);
+          const needsUnsetPrimary = currentPrimary && (!matchingRecord || matchingRecord.id !== currentPrimary.id);
+          const needsSetPrimary = matchingRecord && !matchingRecord.isPrimary;
+
+          if (needsUnsetPrimary) {
+            await updateAdminMotorcycleGalleryImage(currentPrimary!.id, { isPrimary: false }, accessToken);
+          }
+
+          if (needsSetPrimary) {
+            await updateAdminMotorcycleGalleryImage(matchingRecord!.id, { isPrimary: true }, accessToken);
+          }
+        }
       }
 
       setLocalStatus('Modelo actualizado correctamente.');
@@ -3606,7 +3679,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     } finally {
       setSaving(false);
     }
-  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, persistedImageHasGalleryRecord, session?.access_token]);
+  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, persistedImageHasGalleryRecord, session?.access_token, updateAdminMotorcycleGalleryImage]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;
@@ -3747,6 +3820,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         onCreateGalleryRecord={handleCreateGalleryRecord}
         onPersistedImageGalleryStateChange={setPersistedImageHasGalleryRecord}
         onDeleteImage={handleDeleteImage}
+        galleryImagesRef={galleryImagesRef}
         saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"
