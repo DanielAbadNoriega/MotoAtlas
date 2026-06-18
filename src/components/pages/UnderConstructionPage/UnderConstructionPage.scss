@@ -37,7 +37,6 @@
   }
 
   &__content {
-    max-width: 42rem;
     position: relative;
     width: 100%;
     z-index: 1;
@@ -124,7 +123,7 @@
 
   &__roadmap {
     margin-top: 4rem;
-    text-align: left;
+    text-align: center;
   }
 
   h2 {
@@ -136,7 +135,8 @@
   }
 
   &__roadmap-cards {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1.25rem;
     margin-top: 2rem;
   }
@@ -144,10 +144,23 @@
   &__roadmap-card {
     @include dashboard-card;
 
+    flex-basis: 30%;
     display: flex;
     flex-direction: column;
     padding: 1.5rem;
+    position: relative;
     text-align: left;
+
+    &::before {
+      background: linear-gradient(to bottom, $color-accent, rgba($color-accent, 0.15) 60%, transparent);
+      border-radius: $radius-lg 0 0 $radius-lg;
+      bottom: 0;
+      content: '';
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 3px;
+    }
 
     h3 {
       @include headline-md;
@@ -163,22 +176,33 @@
       color: rgba(#fff, 0.7);
       margin-top: 0.5rem;
     }
+
+    .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
   }
 
   &__roadmap-card-status {
     @include mono-label;
 
     align-self: flex-start;
+    background: rgba($color-accent, 0.08);
+    border: 1px solid rgba($color-accent, 0.25);
+    border-radius: $radius-sm;
     margin-top: 0.75rem;
-    opacity: 0.5;
+    padding: 0.25rem 0.55rem;
   }
 
   &__trust-message {
-    @include body-lg;
+    @include mono-label;
 
-    color: rgba(#fff, 0.5);
-    font-style: italic;
+    border-left: 2px solid rgba($color-accent, 0.35);
+    color: rgba($color-on-surface-variant, 0.82);
     margin-top: 3rem;
+    padding-left: 1rem;
+    text-align: left;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
   }
 }
@@ -186,6 +210,10 @@
 @media (max-width: $breakpoint-tablet) {
   .under-construction {
     padding: 7rem $margin-tablet 4rem;
+
+    &__roadmap {
+      margin-top: 3rem;
+    }
   }
 }
 
@@ -198,6 +226,17 @@
       display: grid;
       width: 100%;
     }
-  }
 
+    &__roadmap {
+      margin-top: 2.5rem;
+    }
+
+    &__roadmap-card {
+      padding: 1.25rem;
+    }
+
+    &__trust-message {
+      margin-top: 2.5rem;
+    }
+  }
 }
