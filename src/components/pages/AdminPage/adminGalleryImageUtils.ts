@@ -1,5 +1,6 @@
 import { MOTORCYCLE_IMAGE_BUCKET } from '../../../services/adminMotorcycleImageUploadService';
 import type { AdminMotorcycleGalleryImage } from '../../../services/adminMotorcycleGalleryService';
+import type { MotorcycleDataSource } from '../../../types/bike';
 
 export const adminModelTechnicalPlaceholderImage = '/images/placeholders/motorcycle-technical-pending.jpg';
 
@@ -149,4 +150,104 @@ export function isCleanupPathSharedWithActiveImage(
     (img) => (img.storagePath && img.storagePath === objectPath)
       || getMotorcycleImageObjectPath(img.url) === objectPath,
   );
+}
+
+export function getGalleryImageSourceLabel(source: MotorcycleDataSource): string {
+  switch (source) {
+    case 'api':
+      return 'Importación';
+    case 'manual':
+      return 'Manual';
+    case 'user':
+      return 'Usuario';
+    case 'estimated':
+      return 'Estimado';
+    case 'placeholder':
+      return 'Placeholder';
+    default:
+      return 'Manual';
+  }
+}
+
+export function formatGalleryImageDate(value: string): string {
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Fecha pendiente';
+  }
+
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(parsedDate);
+}
+
+export function getGalleryImageAssetName(value: string): string | null {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const withoutQuery = trimmedValue.split(/[?#]/, 1)[0] ?? trimmedValue;
+  const segments = withoutQuery.split('/').filter(Boolean);
+  const lastSegment = segments.length > 0 ? segments[segments.length - 1] : null;
+
+  if (!lastSegment) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(lastSegment);
+  } catch {
+    return lastSegment;
+  }
+}
+
+type GalleryImageKind = 'gallery' | 'draft' | 'persisted' | 'placeholder';
+
+export function getGalleryImageCardTitle(
+  altText: string | null | undefined,
+  isPlaceholderOption: boolean,
+  kind: GalleryImageKind,
+  assetName: string | null,
+): string {
+  return altText?.trim()
+    || (isPlaceholderOption
+      ? 'Placeholder técnico MotoAtlas'
+      : kind === 'persisted'
+        ? 'Portada guardada'
+        : kind === 'draft'
+          ? 'Portada en edición'
+          : assetName
+            || 'Imagen disponible');
+}
+
+export function getGalleryImageCardEyebrow(
+  isPlaceholderOption: boolean,
+  isGalleryRecord: boolean,
+  kind: GalleryImageKind,
+): string {
+  return isPlaceholderOption
+    ? 'Fallback técnico'
+    : isGalleryRecord
+      ? 'Registro persistido'
+      : kind === 'persisted'
+        ? 'Referencia guardada'
+        : 'Cobertura activa';
+}
+
+export type GalleryImageCardFact = { label: string; value: string };
+
+export function getGalleryImageCardFacts(
+  assetName: string | null,
+  galleryImage: AdminMotorcycleGalleryImage | null | undefined,
+): ReadonlyArray<GalleryImageCardFact> {
+  return [
+    assetName ? { label: 'Archivo', value: assetName } : null,
+    galleryImage ? { label: 'Fuente', value: getGalleryImageSourceLabel(galleryImage.source) } : null,
+    galleryImage ? { label: 'Orden', value: `#${galleryImage.sortOrder}` } : null,
+    galleryImage ? { label: 'Alta', value: formatGalleryImageDate(galleryImage.createdAt) } : null,
+  ].filter(Boolean) as ReadonlyArray<GalleryImageCardFact>;
 }

@@ -49,8 +49,14 @@ import {
 } from '../../../services/adminMotorcycleGalleryService';
 import {
   adminModelTechnicalPlaceholderImage,
+  formatGalleryImageDate,
   getActiveGalleryImages,
+  getGalleryImageAssetName,
+  getGalleryImageCardEyebrow,
+  getGalleryImageCardFacts,
+  getGalleryImageCardTitle,
   getGalleryImageCleanupObjectPath,
+  getGalleryImageSourceLabel,
   getMotorcycleImageObjectPath,
   isCleanupPathSharedWithActiveImage,
   isGalleryImageCurrentCover,
@@ -933,23 +939,6 @@ function getNextGallerySortOrder(images: readonly AdminMotorcycleGalleryImage[])
   return images.reduce((maxSortOrder, image) => Math.max(maxSortOrder, image.sortOrder), 0) + 1;
 }
 
-function getGalleryImageSourceLabel(source: MotorcycleDataSource): string {
-  switch (source) {
-    case 'api':
-      return 'Importación';
-    case 'manual':
-      return 'Manual';
-    case 'user':
-      return 'Usuario';
-    case 'estimated':
-      return 'Estimado';
-    case 'placeholder':
-      return 'Placeholder';
-    default:
-      return 'Manual';
-  }
-}
-
 function getCurrentImageOriginLabel(imageUrl: string): string {
   const trimmedUrl = imageUrl.trim();
 
@@ -970,42 +959,6 @@ function getCurrentImageOriginLabel(imageUrl: string): string {
   }
 
   return 'Borrador local';
-}
-
-function formatGalleryImageDate(value: string): string {
-  const parsedDate = new Date(value);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return 'Fecha pendiente';
-  }
-
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(parsedDate);
-}
-
-function getGalleryImageAssetName(value: string): string | null {
-  const trimmedValue = value.trim();
-
-  if (!trimmedValue) {
-    return null;
-  }
-
-  const withoutQuery = trimmedValue.split(/[?#]/, 1)[0] ?? trimmedValue;
-  const segments = withoutQuery.split('/').filter(Boolean);
-  const lastSegment = segments.length > 0 ? segments[segments.length - 1] : null;
-
-  if (!lastSegment) {
-    return null;
-  }
-
-  try {
-    return decodeURIComponent(lastSegment);
-  } catch {
-    return lastSegment;
-  }
 }
 
 function AdminModelFormBody({
@@ -2043,28 +1996,9 @@ function AdminModelFormBody({
                           const isPendingDelete = Boolean(galleryImage && pendingDeleteImageIds.has(galleryImage.id));
                           const isInfoOpen = galleryInfoCardKeys.has(image.key);
                           const assetName = getGalleryImageAssetName(galleryImage?.storagePath || image.url);
-                          const cardTitle = galleryImage?.altText?.trim()
-                            || (isPlaceholderOption
-                              ? 'Placeholder técnico MotoAtlas'
-                              : image.kind === 'persisted'
-                                ? 'Portada guardada'
-                                : image.kind === 'draft'
-                                  ? 'Portada en edición'
-                                  : assetName
-                                    || 'Imagen disponible');
-                          const cardEyebrow = isPlaceholderOption
-                            ? 'Fallback técnico'
-                            : isGalleryRecord
-                              ? 'Registro persistido'
-                              : image.kind === 'persisted'
-                                ? 'Referencia guardada'
-                                : 'Cobertura activa';
-                          const cardFacts = [
-                            assetName ? { label: 'Archivo', value: assetName } : null,
-                            galleryImage ? { label: 'Fuente', value: getGalleryImageSourceLabel(galleryImage.source) } : null,
-                            galleryImage ? { label: 'Orden', value: `#${galleryImage.sortOrder}` } : null,
-                            galleryImage ? { label: 'Alta', value: formatGalleryImageDate(galleryImage.createdAt) } : null,
-                          ].filter(Boolean) as ReadonlyArray<{ label: string; value: string }>;
+                          const cardTitle = getGalleryImageCardTitle(galleryImage?.altText ?? null, isPlaceholderOption, image.kind, assetName);
+                          const cardEyebrow = getGalleryImageCardEyebrow(isPlaceholderOption, isGalleryRecord, image.kind);
+                          const cardFacts = getGalleryImageCardFacts(assetName, galleryImage);
                           const actionLabel = isCurrentCover ? `Portada actual: ${cardTitle}` : `Usar como portada: ${cardTitle}`;
 
                           let cardClassName = 'admin-model__image-modal-gallery-card';

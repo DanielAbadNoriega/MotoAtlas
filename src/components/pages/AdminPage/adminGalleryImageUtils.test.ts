@@ -8,6 +8,13 @@ import {
   getActiveGalleryImages,
   getGalleryImageCleanupObjectPath,
   isCleanupPathSharedWithActiveImage,
+  formatGalleryImageDate,
+  getGalleryImageAssetName,
+  getGalleryImageSourceLabel,
+  getGalleryImageCardTitle,
+  getGalleryImageCardEyebrow,
+  getGalleryImageCardFacts,
+  type GalleryImageCardFact,
 } from './adminGalleryImageUtils';
 
 const mockGalleryImage = (overrides: Partial<AdminMotorcycleGalleryImage> = {}): AdminMotorcycleGalleryImage => ({
@@ -227,5 +234,172 @@ describe('isCleanupPathSharedWithActiveImage', () => {
 
   it('returns false for empty active list', () => {
     expect(isCleanupPathSharedWithActiveImage('moto-1/some.jpg', [])).toBe(false);
+  });
+});
+
+describe('getGalleryImageSourceLabel', () => {
+  it('returns Importación for api source', () => {
+    expect(getGalleryImageSourceLabel('api')).toBe('Importación');
+  });
+
+  it('returns Manual for manual source', () => {
+    expect(getGalleryImageSourceLabel('manual')).toBe('Manual');
+  });
+
+  it('returns Usuario for user source', () => {
+    expect(getGalleryImageSourceLabel('user')).toBe('Usuario');
+  });
+
+  it('returns Estimado for estimated source', () => {
+    expect(getGalleryImageSourceLabel('estimated')).toBe('Estimado');
+  });
+
+  it('returns Placeholder for placeholder source', () => {
+    expect(getGalleryImageSourceLabel('placeholder')).toBe('Placeholder');
+  });
+
+  it('returns Manual for unknown source', () => {
+    expect(getGalleryImageSourceLabel('unknown' as never)).toBe('Manual');
+  });
+});
+
+describe('formatGalleryImageDate', () => {
+  it('formats a valid ISO date', () => {
+    const result = formatGalleryImageDate('2025-01-05T10:00:00.000Z');
+    expect(result).toBe('05 ene 2025');
+  });
+
+  it('returns Fecha pendiente for invalid date', () => {
+    expect(formatGalleryImageDate('not-a-date')).toBe('Fecha pendiente');
+  });
+
+  it('returns Fecha pendiente for empty string', () => {
+    expect(formatGalleryImageDate('')).toBe('Fecha pendiente');
+  });
+
+  it('formats December date correctly', () => {
+    const result = formatGalleryImageDate('2024-12-25T00:00:00.000Z');
+    expect(result).toBe('25 dic 2024');
+  });
+});
+
+describe('getGalleryImageAssetName', () => {
+  it('extracts filename from URL path', () => {
+    expect(getGalleryImageAssetName('https://example.com/path/to/image.webp')).toBe('image.webp');
+  });
+
+  it('decodes URI-encoded filename', () => {
+    expect(getGalleryImageAssetName('https://example.com/path/to/im%C3%A1gen.webp')).toBe('imágen.webp');
+  });
+
+  it('strips query string', () => {
+    expect(getGalleryImageAssetName('https://example.com/path/image.webp?w=800&q=75')).toBe('image.webp');
+  });
+
+  it('returns null for empty string', () => {
+    expect(getGalleryImageAssetName('')).toBeNull();
+  });
+
+  it('returns null for whitespace-only string', () => {
+    expect(getGalleryImageAssetName('   ')).toBeNull();
+  });
+
+  it('returns null for root path', () => {
+    expect(getGalleryImageAssetName('/')).toBeNull();
+  });
+
+  it('returns segment from local relative path', () => {
+    expect(getGalleryImageAssetName('moto-1/filename.jpg')).toBe('filename.jpg');
+  });
+});
+
+describe('getGalleryImageCardTitle', () => {
+  it('uses altText when present', () => {
+    expect(getGalleryImageCardTitle('BMW lateral', false, 'gallery', 'bmw.webp')).toBe('BMW lateral');
+  });
+
+  it('uses trimmed altText', () => {
+    expect(getGalleryImageCardTitle('  BMW lateral  ', false, 'gallery', 'bmw.webp')).toBe('BMW lateral');
+  });
+
+  it('returns placeholder title for placeholder kind', () => {
+    expect(getGalleryImageCardTitle(null, true, 'placeholder', null)).toBe('Placeholder técnico MotoAtlas');
+  });
+
+  it('returns persisted title for persisted kind', () => {
+    expect(getGalleryImageCardTitle(null, false, 'persisted', null)).toBe('Portada guardada');
+  });
+
+  it('returns draft title for draft kind', () => {
+    expect(getGalleryImageCardTitle(null, false, 'draft', null)).toBe('Portada en edición');
+  });
+
+  it('uses assetName as fallback for gallery kind', () => {
+    expect(getGalleryImageCardTitle(null, false, 'gallery', 'frontal.jpg')).toBe('frontal.jpg');
+  });
+
+  it('returns default title when no altText and no assetName', () => {
+    expect(getGalleryImageCardTitle(null, false, 'gallery', null)).toBe('Imagen disponible');
+  });
+
+  it('empty altText falls through to kind-based logic', () => {
+    expect(getGalleryImageCardTitle('', false, 'persisted', null)).toBe('Portada guardada');
+  });
+});
+
+describe('getGalleryImageCardEyebrow', () => {
+  it('returns Fallback técnico for placeholder option', () => {
+    expect(getGalleryImageCardEyebrow(true, false, 'placeholder')).toBe('Fallback técnico');
+  });
+
+  it('returns Registro persistido for gallery record', () => {
+    expect(getGalleryImageCardEyebrow(false, true, 'gallery')).toBe('Registro persistido');
+  });
+
+  it('returns Referencia guardada for persisted kind', () => {
+    expect(getGalleryImageCardEyebrow(false, false, 'persisted')).toBe('Referencia guardada');
+  });
+
+  it('returns Cobertura activa for draft kind', () => {
+    expect(getGalleryImageCardEyebrow(false, false, 'draft')).toBe('Cobertura activa');
+  });
+
+  it('returns Cobertura activa for gallery without record', () => {
+    expect(getGalleryImageCardEyebrow(false, false, 'gallery')).toBe('Cobertura activa');
+  });
+});
+
+describe('getGalleryImageCardFacts', () => {
+  const galleryImage = mockGalleryImage({
+    source: 'api',
+    sortOrder: 2,
+    createdAt: '2025-03-15T10:00:00.000Z',
+  });
+
+  it('includes Archivo fact when assetName present', () => {
+    const facts = getGalleryImageCardFacts('abc.jpg', galleryImage);
+    expect(facts.find((f) => f.label === 'Archivo')?.value).toBe('abc.jpg');
+  });
+
+  it('omits Archivo fact when assetName is null', () => {
+    const facts = getGalleryImageCardFacts(null, galleryImage);
+    expect(facts.find((f) => f.label === 'Archivo')).toBeUndefined();
+  });
+
+  it('includes Fuente, Orden, Alta facts when galleryImage present', () => {
+    const facts = getGalleryImageCardFacts('abc.jpg', galleryImage);
+    expect(facts.find((f) => f.label === 'Fuente')?.value).toBe('Importación');
+    expect(facts.find((f) => f.label === 'Orden')?.value).toBe('#2');
+    expect(facts.find((f) => f.label === 'Alta')?.value).toBe('15 mar 2025');
+  });
+
+  it('returns empty array when no assetName and no galleryImage', () => {
+    const facts = getGalleryImageCardFacts(null, null);
+    expect(facts).toHaveLength(0);
+  });
+
+  it('returns empty array when galleryImage is undefined', () => {
+    const facts = getGalleryImageCardFacts(null, undefined);
+    expect(facts).toHaveLength(0);
   });
 });
