@@ -1,0 +1,85 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+@use '../../../styles/placeholders' as *;
+
+.under-construction-card-section {
+  text-align: center;
+
+  h2 {
+    @include section-title;
+
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
+  }
+
+  &__cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  &__card {
+    @include dashboard-card;
+
+    flex-basis: 32%;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    position: relative;
+    text-align: left;
+
+    &::before {
+      background: linear-gradient(to bottom, $color-accent, rgba($color-accent, 0.15) 60%, transparent);
+      border-radius: $radius-lg 0 0 $radius-lg;
+      bottom: 0;
+      content: '';
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 3px;
+    }
+
+    h3 {
+      @include headline-md;
+
+      color: #fff;
+      margin: 0;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+    }
+
+    p {
+      @include body-lg;
+
+      color: rgba(#fff, 0.7);
+      margin-top: 0.5rem;
+    }
+
+    .material-symbols-outlined {
+      color: $color-accent;
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  &__card-status {
+    @include mono-label;
+
+    align-self: flex-start;
+    background: rgba($color-accent, 0.08);
+    border: 1px solid rgba($color-accent, 0.25);
+    border-radius: $radius-sm;
+    margin-top: 0.75rem;
+    padding: 0.25rem 0.55rem;
+  }
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .under-construction-card-section {
+    &__card {
+      padding: 1.25rem;
+    }
+  }
+}

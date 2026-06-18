@@ -2,6 +2,7 @@
 
 ## Último estado estable
 
+- Último bloque validado: **UnderConstructionPage reusable** aprobado.
 - Último bloque validado: **Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual (delete_forever) + card back info overflow fix** aprobado.
 - Alcance validado:
   - **Fase 6A**: Supabase Storage bucket `motorcycle-images` con public read + admin-only insert/update/delete policies. 5 MB max. Allow MIME types: `image/jpeg`, `image/png`, `image/webp`.
@@ -32,6 +33,29 @@
 - Focused checks más recientes:
   - focused pending-delete + primary sync + Storage dedup + delete button visual + card back info → `AdminPage.test.tsx / 255 tests` passing
 - La galería multiimagen tiene base de schema/RLS + service layer + conexión de lectura + creación de records desde uploads admin + gallery card polish + stable ordering + pending-delete (diferido hasta publicar) + primary sync hardening + Storage cleanup seguro. Pendiente: migrar pending-delete a eliminación inmediata independiente del formulario, drag-and-drop reorder, card back info simplificada, WebP conversion opcional, IntersectionObserver active section tracking, A2 fields en draft si aplica.
+
+  - Componente React config-driven en `src/components/pages/UnderConstructionPage/`.
+  - `#/noticias` ya no redirige silenciosamente a Home.
+  - Contrato configurable: `title`, `description`, `imageSrc?`, `statusLabel?`, `primaryCta`, `secondaryCtas?`, `children?`, `trustMessage?`.
+  - Contenido extra opcional vía slot `children` (acepta cualquier ReactNode).
+  - `UnderConstructionCardSection` como componente presentacional opcional para secciones de tarjetas.
+  - Config de Noticias en `underConstructionContent.ts` + `noticiasExtraCards`.
+  - Background default: `public/images/placeholders/building-page-placeholder.png`.
+  - Estructura semántica con `aria-labelledby`, media decorativa `aria-hidden`.
+  - Sin fake content, fake dates ni fake counters.
+  - SCSS scoped a `.under-construction` (sin leakage global).
+  - Diseño premium dark MotoAtlas: hero full-width, overlay degradado, children slot genérico para sección extra, status badge técnico y trust message en mono-label.
+  - Typecheck: clean.
+  - Tests: 78 suites, 1398 tests, todos pasando.
+  - `git diff --check`: clean.
+
+- Bloque previo validado: **Admin Models image manager gallery card polish + stable ordering** aprobado.
+  - Tests: 220 tests en focused `AdminPage.test.tsx` (3 nuevas regresiones: orden de librería completa, placeholder, no gallery service calls).
+  - Typecheck: clean
+  - `git diff --check`: clean
+  - Focused checks más recientes:
+    - focused stable ordering + gallery polish → `AdminPage.test.tsx / 220 tests` passing
+  - La galería multiimagen ya tiene base de schema/RLS + service layer + conexión de lectura + creación de records desde uploads admin + gallery card polish + stable ordering. Quedan pendientes selección de primaria, reorden, borrado coordinado records/Storage, WebP conversion opcional, IntersectionObserver active section tracking y A2 fields en draft si aplica.
 
 ## Implementado
 
@@ -255,6 +279,21 @@
   - validación de `data/import/motorcycles.json` sin segmentos inválidos.
   - contrato de filtros actual `primary + other` con `other` como bucket UI (no segmento real).
 - Resultado de quality gate de fase: aprobado. Pendiente de Fase 4 SEO/Admin/landings.
+
+### UnderConstructionPage reusable
+
+- Componente config-driven `UnderConstructionPage` en `src/components/pages/UnderConstructionPage/`.
+- `#/noticias` renderiza la página con `noticiasContent`; ya no redirige silenciosamente a Home.
+- Props configurables: `title`, `description`, `imageSrc?`, `statusLabel?`, `primaryCta`, `secondaryCtas?`, `children?`, `trustMessage?`.
+- Slot `children` genérico para contenido extra (cards, links, formularios, etc.).
+- `UnderConstructionCardSection` como componente presentacional opcional para secciones de tarjetas.
+- Background default: `public/images/placeholders/building-page-placeholder.png`.
+- Estructura semántica: `<main aria-labelledby>`, `<section aria-labelledby>` (en children), `<article>` (en card section).
+- Decorative media oculta de asistentes (`aria-hidden="true"`).
+- Sin fake content, fake dates ni fake counters.
+- SCSS scoped a `.under-construction` (BEM, sin leakage global).
+- Diseño premium dark MotoAtlas: hero full-width, overlay degradado, background image filtrada, status badge técnico, CTAs primarios/secondary, children slot genérico para cards/sección extra, trust message en mono-label con barra de acento.
+- Calidad: typecheck clean, 1398 tests passing, `git diff --check` clean.
 
 ### Datos demo
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.
