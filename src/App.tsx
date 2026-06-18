@@ -23,6 +23,7 @@ import {
   TermsPage,
 } from './components/pages/StaticInfoPages';
 import { CommunityLandingPage } from './components/pages/CommunityLandingPage';
+import { LoadingPreviewPage } from './components/pages/LoadingPreviewPage';
 import { UnderConstructionCardSection, UnderConstructionPage, noticiasContent, noticiasExtraCards } from './components/pages/UnderConstructionPage';
 import { FeaturedMachines } from './components/sections/FeaturedMachines';
 import { HomeHero } from './components/sections/HomeHero';
@@ -396,6 +397,8 @@ export function App() {
         <PrivacyPage />
       ) : staticInfoRouteKey === 'terminos' ? (
         <TermsPage />
+      ) : appPath === '/loading' ? (
+        <LoadingPreviewPage />
       ) : isNewsPage ? (
         <UnderConstructionPage {...noticiasContent}>
           <UnderConstructionCardSection {...noticiasExtraCards} />

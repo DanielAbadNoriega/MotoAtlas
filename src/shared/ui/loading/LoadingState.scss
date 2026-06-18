@@ -1,0 +1,333 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+@keyframes loading-state-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-state-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// === ROOT ===
+
+.loading-state {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vw, 3rem);
+  justify-content: center;
+  position: relative;
+  text-align: center;
+}
+
+// -- variant modifiers --
+
+.loading-state--page {
+  min-height: min(70vh, 600px);
+  padding: clamp(3rem, 6vw, 5rem) 1.5rem;
+}
+
+.loading-state--section {
+  padding: clamp(2rem, 4vw, 3rem) 1.5rem;
+}
+
+.loading-state--inline {
+  padding: 1rem;
+}
+
+// -- size modifiers --
+
+.loading-state--sm {
+  .loading-state__loader {
+    height: clamp(2.75rem, 8vw, 3.75rem);
+    width: clamp(2.75rem, 8vw, 3.75rem);
+  }
+
+  .loading-state__icon {
+    font-size: clamp(1rem, 3vw, 1.375rem);
+  }
+
+  .loading-state__title {
+    font-family: $font-headline;
+    font-size: clamp(0.9375rem, 2vw, 1.125rem);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .loading-state__message {
+    font-size: 0.875rem;
+  }
+
+  .loading-state__content {
+    gap: 0.5rem;
+  }
+}
+
+.loading-state--md {
+  .loading-state__title {
+    @include headline-lg;
+  }
+
+  .loading-state__message {
+    @include body-lg;
+  }
+}
+
+.loading-state--lg {
+  .loading-state__loader {
+    height: clamp(6rem, 16vw, 8rem);
+    width: clamp(6rem, 16vw, 8rem);
+  }
+
+  .loading-state__icon {
+    font-size: clamp(2rem, 6vw, 3rem);
+  }
+
+  .loading-state__title {
+    @include headline-xl;
+  }
+
+  .loading-state__message {
+    @include body-lg;
+  }
+
+  .loading-state__content {
+    gap: 1.25rem;
+  }
+}
+
+// === LOADER (SVG container) ===
+
+.loading-state__loader {
+  height: clamp(5rem, 14vw, 6rem);
+  position: relative;
+  width: clamp(5rem, 14vw, 6rem);
+}
+
+.loading-state__ring-outer,
+.loading-state__arc {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.loading-state__ring-outer {
+  animation: loading-state-spin 3s linear infinite;
+  color: rgba($color-outline-variant, 0.62);
+}
+
+.loading-state__arc {
+  animation: loading-state-spin 1.5s linear infinite;
+  color: $color-accent;
+}
+
+.loading-state__icon {
+  color: $color-on-surface;
+  font-size: clamp(1.625rem, 5vw, 2.25rem);
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// === CONTENT ===
+
+.loading-state__content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 36rem;
+}
+
+.loading-state__eyebrow {
+  @include label-caps;
+
+  color: $color-accent;
+  margin: 0;
+}
+
+.loading-state__title {
+  color: $color-on-surface;
+  margin: 0;
+}
+
+.loading-state__message {
+  color: rgba($color-on-surface-variant, 0.92);
+  line-height: 1.6;
+  margin: 0;
+}
+
+// === SKELETON PREVIEW ===
+
+.loading-state__skeleton {
+  max-width: 48rem;
+  width: 100%;
+}
+
+// shared shimmer gradient (used via @extend, not inside @media)
+%skel-shimmer {
+  animation: loading-state-shimmer 1.6s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    rgba($color-surface-container, 0.72),
+    rgba($color-surface-container-highest, 0.58),
+    rgba($color-surface-container, 0.72)
+  );
+  background-size: 200% 100%;
+  border-radius: $radius-md;
+}
+
+// -- cards preset --
+
+.loading-state__skeleton--cards {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+}
+
+.loading-state__skeleton-card {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1.8fr;
+  min-height: 10rem;
+  overflow: hidden;
+}
+
+.loading-state__skeleton-image {
+  @extend %skel-shimmer;
+
+  min-height: 10rem;
+}
+
+.loading-state__skeleton-lines {
+  align-content: center;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+
+  span {
+    @extend %skel-shimmer;
+
+    border-radius: $radius-sm;
+    display: block;
+    height: 0.875rem;
+
+    &:nth-child(1) { width: 40%; }
+    &:nth-child(2) { width: 70%; }
+    &:nth-child(3) { width: 55%; }
+  }
+}
+
+// -- list preset --
+
+.loading-state__skeleton--list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.loading-state__skeleton-row {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 4fr;
+  padding: 0.75rem 0;
+
+  span {
+    @extend %skel-shimmer;
+
+    display: block;
+    height: 0.875rem;
+
+    &:first-child { width: 60%; }
+    &:last-child { width: 100%; }
+  }
+}
+
+// -- dashboard preset --
+
+.loading-state__skeleton-dashboard {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 8rem);
+}
+
+.loading-state__skeleton-block {
+  @extend %skel-shimmer;
+
+  &:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+// -- account preset --
+
+.loading-state__skeleton-account {
+  display: grid;
+  gap: 1rem;
+}
+
+.loading-state__skeleton-profile {
+  align-items: center;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto 1fr;
+  margin-bottom: 0.5rem;
+}
+
+.loading-state__skeleton-avatar {
+  @extend %skel-shimmer;
+
+  border-radius: 999px;
+  height: 3.5rem;
+  width: 3.5rem;
+}
+
+// === REDUCED MOTION ===
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-state__ring-outer,
+  .loading-state__arc {
+    animation: none;
+  }
+
+  .loading-state__skeleton-image,
+  .loading-state__skeleton-lines span,
+  .loading-state__skeleton-row span,
+  .loading-state__skeleton-block,
+  .loading-state__skeleton-avatar {
+    animation: none;
+    background: rgba($color-surface-container, 0.72);
+  }
+}
+
+// === RESPONSIVE ===
+
+@media (max-width: $breakpoint-mobile) {
+  .loading-state--page {
+    padding: 2rem 1rem;
+  }
+
+  .loading-state--section {
+    padding: 1.5rem 1rem;
+  }
+
+  .loading-state__skeleton--cards {
+    grid-template-columns: 1fr;
+  }
+
+  .loading-state__skeleton-dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: 8rem 8rem 8rem 8rem;
+  }
+}
