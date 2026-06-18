@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
-import { createAdminMotorcycleGalleryImage, getAdminMotorcycleGalleryImages } from '../../../services/adminMotorcycleGalleryService';
+import { createAdminMotorcycleGalleryImage, getAdminMotorcycleGalleryImages, updateAdminMotorcycleGalleryImage } from '../../../services/adminMotorcycleGalleryService';
 import { deleteMotorcycleImage, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
@@ -69,6 +69,7 @@ vi.mock('../../../services/adminMotorcycleService', () => ({
 vi.mock('../../../services/adminMotorcycleGalleryService', () => ({
   createAdminMotorcycleGalleryImage: vi.fn(),
   getAdminMotorcycleGalleryImages: vi.fn(),
+  updateAdminMotorcycleGalleryImage: vi.fn(),
 }));
 
 vi.mock('../../../services/adminMotorcycleImageUploadService', () => ({
@@ -79,6 +80,7 @@ vi.mock('../../../services/adminMotorcycleImageUploadService', () => ({
 
 const createAdminMotorcycleGalleryImageMock = vi.mocked(createAdminMotorcycleGalleryImage);
 const getAdminMotorcycleGalleryImagesMock = vi.mocked(getAdminMotorcycleGalleryImages);
+const updateAdminMotorcycleGalleryImageMock = vi.mocked(updateAdminMotorcycleGalleryImage);
 const uploadMotorcycleImageMock = vi.mocked(uploadMotorcycleImage);
 const deleteMotorcycleImageMock = vi.mocked(deleteMotorcycleImage);
 
@@ -287,6 +289,19 @@ describe('AdminPage', () => {
       sortOrder: input.sortOrder ?? 0,
       source: input.source ?? 'manual',
       createdBy: input.createdBy ?? null,
+      createdAt: '2026-06-17T10:00:00.000Z',
+      updatedAt: '2026-06-17T10:00:00.000Z',
+    }));
+    updateAdminMotorcycleGalleryImageMock.mockReset().mockImplementation(async (_imageId, updates) => ({
+      id: _imageId,
+      motorcycleId: 'test-motorcycle-id',
+      url: updates.url ?? '',
+      storagePath: updates.storagePath ?? null,
+      altText: updates.altText ?? null,
+      isPrimary: updates.isPrimary ?? false,
+      sortOrder: updates.sortOrder ?? 0,
+      source: updates.source ?? 'manual',
+      createdBy: null,
       createdAt: '2026-06-17T10:00:00.000Z',
       updatedAt: '2026-06-17T10:00:00.000Z',
     }));
@@ -2952,7 +2967,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('radio', { name: 'URL manual' }));
@@ -2967,7 +2982,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('radio', { name: 'URL manual' }));
@@ -2984,7 +2999,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente, pero no se pudo registrar en la galería.');
+        expect(screen.getByRole('alert')).toHaveTextContent('Imagen subida correctamente, pero no se pudo registrar en la galería.');
       });
 
       await user.click(screen.getByRole('radio', { name: 'URL manual' }));
@@ -3018,7 +3033,7 @@ describe('AdminPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
     });
 
@@ -3054,7 +3069,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       expect(createAdminMotorcycleMock).not.toHaveBeenCalled();
@@ -3068,10 +3083,94 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       expect(createAdminMotorcycleGalleryImageMock).not.toHaveBeenCalled();
+    });
+
+    it('edit explicit upload appended at end of gallery library order', async () => {
+      const galleryOrderFixtures = [
+        { id: 'g-1', motorcycleId: 'bmw-f-900-gs-2024', url: '/storage/v1/object/public/motorcycle-images/bmw-1.webp', storagePath: 'bmw-1.webp', altText: 'BMW lateral', isPrimary: true, sortOrder: 0, source: 'api' as const, createdBy: null, createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' },
+        { id: 'g-2', motorcycleId: 'bmw-f-900-gs-2024', url: '/storage/v1/object/public/motorcycle-images/bmw-2.webp', storagePath: 'bmw-2.webp', altText: 'BMW trasera', isPrimary: false, sortOrder: 1, source: 'manual' as const, createdBy: 'admin-1', createdAt: '2026-01-02T00:00:00.000Z', updatedAt: '2026-01-02T00:00:00.000Z' },
+        { id: 'g-3', motorcycleId: 'bmw-f-900-gs-2024', url: '/storage/v1/object/public/motorcycle-images/bmw-3.webp', storagePath: 'bmw-3.webp', altText: 'BMW detalle', isPrimary: false, sortOrder: 2, source: 'api' as const, createdBy: null, createdAt: '2026-01-03T00:00:00.000Z', updatedAt: '2026-01-03T00:00:00.000Z' },
+      ];
+      const uploadOrderUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/new-upload.webp';
+      getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryOrderFixtures);
+      createAdminMotorcycleGalleryImageMock.mockResolvedValueOnce({
+        id: 'g-new', motorcycleId: 'bmw-f-900-gs-2024', url: uploadOrderUrl, storagePath: 'bmw-f-900-gs-2024/new-upload.webp', altText: null, isPrimary: false, sortOrder: 3, source: 'manual' as const, createdBy: 'admin-1', createdAt: '2026-06-18T10:00:00.000Z', updatedAt: '2026-06-18T10:00:00.000Z',
+      });
+      uploadMotorcycleImageMock.mockResolvedValueOnce(uploadOrderUrl);
+      const { user } = await setupEditWithFile();
+
+      const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+
+      const getGalleryUrls = () => within(galleryRegion)
+        .getAllByRole('article')
+        .map((card) => card.getAttribute('data-library-image-url') ?? '')
+        .filter((url) => url.startsWith('/storage/') || url.startsWith('https://supabase.test'));
+
+      const beforeUrls = getGalleryUrls();
+
+      const uploadBtn = await screen.findByRole('button', { name: 'Subir imagen' });
+      await user.click(uploadBtn);
+
+      await waitFor(() => {
+        expect(createAdminMotorcycleGalleryImageMock).toHaveBeenCalled();
+      });
+
+      const afterUrls = getGalleryUrls();
+      expect(afterUrls).toEqual([...beforeUrls, uploadOrderUrl]);
+    });
+
+    it('upload success muestra estado y limpia el preview/file tras la subida', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Subir imagen' })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
+      });
+
+      expect(screen.queryByAltText('Previsualización local del archivo seleccionado')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Subir imagen' })).not.toBeInTheDocument();
+      expect(screen.getByText('Ningún archivo seleccionado')).toBeInTheDocument();
+    });
+
+    it('upload warning muestra role alert en el panel de estado', async () => {
+      getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([]);
+      createAdminMotorcycleGalleryImageMock.mockRejectedValueOnce(new Error('Gallery DB error'));
+      uploadMotorcycleImageMock.mockResolvedValueOnce(editPublicUrl);
+      const { user } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Imagen subida correctamente, pero no se pudo registrar en la galería.');
+      });
+    });
+
+    it('seleccionar nuevo archivo resetea el upload success status', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      const { user } = await setupCreateWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
+      });
+
+      const fileInput = screen.getByLabelText('Seleccionar imagen del modelo') as HTMLInputElement;
+      const secondFile = new File(['dummy'], 'replacement.jpg', { type: 'image/jpeg' });
+      fireEvent.change(fileInput, { target: { files: [secondFile] } });
+
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Subir imagen' })).toBeInTheDocument();
     });
   });
 
@@ -3126,7 +3225,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       return { user };
@@ -3191,7 +3290,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', replacedUrl);
@@ -3216,7 +3315,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
@@ -3248,7 +3347,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
@@ -3296,7 +3395,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
@@ -3355,7 +3454,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
@@ -3413,7 +3512,7 @@ describe('AdminPage', () => {
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
 
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       expect(screen.queryByRole('button', { name: 'Eliminar imagen actual' })).not.toBeInTheDocument();
@@ -3720,7 +3819,7 @@ describe('AdminPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -3730,7 +3829,7 @@ describe('AdminPage', () => {
           motorcycleId: 'created-id',
           url: publicUrl,
           storagePath: 'moto-id/uuid.jpg',
-          isPrimary: false,
+          isPrimary: true,
           sortOrder: 0,
           source: 'manual',
           createdBy: 'admin-1',
@@ -3781,6 +3880,82 @@ describe('AdminPage', () => {
       expect(createAdminMotorcycleGalleryImageMock.mock.invocationCallOrder[0]).toBeLessThan(
         updateAdminMotorcycleMock.mock.invocationCallOrder[0]!,
       );
+    });
+
+    it('edit auto-upload sincroniza isPrimary con la galería — regresión stale galleryImagesRef', async () => {
+      const editUploadUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/regression.jpg';
+      getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([
+        {
+          id: 'img-primary',
+          motorcycleId: 'bmw-f-900-gs-2024',
+          url: '/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/old-primary.webp',
+          storagePath: 'bmw-f-900-gs-2024/old-primary.webp',
+          altText: 'Primaria existente',
+          isPrimary: true,
+          sortOrder: 0,
+          source: 'manual',
+          createdBy: null,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ]);
+      createAdminMotorcycleGalleryImageMock.mockResolvedValueOnce({
+        id: 'img-new-regression',
+        motorcycleId: 'bmw-f-900-gs-2024',
+        url: editUploadUrl,
+        storagePath: 'bmw-f-900-gs-2024/regression.jpg',
+        altText: null,
+        isPrimary: false,
+        sortOrder: 1,
+        source: 'manual',
+        createdBy: 'admin-1',
+        createdAt: '2026-06-17T10:00:00.000Z',
+        updatedAt: '2026-06-17T10:00:00.000Z',
+      });
+      uploadMotorcycleImageMock.mockResolvedValueOnce(editUploadUrl);
+      updateAdminMotorcycleMock.mockResolvedValueOnce({ id: 'bmw-f-900-gs-2024' } as unknown as Bike);
+      const { user } = await setupEditWithFile();
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(createAdminMotorcycleGalleryImageMock).toHaveBeenCalled();
+      });
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith(
+          'img-primary',
+          { isPrimary: false },
+          'admin-token',
+        );
+      });
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith(
+          'img-new-regression',
+          { isPrimary: true },
+          'admin-token',
+        );
+      });
+
+      await waitFor(() => {
+        expect(updateAdminMotorcycleMock).toHaveBeenCalledWith(
+          'bmw-f-900-gs-2024',
+          expect.objectContaining({
+            imageUrl: editUploadUrl,
+            imageLocked: true,
+          }),
+          'admin-token',
+        );
+      });
+
+      const galleryUpdateCalls = updateAdminMotorcycleGalleryImageMock.mock.calls;
+      galleryUpdateCalls.forEach((call) => {
+        const updates = call[1] as Record<string, unknown>;
+        expect(updates).not.toHaveProperty('sortOrder');
+      });
+
+      expect(createAdminMotorcycleGalleryImageMock).toHaveBeenCalledTimes(1);
     });
 
     it('auto-upload failure previene create/update y muestra role alert', async () => {
@@ -3842,7 +4017,7 @@ describe('AdminPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -3878,7 +4053,7 @@ describe('AdminPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Subir imagen' }));
       await waitFor(() => {
-        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente.');
+        expect(screen.getByRole('status')).toHaveTextContent('Imagen subida correctamente y añadida a la galería.');
       });
 
       await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
@@ -3888,6 +4063,24 @@ describe('AdminPage', () => {
       });
 
       expect(createAdminMotorcycleGalleryImageMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('auto-upload limpia el estado de archivo seleccionado tras publicar', async () => {
+      uploadMotorcycleImageMock.mockResolvedValueOnce(publicUrl);
+      createAdminMotorcycleMock.mockResolvedValueOnce({ id: 'created-id' } as unknown as Bike);
+      const { user } = await setupCreateWithFile();
+      await user.type(screen.getByLabelText('ID sugerido'), 'ducati-desertx');
+
+      expect(screen.getByAltText('Previsualización local del archivo seleccionado')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+      await waitFor(() => {
+        expect(createAdminMotorcycleMock).toHaveBeenCalled();
+      });
+
+      expect(screen.queryByAltText('Previsualización local del archivo seleccionado')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Subir imagen' })).not.toBeInTheDocument();
     });
   });
 
@@ -4162,6 +4355,345 @@ describe('AdminPage', () => {
 
       expect(screen.queryByRole('button', { name: 'Publicar modelo' })).not.toBeInTheDocument();
       expect(updateAdminMotorcycleMock).not.toHaveBeenCalled();
+    });
+
+    describe('edit publish con galería cargada sincroniza isPrimary', () => {
+      const galleryFixtures: readonly import('../../../services/adminMotorcycleGalleryService').AdminMotorcycleGalleryImage[] = [
+        {
+          id: 'img-1', motorcycleId: 'bmw-f-900-gs-2024',
+          url: '/storage/v1/object/public/motorcycle-images/bmw-1.webp',
+          storagePath: 'bmw-1.webp', altText: 'BMW F 900 GS lateral',
+          isPrimary: true, sortOrder: 0, source: 'api', createdBy: null,
+          createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+        {
+          id: 'img-2', motorcycleId: 'bmw-f-900-gs-2024',
+          url: '/storage/v1/object/public/motorcycle-images/bmw-2.webp',
+          storagePath: 'bmw-2.webp', altText: 'BMW F 900 GS trasera',
+          isPrimary: false, sortOrder: 1, source: 'manual', createdBy: 'admin-1',
+          createdAt: '2026-01-02T00:00:00.000Z', updatedAt: '2026-01-02T00:00:00.000Z',
+        },
+      ];
+
+      it('seleccionar imagen de galería como portada y publicar sincroniza isPrimary', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        expect(within(galleryRegion).getAllByRole('article').length).toBeGreaterThanOrEqual(2);
+
+        await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS trasera' }));
+        await screen.findByRole('button', { name: 'Portada actual: BMW F 900 GS trasera' });
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-1', { isPrimary: false }, 'admin-token');
+        expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-2', { isPrimary: true }, 'admin-token');
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('publicar con portada que coincide con la imagen primaria actual no llama a update gallery', async () => {
+        const bikeWithGalleryPrimary = {
+          ...bikeCatalog[0],
+          id: existingId,
+          imageUrl: galleryFixtures[0].url,
+        };
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(
+          <AdminEditMotorcyclePage
+            motorcycleId={existingId}
+            motorcycles={[bikeWithGalleryPrimary]}
+            onMotorcyclesChange={vi.fn()}
+          />,
+        );
+
+        await openImageManager(user);
+        await screen.findByRole('button', { name: 'Portada actual: BMW F 900 GS lateral' });
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(updateAdminMotorcycleGalleryImageMock).not.toHaveBeenCalled();
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('publicar con portada NO en galería unsetea la primaria anterior', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        expect(within(galleryRegion).getAllByRole('article').length).toBeGreaterThanOrEqual(2);
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-1', { isPrimary: false }, 'admin-token');
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('fallo en sync de galería no navega y muestra error', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        updateAdminMotorcycleGalleryImageMock.mockRejectedValueOnce(new Error('primary sync failed'));
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await openImageManager(user);
+        const galleryRegion = await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+        expect(within(galleryRegion).getAllByRole('article').length).toBeGreaterThanOrEqual(2);
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(screen.getByRole('alert')).toHaveTextContent('primary sync failed');
+        });
+        expect(window.location.hash).toBe('');
+      });
+
+      it('publicar sin abrir galería con registros existentes sincroniza isPrimary vía fallback fetch', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(getAdminMotorcycleGalleryImagesMock).toHaveBeenCalledWith(existingId, 'admin-token');
+        expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-1', { isPrimary: false }, 'admin-token');
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('publicar sin abrir galería sin registros en servidor fallback fetch devuelve vacío y saltea sync', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([]);
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(getAdminMotorcycleGalleryImagesMock).toHaveBeenCalledWith(existingId, 'admin-token');
+        expect(updateAdminMotorcycleGalleryImageMock).not.toHaveBeenCalled();
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('publicar sin abrir galería fallback fetch falla muestra error y no navega', async () => {
+        getAdminMotorcycleGalleryImagesMock.mockRejectedValueOnce(new Error('gallery fetch failed'));
+        const user = userEvent.setup();
+        render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(screen.getByRole('alert')).toHaveTextContent('gallery fetch failed');
+        });
+        expect(window.location.hash).toBe('');
+      });
+
+      it('fallback fetch revela respaldo en galería: portada con gallery record no elimina Storage', async () => {
+        vi.stubEnv('VITE_SUPABASE_URL', 'https://supabase.test');
+        const galleryUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/uuid.jpg';
+        const newUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/new.jpg';
+
+        const galleryRecord = {
+          id: 'img-gallery-backed', motorcycleId: existingId,
+          url: galleryUrl,
+          storagePath: 'bmw-f-900-gs-2024/uuid.jpg', altText: null,
+          isPrimary: true, sortOrder: 0, source: 'api', createdBy: null,
+          createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
+        } satisfies import('../../../services/adminMotorcycleGalleryService').AdminMotorcycleGalleryImage;
+
+        const galleryBackedBike = {
+          ...bikeCatalog[0],
+          id: existingId,
+          imageUrl: galleryUrl,
+        };
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([galleryRecord]);
+
+        const user = userEvent.setup();
+        render(
+          <AdminEditMotorcyclePage
+            motorcycleId={existingId}
+            motorcycles={[galleryBackedBike]}
+            onMotorcyclesChange={vi.fn()}
+          />,
+        );
+
+        await openImageManager(user);
+        const urlInput = await screen.findByLabelText('Image URL');
+        await user.clear(urlInput);
+        await user.paste(newUrl);
+        await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('fallback fetch vacío: portada sin respaldo en galería permite limpiar Storage anterior', async () => {
+        vi.stubEnv('VITE_SUPABASE_URL', 'https://supabase.test');
+        const oldUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/old.jpg';
+        const newUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/new.jpg';
+
+        const notGalleryBackedBike = {
+          ...bikeCatalog[0],
+          id: existingId,
+          imageUrl: oldUrl,
+        };
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([]);
+
+        const user = userEvent.setup();
+        render(
+          <AdminEditMotorcyclePage
+            motorcycleId={existingId}
+            motorcycles={[notGalleryBackedBike]}
+            onMotorcyclesChange={vi.fn()}
+          />,
+        );
+
+        await openImageManager(user);
+        const urlInput = await screen.findByLabelText('Image URL');
+        await user.clear(urlInput);
+        await user.paste(newUrl);
+        await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(deleteMotorcycleImageMock).toHaveBeenCalledWith('bmw-f-900-gs-2024/old.jpg', 'admin-token');
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('fallback fetch tras update falla: no elimina Storage, no navega, muestra error', async () => {
+        vi.stubEnv('VITE_SUPABASE_URL', 'https://supabase.test');
+        const oldUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/old.jpg';
+
+        const notGalleryBackedBike = {
+          ...bikeCatalog[0],
+          id: existingId,
+          imageUrl: oldUrl,
+        };
+        getAdminMotorcycleGalleryImagesMock.mockRejectedValueOnce(new Error('fallback gallery fetch failed'));
+
+        const user = userEvent.setup();
+        render(
+          <AdminEditMotorcyclePage
+            motorcycleId={existingId}
+            motorcycles={[notGalleryBackedBike]}
+            onMotorcyclesChange={vi.fn()}
+          />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(screen.getByRole('alert')).toHaveTextContent('fallback gallery fetch failed');
+        });
+        expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+        expect(window.location.hash).toBe('');
+      });
+
+      it('fallback fetch con storagePath: portada respaldada no elimina Storage sin abrir modal', async () => {
+        vi.stubEnv('VITE_SUPABASE_URL', 'https://supabase.test');
+        const storageUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/uuid.jpg';
+        const objectPath = 'bmw-f-900-gs-2024/uuid.jpg';
+
+        const galleryRecord = {
+          id: 'img-storage-path', motorcycleId: existingId,
+          url: 'https://cdn.example.com/unrelated/different-url.webp',
+          storagePath: objectPath, altText: null,
+          isPrimary: true, sortOrder: 0, source: 'api', createdBy: null,
+          createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
+        } satisfies import('../../../services/adminMotorcycleGalleryService').AdminMotorcycleGalleryImage;
+
+        const storageBike = {
+          ...bikeCatalog[0],
+          id: existingId,
+          imageUrl: storageUrl,
+        };
+
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([galleryRecord]);
+
+        const user = userEvent.setup();
+        render(
+          <AdminEditMotorcyclePage
+            motorcycleId={existingId}
+            motorcycles={[storageBike]}
+            onMotorcyclesChange={vi.fn()}
+          />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Quitar imagen del formulario' }));
+        await waitFor(() => {
+          expect(screen.getByRole('status')).toHaveTextContent('Imagen quitada del formulario.');
+        });
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(getAdminMotorcycleGalleryImagesMock).toHaveBeenCalledWith(existingId, 'admin-token');
+        expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+        expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-storage-path', { isPrimary: false }, 'admin-token');
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
+
+      it('fallback fetch vacío con storagePath: portada sin respaldo permite limpiar Storage sin abrir modal', async () => {
+        vi.stubEnv('VITE_SUPABASE_URL', 'https://supabase.test');
+        const storageUrl = 'https://supabase.test/storage/v1/object/public/motorcycle-images/bmw-f-900-gs-2024/old.jpg';
+
+        const storageBike = {
+          ...bikeCatalog[0],
+          id: existingId,
+          imageUrl: storageUrl,
+        };
+
+        getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([]);
+
+        const user = userEvent.setup();
+        render(
+          <AdminEditMotorcyclePage
+            motorcycleId={existingId}
+            motorcycles={[storageBike]}
+            onMotorcyclesChange={vi.fn()}
+          />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Quitar imagen del formulario' }));
+        await waitFor(() => {
+          expect(screen.getByRole('status')).toHaveTextContent('Imagen quitada del formulario.');
+        });
+
+        await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+        await waitFor(() => {
+          expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+        });
+        expect(getAdminMotorcycleGalleryImagesMock).toHaveBeenCalledWith(existingId, 'admin-token');
+        expect(deleteMotorcycleImageMock).toHaveBeenCalledWith('bmw-f-900-gs-2024/old.jpg', 'admin-token');
+        expect(window.location.hash).toBe(`#/motos/${existingId}`);
+      });
     });
 
     describe('galería de imágenes', () => {
@@ -4622,6 +5154,8 @@ describe('AdminPage', () => {
         expect(screen.getByRole('article', { name: 'Placeholder técnico MotoAtlas' })).toBeInTheDocument();
         expect(getAdminMotorcycleGalleryImagesMock).not.toHaveBeenCalled();
       });
+
+      // gallery-order test moved to explicit upload describe block
     });
   });
 });
