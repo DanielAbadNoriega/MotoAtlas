@@ -23,7 +23,7 @@ import {
   TermsPage,
 } from './components/pages/StaticInfoPages';
 import { CommunityLandingPage } from './components/pages/CommunityLandingPage';
-import { UnderConstructionPage, noticiasContent } from './components/pages/UnderConstructionPage';
+import { UnderConstructionCardSection, UnderConstructionPage, noticiasContent, noticiasExtraCards } from './components/pages/UnderConstructionPage';
 import { FeaturedMachines } from './components/sections/FeaturedMachines';
 import { HomeHero } from './components/sections/HomeHero';
 import { LatestNews } from './components/sections/LatestNews';
@@ -397,7 +397,9 @@ export function App() {
       ) : staticInfoRouteKey === 'terminos' ? (
         <TermsPage />
       ) : isNewsPage ? (
-        <UnderConstructionPage {...noticiasContent} />
+        <UnderConstructionPage {...noticiasContent}>
+          <UnderConstructionCardSection {...noticiasExtraCards} />
+        </UnderConstructionPage>
       ) : (
         <HomePage />
       )}

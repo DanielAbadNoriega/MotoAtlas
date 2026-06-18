@@ -1,4 +1,5 @@
 import type { UnderConstructionPageProps } from './UnderConstructionPage';
+import type { UnderConstructionCardSectionProps } from './UnderConstructionCardSection';
 
 export const noticiasContent: UnderConstructionPageProps = {
   statusLabel: 'Status: Offline / Maintenance',
@@ -22,22 +23,26 @@ export const noticiasContent: UnderConstructionPageProps = {
       variant: 'secondary',
     },
   ],
-  roadmap: {
-    heading: 'Hoja de ruta',
-    cards: [
-      {
-        title: 'Noticias y lanzamientos',
-        description: 'Cobertura técnica de las últimas novedades del sector.',
-      },
-      {
-        title: 'Rutas y telemetría',
-        description: 'Análisis de rendimiento en trayectos reales con datos GPS.',
-      },
-      {
-        title: 'Eventos del sector',
-        description: 'Calendario detallado de salones y competiciones clave.',
-      },
-    ],
-  },
   trustMessage: 'Sin secciones vacías, sin datos de relleno. Crecemos por fases.',
+};
+
+export const noticiasExtraCards: UnderConstructionCardSectionProps = {
+  heading: 'Hoja de ruta',
+  cards: [
+    {
+      id: 'news-launches',
+      title: 'Noticias y lanzamientos',
+      description: 'Cobertura técnica de las últimas novedades del sector.',
+    },
+    {
+      id: 'routes-telemetry',
+      title: 'Rutas y telemetría',
+      description: 'Análisis de rendimiento en trayectos reales con datos GPS.',
+    },
+    {
+      id: 'sector-events',
+      title: 'Eventos del sector',
+      description: 'Calendario detallado de salones y competiciones clave.',
+    },
+  ],
 };

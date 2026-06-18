@@ -18,9 +18,9 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1358 tests passing` (78 files).
+- Baseline validado actual: `1398 tests passing` (78 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models motorcycle image gallery record creation from uploads (Quality Gate aprobado: 1358 tests, typecheck clean).
+- Último bloque estable validado: UnderConstructionPage reusable (Quality Gate aprobado: 1398 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
@@ -1296,9 +1296,13 @@ Relación con roadmap:
 
 ## 11. P3 — Noticias / contenido editorial
 
-Estado: pendiente.
+Estado: ruta pública habilitada con UnderConstructionPage reusable.
 
-Primera fase:
+La ruta `#/noticias` ya no redirige silenciosamente a Home. Muestra un componente config-driven `UnderConstructionPage` con hoja de ruta y trust message. Sirve como patrón para futuras rutas planificadas pero no implementadas.
+
+No hay contenido de noticias real. No hay fake news, fake dates ni fake counters.
+
+Primera fase futura (cuando se implemente):
 - artículos manuales escritos por el usuario
 - basados en reviews externas, pruebas vistas y tendencias
 

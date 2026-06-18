@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import './UnderConstructionPage.scss';
 
 export type CtaItem = Readonly<{
@@ -7,18 +8,6 @@ export type CtaItem = Readonly<{
   icon?: string;
 }>;
 
-export type RoadmapCard = Readonly<{
-  title: string;
-  description: string;
-  statusLabel?: string;
-  icon?: string;
-}>;
-
-export type RoadmapSection = Readonly<{
-  heading: string;
-  cards: readonly RoadmapCard[];
-}>;
-
 export type UnderConstructionPageProps = Readonly<{
   title: string;
   description: string;
@@ -26,7 +15,7 @@ export type UnderConstructionPageProps = Readonly<{
   statusLabel?: string;
   primaryCta: CtaItem;
   secondaryCtas?: readonly CtaItem[];
-  roadmap?: RoadmapSection;
+  children?: ReactNode;
   trustMessage?: string;
 }>;
 
@@ -49,7 +38,7 @@ export function UnderConstructionPage({
   statusLabel,
   primaryCta,
   secondaryCtas,
-  roadmap,
+  children,
   trustMessage,
 }: UnderConstructionPageProps) {
   return (
@@ -76,24 +65,10 @@ export function UnderConstructionPage({
           </div>
         </div>
 
-        {roadmap && (
-          <section className="under-construction__roadmap" aria-labelledby="under-construction-roadmap-heading">
-            <h2 id="under-construction-roadmap-heading">{roadmap.heading}</h2>
-            <div className="under-construction__roadmap-cards">
-              {roadmap.cards.map((card) => (
-                <article key={card.title} className="under-construction__roadmap-card">
-                  {card.icon && (
-                    <span className="material-symbols-outlined" aria-hidden="true">{card.icon}</span>
-                  )}
-                  <h3>{card.title}</h3>
-                  <p>{card.description}</p>
-                  {card.statusLabel && (
-                    <span className="under-construction__roadmap-card-status">{card.statusLabel}</span>
-                  )}
-                </article>
-              ))}
-            </div>
-          </section>
+        {children && (
+          <div className="under-construction__extra">
+            {children}
+          </div>
         )}
 
         {trustMessage && (

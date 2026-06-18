@@ -1,5 +1,30 @@
 # Notas UI de MotoAtlas
 
+## UnderConstructionPage reusable
+
+`UnderConstructionPage` es el patrón por defecto para rutas públicas planificadas pero no implementadas. Reemplaza el redirect silencioso a Home por una página honesta con estado del desarrollo.
+
+Componente base: `src/components/pages/UnderConstructionPage/UnderConstructionPage.tsx`
+Contenido configurable: `src/components/pages/UnderConstructionPage/underConstructionContent.ts`
+Componente extra opcional: `src/components/pages/UnderConstructionPage/UnderConstructionCardSection.tsx`
+
+Primera consumidora: `#/noticias` con `noticiasContent` + `noticiasExtraCards`.
+
+Reglas de uso:
+- No contiene fake content, fake dates ni fake counters.
+- No es una página de error 404; es un patrón de confianza.
+- Futuras rutas deben añadir su propio objeto de configuración en lugar de hardcodear copy dentro del componente.
+- La imagen de fondo puede sobrescribirse vía `imageSrc`.
+- El contenido extra se pasa como `children` (slot genérico, acepta cualquier ReactNode).
+- `UnderConstructionCardSection` es un componente presentacional opcional para secciones de tarjetas con left accent stripe.
+
+Estructura visual:
+- Hero full-width con background image, overlay degradado, status badge técnico y CTAs.
+- Slot opcional `children` renderizado en `.under-construction__extra` (cards, links, formularios, etc.).
+- Mensaje opcional de principios de producto en mono-label con acento lateral.
+- SCSS scoped a `.under-construction` (BEM, sin leakage global).
+- Diseño premium dark consistente con el sistema visual MotoAtlas.
+
 ## Nota sobre estrategia mobile
 
 El mobile es una prioridad de uso para MotoAtlas. El responsive actual debe mantenerse funcional y correcto en todas las tareas, sin pantallas rotas en móvil.

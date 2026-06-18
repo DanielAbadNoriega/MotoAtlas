@@ -1,2 +1,3 @@
 export { UnderConstructionPage } from './UnderConstructionPage';
-export { noticiasContent } from './underConstructionContent';
+export { UnderConstructionCardSection } from './UnderConstructionCardSection';
+export { noticiasContent, noticiasExtraCards } from './underConstructionContent';

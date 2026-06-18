@@ -455,6 +455,7 @@ Rutas actuales:
 - `#/comparador/:slug-vs-slug?bikes=id1,id2,id3` — comparador dinámico SEO con IDs explícitos.
 - `/comparador/:slug-vs-slug` — comparador SEO-friendly resolviendo motos por slug.
 - `#/comparativas/...` — ruta legacy: se resuelve al comparador dinámico, no al flujo editorial antiguo.
+- `#/noticias` — página de construcción reusable para rutas públicas planificadas pero no implementadas.
 
 Helpers centrales:
 
@@ -534,6 +535,28 @@ Exporta alias `ComparePage` desde `src/components/pages/ComparatorPage/index.ts`
 Archivo: `src/components/pages/ComparisonDetailPage/ComparisonDetailPage.tsx`
 
 Queda como referencia visual/legacy de Stitch. La navegación pública de `#/comparativas/...` ya debe acabar en `ComparatorPage` para conservar votación, añadir/quitar motos, URL sync y datos dinámicos.
+
+### UnderConstructionPage
+
+Archivo: `src/components/pages/UnderConstructionPage/UnderConstructionPage.tsx`
+
+Página reusable para rutas públicas planificadas pero no implementadas. Sustituye el redirect silencioso a Home por una página honesta que explica el estado del desarrollo.
+
+Props configurables desde `underConstructionContent.ts`:
+
+- `title`, `description` — texto principal del hero.
+- `imageSrc?` — imagen de fondo (default: `building-page-placeholder.png`).
+- `statusLabel?` — badge técnico opcional.
+- `primaryCta`, `secondaryCtas?` — acciones del hero.
+- `children?` — contenido extra opcional (cards, links, formularios, etc.).
+- `trustMessage?` — mensaje de principios de producto.
+
+El componente mantiene estructura semántica con `<main aria-labelledby>`, media decorativa oculta (`aria-hidden="true"`) y un slot genérico `children` renderizado en `.under-construction__extra`. El contenido adicional se inyecta desde fuera: `src/components/pages/UnderConstructionPage/UnderConstructionCardSection.tsx` es un componente presentacional opcional para secciones de tarjetas, pero el slot acepta cualquier ReactNode. El diseño es coherente con el sistema visual MotoAtlas (dark premium, racing red, tipografía técnica).
+
+Primera consumidora:
+- `#/noticias` — configurada en `noticiasContent` con `UnderConstructionCardSection` como children.
+
+No es una página de error 404. Es un patrón de confianza para rutas futuras.
 
 ## 8. Comparador y cola
 
