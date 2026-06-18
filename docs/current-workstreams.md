@@ -162,7 +162,7 @@ Resultado esperado:
 Último resultado:
 
 * typecheck: clean
-* test: 1070 passed (70 files)
+* test: suite completa al cierre
 
 Siguiente paso:
 
@@ -230,7 +230,7 @@ Resultado esperado:
 Último resultado:
 
 * typecheck: OK
-* test: OK (66 files, 985 tests)
+* test: suite completa al cierre
 * main: mergeado y verificado
 
 * mantener como referencia cerrada.

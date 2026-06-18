@@ -1,5 +1,30 @@
 # Notas UI de MotoAtlas
 
+## UnderConstructionPage reusable
+
+`UnderConstructionPage` es el patrón por defecto para rutas públicas planificadas pero no implementadas. Reemplaza el redirect silencioso a Home por una página honesta con estado del desarrollo.
+
+Componente base: `src/components/pages/UnderConstructionPage/UnderConstructionPage.tsx`
+Contenido configurable: `src/components/pages/UnderConstructionPage/underConstructionContent.ts`
+Componente extra opcional: `src/components/pages/UnderConstructionPage/UnderConstructionCardSection.tsx`
+
+Primera consumidora: `#/noticias` con `noticiasContent` + `noticiasExtraCards`.
+
+Reglas de uso:
+- No contiene fake content, fake dates ni fake counters.
+- No es una página de error 404; es un patrón de confianza.
+- Futuras rutas deben añadir su propio objeto de configuración en lugar de hardcodear copy dentro del componente.
+- La imagen de fondo puede sobrescribirse vía `imageSrc`.
+- El contenido extra se pasa como `children` (slot genérico, acepta cualquier ReactNode).
+- `UnderConstructionCardSection` es un componente presentacional opcional para secciones de tarjetas con left accent stripe.
+
+Estructura visual:
+- Hero full-width con background image, overlay degradado, status badge técnico y CTAs.
+- Slot opcional `children` renderizado en `.under-construction__extra` (cards, links, formularios, etc.).
+- Mensaje opcional de principios de producto en mono-label con acento lateral.
+- SCSS scoped a `.under-construction` (BEM, sin leakage global).
+- Diseño premium dark consistente con el sistema visual MotoAtlas.
+
 ## Nota sobre estrategia mobile
 
 El mobile es una prioridad de uso para MotoAtlas. El responsive actual debe mantenerse funcional y correcto en todas las tareas, sin pantallas rotas en móvil.
@@ -203,7 +228,7 @@ Secciones Comparar:
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
 - Tab Resumen activa por defecto.
-- Layout normalizado: cada sección tab ahora es `section.bike-detail__section` full-width con `.bike-detail__section-container` interno que controla max-width y padding. Elimina double-container y permite que los fondos de sección ocupen todo el ancho. Verificado en Quality Gate con typecheck clean y 1088 tests passing.
+- Layout normalizado: cada sección tab ahora es `section.bike-detail__section` full-width con `.bike-detail__section-container` interno que controla max-width y padding. Elimina double-container y permite que los fondos de sección ocupen todo el ancho. Verificado en Quality Gate (typecheck clean).
 - `bike-detail__community-summary` reducido a strip compacto. Muestra rating medio o "Sin rating", review count o "Sin reviews", y confidence shield si hay datos. Reviews limitados a 3 con `reviews.slice(0, 3)`. CTAs "Escribir review" y "Ver reviews" en footer de sección reviews (link a `#/comunidad/[bike.id]`). FeaturedReviewCard mantiene `hideImage`, `hideLinks` y acciones seguras sin cambios.
 - Precio: fallback textual cuando no hay dato fiable.
 - Fiabilidad/problemas: dentro de Comunidad como sección sister, no anidada.
@@ -464,7 +489,7 @@ La agrupación prioriza motos con reviews pendientes.
 
 ## Admin — Solicitudes de modelos
 
-La ruta `#/admin/solicitudes` es privada para perfiles con `user_profiles.role = admin` y se apoya en `AdminGate` igual que el resto de rutas admin. La rama `feature/admin-requests-audit` dejó la UI auditada funcionalmente y la rama `feature/admin-requests-phase-1` aplicó la Fase 1 de cierre funcional sin tocar schema/RLS. Quality Gate: typecheck clean, 1117 tests passing (72 files).
+La ruta `#/admin/solicitudes` es privada para perfiles con `user_profiles.role = admin` y se apoya en `AdminGate` igual que el resto de rutas admin. La rama `feature/admin-requests-audit` dejó la UI auditada funcionalmente y la rama `feature/admin-requests-phase-1` aplicó la Fase 1 de cierre funcional sin tocar schema/RLS. Quality Gate: typecheck clean.
 
 Ruta y layout:
 - hash route `#/admin/solicitudes`.

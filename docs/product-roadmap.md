@@ -21,6 +21,7 @@ Implementado (baseline actual):
 - Baseline validado actual: `1415 tests passing` (78 files).
 - Typecheck: clean.
 - Último bloque estable validado: Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual + card back info overflow fix (Quality Gate aprobado: 1415 tests, typecheck clean).
+  - Workstream detalle: `features/admin-models-studio` — galería multiimagen admin. Ver `docs/current-workstreams.md`.
 
 ## 3. Foco inmediato recomendado
 
@@ -1304,9 +1305,13 @@ Relación con roadmap:
 
 ## 11. P3 — Noticias / contenido editorial
 
-Estado: pendiente.
+Estado: ruta pública habilitada con UnderConstructionPage reusable.
 
-Primera fase:
+La ruta `#/noticias` ya no redirige silenciosamente a Home. Muestra un componente config-driven `UnderConstructionPage` con hoja de ruta y trust message. Sirve como patrón para futuras rutas planificadas pero no implementadas.
+
+No hay contenido de noticias real. No hay fake news, fake dates ni fake counters.
+
+Primera fase futura (cuando se implemente):
 - artículos manuales escritos por el usuario
 - basados en reviews externas, pruebas vistas y tendencias
 
