@@ -3621,17 +3621,36 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
       const nextImageUrl = effectiveDraft.imageUrl.trim();
       const nextImageObjectPath = getMotorcycleImageObjectPath(nextImageUrl);
 
+      const refImages = galleryImagesRef.current;
+      const galleryImageList = refImages.length > 0
+        ? refImages
+        : await getAdminMotorcycleGalleryImages(motorcycleId!, accessToken);
+
+      if (refImages.length === 0 && galleryImageList.length > 0) {
+        galleryImagesRef.current = galleryImageList;
+      }
+
+      const originalIsGalleryBacked = persistedImageHasGalleryRecord
+        || (galleryImageList.length > 0
+          && originalPersistedImageUrl.length > 0
+          && galleryImageList.some((img) =>
+            img.url === originalPersistedImageUrl
+            || (originalPersistedObjectPath && (
+              (img.storagePath && img.storagePath === originalPersistedObjectPath)
+              || getMotorcycleImageObjectPath(img.url) === originalPersistedObjectPath
+            ))
+          ));
+
       if (
         originalPersistedObjectPath
         && nextImageUrl
         && nextImageUrl !== originalPersistedImageUrl
         && nextImageObjectPath !== originalPersistedObjectPath
-        && !persistedImageHasGalleryRecord
+        && !originalIsGalleryBacked
       ) {
         void deleteMotorcycleImage(originalPersistedObjectPath, accessToken).catch(() => undefined);
       }
 
-      const galleryImageList = galleryImagesRef.current;
       if (galleryImageList.length > 0) {
         const draftImageUrl = effectiveDraft.imageUrl.trim();
         if (draftImageUrl) {
