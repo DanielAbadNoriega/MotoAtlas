@@ -42,6 +42,7 @@ import {
 import { deleteMotorcycleImage, MOTORCYCLE_IMAGE_BUCKET, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import {
   createAdminMotorcycleGalleryImage,
+  deleteAdminMotorcycleGalleryImageRecord,
   getAdminMotorcycleGalleryImages,
   updateAdminMotorcycleGalleryImage,
   type AdminMotorcycleGalleryImage,
@@ -883,6 +884,7 @@ type AdminModelFormBodyProps = Readonly<{
   onPersistedImageGalleryStateChange?: (isGalleryBacked: boolean) => void;
   onDeleteImage?: (objectPath: string) => Promise<void>;
   galleryImagesRef?: MutableRefObject<readonly AdminMotorcycleGalleryImage[]>;
+  pendingDeleteImageIdsRef?: MutableRefObject<readonly string[]>;
   saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
@@ -1080,6 +1082,7 @@ function AdminModelFormBody({
   onPersistedImageGalleryStateChange,
   onDeleteImage,
   galleryImagesRef,
+  pendingDeleteImageIdsRef,
   saving,
   toolbarKicker,
   workspaceHeading,
@@ -1097,6 +1100,7 @@ function AdminModelFormBody({
   const [galleryBackedUploadUrls, setGalleryBackedUploadUrls] = useState<readonly string[]>([]);
   const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'warning'; message: string } | null>(null);
+  const [pendingDeleteImageIds, setPendingDeleteImageIds] = useState<ReadonlySet<string>>(new Set());
   const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
   const { session, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -1387,6 +1391,12 @@ function AdminModelFormBody({
     }
   }, [galleryImages, galleryImagesRef]);
 
+  useEffect(() => {
+    if (pendingDeleteImageIdsRef) {
+      pendingDeleteImageIdsRef.current = [...pendingDeleteImageIds];
+    }
+  }, [pendingDeleteImageIds, pendingDeleteImageIdsRef]);
+
   const currentImageIsSessionUpload = Boolean(
     currentImageObjectPath
     && sessionUploadedImageUrl
@@ -1440,11 +1450,46 @@ function AdminModelFormBody({
     resetSelectedUploadState,
   ]);
 
+  const handlePendingDeleteGalleryImage = useCallback((galleryImage: AdminMotorcycleGalleryImage) => {
+    setPendingDeleteImageIds((current) => {
+      const next = new Set(current);
+      next.add(galleryImage.id);
+      return next;
+    });
+
+    const galleryImageObjectPath = getMotorcycleImageObjectPath(galleryImage.url);
+    const matchesCoverByUrl = galleryImage.url === currentImageUrl;
+    const matchesCoverByStoragePath = Boolean(
+      currentImageObjectPath
+      && galleryImage.storagePath
+      && galleryImage.storagePath === currentImageObjectPath,
+    );
+    const matchesCoverByDerivedPath = Boolean(
+      currentImageObjectPath
+      && galleryImageObjectPath
+      && galleryImageObjectPath === currentImageObjectPath,
+    );
+
+    if (matchesCoverByUrl || matchesCoverByStoragePath || matchesCoverByDerivedPath) {
+      onDraftFieldChange('imageUrl', adminModelTechnicalPlaceholderImage);
+      onDraftCheckboxChange('imageLocked', false);
+    }
+  }, [currentImageObjectPath, currentImageUrl, onDraftCheckboxChange, onDraftFieldChange]);
+
+  const handleUndoPendingDelete = useCallback((imageId: string) => {
+    setPendingDeleteImageIds((current) => {
+      const next = new Set(current);
+      next.delete(imageId);
+      return next;
+    });
+  }, []);
+
   const handleDiscardChangesClick = useCallback(() => {
     setFileError(null);
     setSessionUploadedImageUrl(null);
     setGalleryBackedUploadUrls([]);
     setIsDeletingCurrentImage(false);
+    setPendingDeleteImageIds(new Set());
     resetSelectedUploadState();
     onDiscardChanges();
   }, [onDiscardChanges, resetSelectedUploadState]);
@@ -2065,6 +2110,7 @@ function AdminModelFormBody({
                           const isOriginalPersisted = persistedImageUrlTrimmed === image.url;
                           const isPlaceholderOption = adminModelTechnicalPlaceholderImage === image.url;
                           const isGalleryRecord = Boolean(galleryImage);
+                          const isPendingDelete = Boolean(galleryImage && pendingDeleteImageIds.has(galleryImage.id));
                           const isInfoOpen = galleryInfoCardKeys.has(image.key);
                           const assetName = getGalleryImageAssetName(galleryImage?.storagePath || image.url);
                           const cardTitle = galleryImage?.altText?.trim()
@@ -2091,25 +2137,41 @@ function AdminModelFormBody({
                           ].filter(Boolean) as ReadonlyArray<{ label: string; value: string }>;
                           const actionLabel = isCurrentCover ? `Portada actual: ${cardTitle}` : `Usar como portada: ${cardTitle}`;
 
+                          let cardClassName = 'admin-model__image-modal-gallery-card';
+                          if (isInfoOpen) cardClassName += ' admin-model__image-modal-gallery-card--info-open';
+                          if (isPendingDelete) cardClassName += ' admin-model__image-modal-gallery-card--pending-delete';
+
                           return (
                             <article
                               key={image.key}
-                              className={`admin-model__image-modal-gallery-card${isInfoOpen ? ' admin-model__image-modal-gallery-card--info-open' : ''}`}
+                              className={cardClassName}
                               aria-label={cardTitle}
                               data-library-image-url={image.url}
                             >
-                              <button
-                                type="button"
-                                className="admin-model__image-modal-gallery-card-action"
-                                aria-label={actionLabel}
-                                title={isCurrentCover ? 'Portada actual' : 'Usar como portada'}
-                                disabled={isCurrentCover}
-                                onClick={() => handleUseLibraryImageAsCover(image.url)}
-                              >
-                                <span className="material-symbols-outlined" aria-hidden="true">
-                                  {isCurrentCover ? 'check_circle' : 'wallpaper'}
-                                </span>
-                              </button>
+                              {isPendingDelete && galleryImage ? (
+                                <button
+                                  type="button"
+                                  className="admin-model__image-modal-gallery-card-action admin-model__image-modal-gallery-card-action--undo"
+                                  aria-label={`Deshacer eliminación de ${cardTitle}`}
+                                  title="Deshacer"
+                                  onClick={() => handleUndoPendingDelete(galleryImage.id)}
+                                >
+                                  <span className="material-symbols-outlined" aria-hidden="true">undo</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="admin-model__image-modal-gallery-card-action"
+                                  aria-label={actionLabel}
+                                  title={isCurrentCover ? 'Portada actual' : 'Usar como portada'}
+                                  disabled={isCurrentCover}
+                                  onClick={() => handleUseLibraryImageAsCover(image.url)}
+                                >
+                                  <span className="material-symbols-outlined" aria-hidden="true">
+                                    {isCurrentCover ? 'check_circle' : 'wallpaper'}
+                                  </span>
+                                </button>
+                              )}
                               <div className="admin-model__image-modal-gallery-card-stage">
                                 <div className="admin-model__image-modal-gallery-card-face admin-model__image-modal-gallery-card-face--front">
                                   <div className="admin-model__image-modal-gallery-card-media">
@@ -2118,6 +2180,16 @@ function AdminModelFormBody({
                                       <div className="admin-model__image-modal-gallery-card-badge-column">
                                         <span className="admin-model__image-modal-gallery-card-handle-slot material-symbols-outlined" aria-hidden="true">drag_indicator</span>
                                         <div className="admin-model__image-modal-gallery-card-badges">
+                                          {isPendingDelete ? (
+                                            <span
+                                              className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--pending-delete"
+                                              role="img"
+                                              aria-label="Pendiente de eliminación"
+                                              title="Pendiente de eliminación"
+                                            >
+                                              <span className="material-symbols-outlined" aria-hidden="true">delete_outline</span>
+                                            </span>
+                                          ) : null}
                                           {isCurrentCover ? (
                                             <span
                                               className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--current"
@@ -2162,16 +2234,29 @@ function AdminModelFormBody({
                                       </div>
                                     </div>
                                   </div>
-                                  <button
-                                    type="button"
-                                    className="admin-model__image-modal-gallery-card-info-toggle"
-                                    aria-label={`Ver detalles de ${cardTitle}`}
-                                    aria-expanded={isInfoOpen}
-                                    title="Ver detalles"
-                                    onClick={() => handleToggleGalleryCardInfo(image.key)}
-                                  >
-                                    <span className="material-symbols-outlined" aria-hidden="true">info</span>
-                                  </button>
+                                  <div className="admin-model__image-modal-gallery-card-actions-row">
+                                    {isGalleryRecord && !isPendingDelete && !isPlaceholderOption ? (
+                                      <button
+                                        type="button"
+                                        className="admin-model__image-modal-gallery-card-delete-btn"
+                                        aria-label={`Eliminar imagen de la galería: ${cardTitle}`}
+                                        title="Eliminar imagen de la galería"
+                                        onClick={() => handlePendingDeleteGalleryImage(galleryImage!)}
+                                      >
+                                        <span className="material-symbols-outlined" aria-hidden="true">delete_forever</span>
+                                      </button>
+                                    ) : null}
+                                    <button
+                                      type="button"
+                                      className="admin-model__image-modal-gallery-card-info-toggle"
+                                      aria-label={`Ver detalles de ${cardTitle}`}
+                                      aria-expanded={isInfoOpen}
+                                      title="Ver detalles"
+                                      onClick={() => handleToggleGalleryCardInfo(image.key)}
+                                    >
+                                      <span className="material-symbols-outlined" aria-hidden="true">info</span>
+                                    </button>
+                                  </div>
                                 </div>
                                 <div className="admin-model__image-modal-gallery-card-face admin-model__image-modal-gallery-card-face--back">
                                   <div className="admin-model__image-modal-gallery-card-info">
@@ -3517,6 +3602,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
   const [publishError, setPublishError] = useState('');
   const [persistedImageHasGalleryRecord, setPersistedImageHasGalleryRecord] = useState(false);
   const galleryImagesRef = useRef<readonly AdminMotorcycleGalleryImage[]>([]);
+  const pendingDeleteImageIdsRef = useRef<readonly string[]>([]);
   const initializedMotorcycleIdRef = useRef<string | undefined>(motorcycleId);
 
   const { session, user } = useAuth();
@@ -3630,6 +3716,11 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         galleryImagesRef.current = galleryImageList;
       }
 
+      const pendingDeleteIds = pendingDeleteImageIdsRef?.current ?? [];
+      const activeGalleryImages = pendingDeleteIds.length > 0
+        ? galleryImageList.filter((img) => !pendingDeleteIds.includes(img.id))
+        : galleryImageList;
+
       const originalIsGalleryBacked = persistedImageHasGalleryRecord
         || (galleryImageList.length > 0
           && originalPersistedImageUrl.length > 0
@@ -3651,11 +3742,12 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         void deleteMotorcycleImage(originalPersistedObjectPath, accessToken).catch(() => undefined);
       }
 
-      if (galleryImageList.length > 0) {
+      // Primary sync: currentPrimary from full list (incl. pending-delete), matchingRecord from active only
+      if (activeGalleryImages.length > 0) {
         const draftImageUrl = effectiveDraft.imageUrl.trim();
         if (draftImageUrl) {
           const currentPrimary = galleryImageList.find((img) => img.isPrimary);
-          const matchingRecord = galleryImageList.find((img) => img.url === draftImageUrl);
+          const matchingRecord = activeGalleryImages.find((img) => img.url === draftImageUrl);
           const needsUnsetPrimary = currentPrimary && (!matchingRecord || matchingRecord.id !== currentPrimary.id);
           const needsSetPrimary = matchingRecord && !matchingRecord.isPrimary;
 
@@ -3665,6 +3757,34 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
 
           if (needsSetPrimary) {
             await updateAdminMotorcycleGalleryImage(matchingRecord!.id, { isPrimary: true }, accessToken);
+          }
+        }
+      }
+
+      // Apply pending gallery deletes: gallery record + safe Storage cleanup (de-duplicated)
+      if (pendingDeleteIds.length > 0) {
+        const pendingImages = galleryImageList.filter((img) => pendingDeleteIds.includes(img.id));
+        const processedCleanupPaths = new Set<string>();
+
+        for (const pendingImage of pendingImages) {
+          await deleteAdminMotorcycleGalleryImageRecord(pendingImage.id, accessToken);
+
+          const pendingObjectPath = pendingImage.storagePath
+            || getMotorcycleImageObjectPath(pendingImage.url);
+
+          if (pendingObjectPath && !processedCleanupPaths.has(pendingObjectPath)) {
+            processedCleanupPaths.add(pendingObjectPath);
+
+            const isSharedWithActiveImage = activeGalleryImages.some(
+              (img) => (img.storagePath && img.storagePath === pendingObjectPath)
+                || getMotorcycleImageObjectPath(img.url) === pendingObjectPath,
+            );
+
+            const isUsedByCurrentCover = nextImageObjectPath === pendingObjectPath;
+
+            if (!isSharedWithActiveImage && !isUsedByCurrentCover) {
+              await deleteMotorcycleImage(pendingObjectPath, accessToken);
+            }
           }
         }
       }
@@ -3679,7 +3799,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     } finally {
       setSaving(false);
     }
-  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, persistedImageHasGalleryRecord, session?.access_token, updateAdminMotorcycleGalleryImage]);
+  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, pendingDeleteImageIdsRef, persistedImageHasGalleryRecord, session?.access_token, updateAdminMotorcycleGalleryImage]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;
@@ -3821,6 +3941,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         onPersistedImageGalleryStateChange={setPersistedImageHasGalleryRecord}
         onDeleteImage={handleDeleteImage}
         galleryImagesRef={galleryImagesRef}
+        pendingDeleteImageIdsRef={pendingDeleteImageIdsRef}
         saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"

@@ -1327,6 +1327,8 @@
       linear-gradient(180deg, rgba($color-surface-container-highest, 0.98), rgba($color-surface-container, 0.98)),
       linear-gradient(135deg, rgba($color-accent, 0.08), transparent 42%);
     display: grid;
+    min-height: 0;
+    overflow-y: auto;
     padding: 1rem;
     transform: rotateY(180deg);
   }
@@ -1400,8 +1402,9 @@
 
   .admin-model__image-modal-gallery-card-info {
     display: grid;
-    gap: 0.9rem;
-    min-height: 100%;
+    gap: 0.65rem;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .admin-model__image-modal-gallery-card-eyebrow {
@@ -1443,9 +1446,7 @@
       font-size: 0.92rem;
       line-height: 1.45;
       margin: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow-wrap: break-word;
     }
   }
 
@@ -1524,6 +1525,35 @@
 
   .admin-model__image-modal-gallery-card-info-toggle--back {
     background: rgba($color-surface-container-highest, 0.9);
+  }
+
+  .admin-model__image-modal-gallery-card-delete-btn {
+    align-items: center;
+    backdrop-filter: blur(10px);
+    background: rgba($color-surface-lowest, 0.82);
+    border: 1px solid rgba($color-outline, 0.3);
+    border-radius: 999px;
+    color: rgba($color-error, 0.8);
+    display: inline-flex;
+    height: 2.15rem;
+    justify-content: center;
+    left: 0.65rem;
+    bottom: 0.65rem;
+    position: absolute;
+    width: 2.15rem;
+    z-index: 3;
+
+    > .material-symbols-outlined {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($color-error-container, 0.24);
+      border-color: rgba($color-error, 0.4);
+      color: $color-error;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -18,9 +18,9 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1358 tests passing` (78 files).
+- Baseline validado actual: `1415 tests passing` (78 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models motorcycle image gallery record creation from uploads (Quality Gate aprobado: 1358 tests, typecheck clean).
+- Último bloque estable validado: Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual + card back info overflow fix (Quality Gate aprobado: 1415 tests, typecheck clean).
 
 ## 3. Foco inmediato recomendado
 
@@ -67,7 +67,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection + gallery record creation + gallery card visual polish + stable library ordering + cover fallback implementadas / primary selection + reorder + delete + WebP conversion + IntersectionObserver pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection + gallery record creation + gallery card visual polish + stable library ordering + cover fallback + pending-delete + primary sync hardening + Storage cleanup + delete button visual + card back info fix implementadas / gestión autónoma de galería (confirmación inmediata, reorden, primary metadata independiente del formulario) + WebP conversion + IntersectionObserver pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -84,7 +84,13 @@ Nota de estado:
 - **Gallery card visual polish**: cards más minimalistas, icon-only/current-cover indicators con tooltips, info panel por botón (no hover), multi-info simultáneo, flip `rotateY` con efecto revolving-door, header compacto, metadata compacta. `prefers-reduced-motion` respetado.
 - **Stable library ordering**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Seleccionar portada no mueve ni reordena cards de galería. El cambio es React reconciliation únicamente — no muta gallery state. `persisted` registrado antes que `draft` para label semántico correcto (`Portada guardada`).
 - **Cover fallback**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback seguro.
-- **Sin**: primary selection, reorder, delete gallery records, WebP conversion, IntersectionObserver.
+- **Pending-delete flow**: las imágenes de galería se marcan para eliminación diferida hasta publicar el formulario. Estado local `pendingDeleteImageIds` (Set), sincronizado a ref. Undo y badge pending-delete renderizados.
+- **Primary sync hardening**: al publicar, `currentPrimary` se busca en la lista completa (incluyendo pending-delete), no solo en las activas. Orden estricto: unset primaria → set nueva → delete pending.
+- **Storage cleanup de-duplicado**: dos registros pending-delete con el mismo `storagePath` solo llaman `deleteMotorcycleImage` una vez via `processedCleanupPaths` Set.
+- **Delete button visual**: icono `delete_forever`, estilo stage button (`backdrop-filter`, `border-radius: 999px`) con hint destructivo (`$color-error`). Posicionado left-bottom.
+- **Card back info overflow fix**: `overflow-y: auto` en back face y card-info, `overflow-wrap: break-word` en valores `dd`, gap reducido a 0.65rem.
+- **Sin**: gestión autónoma de galería (confirmación inmediata, reorden, primary metadata como acción independiente del formulario), WebP conversion, IntersectionObserver.
+  - Nota: `motorcycles.image_url` / `draft.imageUrl` es la fuente de portada activa. `motorcycle_images.isPrimary` es metadata sincronizada. Las cards ya tienen acción "Usar como portada". Lo pendiente es decidir si la galería necesita gestionar primary como acción autónoma separada del formulario.
 - **Post-publish cerrado**: create publish success navega a `#/motos/{createdBike.id}`, edit publish success navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh completo, reemplazando por `id` o haciendo append si la moto es nueva.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
 
@@ -168,8 +174,10 @@ Fases propuestas:
    - Section progress indicators: cada sección muestra completitud según campos requeridos del draft.
    - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` ya participa del cleanup seguro en UI solo para imágenes de sesión no persistidas y para cleanup diferido post-publish de imágenes persistidas reemplazadas.
-   - Quality Gate: 1349 tests, typecheck clean.
-   - Pendiente: primary selection, reorder, delete gallery records, WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
+   - Gallery pending-delete implementado: marcar imágenes para borrado diferido hasta publicar, con undo, badge, primary sync hardening, Storage cleanup de-duplicado, delete button visual (`delete_forever`) y card back info overflow fix.
+   - Quality Gate: 1415 tests, typecheck clean.
+   - Pendiente (galería): migrar pending-delete a eliminación inmediata con modal de confirmación (independiente del formulario). Drag-and-drop reorder con persistencia independiente. Card back info simplificada.
+   - Pendiente (general): gestión autónoma de galería (confirmación inmediata, reorden, primary metadata independiente del formulario), WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
 
 Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;

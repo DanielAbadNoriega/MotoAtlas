@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminMotorcycle, updateAdminMotorcycle } from '../../../services/adminMotorcycleService';
-import { createAdminMotorcycleGalleryImage, getAdminMotorcycleGalleryImages, updateAdminMotorcycleGalleryImage } from '../../../services/adminMotorcycleGalleryService';
+import { createAdminMotorcycleGalleryImage, deleteAdminMotorcycleGalleryImageRecord, getAdminMotorcycleGalleryImages, updateAdminMotorcycleGalleryImage } from '../../../services/adminMotorcycleGalleryService';
 import { deleteMotorcycleImage, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
 import { type AuthContextValue, useAuth } from '../../../features/auth';
 import {
@@ -68,6 +68,7 @@ vi.mock('../../../services/adminMotorcycleService', () => ({
 
 vi.mock('../../../services/adminMotorcycleGalleryService', () => ({
   createAdminMotorcycleGalleryImage: vi.fn(),
+  deleteAdminMotorcycleGalleryImageRecord: vi.fn(),
   getAdminMotorcycleGalleryImages: vi.fn(),
   updateAdminMotorcycleGalleryImage: vi.fn(),
 }));
@@ -79,6 +80,7 @@ vi.mock('../../../services/adminMotorcycleImageUploadService', () => ({
 }));
 
 const createAdminMotorcycleGalleryImageMock = vi.mocked(createAdminMotorcycleGalleryImage);
+const deleteAdminMotorcycleGalleryImageRecordMock = vi.mocked(deleteAdminMotorcycleGalleryImageRecord);
 const getAdminMotorcycleGalleryImagesMock = vi.mocked(getAdminMotorcycleGalleryImages);
 const updateAdminMotorcycleGalleryImageMock = vi.mocked(updateAdminMotorcycleGalleryImage);
 const uploadMotorcycleImageMock = vi.mocked(uploadMotorcycleImage);
@@ -292,6 +294,7 @@ describe('AdminPage', () => {
       createdAt: '2026-06-17T10:00:00.000Z',
       updatedAt: '2026-06-17T10:00:00.000Z',
     }));
+    deleteAdminMotorcycleGalleryImageRecordMock.mockReset().mockResolvedValue(undefined);
     updateAdminMotorcycleGalleryImageMock.mockReset().mockImplementation(async (_imageId, updates) => ({
       id: _imageId,
       motorcycleId: 'test-motorcycle-id',
@@ -5110,7 +5113,7 @@ describe('AdminPage', () => {
         expect(screen.getByRole('button', { name: 'Guardar cambios' })).toBeInTheDocument();
       });
 
-      it('no introduce acciones activas de primary, reorder o delete dentro de la galería', async () => {
+      it('introduce delete action para imágenes de galería pero no primary ni reorder', async () => {
         getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
         const user = userEvent.setup();
         render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
@@ -5120,7 +5123,7 @@ describe('AdminPage', () => {
         const dialog = await screen.findByRole('dialog');
         expect(within(dialog).queryByRole('button', { name: /Establecer como principal/i })).not.toBeInTheDocument();
         expect(within(dialog).queryByRole('button', { name: /Reordenar/i })).not.toBeInTheDocument();
-        expect(within(dialog).queryByRole('button', { name: /Eliminar imagen/i })).not.toBeInTheDocument();
+        expect(within(dialog).getAllByRole('button', { name: /Eliminar imagen de la galería/i }).length).toBe(galleryFixtures.length);
       });
 
       it('mantiene motorcycles.image_url como portada actual cuando coincide con una imagen de galería', async () => {
@@ -5153,6 +5156,447 @@ describe('AdminPage', () => {
         await screen.findByText('Galería persistente pendiente');
         expect(screen.getByRole('article', { name: 'Placeholder técnico MotoAtlas' })).toBeInTheDocument();
         expect(getAdminMotorcycleGalleryImagesMock).not.toHaveBeenCalled();
+      });
+
+      describe('pending delete de imágenes de galería', () => {
+        it('muestra acción de eliminar solo para imágenes con registro de galería', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          const dialog = await screen.findByRole('dialog');
+          const deleteButtons = within(dialog).getAllByRole('button', { name: /Eliminar imagen de la galería/i });
+          expect(deleteButtons.length).toBe(galleryFixtures.length);
+        });
+
+        it('placeholder y draft/persisted no tienen acción de eliminar', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          const placeholder = screen.getByRole('article', { name: 'Placeholder técnico MotoAtlas' });
+          expect(within(placeholder).queryByRole('button', { name: /Eliminar imagen de la galería/i })).not.toBeInTheDocument();
+
+          const persisted = screen.getByRole('article', { name: 'Portada guardada' });
+          expect(within(persisted).queryByRole('button', { name: /Eliminar imagen de la galería/i })).not.toBeInTheDocument();
+        });
+
+        it('marcar como pendiente de eliminación no dispara backend', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).not.toHaveBeenCalled();
+          expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+        });
+
+        it('marcar como pendiente muestra badge y botón deshacer', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          const card = screen.getByRole('article', { name: galleryFixtures[0].altText! });
+          expect(card.className).toContain('pending-delete');
+          expect(within(card).getByRole('button', { name: /Deshacer/i })).toBeInTheDocument();
+          expect(within(card).getByRole('img', { name: 'Pendiente de eliminación' })).toBeInTheDocument();
+        });
+
+        it('deshacer restaura la imagen a su estado normal', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          const undoBtn = screen.getByRole('button', { name: /Deshacer/i });
+          await user.click(undoBtn);
+
+          const card = screen.getByRole('article', { name: galleryFixtures[0].altText! });
+          expect(card.className).not.toContain('pending-delete');
+          expect(within(card).queryByRole('button', { name: /Deshacer/i })).not.toBeInTheDocument();
+          expect(within(card).getByRole('button', { name: /Usar como portada/i })).toBeInTheDocument();
+        });
+
+        it('eliminar portada actual cae a placeholder técnico en el formulario', async () => {
+          const motorcycle = { ...bikeCatalog[0], id: existingId, imageUrl: galleryFixtures[0].url };
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          const user = userEvent.setup();
+          render(
+            <AdminEditMotorcyclePage
+              motorcycleId={existingId}
+              motorcycles={[motorcycle]}
+              onMotorcyclesChange={vi.fn()}
+            />,
+          );
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', technicalPlaceholderImage);
+        });
+
+        it('detecta portada por storagePath cuando URL no coincide exactamente', async () => {
+          const supabaseOrigin = 'https://xxx.supabase.co';
+          const storageObjectPath = 'test-bike/bmw-1.webp';
+          const currentCoverUrl = `${supabaseOrigin}/storage/v1/object/public/motorcycle-images/${storageObjectPath}`;
+          const motorcycle = { ...bikeCatalog[0], id: existingId, imageUrl: currentCoverUrl };
+          const fixtureWithDiffUrl = {
+            ...galleryFixtures[0], id: 'diff-img',
+            url: `${supabaseOrigin}/storage/v1/object/public/motorcycle-images/other.webp`,
+            storagePath: storageObjectPath,
+            altText: 'BMW F 900 GS distinto',
+          };
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([fixtureWithDiffUrl, galleryFixtures[1], galleryFixtures[2]]);
+          vi.stubEnv('VITE_SUPABASE_URL', supabaseOrigin);
+          const user = userEvent.setup();
+          render(
+            <AdminEditMotorcyclePage
+              motorcycleId={existingId}
+              motorcycles={[motorcycle]}
+              onMotorcyclesChange={vi.fn()}
+            />,
+          );
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${fixtureWithDiffUrl.altText}` });
+          await user.click(deleteBtn);
+
+          expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', technicalPlaceholderImage);
+        });
+
+        it('detecta portada por object path derivado de URL cuando storagePath no está presente', async () => {
+          const supabaseOrigin = 'https://xxx.supabase.co';
+          const storageObjectPath = 'test-bike/bmw-1.webp';
+          const currentCoverUrl = `${supabaseOrigin}/storage/v1/object/public/motorcycle-images/${storageObjectPath}`;
+          const motorcycle = { ...bikeCatalog[0], id: existingId, imageUrl: currentCoverUrl };
+          const fixtureWithQueryParam = {
+            ...galleryFixtures[0], id: 'qparam-img',
+            url: `${currentCoverUrl}?t=999`,
+            storagePath: null,
+            altText: 'BMW F 900 GS query',
+          };
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce([fixtureWithQueryParam, galleryFixtures[1], galleryFixtures[2]]);
+          vi.stubEnv('VITE_SUPABASE_URL', supabaseOrigin);
+          const user = userEvent.setup();
+          render(
+            <AdminEditMotorcyclePage
+              motorcycleId={existingId}
+              motorcycles={[motorcycle]}
+              onMotorcyclesChange={vi.fn()}
+            />,
+          );
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${fixtureWithQueryParam.altText}` });
+          await user.click(deleteBtn);
+
+          expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', technicalPlaceholderImage);
+        });
+
+        it('no cambia la portada al eliminar una imagen de galería que no es la portada actual', async () => {
+          const currentCoverUrl = galleryFixtures[0].url;
+          const motorcycle = { ...bikeCatalog[0], id: existingId, imageUrl: currentCoverUrl };
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          const user = userEvent.setup();
+          render(
+            <AdminEditMotorcyclePage
+              motorcycleId={existingId}
+              motorcycles={[motorcycle]}
+              onMotorcyclesChange={vi.fn()}
+            />,
+          );
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[1].altText}` });
+          await user.click(deleteBtn);
+
+          expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', currentCoverUrl);
+        });
+
+        it('publish aplica pending delete y limpia Storage', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockResolvedValue(undefined);
+          deleteMotorcycleImageMock.mockResolvedValue(undefined);
+
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const firstDelete = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(firstDelete);
+          const secondDelete = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[1].altText}` });
+          await user.click(secondDelete);
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+          });
+
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-1', expect.any(String));
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-2', expect.any(String));
+          expect(deleteMotorcycleImageMock).toHaveBeenCalledWith('bmw-1.webp', expect.any(String));
+          expect(deleteMotorcycleImageMock).toHaveBeenCalledWith('bmw-2.webp', expect.any(String));
+
+          await waitFor(() => {
+            expect(window.location.hash).toBe(`#/motos/${existingId}`);
+          });
+        });
+
+        it('publish no elimina Storage cuando otro registro comparte storagePath', async () => {
+          const sharedPathFixtures = [
+            { ...galleryFixtures[0] },
+            { ...galleryFixtures[1], storagePath: galleryFixtures[0].storagePath },
+          ];
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(sharedPathFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockResolvedValue(undefined);
+
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${sharedPathFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+          });
+
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-1', expect.any(String));
+          expect(deleteMotorcycleImageMock).not.toHaveBeenCalled();
+        });
+
+        it('publish no elimina Storage cuando la portada actual apunta al mismo path', async () => {
+          const coverMatchedMotorcycle = { ...bikeCatalog[0], id: existingId, imageUrl: galleryFixtures[0].url };
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockResolvedValue(undefined);
+
+          const user = userEvent.setup();
+          render(
+            <AdminEditMotorcyclePage
+              motorcycleId={existingId}
+              motorcycles={[coverMatchedMotorcycle]}
+              onMotorcyclesChange={vi.fn()}
+            />,
+          );
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[1].altText}` });
+          await user.click(deleteBtn);
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+          });
+
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-2', expect.any(String));
+          expect(deleteMotorcycleImageMock).toHaveBeenCalledWith('bmw-2.webp', expect.any(String));
+        });
+
+        it('fallo en delete de gallery record muestra error y no navega', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockRejectedValueOnce(new Error('Delete gallery record failed'));
+
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(screen.getByRole('alert')).toHaveTextContent(/Delete gallery record failed/i);
+          });
+          expect(window.location.hash).not.toBe(`#/motos/${existingId}`);
+        });
+
+        it('fallo en delete de Storage muestra error y no navega', async () => {
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockResolvedValue(undefined);
+          deleteMotorcycleImageMock.mockRejectedValueOnce(new Error('Storage delete failed'));
+
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(screen.getByRole('alert')).toHaveTextContent(/Storage delete failed/i);
+          });
+          expect(window.location.hash).not.toBe(`#/motos/${existingId}`);
+        });
+
+        it('pending delete de portada primaria + seleccionar otra portada sincroniza isPrimary en orden correcto', async () => {
+          const motorcycle = { ...bikeCatalog[0], id: existingId, imageUrl: galleryFixtures[0].url };
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockResolvedValue(undefined);
+          deleteMotorcycleImageMock.mockResolvedValue(undefined);
+
+          const user = userEvent.setup();
+          render(
+            <AdminEditMotorcyclePage
+              motorcycleId={existingId}
+              motorcycles={[motorcycle]}
+              onMotorcyclesChange={vi.fn()}
+            />,
+          );
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          await user.click(screen.getByRole('button', { name: 'Usar como portada: BMW F 900 GS trasera' }));
+          await screen.findByRole('button', { name: 'Portada actual: BMW F 900 GS trasera' });
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+          });
+
+          expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-1', { isPrimary: false }, 'admin-token');
+          expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-2', { isPrimary: true }, 'admin-token');
+          const calls = updateAdminMotorcycleGalleryImageMock.mock.calls;
+          const unsetIdx = calls.findIndex((c) => c[0] === 'img-1' && (c[1] as Record<string, unknown>).isPrimary === false);
+          const setIdx = calls.findIndex((c) => c[0] === 'img-2' && (c[1] as Record<string, unknown>).isPrimary === true);
+          expect(unsetIdx).toBeLessThan(setIdx);
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-1', expect.any(String));
+        });
+
+        it('pending delete de portada primaria sin seleccionar nueva solo unsetea sin nuevo primary', async () => {
+          const motorcycle = { ...bikeCatalog[0], id: existingId, imageUrl: galleryFixtures[0].url };
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(galleryFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockResolvedValue(undefined);
+          deleteMotorcycleImageMock.mockResolvedValue(undefined);
+
+          const user = userEvent.setup();
+          render(
+            <AdminEditMotorcyclePage
+              motorcycleId={existingId}
+              motorcycles={[motorcycle]}
+              onMotorcyclesChange={vi.fn()}
+            />,
+          );
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const deleteBtn = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${galleryFixtures[0].altText}` });
+          await user.click(deleteBtn);
+
+          expect(screen.getByRole('img', { name: 'Imagen actual del modelo' })).toHaveAttribute('src', technicalPlaceholderImage);
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+          });
+
+          expect(updateAdminMotorcycleGalleryImageMock).toHaveBeenCalledWith('img-1', { isPrimary: false }, 'admin-token');
+          const setPrimaryCalls = updateAdminMotorcycleGalleryImageMock.mock.calls.filter(
+            (c) => (c[1] as Record<string, unknown>).isPrimary === true,
+          );
+          expect(setPrimaryCalls).toHaveLength(0);
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-1', expect.any(String));
+        });
+
+        it('pending delete de dos registros con mismo storagePath solo llama deleteMotorcycleImage una vez', async () => {
+          const dedupFixtures: readonly import('../../../services/adminMotorcycleGalleryService').AdminMotorcycleGalleryImage[] = [
+            { ...galleryFixtures[0] },
+            { ...galleryFixtures[1], id: 'img-dupe', storagePath: galleryFixtures[0].storagePath, url: '/storage/v1/object/public/motorcycle-images/bmw-1-alt.webp' },
+          ];
+          getAdminMotorcycleGalleryImagesMock.mockResolvedValueOnce(dedupFixtures);
+          updateAdminMotorcycleMock.mockResolvedValueOnce({ id: existingId } as unknown as Bike);
+          deleteAdminMotorcycleGalleryImageRecordMock.mockResolvedValue(undefined);
+          deleteMotorcycleImageMock.mockResolvedValue(undefined);
+
+          const user = userEvent.setup();
+          render(<AdminEditMotorcyclePage motorcycleId={existingId} {...sharedProps} />);
+
+          await openImageManager(user);
+
+          await screen.findByRole('region', { name: 'Galería de imágenes del modelo' });
+          const firstDelete = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${dedupFixtures[0].altText}` });
+          await user.click(firstDelete);
+          const secondDelete = screen.getByRole('button', { name: `Eliminar imagen de la galería: ${dedupFixtures[1].altText}` });
+          await user.click(secondDelete);
+
+          await user.click(screen.getByRole('button', { name: 'Cerrar gestor de imágenes' }));
+          await user.click(screen.getByRole('button', { name: 'Publicar modelo' }));
+
+          await waitFor(() => {
+            expect(updateAdminMotorcycleMock).toHaveBeenCalled();
+          });
+
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-1', expect.any(String));
+          expect(deleteAdminMotorcycleGalleryImageRecordMock).toHaveBeenCalledWith('img-dupe', expect.any(String));
+          expect(deleteMotorcycleImageMock).toHaveBeenCalledTimes(1);
+          expect(deleteMotorcycleImageMock).toHaveBeenCalledWith(galleryFixtures[0].storagePath, expect.any(String));
+        });
       });
 
       // gallery-order test moved to explicit upload describe block

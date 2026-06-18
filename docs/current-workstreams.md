@@ -18,6 +18,92 @@ Controlar las tareas activas en paralelo para evitar conflictos entre ramas, pé
 
 ## Workstreams activos
 
+### Workstream C — Gallery independent actions + AdminPage refactor (backlog)
+
+Rama:
+(ninguna — backlog documentado)
+
+Estado:
+* pendiente de implementación
+* auditoría completada
+* decisión de producto documentada
+
+Objetivo:
+Convertir las acciones de galería de imágenes de Admin Models en operaciones independientes del formulario del modelo, y comenzar el refactor de `AdminPage.tsx` que ha crecido demasiado.
+
+Problema actual:
+* El borrado de imágenes de galería usa pending-delete local (`pendingDeleteImageIds` Set).
+* Las imágenes marcadas no se eliminan hasta que el admin publica el formulario completo del modelo.
+* El botón undo reemplaza al botón "Usar como portada" en la misma posición, lo que resulta confuso.
+* La clase `--pending-delete` existe en TSX pero no tiene reglas SCSS — la card no se diferencia visualmente de forma suficiente.
+* `AdminPage.tsx` es demasiado grande y difícil de modificar con seguridad.
+
+Target behavior:
+* Click `delete_forever` → modal de confirmación → aplicar eliminación inmediata.
+* No más "pending hasta publicar".
+* Cover actual: si se elimina la imagen que es portada, el modal debe advertir y aplicar placeholder al confirmar.
+* `motorcycles.image_url` / `draft.imageUrl` nunca debe quedar apuntando a una imagen eliminada.
+* Drag-and-drop reorder debe persistir independientemente.
+* La galería debe ser un subsistema autónomo, no un side-effect del formulario.
+
+Current-cover safety:
+* `updateAdminMotorcycle` existe pero puede no ser ideal para updates aislados de cover.
+* Antes de implementar, verificar si se necesita un helper `updateAdminMotorcycleCover(motorcycleId, { imageUrl, imageLocked }, token)`.
+* Preferir PATCH minimalista a payload completo para no pisar campos no relacionados.
+
+Order de implementación propuesta:
+1. Extraer helpers puros de galería (sin cambios de comportamiento).
+2. Implementar modal de confirmación reutilizable.
+3. Reemplazar pending-delete por eliminación inmediata confirmada.
+4. Asegurar cover fallback en eliminación inmediata.
+5. Remover estado pending-delete + undo + badge + publish logic asociada.
+6. Multi-delete batch (después de single delete estable).
+7. Drag-and-drop reorder como acción independiente.
+8. Refactor extracción de hooks → componentes.
+
+Refactor direction:
+* No combinar refactor grande con cambios de comportamiento destructivo.
+* Extracción gradual: helpers puros → hooks → componentes presentacionales.
+* Descomposición propuesta:
+  - AdminModelImageManagerModal
+  - AdminImageGalleryGrid
+  - AdminImageGalleryCard
+  - AdminImageUploadControls
+  - AdminGalleryDeleteConfirmationModal
+  - hooks: useAdminModelDraft, useAdminModelGallery, useAdminModelImageUpload, useAdminModelPrimarySync, useAdminModelGalleryDelete, useAdminModelPublish
+
+Archivos o zonas permitidas:
+* AdminPage.tsx
+* AdminPage.scss
+* AdminPage.test.tsx
+* docs (solo si se pide explícitamente después)
+
+Zonas prohibidas:
+* services (salvo helper de cover si es necesario)
+* schema/RLS/Supabase
+* auth/roles/policies
+* review_reactions, review_reports
+* comunidad
+* buscador
+* cuenta
+* App routing
+* AuthProvider
+* package files
+
+Riesgos:
+* Fallo parcial si Storage delete falla tras gallery record delete (archivo huérfano aceptable).
+* `updateAdminMotorcycle` puede pisar campos del modelo si se usa para cover update aislado.
+* No iniciar refactor de AdminPage hasta tener los tests de regresión actuales (1415 tests).
+* No combinar refactor con cambios de comportamiento de galería.
+
+Último resultado:
+* Auditoría completada y documentada.
+
+Siguiente paso:
+* Decidir si implementar helper `updateAdminMotorcycleCover` antes de la eliminación inmediata.
+
+---
+
 ### Workstream A — Rediseñar Insights en vivo
 
 Rama:
