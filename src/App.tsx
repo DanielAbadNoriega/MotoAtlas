@@ -23,7 +23,7 @@ import {
   TermsPage,
 } from './components/pages/StaticInfoPages';
 import { CommunityLandingPage } from './components/pages/CommunityLandingPage';
-import { UnderConstructionPage } from './components/pages/UnderConstructionPage';
+import { UnderConstructionPage, noticiasContent } from './components/pages/UnderConstructionPage';
 import { FeaturedMachines } from './components/sections/FeaturedMachines';
 import { HomeHero } from './components/sections/HomeHero';
 import { LatestNews } from './components/sections/LatestNews';
@@ -397,11 +397,7 @@ export function App() {
       ) : staticInfoRouteKey === 'terminos' ? (
         <TermsPage />
       ) : isNewsPage ? (
-        <UnderConstructionPage
-          title="Esta sección está en boxes"
-          description="MotoAtlas está preparando esta sección."
-          ctaLabel="Volver al inicio"
-        />
+        <UnderConstructionPage {...noticiasContent} />
       ) : (
         <HomePage />
       )}
