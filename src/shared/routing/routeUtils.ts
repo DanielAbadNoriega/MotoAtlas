@@ -208,6 +208,15 @@ export function isSearchRoute(route: string) {
   return /^\/(buscador|catalogo)(\/|$)/.test(path);
 }
 
+export function isNewsRoute(route: string) {
+  const { path } = routeToPathAndSearch(route);
+  return path === '/noticias';
+}
+
+export function getNoticiasCanonicalPath() {
+  return '/noticias';
+}
+
 export function isComparatorRoute(route: string) {
   const { path } = routeToPathAndSearch(route);
   return /^\/comparador(\/|$)/.test(path);

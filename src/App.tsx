@@ -23,6 +23,7 @@ import {
   TermsPage,
 } from './components/pages/StaticInfoPages';
 import { CommunityLandingPage } from './components/pages/CommunityLandingPage';
+import { UnderConstructionPage } from './components/pages/UnderConstructionPage';
 import { FeaturedMachines } from './components/sections/FeaturedMachines';
 import { HomeHero } from './components/sections/HomeHero';
 import { LatestNews } from './components/sections/LatestNews';
@@ -58,6 +59,7 @@ import {
   isCommunityRoute,
   isComparatorRoute,
   isLoginRoute,
+  isNewsRoute,
   isRegisterRoute,
   routeToPathAndSearch,
   isSearchRoute,
@@ -121,6 +123,7 @@ export function App() {
   const communityBike = communityMotorcycleId ? findMotorcycleById(communityMotorcycleId) : undefined;
   const staticInfoRouteKey = getStaticInfoRouteKey(route);
   const isSearchPage = isSearchRoute(route);
+  const isNewsPage = isNewsRoute(route);
   const isLoginPage = isLoginRoute(route);
   const isRegisterPage = isRegisterRoute(route);
   const isAccountPage = isAccountRoute(route);
@@ -314,12 +317,21 @@ export function App() {
       return;
     }
 
+    if (isNewsPage) {
+      applySeoMetadata({
+        canonicalUrl: 'https://motoatlas.com/noticias',
+        description: 'Noticias, novedades y artículos del mundo de la moto en MotoAtlas.',
+        title: 'Noticias | MotoAtlas',
+      });
+      return;
+    }
+
     applySeoMetadata({
       canonicalUrl: 'https://motoatlas.com/',
       description: 'Explora el catálogo técnico de motos, compara modelos y lee reviews reales de la comunidad motera. Decisiones informadas para moteros exigentes.',
       title: 'MotoAtlas | Catálogo técnico de motos',
     });
-  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminEditModelsPage, isAdminModelsPage, isAdminModerationPage, isAdminNewModelPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityRankingsPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isRegisterPage, isSearchPage, staticInfoRouteKey]);
+  }, [accountReviewMotorcycleId, communityBike, comparatorBikes, detailBike, isAccountMotorcycleReviewsPage, isAccountPage, isAccountRequestsPage, isAccountReviewsPage, isAdminEditModelsPage, isAdminModelsPage, isAdminModerationPage, isAdminNewModelPage, isAdminPage, isAdminRequestsPage, isAdminReviewsPage, isCommunityLandingPage, isCommunityPage, isCommunityRankingsPage, isCommunityReviewsPage, isComparatorPage, isLoginPage, isNewsPage, isRegisterPage, isSearchPage, staticInfoRouteKey]);
 
   return (
     <AuthProvider>
@@ -384,6 +396,12 @@ export function App() {
         <PrivacyPage />
       ) : staticInfoRouteKey === 'terminos' ? (
         <TermsPage />
+      ) : isNewsPage ? (
+        <UnderConstructionPage
+          title="Esta sección está en boxes"
+          description="MotoAtlas está preparando esta sección."
+          ctaLabel="Volver al inicio"
+        />
       ) : (
         <HomePage />
       )}
