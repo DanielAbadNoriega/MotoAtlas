@@ -12,6 +12,8 @@ export type LoadingStateProps = ComponentPropsWithoutRef<'section'> & {
   icon?: string;
   variant?: LoadingStateVariant;
   size?: LoadingStateSize;
+  backgroundImage?: string;
+  backgroundPosition?: string;
 };
 
 function TechnicalLoader({ icon = 'motorcycle' }: { icon?: string }) {
@@ -50,13 +52,17 @@ export function LoadingState({
   icon = 'motorcycle',
   variant = 'page',
   size = 'md',
+  backgroundImage,
+  backgroundPosition = 'center',
   className = '',
   ...rest
 }: LoadingStateProps) {
+  const hasBackground = Boolean(backgroundImage);
   const rootClassName = [
     'loading-state',
     `loading-state--${variant}`,
     `loading-state--${size}`,
+    hasBackground && 'loading-state--has-background',
     className,
   ].filter(Boolean).join(' ');
 
@@ -69,6 +75,16 @@ export function LoadingState({
       data-testid="loading-state"
       {...rest}
     >
+      {hasBackground ? (
+        <div
+          className="loading-state__background"
+          aria-hidden="true"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundPosition,
+          }}
+        />
+      ) : null}
       <div className="loading-state__content">
         {eyebrow ? <p className="loading-state__eyebrow">{eyebrow}</p> : null}
         <TechnicalLoader icon={icon} />

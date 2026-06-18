@@ -131,6 +131,38 @@
   transform: translate(-50%, -50%);
 }
 
+// === BACKGROUND (hero image layer) ===
+
+.loading-state--has-background {
+  overflow: hidden;
+
+  .loading-state__content {
+    position: relative;
+    z-index: 2;
+  }
+}
+
+.loading-state__background {
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: grayscale(0.52) contrast(0.78) brightness(0.32);
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+
+  &::after {
+    background: linear-gradient(
+      180deg,
+      rgba($color-surface-lowest, 0.72) 0%,
+      rgba($color-surface-lowest, 0.48) 50%,
+      rgba($color-surface-lowest, 0.88) 100%
+    );
+    content: '';
+    inset: 0;
+    position: absolute;
+  }
+}
+
 // === CONTENT ===
 
 .loading-state__content {

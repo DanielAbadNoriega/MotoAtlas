@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LoadingState } from '../../../shared/ui/loading/LoadingState';
 import type { LoadingStateProps } from '../../../shared/ui/loading/LoadingState';
+import heroImage from '../../../assets/hero-comunity.png';
 import './LoadingPreviewPage.scss';
 
 type Scenario = {
@@ -21,6 +22,18 @@ const SCENARIOS: Scenario[] = [
     },
   },
   {
+    label: 'General + Hero',
+    props: {
+      eyebrow: 'MotoAtlas',
+      title: 'Preparando MotoAtlas',
+      message: 'Estamos cargando datos técnicos, comunidad y telemetría visual.',
+      icon: 'motorcycle',
+      variant: 'page',
+      size: 'lg',
+      backgroundImage: heroImage,
+    },
+  },
+  {
     label: 'Comunidad',
     props: {
       eyebrow: 'Comunidad',
@@ -29,6 +42,18 @@ const SCENARIOS: Scenario[] = [
       icon: 'groups',
       variant: 'page',
       size: 'lg',
+    },
+  },
+  {
+    label: 'Comunidad + Hero',
+    props: {
+      eyebrow: 'Comunidad',
+      title: 'Preparando comunidad',
+      message: 'Estamos sincronizando reviews, confianza y actividad reciente.',
+      icon: 'groups',
+      variant: 'page',
+      size: 'lg',
+      backgroundImage: heroImage,
     },
   },
   {
