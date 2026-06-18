@@ -1,61 +1,80 @@
 # MotoAtlas — Estado actual
 
-## Último estado estable
+## Estado global
 
-- Último bloque validado: **UnderConstructionPage reusable** aprobado.
-- Último bloque validado: **Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual (delete_forever) + card back info overflow fix** aprobado.
-- Alcance validado:
-  - **Fase 6A**: Supabase Storage bucket `motorcycle-images` con public read + admin-only insert/update/delete policies. 5 MB max. Allow MIME types: `image/jpeg`, `image/png`, `image/webp`.
-  - **Fase 6B**: `adminMotorcycleImageUploadService.ts` con `uploadMotorcycleImage` y `deleteMotorcycleImage` (fetch direct a Supabase Storage REST, body raw `File` para upload). Upload path `{motorcycleId}/{uuid}.{extension}`. Public URL `/storage/v1/object/public/motorcycle-images/{objectPath}`. Extensión preservada: jpeg→`.jpg`, png→`.png`, webp→`.webp`. Anon key + Bearer access token (no service role). UUID via `globalThis.crypto?.randomUUID?.()` con fallback.
-  - **Fase 6C.2**: UI shell con modo `URL manual` y `Subir archivo`. File input, MIME/size validation local, `URL.createObjectURL` preview, object URL cleanup en unmount/replacement.
-  - **Fase 6C.3**: Explicit `Subir imagen` wired to `uploadMotorcycleImage`. Success: `draft.imageUrl = publicUrl`, `draft.imageLocked = true`.
-  - **Fase 6C.4**: Auto-upload selected pending image before publish. URL manual no uploads. Already-uploaded image no re-upload. Failure prevents publish.
-  - **Custom file input UI**: reemplazado el file input nativo por control custom MotoAtlas-styled con botón `Subir imagen` y filename visible.
-  - **Image replace/delete cleanup hardening**: cuando `draft.imageUrl` existe se renderiza preview actual tanto en create como en edit. Una imagen persistida de Storage en edit mode puede quitarse del formulario sin borrarse físicamente; una imagen subida en la sesión sí puede eliminarse de Storage antes de publicar. Si una edición reemplaza una imagen persistida del bucket, el objeto viejo se limpia solo después de un publish/update exitoso. Si el publish falla, la imagen vieja no se elimina. URLs manuales externas, assets locales `/images/...` y el placeholder `motorcycle-technical-pending.jpg` nunca se borran físicamente. La detección destructiva quedó endurecida: solo se consideran eliminables URLs del bucket del proyecto configurado y object paths válidos/seguros.
-  - **Sticky Section Radar**: navegación Stitch-inspired entre secciones del form, con marcadores numerados, tracks de progreso verticales con relleno rojo, sticky glass strip y scroll horizontal en mobile.
-  - **Section progress indicators**: cada sección en el radar muestra completitud basada en campos requeridos del draft.
-  - **Post-publish navigation**: create success navega a `#/motos/{createdBike.id}` y edit success navega a `#/motos/{motorcycleId}`. La navegación ocurre solo tras éxito real del servicio; fallos de validación, upload o servicio no navegan.
-  - **App-level in-memory catalog sync**: `App.tsx` mantiene `handleMotorcyclesChange`; cuando admin create/edit devuelve un `Bike`, el catálogo en memoria se actualiza inmutablemente (replace por `id` existente o append si es nuevo) sin refresh completo del navegador.
-  - **Manual browser smoke**: flujo completo (create + upload + publish + edit + upload + publish) verificado manualmente por el desarrollador sin blockers.
-  - **Discard/reset cleanup**: descartar cambios limpia también estado local de archivo seleccionado / session upload para no dejar reuploads accidentales pendientes.
-  - Hardening: `globalThis.crypto?.randomUUID?.()` + tests for `globalThis.crypto` undefined. Explicit already-uploaded assertion.
-  - **Multi-image gallery schema/RLS foundation**: nueva tabla aditiva `public.motorcycle_images` con `storage_path` nullable pero seguro, `created_by` nullable, FK a `public.motorcycles(id)` con cascade delete, `source` tipado con `public.motorcycle_data_source`, índices por `motorcycle_id` y `(motorcycle_id, sort_order)`, unique partial index para una sola imagen primaria por moto y RLS con lectura pública condicionada por existencia de la moto padre + escritura admin vía `public.is_admin()`. Sin backfill y sin tocar el contrato actual `motorcycles.image_url` / `image_locked` / `image_source`.
-  - **Gallery service layer**: `adminMotorcycleGalleryService.ts` añade `getAdminMotorcycleGalleryImages`, `createAdminMotorcycleGalleryImage`, `updateAdminMotorcycleGalleryImage` y `deleteAdminMotorcycleGalleryImageRecord` sobre `public.motorcycle_images`. Gestiona solo metadata DB, mapea rows snake_case a objetos camelCase, preserva `storagePath`/`createdBy` nullables y no sube archivos ni borra objetos de Storage.
-  - **Read-only gallery modal connection**: el image manager modal en edit mode carga imágenes reales desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería.
-  - **Gallery record creation from uploads**: edit mode explicit upload crea un registro en `motorcycle_images` tras subir a Storage. El record se añade al estado local sin refetch. Create publish también crea el record tras `createAdminMotorcycle` exitoso si la imagen vino de un upload de sesión. Edit auto-upload antes de publish crea el record antes de `updateAdminMotorcycle`. Gallery records se crean con `isPrimary: false` y `source: 'manual'`. URLs manuales externas y assets locales `/images/...` no crean records. Un guard evita el borrado Storage de imágenes respaldadas por gallery records.
-  - **Gallery card visual polish**: cards más minimalistas con icon-only/current-cover indicators, tooltips accesibles, info panel controlado por botón (no hover), múltiples cards con info abierta simultáneamente, header de galería compacto, metadata compacta. Flip card con `rotateX` → `rotateY` para efecto revolving-door. `prefers-reduced-motion` respetado.
-  - **Stable library ordering**: el bug de reorden visual al seleccionar portada fue corregido con keys estables por URL via `useRef<Map<string, string>>`. Seleccionar portada ya no mueve ni reordena las cards de galería. El cambio es puramente React reconciliation (no muta gallery state ni `sortOrder`). `persisted` registrado antes que `draft` para que URLs coincidentes muestren label correcto (`Portada guardada` vs `Portada en edición`).
-  - **Cover fallback seguro**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback si `draft.imageUrl` quedaría vacío.
-  - **`data-library-image-url`**: cada card de galería expone el atributo para aserciones estables en tests de ordenamiento.
+- **Suite de tests**: `1415` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+  - Fuente única de verdad para conteos globales: `docs/testing-strategy.md`.
+  - No duplicar estos números en otros docs salvo referencia explícita necesaria.
+- **Workstreams activos documentados en**: `docs/current-workstreams.md`.
+
+## Estado por workstream activo
+
+### Workstream C — Admin gallery / AdminPage refactor (backlog)
+
+Último bloque validado: **Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual (delete_forever) + card back info overflow fix**.
+
+Branch: `feature/admin-models-studio`.
+
+Alcance implementado:
+- **Fase 6A**: Supabase Storage bucket `motorcycle-images` con public read + admin-only insert/update/delete policies. 5 MB max. Allow MIME types: `image/jpeg`, `image/png`, `image/webp`.
+- **Fase 6B**: `adminMotorcycleImageUploadService.ts` con `uploadMotorcycleImage` y `deleteMotorcycleImage` (fetch direct a Supabase Storage REST, body raw `File` para upload). Upload path `{motorcycleId}/{uuid}.{extension}`. Public URL `/storage/v1/object/public/motorcycle-images/{objectPath}`. Extensión preservada: jpeg→`.jpg`, png→`.png`, webp→`.webp`. Anon key + Bearer access token (no service role). UUID via `globalThis.crypto?.randomUUID?.()` con fallback.
+- **Fase 6C.2**: UI shell con modo `URL manual` y `Subir archivo`. File input, MIME/size validation local, `URL.createObjectURL` preview, object URL cleanup en unmount/replacement.
+- **Fase 6C.3**: Explicit `Subir imagen` wired to `uploadMotorcycleImage`. Success: `draft.imageUrl = publicUrl`, `draft.imageLocked = true`.
+- **Fase 6C.4**: Auto-upload selected pending image before publish. URL manual no uploads. Already-uploaded image no re-upload. Failure prevents publish.
+- **Custom file input UI**: reemplazado el file input nativo por control custom MotoAtlas-styled con botón `Subir imagen` y filename visible.
+- **Image replace/delete cleanup hardening**: cuando `draft.imageUrl` existe se renderiza preview actual tanto en create como en edit. Una imagen persistida de Storage en edit mode puede quitarse del formulario sin borrarse físicamente; una imagen subida en la sesión sí puede eliminarse de Storage antes de publicar. Si una edición reemplaza una imagen persistida del bucket, el objeto viejo se limpia solo después de un publish/update exitoso. Si el publish falla, la imagen vieja no se elimina. URLs manuales externas, assets locales `/images/...` y el placeholder `motorcycle-technical-pending.jpg` nunca se borran físicamente. La detección destructiva quedó endurecida: solo se consideran eliminables URLs del bucket del proyecto configurado y object paths válidos/seguros.
+- **Sticky Section Radar**: navegación Stitch-inspired entre secciones del form, con marcadores numerados, tracks de progreso verticales con relleno rojo, sticky glass strip y scroll horizontal en mobile.
+- **Section progress indicators**: cada sección en el radar muestra completitud basada en campos requeridos del draft.
+- **Post-publish navigation**: create success navega a `#/motos/{createdBike.id}` y edit success navega a `#/motos/{motorcycleId}`. La navegación ocurre solo tras éxito real del servicio; fallos de validación, upload o servicio no navegan.
+- **App-level in-memory catalog sync**: `App.tsx` mantiene `handleMotorcyclesChange`; cuando admin create/edit devuelve un `Bike`, el catálogo en memoria se actualiza inmutablemente (replace por `id` existente o append si es nuevo) sin refresh completo del navegador.
+- **Manual browser smoke**: flujo completo (create + upload + publish + edit + upload + publish) verificado manualmente por el desarrollador sin blockers.
+- **Discard/reset cleanup**: descartar cambios limpia también estado local de archivo seleccionado / session upload para no dejar reuploads accidentales pendientes.
+- **Multi-image gallery schema/RLS foundation**: nueva tabla aditiva `public.motorcycle_images` con `storage_path` nullable pero seguro, `created_by` nullable, FK a `public.motorcycles(id)` con cascade delete, `source` tipado con `public.motorcycle_data_source`, índices por `motorcycle_id` y `(motorcycle_id, sort_order)`, unique partial index para una sola imagen primaria por moto y RLS con lectura pública condicionada por existencia de la moto padre + escritura admin vía `public.is_admin()`. Sin backfill y sin tocar el contrato actual `motorcycles.image_url` / `image_locked` / `image_source`.
+- **Gallery service layer**: `adminMotorcycleGalleryService.ts` añade `getAdminMotorcycleGalleryImages`, `createAdminMotorcycleGalleryImage`, `updateAdminMotorcycleGalleryImage` y `deleteAdminMotorcycleGalleryImageRecord` sobre `public.motorcycle_images`. Gestiona solo metadata DB, mapea rows snake_case a objetos camelCase, preserva `storagePath`/`createdBy` nullables y no sube archivos ni borra objetos de Storage.
+- **Read-only gallery modal connection**: el image manager modal en edit mode carga imágenes reales desde `getAdminMotorcycleGalleryImages` con estados de carga, error, vacío y grid de galería.
+- **Gallery record creation from uploads**: edit mode explicit upload crea un registro en `motorcycle_images` tras subir a Storage. El record se añade al estado local sin refetch. Create publish también crea el record tras `createAdminMotorcycle` exitoso si la imagen vino de un upload de sesión. Edit auto-upload antes de publish crea el record antes de `updateAdminMotorcycle`. Gallery records se crean con `isPrimary: false` y `source: 'manual'`. URLs manuales externas y assets locales `/images/...` no crean records. Un guard evita el borrado Storage de imágenes respaldadas por gallery records.
+- **Gallery card visual polish**: cards más minimalistas con icon-only/current-cover indicators, tooltips accesibles, info panel controlado por botón (no hover), múltiples cards con info abierta simultáneamente, header de galería compacto, metadata compacta. Flip card con `rotateY` para efecto revolving-door. `prefers-reduced-motion` respetado.
+- **Stable library ordering**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Seleccionar portada ya no mueve ni reordena las cards de galería. El cambio es puramente React reconciliation (no muta gallery state ni `sortOrder`). `persisted` registrado antes que `draft` para que URLs coincidentes muestren label correcto (`Portada guardada` vs `Portada en edición`).
+- **Cover fallback seguro**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback si `draft.imageUrl` quedaría vacío.
+- **Pending-delete + primary sync hardening**: estado local `pendingDeleteImageIds` (Set), sincronizado a ref. Primary sync: `currentPrimary` desde lista completa (incl. pending-delete), orden estricto unset→set→delete. Storage cleanup de-duplicado con `processedCleanupPaths` Set.
+- **Delete button visual**: icono `delete_forever`, estilo stage button con hint destructivo (`$color-error`). Posicionado left-bottom.
+- **Card back info overflow fix**: `overflow-y: auto` en back face y card-info, `overflow-wrap: break-word` en valores `dd`, gap reducido a 0.65rem.
 - Tests: 255 tests en focused `AdminPage.test.tsx` (pending-delete flow, primary sync hardening, Storage dedup, upload UX, gallery card polish, stable ordering, cover fallback, delete button visual, card back info fix).
-- Typecheck: clean
-- `git diff --check`: clean
-- Focused checks más recientes:
-  - focused pending-delete + primary sync + Storage dedup + delete button visual + card back info → `AdminPage.test.tsx / 255 tests` passing
-- La galería multiimagen tiene base de schema/RLS + service layer + conexión de lectura + creación de records desde uploads admin + gallery card polish + stable ordering + pending-delete (diferido hasta publicar) + primary sync hardening + Storage cleanup seguro. Pendiente: migrar pending-delete a eliminación inmediata independiente del formulario, drag-and-drop reorder, card back info simplificada, WebP conversion opcional, IntersectionObserver active section tracking, A2 fields en draft si aplica.
 
-  - Componente React config-driven en `src/components/pages/UnderConstructionPage/`.
-  - `#/noticias` ya no redirige silenciosamente a Home.
-  - Contrato configurable: `title`, `description`, `imageSrc?`, `statusLabel?`, `primaryCta`, `secondaryCtas?`, `children?`, `trustMessage?`.
-  - Contenido extra opcional vía slot `children` (acepta cualquier ReactNode).
-  - `UnderConstructionCardSection` como componente presentacional opcional para secciones de tarjetas.
-  - Config de Noticias en `underConstructionContent.ts` + `noticiasExtraCards`.
-  - Background default: `public/images/placeholders/building-page-placeholder.png`.
-  - Estructura semántica con `aria-labelledby`, media decorativa `aria-hidden`.
-  - Sin fake content, fake dates ni fake counters.
-  - SCSS scoped a `.under-construction` (sin leakage global).
-  - Diseño premium dark MotoAtlas: hero full-width, overlay degradado, children slot genérico para sección extra, status badge técnico y trust message en mono-label.
-  - Typecheck: clean.
-  - Tests: 78 suites, 1398 tests, todos pasando.
-  - `git diff --check`: clean.
+Pendiente (workstream):
+- Migrar pending-delete a eliminación inmediata con modal de confirmación (independiente del formulario).
+- Drag-and-drop reorder con persistencia independiente.
+- Card back info simplificada.
+- Gestión autónoma de galería (primary metadata como acción independiente del formulario).
+- Refactor de AdminPage (helpers → hooks → componentes).
 
-- Bloque previo validado: **Admin Models image manager gallery card polish + stable ordering** aprobado.
-  - Tests: 220 tests en focused `AdminPage.test.tsx` (3 nuevas regresiones: orden de librería completa, placeholder, no gallery service calls).
-  - Typecheck: clean
-  - `git diff --check`: clean
-  - Focused checks más recientes:
-    - focused stable ordering + gallery polish → `AdminPage.test.tsx / 220 tests` passing
-  - La galería multiimagen ya tiene base de schema/RLS + service layer + conexión de lectura + creación de records desde uploads admin + gallery card polish + stable ordering. Quedan pendientes selección de primaria, reorden, borrado coordinado records/Storage, WebP conversion opcional, IntersectionObserver active section tracking y A2 fields en draft si aplica.
+### Workstream D — UnderConstructionPage / landings ligeras
+
+Último bloque validado: **UnderConstructionPage reusable**.
+
+Alcance:
+- Componente React config-driven en `src/components/pages/UnderConstructionPage/`.
+- `#/noticias` ya no redirige silenciosamente a Home.
+- Contrato configurable: `title`, `description`, `imageSrc?`, `statusLabel?`, `primaryCta`, `secondaryCtas?`, `children?`, `trustMessage?`.
+- Contenido extra opcional vía slot `children` (acepta cualquier ReactNode).
+- `UnderConstructionCardSection` como componente presentacional opcional para secciones de tarjetas.
+- Config de Noticias en `underConstructionContent.ts` + `noticiasExtraCards`.
+- Background default: `public/images/placeholders/building-page-placeholder.png`.
+- Estructura semántica con `aria-labelledby`, media decorativa `aria-hidden`.
+- Sin fake content, fake dates ni fake counters.
+- SCSS scoped a `.under-construction` (sin leakage global).
+- Diseño premium dark MotoAtlas: hero full-width, overlay degradado, children slot genérico para sección extra, status badge técnico y trust message en mono-label.
+- Quality Gate: typecheck clean, `git diff --check` clean. Test count referenciado desde `docs/testing-strategy.md`.
+
+Pendiente (workstream):
+- Migrar más rutas públicas (`#/privacidad`, `#/terminos`, etc.) al mismo patrón.
+- Evaluar si se necesita variante de landing para rutas sin hero visual.
+
+## Último Quality Gate global
+
+- **Global**: `1415` tests passing (78 files), typecheck clean, `git diff --check` clean.
+- **AdminPage focused**: 255 tests (pending-delete, primary sync, Storage dedup, delete button, card back info).
+- Detalle completo y focused checks en `docs/testing-strategy.md` (fuente única de verdad para conteos).
 
 ## Implementado
 
@@ -293,7 +312,7 @@
 - Sin fake content, fake dates ni fake counters.
 - SCSS scoped a `.under-construction` (BEM, sin leakage global).
 - Diseño premium dark MotoAtlas: hero full-width, overlay degradado, background image filtrada, status badge técnico, CTAs primarios/secondary, children slot genérico para cards/sección extra, trust message en mono-label con barra de acento.
-- Calidad: typecheck clean, 1398 tests passing, `git diff --check` clean.
+- Calidad: typecheck clean, `git diff --check` clean. Test count referenciado desde `docs/testing-strategy.md` (fuente única de verdad).
 
 ### Datos demo
 - Pipeline mock operativo: generación, importación y limpieza con `source='mock'`.

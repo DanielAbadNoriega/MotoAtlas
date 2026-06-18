@@ -228,7 +228,7 @@ Secciones Comparar:
 Decisiones:
 - Sin tab Metodología (existe `#/metodologia`).
 - Tab Resumen activa por defecto.
-- Layout normalizado: cada sección tab ahora es `section.bike-detail__section` full-width con `.bike-detail__section-container` interno que controla max-width y padding. Elimina double-container y permite que los fondos de sección ocupen todo el ancho. Verificado en Quality Gate con typecheck clean y 1088 tests passing.
+- Layout normalizado: cada sección tab ahora es `section.bike-detail__section` full-width con `.bike-detail__section-container` interno que controla max-width y padding. Elimina double-container y permite que los fondos de sección ocupen todo el ancho. Verificado en Quality Gate (typecheck clean).
 - `bike-detail__community-summary` reducido a strip compacto. Muestra rating medio o "Sin rating", review count o "Sin reviews", y confidence shield si hay datos. Reviews limitados a 3 con `reviews.slice(0, 3)`. CTAs "Escribir review" y "Ver reviews" en footer de sección reviews (link a `#/comunidad/[bike.id]`). FeaturedReviewCard mantiene `hideImage`, `hideLinks` y acciones seguras sin cambios.
 - Precio: fallback textual cuando no hay dato fiable.
 - Fiabilidad/problemas: dentro de Comunidad como sección sister, no anidada.
@@ -489,7 +489,7 @@ La agrupación prioriza motos con reviews pendientes.
 
 ## Admin — Solicitudes de modelos
 
-La ruta `#/admin/solicitudes` es privada para perfiles con `user_profiles.role = admin` y se apoya en `AdminGate` igual que el resto de rutas admin. La rama `feature/admin-requests-audit` dejó la UI auditada funcionalmente y la rama `feature/admin-requests-phase-1` aplicó la Fase 1 de cierre funcional sin tocar schema/RLS. Quality Gate: typecheck clean, 1117 tests passing (72 files).
+La ruta `#/admin/solicitudes` es privada para perfiles con `user_profiles.role = admin` y se apoya en `AdminGate` igual que el resto de rutas admin. La rama `feature/admin-requests-audit` dejó la UI auditada funcionalmente y la rama `feature/admin-requests-phase-1` aplicó la Fase 1 de cierre funcional sin tocar schema/RLS. Quality Gate: typecheck clean.
 
 Ruta y layout:
 - hash route `#/admin/solicitudes`.

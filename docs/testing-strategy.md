@@ -4,14 +4,10 @@ MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni 
 
 Estado actual de suite:
 - `1415` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
-- `1398` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery record creation + read-only connection + gallery card visual polish + stable ordering + pending-delete flow + primary sync hardening + Storage cleanup dedup + upload UX + delete button visual + card back info fix. **255 tests** passing.
-  - **UnderConstructionPage reusable**: typecheck clean, 1398 tests passing, `git diff --check` clean. Ruta `#/noticias` con componente config-driven, sin fake content.
-  - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery record creation + read-only connection + gallery card visual polish + stable ordering regression tests. **220 tests** passing.
   - `src/services/adminMotorcycleGalleryService.test.ts` + `supabase/schema.test.ts` → 2 files / 102 tests passing (gallery schema + service foundation).
   - suite completa → `1415` tests passing.
-  - suite completa → `1398` tests passing.
 
 ## Stack actual
 
@@ -448,7 +444,6 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 Cobertura actual relevante:
 
 - Baseline validado actual del proyecto: `1415` tests passing (78 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
-- Baseline validado actual del proyecto: `1398` tests passing (78 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
 - Cobertura Admin Models Studio persistencia:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → cobertura de create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks, navegación post-publicación y sync App-level del catálogo en memoria.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.

@@ -18,11 +18,10 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1398 tests passing` (78 files).
 - Baseline validado actual: `1415 tests passing` (78 files).
 - Typecheck: clean.
 - Último bloque estable validado: Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual + card back info overflow fix (Quality Gate aprobado: 1415 tests, typecheck clean).
-- Último bloque estable validado: UnderConstructionPage reusable (Quality Gate aprobado: 1398 tests, typecheck clean).
+  - Workstream detalle: `features/admin-models-studio` — galería multiimagen admin. Ver `docs/current-workstreams.md`.
 
 ## 3. Foco inmediato recomendado
 
