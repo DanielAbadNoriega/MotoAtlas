@@ -7,15 +7,6 @@
   }
 }
 
-@keyframes loading-state-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
 // === ROOT ===
 
 .loading-state {
@@ -168,146 +159,12 @@
   margin: 0;
 }
 
-// === SKELETON PREVIEW ===
-
-.loading-state__skeleton {
-  max-width: 48rem;
-  width: 100%;
-}
-
-// shared shimmer gradient (used via @extend, not inside @media)
-%skel-shimmer {
-  animation: loading-state-shimmer 1.6s ease-in-out infinite;
-  background: linear-gradient(
-    90deg,
-    rgba($color-surface-container, 0.72),
-    rgba($color-surface-container-highest, 0.58),
-    rgba($color-surface-container, 0.72)
-  );
-  background-size: 200% 100%;
-  border-radius: $radius-md;
-}
-
-// -- cards preset --
-
-.loading-state__skeleton--cards {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
-}
-
-.loading-state__skeleton-card {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: 1fr 1.8fr;
-  min-height: 10rem;
-  overflow: hidden;
-}
-
-.loading-state__skeleton-image {
-  @extend %skel-shimmer;
-
-  min-height: 10rem;
-}
-
-.loading-state__skeleton-lines {
-  align-content: center;
-  display: grid;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-
-  span {
-    @extend %skel-shimmer;
-
-    border-radius: $radius-sm;
-    display: block;
-    height: 0.875rem;
-
-    &:nth-child(1) { width: 40%; }
-    &:nth-child(2) { width: 70%; }
-    &:nth-child(3) { width: 55%; }
-  }
-}
-
-// -- list preset --
-
-.loading-state__skeleton--list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.loading-state__skeleton-row {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: 1fr 4fr;
-  padding: 0.75rem 0;
-
-  span {
-    @extend %skel-shimmer;
-
-    display: block;
-    height: 0.875rem;
-
-    &:first-child { width: 60%; }
-    &:last-child { width: 100%; }
-  }
-}
-
-// -- dashboard preset --
-
-.loading-state__skeleton-dashboard {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 8rem);
-}
-
-.loading-state__skeleton-block {
-  @extend %skel-shimmer;
-
-  &:first-child {
-    grid-column: 1 / -1;
-  }
-}
-
-// -- account preset --
-
-.loading-state__skeleton-account {
-  display: grid;
-  gap: 1rem;
-}
-
-.loading-state__skeleton-profile {
-  align-items: center;
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: auto 1fr;
-  margin-bottom: 0.5rem;
-}
-
-.loading-state__skeleton-avatar {
-  @extend %skel-shimmer;
-
-  border-radius: 999px;
-  height: 3.5rem;
-  width: 3.5rem;
-}
-
 // === REDUCED MOTION ===
 
 @media (prefers-reduced-motion: reduce) {
   .loading-state__ring-outer,
   .loading-state__arc {
     animation: none;
-  }
-
-  .loading-state__skeleton-image,
-  .loading-state__skeleton-lines span,
-  .loading-state__skeleton-row span,
-  .loading-state__skeleton-block,
-  .loading-state__skeleton-avatar {
-    animation: none;
-    background: rgba($color-surface-container, 0.72);
   }
 }
 
@@ -320,14 +177,5 @@
 
   .loading-state--section {
     padding: 1.5rem 1rem;
-  }
-
-  .loading-state__skeleton--cards {
-    grid-template-columns: 1fr;
-  }
-
-  .loading-state__skeleton-dashboard {
-    grid-template-columns: 1fr;
-    grid-template-rows: 8rem 8rem 8rem 8rem;
   }
 }

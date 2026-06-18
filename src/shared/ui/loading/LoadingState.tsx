@@ -1,8 +1,6 @@
 import { type ComponentPropsWithoutRef } from 'react';
 import './LoadingState.scss';
 
-type LoadingSkeletonPreset = 'cards' | 'list' | 'dashboard' | 'account';
-
 type LoadingStateVariant = 'page' | 'section' | 'inline';
 
 type LoadingStateSize = 'sm' | 'md' | 'lg';
@@ -14,8 +12,6 @@ export type LoadingStateProps = ComponentPropsWithoutRef<'section'> & {
   icon?: string;
   variant?: LoadingStateVariant;
   size?: LoadingStateSize;
-  showSkeleton?: boolean;
-  skeletonPreset?: LoadingSkeletonPreset;
 };
 
 function TechnicalLoader({ icon = 'motorcycle' }: { icon?: string }) {
@@ -47,50 +43,6 @@ function TechnicalLoader({ icon = 'motorcycle' }: { icon?: string }) {
   );
 }
 
-function LoadingSkeletonPreview({ preset }: { preset: LoadingSkeletonPreset }) {
-  return (
-    <div
-      className={`loading-state__skeleton loading-state__skeleton--${preset}`}
-      aria-hidden="true"
-      data-testid="loading-state-skeleton"
-    >
-      {preset === 'cards' && Array.from({ length: 3 }, (_, i) => (
-        <div key={i} className="loading-state__skeleton-card" data-testid="loading-state-skeleton-card">
-          <div className="loading-state__skeleton-image" />
-          <div className="loading-state__skeleton-lines">
-            <span /><span /><span />
-          </div>
-        </div>
-      ))}
-      {preset === 'list' && Array.from({ length: 5 }, (_, i) => (
-        <div key={i} className="loading-state__skeleton-row" data-testid="loading-state-skeleton-row">
-          <span /><span />
-        </div>
-      ))}
-      {preset === 'dashboard' && (
-        <div className="loading-state__skeleton-dashboard">
-          <div className="loading-state__skeleton-block" />
-          <div className="loading-state__skeleton-block" />
-          <div className="loading-state__skeleton-block" />
-          <div className="loading-state__skeleton-block" />
-        </div>
-      )}
-      {preset === 'account' && (
-        <div className="loading-state__skeleton-account">
-          <div className="loading-state__skeleton-profile">
-            <div className="loading-state__skeleton-avatar" />
-            <div className="loading-state__skeleton-lines">
-              <span /><span />
-            </div>
-          </div>
-          <div className="loading-state__skeleton-card" />
-          <div className="loading-state__skeleton-card" />
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function LoadingState({
   title,
   message,
@@ -98,8 +50,6 @@ export function LoadingState({
   icon = 'motorcycle',
   variant = 'page',
   size = 'md',
-  showSkeleton = false,
-  skeletonPreset = 'cards',
   className = '',
   ...rest
 }: LoadingStateProps) {
@@ -125,7 +75,6 @@ export function LoadingState({
         <h2 className="loading-state__title">{title}</h2>
         {message ? <p className="loading-state__message">{message}</p> : null}
       </div>
-      {showSkeleton ? <LoadingSkeletonPreview preset={skeletonPreset} /> : null}
     </section>
   );
 }
