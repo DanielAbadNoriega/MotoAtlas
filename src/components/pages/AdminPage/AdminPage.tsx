@@ -49,6 +49,7 @@ import {
 } from '../../../services/adminMotorcycleGalleryService';
 import {
   adminModelTechnicalPlaceholderImage,
+  buildGalleryLibraryImages,
   formatGalleryImageDate,
   getActiveGalleryImages,
   getGalleryImageAssetName,
@@ -61,6 +62,7 @@ import {
   isCleanupPathSharedWithActiveImage,
   isGalleryImageCurrentCover,
   isImageBackedByGalleryRecord,
+  type AdminModelLibraryImage,
 } from './adminGalleryImageUtils';
 import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
 import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
@@ -906,13 +908,6 @@ type AdminModelFormBodyProps = Readonly<{
   formLabel: string;
 }>;
 
-type AdminModelLibraryImage = Readonly<{
-  key: string;
-  url: string;
-  kind: 'gallery' | 'draft' | 'persisted' | 'placeholder';
-  galleryImage?: AdminMotorcycleGalleryImage;
-}>;
-
 function appendGalleryImage(
   currentImages: readonly AdminMotorcycleGalleryImage[],
   nextImage: AdminMotorcycleGalleryImage,
@@ -1443,64 +1438,10 @@ function AdminModelFormBody({
   const currentImageSupportCopy = currentImagePreviewUrl
     ? 'Esta imagen sigue siendo la portada activa que usa el modelo en el flujo actual.'
     : 'Define una imagen principal desde URL manual o archivo local para preparar la portada del modelo.';
-  const libraryImages = useMemo<readonly AdminModelLibraryImage[]>(() => {
-    const entries = new Map<string, AdminModelLibraryImage>();
-    const getStableKey = (url: string): string => {
-      const existing = stableLibraryKeyRef.current.get(url);
-      if (existing) {
-        return existing;
-      }
-      const nextKey = `lib-${stableLibraryKeyRef.current.size}`;
-      stableLibraryKeyRef.current.set(url, nextKey);
-      return nextKey;
-    };
-
-    const registerImage = (entry: AdminModelLibraryImage) => {
-      const trimmedUrl = entry.url.trim();
-      if (!trimmedUrl || entries.has(trimmedUrl)) {
-        return;
-      }
-
-      entries.set(trimmedUrl, {
-        ...entry,
-        key: getStableKey(trimmedUrl),
-        url: trimmedUrl,
-      });
-    };
-
-    galleryImages.forEach((image) => {
-      registerImage({
-        key: `gallery-${image.id}`,
-        url: image.url,
-        kind: 'gallery',
-        galleryImage: image,
-      });
-    });
-
-    if (persistedImageUrlTrimmed) {
-      registerImage({
-        key: 'persisted-model-image',
-        url: persistedImageUrlTrimmed,
-        kind: 'persisted',
-      });
-    }
-
-    if (currentImagePreviewUrl) {
-      registerImage({
-        key: 'draft-current-image',
-        url: currentImagePreviewUrl,
-        kind: 'draft',
-      });
-    }
-
-    registerImage({
-      key: 'technical-placeholder-image',
-      url: adminModelTechnicalPlaceholderImage,
-      kind: 'placeholder',
-    });
-
-    return [...entries.values()];
-  }, [currentImagePreviewUrl, galleryImages, persistedImageUrlTrimmed]);
+  const libraryImages = useMemo(
+    () => buildGalleryLibraryImages(galleryImages, persistedImageUrlTrimmed, currentImagePreviewUrl, stableLibraryKeyRef.current),
+    [currentImagePreviewUrl, galleryImages, persistedImageUrlTrimmed],
+  );
 
   const handleUseLibraryImageAsCover = useCallback((nextImageUrl: string) => {
     onDraftFieldChange('imageUrl', nextImageUrl);

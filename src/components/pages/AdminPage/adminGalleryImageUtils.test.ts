@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { AdminMotorcycleGalleryImage } from '../../../services/adminMotorcycleGalleryService';
 import {
+  buildGalleryLibraryImages,
   getMotorcycleImageObjectPath,
   galleryImageMatchesImage,
   isGalleryImageCurrentCover,
@@ -14,8 +15,11 @@ import {
   getGalleryImageCardTitle,
   getGalleryImageCardEyebrow,
   getGalleryImageCardFacts,
+  type AdminModelLibraryImage,
   type GalleryImageCardFact,
 } from './adminGalleryImageUtils';
+
+import { adminModelTechnicalPlaceholderImage } from './adminGalleryImageUtils';
 
 const mockGalleryImage = (overrides: Partial<AdminMotorcycleGalleryImage> = {}): AdminMotorcycleGalleryImage => ({
   id: 'img-1',
@@ -401,5 +405,109 @@ describe('getGalleryImageCardFacts', () => {
   it('returns empty array when galleryImage is undefined', () => {
     const facts = getGalleryImageCardFacts(null, undefined);
     expect(facts).toHaveLength(0);
+  });
+});
+
+describe('buildGalleryLibraryImages', () => {
+  it('returns only placeholder when no images are provided', () => {
+    const result = buildGalleryLibraryImages([], '', '', new Map());
+    expect(result).toHaveLength(1);
+    expect(result[0].kind).toBe('placeholder');
+    expect(result[0].url).toBe(adminModelTechnicalPlaceholderImage);
+  });
+
+  it('includes all gallery images with kind gallery', () => {
+    const images = [
+      mockGalleryImage({ id: 'a', url: '/images/gallery/a.jpg' }),
+      mockGalleryImage({ id: 'b', url: '/images/gallery/b.jpg' }),
+    ];
+    const result = buildGalleryLibraryImages(images, '', '', new Map());
+    expect(result).toHaveLength(3);
+    expect(result.filter((e) => e.kind === 'gallery')).toHaveLength(2);
+    expect(result.find((e) => e.url === '/images/gallery/a.jpg')?.galleryImage?.id).toBe('a');
+    expect(result.find((e) => e.url === '/images/gallery/b.jpg')?.galleryImage?.id).toBe('b');
+  });
+
+  it('includes persisted image when provided', () => {
+    const result = buildGalleryLibraryImages([], '/images/persisted.jpg', '', new Map());
+    const persisted = result.find((e) => e.kind === 'persisted');
+    expect(persisted).toBeDefined();
+    expect(persisted?.url).toBe('/images/persisted.jpg');
+  });
+
+  it('includes draft image when provided', () => {
+    const result = buildGalleryLibraryImages([], '', '/images/draft.jpg', new Map());
+    const draft = result.find((e) => e.kind === 'draft');
+    expect(draft).toBeDefined();
+    expect(draft?.url).toBe('/images/draft.jpg');
+  });
+
+  it('deduplicates by URL (gallery image same as persisted)', () => {
+    const images = [mockGalleryImage({ id: 'a', url: '/images/shared.jpg' })];
+    const result = buildGalleryLibraryImages(images, '/images/shared.jpg', '', new Map());
+    const galleryEntries = result.filter((e) => e.kind === 'gallery');
+    const persistedEntries = result.filter((e) => e.kind === 'persisted');
+    expect(galleryEntries).toHaveLength(1);
+    expect(persistedEntries).toHaveLength(0);
+  });
+
+  it('deduplicates by URL (draft same as gallery)', () => {
+    const images = [mockGalleryImage({ id: 'a', url: '/images/shared.jpg' })];
+    const result = buildGalleryLibraryImages(images, '', '/images/shared.jpg', new Map());
+    const galleryEntries = result.filter((e) => e.kind === 'gallery');
+    const draftEntries = result.filter((e) => e.kind === 'draft');
+    expect(galleryEntries).toHaveLength(1);
+    expect(draftEntries).toHaveLength(0);
+  });
+
+  it('deduplicates by URL (persisted same as draft)', () => {
+    const result = buildGalleryLibraryImages([], '/images/shared.jpg', '/images/shared.jpg', new Map());
+    const persistedEntries = result.filter((e) => e.kind === 'persisted');
+    const draftEntries = result.filter((e) => e.kind === 'draft');
+    expect(persistedEntries).toHaveLength(1);
+    expect(draftEntries).toHaveLength(0);
+  });
+
+  it('assigns stable keys via key map across calls', () => {
+    const keyMap = new Map<string, string>();
+    const images = [mockGalleryImage({ id: 'a', url: '/images/a.jpg' })];
+
+    const firstResult = buildGalleryLibraryImages(images, '', '', keyMap);
+    const secondResult = buildGalleryLibraryImages(images, '', '', keyMap);
+
+    expect(firstResult[0].key).toBe(secondResult[0].key);
+    expect(firstResult[0].key).toMatch(/^lib-/);
+  });
+
+  it('assigns different keys within the same map for different URLs', () => {
+    const keyMap = new Map<string, string>();
+    const images = [
+      mockGalleryImage({ id: 'a', url: '/images/a.jpg' }),
+      mockGalleryImage({ id: 'b', url: '/images/b.jpg' }),
+    ];
+
+    const result = buildGalleryLibraryImages(images, '', '', keyMap);
+    const keys = result.filter((e) => e.kind === 'gallery').map((e) => e.key);
+
+    expect(keys[0]).not.toBe(keys[1]);
+    expect(keys[0]).toBe('lib-0');
+    expect(keys[1]).toBe('lib-1');
+  });
+
+  it('preserves composition order: gallery, persisted, draft, placeholder', () => {
+    const images = [mockGalleryImage({ id: 'a', url: '/images/gallery.jpg' })];
+    const result = buildGalleryLibraryImages(images, '/images/persisted.jpg', '/images/draft.jpg', new Map());
+
+    expect(result).toHaveLength(4);
+    expect(result[0].kind).toBe('gallery');
+    expect(result[1].kind).toBe('persisted');
+    expect(result[2].kind).toBe('draft');
+    expect(result[3].kind).toBe('placeholder');
+  });
+
+  it('trims whitespace from URLs for deduplication', () => {
+    const result = buildGalleryLibraryImages([], '  /images/trimmed.jpg  ', '', new Map());
+    expect(result.find((e) => e.url === '/images/trimmed.jpg')).toBeDefined();
+    expect(result.find((e) => e.url === '  /images/trimmed.jpg  ')).toBeUndefined();
   });
 });

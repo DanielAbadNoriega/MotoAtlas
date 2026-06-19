@@ -4,6 +4,13 @@ import type { MotorcycleDataSource } from '../../../types/bike';
 
 export const adminModelTechnicalPlaceholderImage = '/images/placeholders/motorcycle-technical-pending.jpg';
 
+export type AdminModelLibraryImage = Readonly<{
+  key: string;
+  url: string;
+  kind: 'gallery' | 'draft' | 'persisted' | 'placeholder';
+  galleryImage?: AdminMotorcycleGalleryImage;
+}>;
+
 const motorcycleImageBucketPublicPath = `/storage/v1/object/public/${MOTORCYCLE_IMAGE_BUCKET}/`;
 
 function getConfiguredMotorcycleImageOrigin(): string | null {
@@ -250,4 +257,69 @@ export function getGalleryImageCardFacts(
     galleryImage ? { label: 'Orden', value: `#${galleryImage.sortOrder}` } : null,
     galleryImage ? { label: 'Alta', value: formatGalleryImageDate(galleryImage.createdAt) } : null,
   ].filter(Boolean) as ReadonlyArray<GalleryImageCardFact>;
+}
+
+export function buildGalleryLibraryImages(
+  galleryImages: readonly AdminMotorcycleGalleryImage[],
+  persistedImageUrl: string,
+  currentImageUrl: string,
+  stableKeyMap: Map<string, string>,
+): readonly AdminModelLibraryImage[] {
+  const entries = new Map<string, AdminModelLibraryImage>();
+
+  const getStableKey = (url: string): string => {
+    const existing = stableKeyMap.get(url);
+    if (existing) {
+      return existing;
+    }
+    const nextKey = `lib-${stableKeyMap.size}`;
+    stableKeyMap.set(url, nextKey);
+    return nextKey;
+  };
+
+  const registerImage = (entry: AdminModelLibraryImage) => {
+    const trimmedUrl = entry.url.trim();
+    if (!trimmedUrl || entries.has(trimmedUrl)) {
+      return;
+    }
+
+    entries.set(trimmedUrl, {
+      ...entry,
+      key: getStableKey(trimmedUrl),
+      url: trimmedUrl,
+    });
+  };
+
+  galleryImages.forEach((image) => {
+    registerImage({
+      key: `gallery-${image.id}`,
+      url: image.url,
+      kind: 'gallery',
+      galleryImage: image,
+    });
+  });
+
+  if (persistedImageUrl) {
+    registerImage({
+      key: 'persisted-model-image',
+      url: persistedImageUrl,
+      kind: 'persisted',
+    });
+  }
+
+  if (currentImageUrl) {
+    registerImage({
+      key: 'draft-current-image',
+      url: currentImageUrl,
+      kind: 'draft',
+    });
+  }
+
+  registerImage({
+    key: 'technical-placeholder-image',
+    url: adminModelTechnicalPlaceholderImage,
+    kind: 'placeholder',
+  });
+
+  return [...entries.values()];
 }
