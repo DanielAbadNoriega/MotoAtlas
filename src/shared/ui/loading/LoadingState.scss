@@ -146,8 +146,10 @@
   background-size: cover;
   background-repeat: no-repeat;
   filter: grayscale(0.52) contrast(0.78) brightness(0.32);
+  height: 100%;
   inset: 0;
   position: absolute;
+  width: 100%;
   z-index: 0;
 
   &::after {

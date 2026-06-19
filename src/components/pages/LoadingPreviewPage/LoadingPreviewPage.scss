@@ -64,6 +64,19 @@
   }
 }
 
+.loading-preview__divider {
+  align-self: stretch;
+  background: rgba($color-outline-variant, 0.28);
+  margin: 0 0.125rem;
+  width: 1px;
+}
+
 .loading-preview__stage {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+
+  > .loading-state {
+    flex: 1;
+  }
 }

@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { LoadingState } from '../../../shared/ui/loading/LoadingState';
 import type { LoadingStateProps } from '../../../shared/ui/loading/LoadingState';
 import heroImage from '../../../assets/hero-comunity.png';
+import comparisonHero from '../../../assets/comparison-hero.png';
+import versusBikes from '../../../assets/versus-bikes.png';
+import homeHero from '../../../assets/Hero Motorcycle.png';
 import './LoadingPreviewPage.scss';
 
 type Scenario = {
@@ -9,28 +12,28 @@ type Scenario = {
   props: LoadingStateProps;
 };
 
-const SCENARIOS: Scenario[] = [
+const PAGE_SCENARIOS: Scenario[] = [
   {
-    label: 'General',
+    label: 'Home',
     props: {
       eyebrow: 'MotoAtlas',
       title: 'Preparando MotoAtlas',
-      message: 'Estamos cargando datos técnicos, comunidad y telemetría visual.',
+      message: 'Estamos cargando datos técnicos, comunidad y comparativas para montar tu experiencia.',
       icon: 'motorcycle',
       variant: 'page',
       size: 'lg',
     },
   },
   {
-    label: 'General + Hero',
+    label: 'Home + Hero',
     props: {
       eyebrow: 'MotoAtlas',
       title: 'Preparando MotoAtlas',
-      message: 'Estamos cargando datos técnicos, comunidad y telemetría visual.',
+      message: 'Estamos cargando datos técnicos, comunidad y comparativas para montar tu experiencia.',
       icon: 'motorcycle',
       variant: 'page',
       size: 'lg',
-      backgroundImage: heroImage,
+      backgroundImage: homeHero,
     },
   },
   {
@@ -57,40 +60,67 @@ const SCENARIOS: Scenario[] = [
     },
   },
   {
-    label: 'Catálogo',
+    label: 'Buscador',
     props: {
-      eyebrow: 'Catálogo técnico',
-      title: 'Cargando catálogo',
-      message: 'Estamos organizando modelos, especificaciones y comparativas.',
+      eyebrow: 'Buscador técnico',
+      title: 'Preparando buscador',
+      message: 'Estamos organizando modelos, filtros y datos técnicos para afinar la búsqueda.',
       icon: 'manage_search',
-      variant: 'section',
-      size: 'md',
-    },
-  },
-  {
-    label: 'Cuenta',
-    props: {
-      eyebrow: 'Espacio personal',
-      title: 'Preparando tu espacio personal',
-      message: 'Un momento, estamos organizando tu historial de piloto y actividad.',
-      icon: 'account_circle',
       variant: 'page',
       size: 'lg',
     },
   },
   {
-    label: 'Rutas',
+    label: 'Buscador + Hero',
     props: {
-      eyebrow: 'Rutas',
-      title: 'Calculando ruta',
-      message: 'Estamos preparando trazado, puntos clave y contexto de conducción.',
-      icon: 'route',
+      eyebrow: 'Buscador técnico',
+      title: 'Preparando buscador',
+      message: 'Estamos organizando modelos, filtros y datos técnicos para afinar la búsqueda.',
+      icon: 'manage_search',
+      variant: 'page',
+      size: 'lg',
+      backgroundImage: comparisonHero,
+    },
+  },
+  {
+    label: 'Comparador',
+    props: {
+      eyebrow: 'Comparador',
+      title: 'Preparando comparativa',
+      message: 'Estamos alineando especificaciones, rendimiento y datos clave entre modelos.',
+      icon: 'compare_arrows',
+      variant: 'page',
+      size: 'lg',
+    },
+  },
+  {
+    label: 'Comparador + Hero',
+    props: {
+      eyebrow: 'Comparador',
+      title: 'Preparando comparativa',
+      message: 'Estamos alineando especificaciones, rendimiento y datos clave entre modelos.',
+      icon: 'compare_arrows',
+      variant: 'page',
+      size: 'lg',
+      backgroundImage: versusBikes,
+    },
+  },
+];
+
+const TECH_SCENARIOS: Scenario[] = [
+  {
+    label: 'Section loading',
+    props: {
+      eyebrow: 'Sección',
+      title: 'Cargando sección',
+      message: 'Estamos preparando este bloque de contenido.',
+      icon: 'sync',
       variant: 'section',
       size: 'md',
     },
   },
   {
-    label: 'Inline',
+    label: 'Inline loading',
     props: {
       eyebrow: 'Sincronizando',
       title: 'Cargando',
@@ -101,6 +131,10 @@ const SCENARIOS: Scenario[] = [
     },
   },
 ];
+
+const SCENARIOS = [...PAGE_SCENARIOS, ...TECH_SCENARIOS];
+
+const PAGE_COUNT = PAGE_SCENARIOS.length;
 
 export function LoadingPreviewPage() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -113,14 +147,16 @@ export function LoadingPreviewPage() {
         <p className="loading-preview__note">Ruta temporal para revisar estados de carga.</p>
         <div className="loading-preview__nav" role="group" aria-label="Escenarios de carga">
           {SCENARIOS.map((scenario, index) => (
-            <button
-              key={scenario.label}
-              type="button"
-              className={`loading-preview__button${index === activeIndex ? ' loading-preview__button--active' : ''}`}
-              onClick={() => setActiveIndex(index)}
-            >
-              {scenario.label}
-            </button>
+            <Fragment key={scenario.label}>
+              {index === PAGE_COUNT && <span className="loading-preview__divider" role="separator" />}
+              <button
+                type="button"
+                className={`loading-preview__button${index === activeIndex ? ' loading-preview__button--active' : ''}`}
+                onClick={() => setActiveIndex(index)}
+              >
+                {scenario.label}
+              </button>
+            </Fragment>
           ))}
         </div>
       </div>
