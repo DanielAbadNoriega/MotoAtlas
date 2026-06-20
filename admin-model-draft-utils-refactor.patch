@@ -1,0 +1,759 @@
+diff --git a/src/components/pages/AdminPage/AdminPage.tsx b/src/components/pages/AdminPage/AdminPage.tsx
+index 73d6bf3..e304506 100644
+--- a/src/components/pages/AdminPage/AdminPage.tsx
++++ b/src/components/pages/AdminPage/AdminPage.tsx
+@@ -1,346 +1,290 @@
+ import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type MutableRefObject, type ReactNode } from 'react';
+ import adminHeroImage from '../../../assets/hero-admin.png';
+ import { useAuth } from '../../../features/auth';
+ import { bikeCatalog, findBikeById, getBikeDetailHash, getBikeDisplayName } from '../../../data/bikes';
+ import {
+   getReviewReports,
+   resolveReportWithReviewStatus,
+   updateReviewReportStatus,
+   type AdminReportReasonFilter,
+   type AdminReportSort,
+   type AdminReportStatusFilter,
+   type AdminReviewReport,
+ } from '../../../services/adminModerationService';
+ import { getAllReviews } from '../../../services/adminReviewService';
+ import {
+   getAdminPendingReplies,
+   updateReviewReplyStatus,
+   type AdminReviewReply,
+ } from '../../../services/adminReplyService';
+ import {
+   getAllModelRequests,
+   updateModelRequestStatus as updateModelRequestStatusService,
+   type ModelRequest as ModelRequestType,
+   type ModelRequestAuthContext,
+   type ModelRequestFilters,
+   type ModelRequestStatus as ModelRequestStatusType,
+ } from '../../../services/modelRequestService';
+ import {
+   getReviewAspectsByReviewIds,
+   type CreateReviewAuthContext,
+   MotorcycleReview,
+   MotorcycleReviewAspect,
+   MotorcycleReviewRidingStyle,
+   MotorcycleReviewStatus,
+ } from '../../../services/motorcycleReviewService';
+ import {
+   createAdminMotorcycle,
+   updateAdminMotorcycle,
+   type AdminMotorcycleCreatePayload,
+   type AdminMotorcycleUpdatePayload,
+ } from '../../../services/adminMotorcycleService';
+ import { deleteMotorcycleImage, uploadMotorcycleImage } from '../../../services/adminMotorcycleImageUploadService';
+ import {
+   createAdminMotorcycleGalleryImage,
+   deleteAdminMotorcycleGalleryImageRecord,
+   getAdminMotorcycleGalleryImages,
+   updateAdminMotorcycleGalleryImage,
+   type AdminMotorcycleGalleryImage,
+ } from '../../../services/adminMotorcycleGalleryService';
+ import {
+   adminModelTechnicalPlaceholderImage,
+   buildGalleryLibraryImages,
+   formatGalleryImageDate,
+   getActiveGalleryImages,
+   getGalleryImageAssetName,
+   getGalleryImageCardEyebrow,
+   getGalleryImageCardFacts,
+   getGalleryImageCardTitle,
+   getGalleryImageCleanupObjectPath,
+   getGalleryImageSourceLabel,
+   getMotorcycleImageObjectPath,
+   isCleanupPathSharedWithActiveImage,
+   isGalleryImageCurrentCover,
+   isImageBackedByGalleryRecord,
+   type AdminModelLibraryImage,
+ } from './adminGalleryImageUtils';
+ import type { ReviewReplyStatus } from '../../../services/reviewReplyService';
+ import type { ReviewReportReason, ReviewReportStatus } from '../../../services/reviewReportService';
+ import {
+   matchesMotorcycleSegmentFilter,
+   motorcycleLicenseFilterOptions,
+   motorcycleSegmentFilterOptions,
+   type MotorcycleSegmentFilterValue,
+ } from '../../../shared/filters/motorcycleFilterOptions';
+ import { BIKE_LICENSES, BIKE_SEGMENTS, getBikeA2Status, segmentIcons, segmentLabels, MOTORCYCLE_DATA_SOURCES, type BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
+ import { dataQualityLabels, getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
+ import { canUseDemoData, isDemoDataToggleAvailable, setDemoDataPreference } from '../../../shared/env/runtimeEnvironment';
+ import { getMotorcycleTechnicalIcon } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
+ import { normalizeText } from '../../../utils/motorcycleSearch';
+-import { slugifyRoutePart } from '../../../shared/routing/routeUtils';
++import {
++  buildSuggestedModelId,
++  cloneAdminModelDraft,
++  createDraftFromBike,
++  draftToCreatePayload,
++  draftToUpdatePayload,
++  validateAdminModelDraftForPublish,
++  type AdminModelDraft,
++  type AdminModelDraftField,
++  type AdminModelFeatureKey,
++  type ValidationResult,
++} from './adminModelDraftUtils';
+ import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
+ import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
+ import { PageHero } from '../../ui/PageHero';
+ import { MotorcycleImage } from '../../ui/MotorcycleImage';
+ import { AccountPagination } from '../AccountPage/AccountPagination';
+ import { AccountQuickLinksNav, type AdminQuickLinksModelsItem } from '../AccountPage/AccountQuickLinksNav';
+ import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
+ import '../AccountPage/AccountPage.scss';
+ import './AdminPage.scss';
+ import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../../types/bike';
+ 
+ type ReviewAspectsMap = Record<string, readonly MotorcycleReviewAspect[]>;
+ 
+ type AdminGateProps = Readonly<{
+   children: ReactNode;
+   title?: string;
+ }>;
+ 
+ type AdminFilters = Readonly<{
+   reason: AdminReportReasonFilter;
+   sort: AdminReportSort;
+   status: AdminReportStatusFilter;
+ }>;
+ 
+ type AdminFilterOption<T extends string> = Readonly<{
+   icon: string;
+   label: string;
+   value: T;
+ }>;
+ 
+ type AdminSidebarActiveItem = 'dashboard' | 'moderation' | 'reviews' | 'requests' | 'models';
+ 
+ 
+-type AdminModelDraft = {
+-  brand: string;
+-  model: string;
+-  year: string;
+-  description: string;
+-  modelId: string;
+-  segment: BikeSegment | '';
+-  license: BikeLicense | '';
+-  engineType: BikeEngineType | '';
+-  displacementCc: string;
+-  powerHp: string;
+-  torqueNm: string;
+-  wetWeightKg: string;
+-  seatHeightMm: string;
+-  fuelTankLiters: string;
+-  priceEur: string;
+-  pricePending: boolean;
+-  imageUrl: string;
+-  imageLocked: boolean;
+-  officialUrl: string;
+-  sourceNotes: string;
+-  internalNotes: string;
+-  features: Record<keyof BikeFeatures, boolean>;
+-};
+-
+-type AdminModelDraftField = Exclude<keyof AdminModelDraft, 'features' | 'pricePending' | 'imageLocked'>;
+-type AdminModelFeatureKey = keyof BikeFeatures;
+-
+ type AdminModelSectionProps = Readonly<{
+   children: ReactNode;
+   description?: string;
+   id: string;
+   technicalTitle: string;
+ }>;
+ 
+ const adminModelEngineTypeOptions = [
+   { value: 'single-cylinder', label: 'Single Cylinder' },
+   { value: 'parallel-twin', label: 'Parallel Twin' },
+   { value: 'inline-three', label: 'Inline Three' },
+   { value: 'inline-four', label: 'Inline Four' },
+   { value: 'v-twin', label: 'V-Twin' },
+   { value: 'l-twin', label: 'L-Twin' },
+   { value: 'boxer-twin', label: 'Boxer Twin' },
+ ] as const satisfies readonly { value: BikeEngineType; label: string }[];
+ 
+ const adminModelFeatureOptions = [
+   { key: 'absCornering', label: 'ABS en curva' },
+   { key: 'tractionControl', label: 'Control de tracción' },
+   { key: 'ridingModes', label: 'Modos de conducción' },
+   { key: 'cruiseControl', label: 'Control crucero' },
+   { key: 'quickshifter', label: 'Quickshifter' },
+   { key: 'heatedGrips', label: 'Puños calefactables' },
+   { key: 'tubelessWheels', label: 'Llantas tubeless' },
+ ] as const satisfies readonly { key: AdminModelFeatureKey; label: string }[];
+ 
+ const emptyAdminModelDraft: AdminModelDraft = {
+   brand: '',
+   model: '',
+   year: '',
+   description: '',
+   modelId: '',
+   segment: '',
+   license: '',
+   engineType: '',
+   displacementCc: '',
+   powerHp: '',
+   torqueNm: '',
+   wetWeightKg: '',
+   seatHeightMm: '',
+   fuelTankLiters: '',
+   priceEur: '',
+   pricePending: true,
+   imageUrl: '',
+   imageLocked: false,
+   officialUrl: '',
+   sourceNotes: '',
+   internalNotes: '',
+   features: {
+     absCornering: false,
+     tractionControl: false,
+     ridingModes: false,
+     cruiseControl: false,
+     quickshifter: false,
+     heatedGrips: false,
+     tubelessWheels: false,
+   },
+ };
+ 
+ const adminModelPreviewPlaceholderImage = '/images/placeholders/motorcycle-model-creating.jpg';
+ 
+-function createDraftFromBike(bike: Bike): AdminModelDraft {
+-  return {
+-    brand: bike.brand,
+-    model: bike.model,
+-    year: String(bike.year),
+-    description: bike.description || '',
+-    modelId: bike.id,
+-    segment: bike.segment,
+-    license: bike.license,
+-    engineType: bike.engineType,
+-    displacementCc: String(bike.displacementCc),
+-    powerHp: String(bike.powerHp),
+-    torqueNm: String(bike.torqueNm),
+-    wetWeightKg: String(bike.wetWeightKg),
+-    seatHeightMm: String(bike.seatHeightMm),
+-    fuelTankLiters: String(bike.fuelTankLiters),
+-    priceEur: String(bike.priceEur),
+-    pricePending: false,
+-    imageUrl: bike.imageUrl,
+-    imageLocked: bike.imageLocked ?? false,
+-    officialUrl: bike.officialUrl ?? '',
+-    sourceNotes: '',
+-    internalNotes: '',
+-    features: { ...bike.features },
+-  };
+-}
+-
+-function cloneAdminModelDraft(draft: AdminModelDraft): AdminModelDraft {
+-  return {
+-    ...draft,
+-    features: { ...draft.features },
+-  };
+-}
+-
+ function formatPreviewNumber(value: string, unit: string) {
+   const parsed = Number(value);
+ 
+   if (!Number.isFinite(parsed) || parsed <= 0) {
+     return '—';
+   }
+ 
+   return `${new Intl.NumberFormat('es-ES').format(parsed)} ${unit}`;
+ }
+ 
+ function formatPreviewPrice(value: string, isPending: boolean) {
+   const parsed = Number(value);
+ 
+   if (isPending || !Number.isFinite(parsed) || parsed <= 0) {
+     return 'Precio pendiente';
+   }
+ 
+   return new Intl.NumberFormat('es-ES', {
+     style: 'currency',
+     currency: 'EUR',
+     maximumFractionDigits: 0,
+   }).format(parsed);
+ }
+ 
+-function buildSuggestedModelId(draft: Pick<AdminModelDraft, 'brand' | 'model' | 'year'>) {
+-  const parts = [draft.brand.trim(), draft.model.trim(), draft.year.trim()].filter(Boolean);
+-  return parts.length > 0 ? slugifyRoutePart(parts.join(' ')) : '';
+-}
+-
+ function getPreviewBadgeLabel(segment: BikeSegment | '') {
+   return segment ? segmentLabels[segment] : 'Segmento pendiente';
+ }
+ 
+ function getPreviewBadgeIcon(segment: BikeSegment | '') {
+   return segment ? segmentIcons[segment] : 'category';
+ }
+ 
+ function AdminModelSection({ children, description, id, technicalTitle }: AdminModelSectionProps) {
+   return (
+     <details className="admin-page__model-section" id={id} open>
+       <summary className="admin-page__model-section-header">
+         <div className="admin-page__model-section-heading">
+           <span className="admin-page__model-section-line" aria-hidden="true" />
+           <div className="admin-page__model-section-title-group">
+             <span className="admin-page__model-section-expand-icon" aria-hidden="true">
+               <span className="material-symbols-outlined">expand_more</span>
+             </span>
+             <h2>{technicalTitle}</h2>
+             {description ? (
+               <span className="admin-page__model-section-tooltip-wrapper">
+                 <button
+                   type="button"
+                   className="admin-page__model-section-info-btn"
+                   aria-label={`Más información sobre ${technicalTitle}`}
+                 >
+                   <span aria-hidden="true">i</span>
+                 </button>
+                 <span className="admin-page__model-section-tooltip" role="tooltip">
+                   {description}
+                 </span>
+               </span>
+             ) : null}
+           </div>
+           <span className="admin-page__model-section-line" aria-hidden="true" />
+         </div>
+       </summary>
+       <div className="admin-page__model-section-body">{children}</div>
+     </details>
+   );
+ }
+ 
+ type AdminModelInfoTooltipProps = Readonly<{
+   ariaLabel: string;
+   description: string;
+ }>;
+ 
+ function AdminModelInfoTooltip({ ariaLabel, description }: AdminModelInfoTooltipProps) {
+   return (
+     <span className="admin-page__model-field-tooltip-wrapper">
+       <button type="button" className="admin-page__model-section-info-btn" aria-label={ariaLabel}>
+         <span aria-hidden="true">i</span>
+       </button>
+       <span className="admin-page__model-section-tooltip" role="tooltip">
+         {description}
+       </span>
+     </span>
+   );
+ }
+ 
+ function AdminModelHeroPreview({ draft }: Readonly<{ draft: AdminModelDraft }>) {
+   const brandLabel = (draft.brand ?? '').trim() || 'Marca';
+   const modelLabel = (draft.model ?? '').trim() || 'Modelo';
+   const description = (draft.description ?? '').trim() || 'Descripción pendiente de completar';
+   const previewImageSrc = (draft.imageUrl ?? '').trim() || adminModelPreviewPlaceholderImage;
+   const previewTitle = `${brandLabel} ${modelLabel}`;
+ 
+   return (
+     <section className="admin-page__model-preview" aria-labelledby="admin-model-preview-title">
+       <div className="admin-page__model-preview-hero">
+         <div className="admin-page__model-preview-media">
+           <img src={previewImageSrc} alt={`Preview local de ${previewTitle}`} />
+         </div>
+ 
+         <div className="admin-page__model-preview-content">
+           <span className="admin-page__model-preview-chip">Preview local</span>
+ 
+           <div className="admin-page__model-preview-badges">
+             <span className="admin-page__model-preview-badge">
+               <span className="material-symbols-outlined" aria-hidden="true">{getPreviewBadgeIcon(draft.segment)}</span>
+@@ -3079,395 +3023,160 @@ export function AdminEditModelsPage({ motorcycles }: Readonly<{ motorcycles: rea
+     if (next.maxPower !== undefined) setMaxPower(next.maxPower);
+     if (next.minWeight !== undefined) setMinWeight(next.minWeight);
+     if (next.maxWeight !== undefined) setMaxWeight(next.maxWeight);
+     if (next.minSeatHeight !== undefined) setMinSeatHeight(next.minSeatHeight);
+     if (next.maxSeatHeight !== undefined) setMaxSeatHeight(next.maxSeatHeight);
+     if (next.equipment !== undefined) setEquipment(next.equipment);
+     if (next.recommendedUses !== undefined) setRecommendedUses(next.recommendedUses);
+     if (next.dataSources !== undefined) setDataSources(next.dataSources);
+     setCurrentPage(1);
+   }, []);
+ 
+   return (
+     <AdminModelsWorkspace
+       activeModelsItem="edit"
+       description="Busca una moto del catálogo y abre su ficha interna de edición."
+       title="Seleccionar modelo para editar"
+       titleId="admin-models-edit-title"
+       sidebarContent={(
+         <AdminModelsEditFiltersPanel
+           brandOptions={brandOptions}
+           filters={filters}
+           isOpen={isFilterPanelOpen}
+           onApplyFilters={() => setIsFilterPanelOpen(false)}
+           onChange={updateFilters}
+           onClearFilters={clearFilters}
+           onClose={() => setIsFilterPanelOpen(false)}
+         />
+       )}
+     >
+       <div className="admin-page__edit-models">
+         <div className="admin-page__mobile-filter-trigger">
+           <button type="button" onClick={() => setIsFilterPanelOpen(true)}>
+             <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+             Filtros
+           </button>
+         </div>
+ 
+         {filteredBikes.length > 0 ? (
+           <>
+             <p className="admin-page__results-summary" aria-live="polite">
+               {filteredBikes.length === 1
+                 ? '1 modelo encontrado'
+                 : `${filteredBikes.length} modelos encontrados`}
+             </p>
+ 
+             <div className="admin-page__edit-grid">
+               {paginatedBikes.map((bike) => (
+                 <AdminModelEditCard bike={bike} key={bike.id} />
+               ))}
+             </div>
+ 
+             {totalPages > 1 ? (
+               <AccountPagination
+                 ariaLabel="Paginación de edición de modelos"
+                 className="admin-page__pagination"
+                 currentClassName="admin-page__pagination-current"
+                 currentPage={currentPage}
+                 totalPages={totalPages}
+                 onPageChange={setCurrentPage}
+               />
+             ) : null}
+           </>
+         ) : (
+           <article className="account-page__empty-state">
+             <span className="account-page__empty-icon material-symbols-outlined" aria-hidden="true">edit_note</span>
+             <h3>No hay modelos que coincidan con los filtros.</h3>
+             {hasActiveFilters ? (
+               <button className="account-page__button" type="button" onClick={clearFilters}>
+                 Limpiar filtros
+               </button>
+             ) : (
+               <p>El catálogo no contiene modelos todavía.</p>
+             )}
+           </article>
+         )}
+       </div>
+     </AdminModelsWorkspace>
+   );
+ }
+ 
+-function draftToUpdatePayload(draft: AdminModelDraft): AdminMotorcycleUpdatePayload {
+-  const payload: Record<string, unknown> = {};
+-
+-  if (draft.brand.trim()) {
+-    payload.brand = draft.brand.trim();
+-  }
+-
+-  if (draft.model.trim()) {
+-    payload.model = draft.model.trim();
+-  }
+-
+-  const year = parseInt(draft.year, 10);
+-  if (!Number.isNaN(year) && year >= 1900 && year <= 2100) {
+-    payload.year = year;
+-  }
+-
+-  if (draft.description.trim()) {
+-    payload.description = draft.description.trim();
+-  }
+-
+-  if (draft.segment) {
+-    payload.segment = draft.segment;
+-  }
+-
+-  if (draft.license) {
+-    payload.license = draft.license;
+-  }
+-
+-  if (draft.engineType) {
+-    payload.engineType = draft.engineType;
+-  }
+-
+-  const displacementCc = parseInt(draft.displacementCc, 10);
+-  if (!Number.isNaN(displacementCc) && displacementCc > 0) {
+-    payload.displacementCc = displacementCc;
+-  }
+-
+-  const powerHp = parseFloat(draft.powerHp);
+-  if (!Number.isNaN(powerHp) && powerHp > 0) {
+-    payload.powerHp = powerHp;
+-  }
+-
+-  const torqueNm = parseFloat(draft.torqueNm);
+-  if (!Number.isNaN(torqueNm) && torqueNm > 0) {
+-    payload.torqueNm = torqueNm;
+-  }
+-
+-  const wetWeightKg = parseFloat(draft.wetWeightKg);
+-  if (!Number.isNaN(wetWeightKg) && wetWeightKg > 0) {
+-    payload.wetWeightKg = wetWeightKg;
+-  }
+-
+-  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+-  if (!Number.isNaN(seatHeightMm) && seatHeightMm > 0) {
+-    payload.seatHeightMm = seatHeightMm;
+-  }
+-
+-  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+-  if (!Number.isNaN(fuelTankLiters) && fuelTankLiters > 0) {
+-    payload.fuelTankLiters = fuelTankLiters;
+-  }
+-
+-  if (!draft.pricePending) {
+-    const priceEur = parseInt(draft.priceEur, 10);
+-    if (!Number.isNaN(priceEur) && priceEur >= 0) {
+-      payload.priceEur = priceEur;
+-    }
+-  }
+-
+-  if (draft.imageUrl.trim()) {
+-    payload.imageUrl = draft.imageUrl.trim();
+-  }
+-
+-  payload.imageLocked = draft.imageLocked;
+-  payload.descriptionLocked = false;
+-  payload.priceSource = 'manual';
+-  payload.imageSource = 'manual';
+-  payload.specsSource = 'manual';
+-  payload.scoresSource = 'estimated';
+-  payload.prosConsSource = 'estimated';
+-  payload.reliabilitySource = 'estimated';
+-  payload.absCornering = draft.features.absCornering;
+-  payload.tractionControl = draft.features.tractionControl;
+-  payload.ridingModes = draft.features.ridingModes;
+-  payload.cruiseControl = draft.features.cruiseControl;
+-  payload.quickshifter = draft.features.quickshifter;
+-  payload.heatedGrips = draft.features.heatedGrips;
+-  payload.tubelessWheels = draft.features.tubelessWheels;
+-
+-  return payload as AdminMotorcycleUpdatePayload;
+-}
+-
+-function draftToCreatePayload(draft: AdminModelDraft, modelId: string): AdminMotorcycleCreatePayload {
+-  const id = draft.modelId.trim() || modelId || '';
+-  const brand = draft.brand.trim() || '';
+-  const model = draft.model.trim() || '';
+-  const year = parseInt(draft.year, 10);
+-  const description = draft.description.trim();
+-  const segment = draft.segment || '';
+-  const license = draft.license || '';
+-  const engineType = draft.engineType || '';
+-  const displacementCc = parseInt(draft.displacementCc, 10);
+-  const powerHp = parseFloat(draft.powerHp);
+-  const torqueNm = parseFloat(draft.torqueNm);
+-  const wetWeightKg = parseFloat(draft.wetWeightKg);
+-  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+-  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+-  const priceEur = draft.pricePending ? 0 : parseInt(draft.priceEur, 10) || 0;
+-  const imageUrl = draft.imageUrl.trim() || '';
+-
+-  return {
+-    id,
+-    brand,
+-    model,
+-    year: Number.isNaN(year) ? 0 : year,
+-    description,
+-    segment,
+-    license,
+-    engineType,
+-    displacementCc: Number.isNaN(displacementCc) ? 0 : displacementCc,
+-    powerHp: Number.isNaN(powerHp) ? 0 : powerHp,
+-    torqueNm: Number.isNaN(torqueNm) ? 0 : torqueNm,
+-    wetWeightKg: Number.isNaN(wetWeightKg) ? 0 : wetWeightKg,
+-    seatHeightMm: Number.isNaN(seatHeightMm) ? 0 : seatHeightMm,
+-    fuelTankLiters: Number.isNaN(fuelTankLiters) ? 0 : fuelTankLiters,
+-    priceEur,
+-    imageUrl,
+-    imageLocked: draft.imageLocked,
+-    descriptionLocked: false,
+-    priceSource: 'manual',
+-    imageSource: 'manual',
+-    specsSource: 'manual',
+-    scoresSource: 'estimated',
+-    prosConsSource: 'estimated',
+-    reliabilitySource: 'estimated',
+-    absCornering: draft.features.absCornering,
+-    tractionControl: draft.features.tractionControl,
+-    ridingModes: draft.features.ridingModes,
+-    cruiseControl: draft.features.cruiseControl,
+-    quickshifter: draft.features.quickshifter,
+-    heatedGrips: draft.features.heatedGrips,
+-    tubelessWheels: draft.features.tubelessWheels,
+-  };
+-}
+-
+-type ValidationResult =
+-  | { isValid: true }
+-  | { isValid: false; message: string };
+-
+-function validateAdminModelDraftForPublish(
+-  draft: AdminModelDraft,
+-  options: { mode: 'create' | 'edit'; modelId?: string },
+-): ValidationResult {
+-  if (options.mode === 'create') {
+-    const id = draft.modelId.trim() || options.modelId || '';
+-    if (!id) {
+-      return { isValid: false, message: 'El ID del modelo es obligatorio.' };
+-    }
+-    if (id.includes(' ')) {
+-      return { isValid: false, message: 'El ID del modelo no puede contener espacios.' };
+-    }
+-  }
+-
+-  if (!draft.brand.trim()) {
+-    return { isValid: false, message: 'La marca es obligatoria.' };
+-  }
+-  if (!draft.model.trim()) {
+-    return { isValid: false, message: 'El modelo es obligatorio.' };
+-  }
+-  if (!draft.description.trim()) {
+-    return { isValid: false, message: 'La descripción es obligatoria.' };
+-  }
+-  if (!draft.segment) {
+-    return { isValid: false, message: 'El segmento es obligatorio.' };
+-  }
+-  if (!draft.license) {
+-    return { isValid: false, message: 'El carnet es obligatorio.' };
+-  }
+-  if (!draft.engineType) {
+-    return { isValid: false, message: 'El tipo de motor es obligatorio.' };
+-  }
+-
+-  const year = parseInt(draft.year, 10);
+-  if (Number.isNaN(year) || year < 1900 || year > 2100) {
+-    return { isValid: false, message: 'El año debe ser un número entre 1900 y 2100.' };
+-  }
+-
+-  const displacementCc = parseInt(draft.displacementCc, 10);
+-  if (Number.isNaN(displacementCc) || displacementCc <= 0) {
+-    return { isValid: false, message: 'La cilindrada debe ser un número mayor a 0.' };
+-  }
+-
+-  const powerHp = parseFloat(draft.powerHp);
+-  if (Number.isNaN(powerHp) || powerHp <= 0) {
+-    return { isValid: false, message: 'La potencia debe ser un número mayor a 0.' };
+-  }
+-
+-  const torqueNm = parseFloat(draft.torqueNm);
+-  if (Number.isNaN(torqueNm) || torqueNm <= 0) {
+-    return { isValid: false, message: 'El par motor debe ser un número mayor a 0.' };
+-  }
+-
+-  const wetWeightKg = parseFloat(draft.wetWeightKg);
+-  if (Number.isNaN(wetWeightKg) || wetWeightKg <= 0) {
+-    return { isValid: false, message: 'El peso debe ser un número mayor a 0.' };
+-  }
+-
+-  const seatHeightMm = parseInt(draft.seatHeightMm, 10);
+-  if (Number.isNaN(seatHeightMm) || seatHeightMm <= 0) {
+-    return { isValid: false, message: 'La altura del asiento debe ser un número mayor a 0.' };
+-  }
+-
+-  const fuelTankLiters = parseFloat(draft.fuelTankLiters);
+-  if (Number.isNaN(fuelTankLiters) || fuelTankLiters <= 0) {
+-    return { isValid: false, message: 'La capacidad del depósito debe ser un número mayor a 0.' };
+-  }
+-
+-  if (!draft.pricePending) {
+-    const priceEur = parseInt(draft.priceEur, 10);
+-    if (Number.isNaN(priceEur) || priceEur < 0) {
+-      return { isValid: false, message: 'El precio debe ser un número igual o mayor a 0.' };
+-    }
+-  }
+-
+-  const imageUrl = draft.imageUrl.trim();
+-  if (!imageUrl) {
+-    return { isValid: false, message: 'La URL de imagen es obligatoria.' };
+-  }
+-  if (!imageUrl.startsWith('/') && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+-    return { isValid: false, message: 'La URL de imagen debe ser una URL absoluta o una ruta local comenzando con /.' };
+-  }
+-
+-  return { isValid: true };
+-}
+-
+ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcyclesChange: onMotorcyclesChangeProp }: Readonly<{ motorcycleId: string | undefined; motorcycles: readonly Bike[]; onMotorcyclesChange?: OnMotorcyclesChange }>) {
+   const originalDraft = useMemo(() => {
+     if (!motorcycleId) {
+       return undefined;
+     }
+ 
+     const bike = motorcycles.find((b) => b.id === motorcycleId);
+     return bike ? createDraftFromBike(bike) : undefined;
+   }, [motorcycleId, motorcycles]);
+ 
+   const [draft, setDraft] = useState<AdminModelDraft | undefined>(originalDraft);
+   const [localStatus, setLocalStatus] = useState('');
+   const [saving, setSaving] = useState(false);
+   const [publishError, setPublishError] = useState('');
+   const [persistedImageHasGalleryRecord, setPersistedImageHasGalleryRecord] = useState(false);
+   const galleryImagesRef = useRef<readonly AdminMotorcycleGalleryImage[]>([]);
+   const pendingDeleteImageIdsRef = useRef<readonly string[]>([]);
+   const initializedMotorcycleIdRef = useRef<string | undefined>(motorcycleId);
+ 
+   const { session, user } = useAuth();
+ 
+   useEffect(() => {
+     const previousMotorcycleId = initializedMotorcycleIdRef.current;
+     const didMotorcycleChange = previousMotorcycleId !== motorcycleId;
+ 
+     if (!motorcycleId) {
+       initializedMotorcycleIdRef.current = undefined;
+       setPersistedImageHasGalleryRecord(false);
+       if (draft) {
+         setDraft(undefined);
+       }
+       return;
+     }
+ 
+     if (didMotorcycleChange) {
+       initializedMotorcycleIdRef.current = motorcycleId;
+       setLocalStatus('');
+       setPublishError('');
+       setSaving(false);
+       setPersistedImageHasGalleryRecord(false);
+       setDraft(originalDraft ? cloneAdminModelDraft(originalDraft) : undefined);
+       return;
+     }
+ 
+     if (!draft && originalDraft) {
+       setDraft(cloneAdminModelDraft(originalDraft));
+     }
+   }, [draft, motorcycleId, originalDraft]);
+ 
+   const suggestedModelId = useMemo(() => draft ? buildSuggestedModelId(draft) : '', [draft]);
+ 
+   const handleDraftFieldChange = useCallback((field: AdminModelDraftField, value: string) => {
+     setDraft((current) => current ? ({ ...current, [field]: value }) : current);
+   }, []);
+ 
+   const handleDraftCheckboxChange = useCallback((field: 'pricePending' | 'imageLocked', value: boolean) => {
+     setDraft((current) => current ? ({ ...current, [field]: value }) : current);
+   }, []);
+ 
+   const handleFeatureToggle = useCallback((feature: AdminModelFeatureKey, checked: boolean) => {
+     setDraft((current) => {
+       if (!current) return current;
+ 
+       return {
+         ...current,
+         features: {
+           ...current.features,
+           [feature]: checked,
+         },
+       };
+     });
+   }, []);
+ 
+   const handleLocalAction = useCallback((message: string) => {
+     setLocalStatus(message);
+     if (message !== 'Publicación pendiente de persistencia.') {
+       setPublishError('');
+     }
+   }, []);
+ 
