@@ -104,6 +104,51 @@ Siguiente paso:
 
 ---
 
+### Workstream E — Landings / Loading / image performance
+
+Rama:
+`feature/landings-loading-image-audit`
+
+Estado:
+* en implementación activa
+
+Objetivo:
+Optimizar la carga inicial de landings clave (Buscador, Loading preview) eliminando artefactos visuales bajo redes lentas y dependencias de iconos de fuente externa en componentes críticos de carga.
+
+Implementado:
+* LoadingState integrado como estado de carga real en #/buscador cuando getMotorcycles() resuelve.
+* isLoading robusto ante fallo de getMotorcycles() vía finally chain.
+* LoadingState libre de dependencia Material Symbols: los 6 iconos del loader (motorcycle, groups, manage_search, compare_arrows, sync, bolt) se renderizan como SVG inline, eliminando raw icon text bajo Slow 4G.
+
+Archivos o zonas permitidas:
+* LoadingState (shared/ui/loading)
+* App.tsx (solo isInitialLoading + SearchPage wrapping)
+* LoadingPreviewPage (si el tipo lo requiere)
+
+Zonas prohibidas:
+* schema/RLS/Supabase
+* admin/auth/cuenta
+* services
+* SearchPage (filtros/resultados/empty states)
+* RadarState
+* package files
+
+Pendiente:
+* Auditar y optimizar iconos críticos de UI actualmente dependientes de Material Symbols. Para estados de carga, filtros, reviews, ReviewModal, RadarState y otros estados de UI de alta visibilidad, preferir presets SVG locales que se rendericen inmediatamente bajo red lenta, preservando APIs de icono ergonómicas. Material Symbols siguen siendo aceptables para iconos decorativos de bajo riesgo donde el retardo de fuente no causa raw text visible.
+
+Riesgos:
+* LoadingState SCSS debe mantener `width`/`height` (no `font-size`) para sizing de iconos SVG.
+* No migrar Material Symbols globalmente sin auditoría de impacto visual por componente.
+
+Último resultado:
+* typecheck: clean
+* test:test enfocado SearchPage 40/40
+
+Siguiente paso:
+* Decidir próximos candidatos de migración SVG (filtros, ReviewModal, RadarState, botones de acción).
+
+---
+
 ### Workstream A — Rediseñar Insights en vivo
 
 Rama:
