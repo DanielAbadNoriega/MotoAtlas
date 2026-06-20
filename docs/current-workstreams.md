@@ -120,6 +120,15 @@ Implementado:
 * LoadingState integrado como estado de carga real en #/comparador cuando getMotorcycles() resuelve.
 * isLoading robusto ante fallo de getMotorcycles() vía finally chain.
 * LoadingState libre de dependencia Material Symbols: los 6 iconos del loader (motorcycle, groups, manage_search, compare_arrows, sync, bolt) se renderizan como SVG inline, eliminando raw icon text bajo Slow 4G.
+* MotoIcon shared registry (`src/shared/ui/icons/MotoIcon.tsx`) creado con 42 iconos inline SVG — sin imports de archivos SVG ni dependencia de fuente externa.
+* LoadingState migrado de `getIconPath()` helper privado a `<MotoIcon>` component.
+* `compare_arrows` y `sync` reemplazados por paths oficiales de Material Symbols desde archivos SVG locales.
+* API de MotoIcon endurecida: `name` acepta `MotoIconName | string`, atributos controlados (`viewBox`, `fill`, `aria-hidden`, `focusable`, `role`, `aria-label`) no sobrescribibles por consumidores.
+* MotoIcon.test.tsx con 9 tests iniciales, ampliado a 12 tests: text_ad, terminal, vibration + full-registry actualizado con 42 iconos.
+* ReviewModal migrado de Material Symbols a MotoIcon: 15 iconos reemplazados (check_circle, close, report, shield, star, comment, add, remove, route, arrow_right_alt, aspect icons, etc.).
+* ReviewAspectSummary migrado de Material Symbols a MotoIcon: 3 iconos reemplazados + chat→comment.
+* ReviewModal usa text_ad para el campo de experiencia/comentario en vez de terminal.
+* ReviewAspectSummary resuelve vibration desde MotoIcon (sin fallback a motorcycle para suspension).
 
 Archivos o zonas permitidas:
 * LoadingState (shared/ui/loading)
@@ -134,8 +143,14 @@ Zonas prohibidas:
 * RadarState
 * package files
 
-Pendiente:
-* Auditar y optimizar iconos críticos de UI actualmente dependientes de Material Symbols. Para estados de carga, filtros, reviews, ReviewModal, RadarState y otros estados de UI de alta visibilidad, preferir presets SVG locales que se rendericen inmediatamente bajo red lenta, preservando APIs de icono ergonómicas. Material Symbols siguen siendo aceptables para iconos decorativos de bajo riesgo donde el retardo de fuente no causa raw text visible.
+Pendiente (próximas fases de migración SVG):
+* Migrar iconos críticos restantes a MotoIcon por fases:
+  1. Filtros de búsqueda/comunidad/cuenta/admin
+  2. RadarState y otros estados de UI de alta visibilidad
+  3. Reviews (featured cards, summary cards, summary)
+  4. Botones de acción (Navbar, paginación, etc.)
+* Material Symbols siguen siendo aceptables para iconos decorativos de bajo riesgo donde el retardo de fuente no causa raw text visible.
+* Optimización de imágenes como bloque futuro separado (no mezclar con migración SVG).
 
 Riesgos:
 * LoadingState SCSS debe mantener `width`/`height` (no `font-size`) para sizing de iconos SVG.
@@ -143,11 +158,14 @@ Riesgos:
 
 Último resultado:
 * typecheck: clean
-* test: 78 files, 1415 passed
+* test: 79 files, 1427 passed
+* MotoIcon: 12/12
+* ReviewModal: 34/34
+* ReviewAspectSummary: 14/14
 * git diff --check: clean
 
 Siguiente paso:
-* Decidir próximos candidatos de migración SVG (filtros, ReviewModal, RadarState, botones de acción).
+* Decidir próxima fase de migración SVG: filtros, RadarState, reviews o botones de acción.
 
 ---
 

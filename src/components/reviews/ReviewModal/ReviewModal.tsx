@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { useAuth } from '../../../features/auth';
 import { createReviewWithAspects, type MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
 import type { Bike } from '../../../types/bike';
@@ -264,7 +265,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
             <div className="review-modal__accent" />
             <div className="review-modal__success-content">
               <div className="review-modal__success-icon" aria-hidden="true">
-                <span className="material-symbols-outlined">check_circle</span>
+                <MotoIcon name="check_circle" />
               </div>
               <h2 id={titleId}>Review enviada</h2>
               <p>Gracias. Tu opinión se revisará antes de publicarse.</p>
@@ -282,7 +283,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
           <>
             <header className="review-modal__header">
               <button ref={closeButtonRef} className="review-modal__close" type="button" onClick={requestClose} aria-label="Cerrar modal de review">
-                <span className="material-symbols-outlined" aria-hidden="true">close</span>
+                <MotoIcon name="close" />
               </button>
               <div className="review-modal__header-content">
                 <div className="review-modal__eyebrow">
@@ -299,13 +300,13 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
             <form ref={formRef} className="review-modal__form" onSubmit={submitReview} noValidate>
               {status === 'validation-error' ? (
                 <div className="review-modal__alert" role="alert">
-                  <span className="material-symbols-outlined" aria-hidden="true">report</span>
+                  <MotoIcon name="report" />
                   <span>Revisa los campos obligatorios antes de enviar.</span>
                 </div>
               ) : null}
               {status === 'service-error' ? (
                 <div className="review-modal__alert review-modal__alert--service" role="alert">
-                  <span className="material-symbols-outlined" aria-hidden="true">report</span>
+                  <MotoIcon name="report" />
                   <span>{serviceError || 'No se pudo enviar la review. Inténtalo de nuevo.'}</span>
                 </div>
               ) : null}
@@ -315,7 +316,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                   <span className="review-modal__alias-text">@{profileAlias}</span>
                   {reviewAuthContext ? (
                     <span className="review-modal__account-badge">
-                      <span className="material-symbols-outlined" aria-hidden="true">shield</span>
+                      <MotoIcon name="shield" />
                       <span>Tu review quedará asociada a tu cuenta.</span>
                     </span>
                   ) : null}
@@ -337,7 +338,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                       type="button"
                       onClick={() => setRating(value)}
                     >
-                      <span className="material-symbols-outlined" aria-hidden="true">star</span>
+                      <MotoIcon name="star" />
                     </button>
                   ))}
                 </div>
@@ -361,7 +362,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                     >
                       <div className="review-modal__aspect-card-front">
                         <div className="review-modal__aspect-card-decoration" aria-hidden="true">
-                          <span className="material-symbols-outlined">{aspect.icon}</span>
+                          <MotoIcon name={aspect.icon} />
                         </div>
                         <div className="review-modal__aspect-card-content">
                           <div className="review-modal__aspect-card-header">
@@ -369,7 +370,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                             <span className="review-modal__aspect-card-name">{aspect.name}</span>
                             {comment ? (
                               <span className="review-modal__aspect-card-has-comment" aria-hidden="true">
-                                <span className="material-symbols-outlined">comment</span>
+                                <MotoIcon name="comment" />
                               </span>
                             ) : null}
                           </div>
@@ -383,7 +384,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                               type="button"
                               onClick={() => toggleAspect(aspect.id, 'positive')}
                             >
-                              <span className="material-symbols-outlined" aria-hidden="true">add</span>
+                              <MotoIcon name="add" />
                             </button>
                             <button
                               aria-label={`Marcar ${aspect.name} como aspecto mejorable`}
@@ -392,7 +393,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                               type="button"
                               onClick={() => toggleAspect(aspect.id, 'negative')}
                             >
-                              <span className="material-symbols-outlined" aria-hidden="true">remove</span>
+                              <MotoIcon name="remove" />
                             </button>
                             <button
                               aria-label={`Añadir matiz sobre ${aspect.name}`}
@@ -401,7 +402,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                               type="button"
                               onClick={() => value && openAspectComment(aspect.id)}
                             >
-                              <span className="material-symbols-outlined" aria-hidden="true">comment</span>
+                              <MotoIcon name="comment" />
                             </button>
                           </div>
                         </div>
@@ -432,7 +433,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                               closeAspectComment();
                             }}
                           >
-                            <span className="material-symbols-outlined" aria-hidden="true">close</span>
+                            <MotoIcon name="close" />
                           </button>
                           <button
                             className="review-modal__aspect-card-back-save"
@@ -452,7 +453,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
                 })}
                 <div className="review-modal__aspect-card review-modal__usage-card">
                   <div className="review-modal__aspect-card-decoration" aria-hidden="true">
-                    <span className="material-symbols-outlined">route</span>
+                    <MotoIcon name="route" />
                   </div>
                   <div className="review-modal__aspect-card-content">
                     <div className="review-modal__aspect-card-header">
@@ -520,7 +521,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
 
               <div className="review-modal__summary-notes">
                 <div className="review-modal__summary-notes-header">
-                  <span className="material-symbols-outlined review-modal__summary-notes-icon" aria-hidden="true">terminal</span>
+                  <MotoIcon name="text_ad" className="review-modal__summary-notes-icon" />
                   <label className="review-modal__summary-notes-title" id="review-modal-comment-label">Tu experiencia</label>
                 </div>
                 <textarea
@@ -536,7 +537,7 @@ export function ReviewModal({ isOpen, motorcycle, onClose }: ReviewModalProps) {
               <footer className="review-modal__footer">
                 <button className="review-modal__submit-btn" type="submit" disabled={isSubmitting}>
                   {isSubmitting ? 'Enviando...' : 'Registrar y continuar'}
-                  {!isSubmitting && <span className="material-symbols-outlined review-modal__submit-icon" aria-hidden="true">arrow_right_alt</span>}
+                  {!isSubmitting && <MotoIcon name="arrow_right_alt" className="review-modal__submit-icon" />}
                 </button>
                 <button className="review-modal__cancel-btn" type="button" onClick={requestClose} disabled={isSubmitting}>
                   Cancelar
