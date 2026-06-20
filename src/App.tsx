@@ -34,6 +34,7 @@ import { ReliabilityReports } from './components/sections/ReliabilityReports';
 import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
 import { bikeCatalog } from './data/bikes';
 import comparisonHero from './assets/comparison-hero.png';
+import versusBikes from './assets/versus-bikes.png';
 import { findBikeComparisonByHash } from './data/comparisons';
 import { getMotorcycles } from './services/motorcycleService';
 import { loadCompareQueue } from './utils/compareQueue';
@@ -381,12 +382,24 @@ export function App() {
       ) : isAccountPage ? (
         <AccountPage />
       ) : isComparatorPage ? (
-        <ComparatorPage
-          bikes={comparatorBikes}
-          ignoredBikeCount={routeComparatorSelection.ignoredIds.length}
-          missingBikeCount={missingComparatorIds.length}
-          motorcycles={motorcycles}
-        />
+        isInitialLoading ? (
+          <LoadingState
+            eyebrow="Comparador"
+            title="Preparando comparativa"
+            message="Estamos alineando especificaciones, rendimiento y datos clave entre modelos."
+            icon="compare_arrows"
+            variant="page"
+            size="lg"
+            backgroundImage={versusBikes}
+          />
+        ) : (
+          <ComparatorPage
+            bikes={comparatorBikes}
+            ignoredBikeCount={routeComparatorSelection.ignoredIds.length}
+            missingBikeCount={missingComparatorIds.length}
+            motorcycles={motorcycles}
+          />
+        )
       ) : isCommunityLandingPage ? (
         <CommunityLandingPage motorcycles={motorcycles} />
       ) : isCommunityReviewsPage ? (

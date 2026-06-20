@@ -113,16 +113,17 @@ Estado:
 * en implementación activa
 
 Objetivo:
-Optimizar la carga inicial de landings clave (Buscador, Loading preview) eliminando artefactos visuales bajo redes lentas y dependencias de iconos de fuente externa en componentes críticos de carga.
+Optimizar la carga inicial de landings clave (Buscador, Comparador, Loading preview) eliminando artefactos visuales bajo redes lentas y dependencias de iconos de fuente externa en componentes críticos de carga.
 
 Implementado:
 * LoadingState integrado como estado de carga real en #/buscador cuando getMotorcycles() resuelve.
+* LoadingState integrado como estado de carga real en #/comparador cuando getMotorcycles() resuelve.
 * isLoading robusto ante fallo de getMotorcycles() vía finally chain.
 * LoadingState libre de dependencia Material Symbols: los 6 iconos del loader (motorcycle, groups, manage_search, compare_arrows, sync, bolt) se renderizan como SVG inline, eliminando raw icon text bajo Slow 4G.
 
 Archivos o zonas permitidas:
 * LoadingState (shared/ui/loading)
-* App.tsx (solo isInitialLoading + SearchPage wrapping)
+* App.tsx (solo isInitialLoading + SearchPage + ComparatorPage wrapping)
 * LoadingPreviewPage (si el tipo lo requiere)
 
 Zonas prohibidas:
@@ -142,7 +143,8 @@ Riesgos:
 
 Último resultado:
 * typecheck: clean
-* test:test enfocado SearchPage 40/40
+* test: 78 files, 1415 passed
+* git diff --check: clean
 
 Siguiente paso:
 * Decidir próximos candidatos de migración SVG (filtros, ReviewModal, RadarState, botones de acción).
