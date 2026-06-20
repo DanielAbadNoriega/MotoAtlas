@@ -130,6 +130,12 @@ import {
   type RequestStatusFilterValue,
   type RequestStatusOption,
 } from './adminPageConstants';
+import {
+  formatPreviewNumber,
+  formatPreviewPrice,
+  getPreviewBadgeIcon,
+  getPreviewBadgeLabel,
+} from './adminModelPreviewUtils';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
 import { PageHero } from '../../ui/PageHero';
@@ -196,38 +202,6 @@ const emptyAdminModelDraft: AdminModelDraft = {
     tubelessWheels: false,
   },
 };
-
-function formatPreviewNumber(value: string, unit: string) {
-  const parsed = Number(value);
-
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return '—';
-  }
-
-  return `${new Intl.NumberFormat('es-ES').format(parsed)} ${unit}`;
-}
-
-function formatPreviewPrice(value: string, isPending: boolean) {
-  const parsed = Number(value);
-
-  if (isPending || !Number.isFinite(parsed) || parsed <= 0) {
-    return 'Precio pendiente';
-  }
-
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(parsed);
-}
-
-function getPreviewBadgeLabel(segment: BikeSegment | '') {
-  return segment ? segmentLabels[segment] : 'Segmento pendiente';
-}
-
-function getPreviewBadgeIcon(segment: BikeSegment | '') {
-  return segment ? segmentIcons[segment] : 'category';
-}
 
 function AdminModelSection({ children, description, id, technicalTitle }: AdminModelSectionProps) {
   return (
