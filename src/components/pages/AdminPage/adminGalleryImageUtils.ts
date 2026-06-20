@@ -259,6 +259,32 @@ export function getGalleryImageCardFacts(
   ].filter(Boolean) as ReadonlyArray<GalleryImageCardFact>;
 }
 
+export function appendGalleryImage(
+  currentImages: readonly AdminMotorcycleGalleryImage[],
+  nextImage: AdminMotorcycleGalleryImage,
+): readonly AdminMotorcycleGalleryImage[] {
+  const existingIndex = currentImages.findIndex((image) => image.id === nextImage.id);
+  const images = existingIndex >= 0
+    ? currentImages.map((image, index) => (index === existingIndex ? nextImage : image))
+    : [...currentImages, nextImage];
+
+  return [...images].sort((left, right) => {
+    if (left.sortOrder !== right.sortOrder) {
+      return left.sortOrder - right.sortOrder;
+    }
+
+    return left.createdAt.localeCompare(right.createdAt);
+  });
+}
+
+export function getNextGallerySortOrder(images: readonly AdminMotorcycleGalleryImage[]): number {
+  if (images.length === 0) {
+    return 0;
+  }
+
+  return images.reduce((maxSortOrder, image) => Math.max(maxSortOrder, image.sortOrder), 0) + 1;
+}
+
 export function buildGalleryLibraryImages(
   galleryImages: readonly AdminMotorcycleGalleryImage[],
   persistedImageUrl: string,

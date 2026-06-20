@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { AdminMotorcycleGalleryImage } from '../../../services/adminMotorcycleGalleryService';
 import {
+  appendGalleryImage,
   buildGalleryLibraryImages,
   getMotorcycleImageObjectPath,
   galleryImageMatchesImage,
+  getNextGallerySortOrder,
   isGalleryImageCurrentCover,
   isImageBackedByGalleryRecord,
   getActiveGalleryImages,
@@ -405,6 +407,58 @@ describe('getGalleryImageCardFacts', () => {
   it('returns empty array when galleryImage is undefined', () => {
     const facts = getGalleryImageCardFacts(null, undefined);
     expect(facts).toHaveLength(0);
+  });
+});
+
+describe('appendGalleryImage', () => {
+  it('appends a new image to an empty list', () => {
+    const image = mockGalleryImage({ id: 'a', sortOrder: 1, createdAt: '2025-01-01T00:00:00.000Z' });
+    const result = appendGalleryImage([], image);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('a');
+  });
+
+  it('replaces existing image with same id', () => {
+    const existing = mockGalleryImage({ id: 'a', sortOrder: 1, url: '/images/old.jpg', createdAt: '2025-01-01T00:00:00.000Z' });
+    const updated = mockGalleryImage({ id: 'a', sortOrder: 1, url: '/images/new.jpg', createdAt: '2025-01-01T00:00:00.000Z' });
+    const result = appendGalleryImage([existing], updated);
+    expect(result).toHaveLength(1);
+    expect(result[0].url).toBe('/images/new.jpg');
+  });
+
+  it('sorts by sortOrder ascending', () => {
+    const first = mockGalleryImage({ id: 'a', sortOrder: 0, createdAt: '2025-01-01T00:00:00.000Z' });
+    const second = mockGalleryImage({ id: 'b', sortOrder: 2, createdAt: '2025-01-01T00:00:00.000Z' });
+    const third = mockGalleryImage({ id: 'c', sortOrder: 1, createdAt: '2025-01-01T00:00:00.000Z' });
+    const result = appendGalleryImage([first, second], third);
+    expect(result.map((i) => i.id)).toEqual(['a', 'c', 'b']);
+  });
+
+  it('sorts by createdAt when sortOrder ties', () => {
+    const earlier = mockGalleryImage({ id: 'a', sortOrder: 1, createdAt: '2025-01-01T00:00:00.000Z' });
+    const later = mockGalleryImage({ id: 'b', sortOrder: 1, createdAt: '2025-06-01T00:00:00.000Z' });
+    const result = appendGalleryImage([later], earlier);
+    expect(result.map((i) => i.id)).toEqual(['a', 'b']);
+  });
+});
+
+describe('getNextGallerySortOrder', () => {
+  it('returns 0 for empty list', () => {
+    expect(getNextGallerySortOrder([])).toBe(0);
+  });
+
+  it('returns max sortOrder + 1', () => {
+    const images = [
+      mockGalleryImage({ id: 'a', sortOrder: 0 }),
+      mockGalleryImage({ id: 'b', sortOrder: 5 }),
+      mockGalleryImage({ id: 'c', sortOrder: 2 }),
+    ];
+    expect(getNextGallerySortOrder(images)).toBe(6);
+  });
+
+  it('handles single image', () => {
+    const images = [mockGalleryImage({ id: 'a', sortOrder: 3 })];
+    expect(getNextGallerySortOrder(images)).toBe(4);
   });
 });
 

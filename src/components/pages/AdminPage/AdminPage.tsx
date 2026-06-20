@@ -49,9 +49,11 @@ import {
 } from '../../../services/adminMotorcycleGalleryService';
 import {
   adminModelTechnicalPlaceholderImage,
+  appendGalleryImage,
   buildGalleryLibraryImages,
   formatGalleryImageDate,
   getActiveGalleryImages,
+  getNextGallerySortOrder,
   getGalleryImageAssetName,
   getGalleryImageCardEyebrow,
   getGalleryImageCardFacts,
@@ -136,6 +138,17 @@ import {
   getPreviewBadgeIcon,
   getPreviewBadgeLabel,
 } from './adminModelPreviewUtils';
+import {
+  formatDate,
+  formatFileSize,
+  formatPendingReviewCount,
+  getBrandOptions,
+  getCurrentImageOriginLabel,
+  getDisplayName,
+  getTimestamp,
+  isRangePresetActive,
+  normalizeTextList,
+} from './adminPageUtils';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
 import { PageHero } from '../../ui/PageHero';
@@ -360,34 +373,10 @@ const defaultReviewsFilters: AdminReviewsFilters = {
   sort: 'recent',
 };
 
-const dateFormatter = new Intl.DateTimeFormat('es-ES', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-});
-
 function hasActiveFilters(filters: AdminFilters) {
   return filters.reason !== defaultFilters.reason
     || filters.sort !== defaultFilters.sort
     || filters.status !== defaultFilters.status;
-}
-
-function formatDate(value: string) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? 'Fecha pendiente' : dateFormatter.format(date);
-}
-
-function getTimestamp(value: string) {
-  const timestamp = new Date(value).getTime();
-  return Number.isNaN(timestamp) ? 0 : timestamp;
-}
-
-function formatPendingReviewCount(value: number) {
-  return value === 1 ? '1 review nueva' : `${value} reviews nuevas`;
-}
-
-function getDisplayName(profileName: string | null | undefined, email: string | undefined) {
-  return profileName?.trim() || email || 'Admin MotoAtlas';
 }
 
 function buildAdminReviewGarage(reviews: readonly MotorcycleReview[]): readonly AdminReviewGarageItem[] {
@@ -751,54 +740,6 @@ type AdminModelFormBodyProps = Readonly<{
   formLabel: string;
 }>;
 
-function appendGalleryImage(
-  currentImages: readonly AdminMotorcycleGalleryImage[],
-  nextImage: AdminMotorcycleGalleryImage,
-): readonly AdminMotorcycleGalleryImage[] {
-  const existingIndex = currentImages.findIndex((image) => image.id === nextImage.id);
-  const images = existingIndex >= 0
-    ? currentImages.map((image, index) => (index === existingIndex ? nextImage : image))
-    : [...currentImages, nextImage];
-
-  return [...images].sort((left, right) => {
-    if (left.sortOrder !== right.sortOrder) {
-      return left.sortOrder - right.sortOrder;
-    }
-
-    return left.createdAt.localeCompare(right.createdAt);
-  });
-}
-
-function getNextGallerySortOrder(images: readonly AdminMotorcycleGalleryImage[]): number {
-  if (images.length === 0) {
-    return 0;
-  }
-
-  return images.reduce((maxSortOrder, image) => Math.max(maxSortOrder, image.sortOrder), 0) + 1;
-}
-
-function getCurrentImageOriginLabel(imageUrl: string): string {
-  const trimmedUrl = imageUrl.trim();
-
-  if (!trimmedUrl) {
-    return 'Pendiente';
-  }
-
-  if (getMotorcycleImageObjectPath(trimmedUrl)) {
-    return 'Storage MotoAtlas';
-  }
-
-  if (trimmedUrl.startsWith('/images/')) {
-    return 'Catálogo local';
-  }
-
-  if (/^https?:\/\//i.test(trimmedUrl)) {
-    return 'URL externa';
-  }
-
-  return 'Borrador local';
-}
-
 function AdminModelFormBody({
   draft,
   suggestedModelId,
@@ -838,12 +779,6 @@ function AdminModelFormBody({
   const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
   const { session, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
 
   const resetSelectedUploadState = useCallback(() => {
     setSelectedFile(null);
@@ -2265,14 +2200,6 @@ type AdminModelsEditFilters = {
   dataSources: MotorcycleDataSource[];
 };
 
-function isRangePresetActive(min: string, max: string, preset: RangeFilterPreset): boolean {
-  return min === preset.min && max === preset.max;
-}
-
-function getBrandOptions(catalog: readonly Bike[]): string[] {
-  return [...new Set(catalog.map((b) => b.brand))].sort();
-}
-
 function AdminModelsEditFiltersPanel({
   filters,
   isOpen,
@@ -3620,12 +3547,6 @@ function ReportStatusBadge({ status }: Readonly<{ status: ReviewReportStatus }>)
 
 function ReviewStatusBadge({ status }: Readonly<{ status: MotorcycleReviewStatus }>) {
   return <span className="admin-page__status-pill admin-page__status-pill--review" data-status={status}>{reviewStatusLabels[status]}</span>;
-}
-
-function normalizeTextList(values: readonly string[] | null | undefined) {
-  return (values ?? [])
-    .map((value) => (typeof value === 'string' ? value.trim() : ''))
-    .filter((value) => value.length > 0 && value.toLowerCase() !== 'null');
 }
 
 function AdminReportCard({
