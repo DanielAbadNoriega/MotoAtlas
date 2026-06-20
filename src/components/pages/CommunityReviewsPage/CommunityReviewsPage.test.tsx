@@ -1909,7 +1909,7 @@ describe('CommunityReviewsPage', () => {
       await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
       const featuredSection = getFeaturedSection();
-      const card = within(featuredSection).getByTestId('featured-review-card');
+      const card = await within(featuredSection).findByTestId('featured-review-card');
       const responderBtn = within(card).getByRole('button', { name: 'Responder' });
       expect(responderBtn).toBeInTheDocument();
       expect(responderBtn).toHaveClass('motorcycle-community__helpful-action');
@@ -1941,7 +1941,7 @@ describe('CommunityReviewsPage', () => {
       await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
       const featuredSection = getFeaturedSection();
-      const card = within(featuredSection).getByTestId('featured-review-card');
+      const card = await within(featuredSection).findByTestId('featured-review-card');
 
       await waitFor(() => {
         expect(getRepliesByReviewIdMock).toHaveBeenCalled();
@@ -1980,7 +1980,7 @@ describe('CommunityReviewsPage', () => {
       await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
       const featuredSection = getFeaturedSection();
-      const card = within(featuredSection).getByTestId('featured-review-card');
+      const card = await within(featuredSection).findByTestId('featured-review-card');
 
       await waitFor(() => {
         expect(getRepliesByReviewIdMock).toHaveBeenCalled();
@@ -2018,7 +2018,7 @@ describe('CommunityReviewsPage', () => {
       await waitFor(() => expect(getApprovedCommunityReviewsMock).toHaveBeenCalledTimes(1));
 
       const featuredSection = getFeaturedSection();
-      const card = within(featuredSection).getByTestId('featured-review-card');
+      const card = await within(featuredSection).findByTestId('featured-review-card');
 
       await waitFor(() => {
         expect(getRepliesByReviewIdMock).toHaveBeenCalled();
