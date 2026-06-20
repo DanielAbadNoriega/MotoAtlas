@@ -24,6 +24,7 @@ import {
 } from './components/pages/StaticInfoPages';
 import { CommunityLandingPage } from './components/pages/CommunityLandingPage';
 import { LoadingPreviewPage } from './components/pages/LoadingPreviewPage';
+import { LoadingState } from './shared/ui/loading';
 import { UnderConstructionCardSection, UnderConstructionPage, noticiasContent, noticiasExtraCards } from './components/pages/UnderConstructionPage';
 import { FeaturedMachines } from './components/sections/FeaturedMachines';
 import { HomeHero } from './components/sections/HomeHero';
@@ -32,6 +33,7 @@ import { MachineDuel } from './components/sections/MachineDuel';
 import { ReliabilityReports } from './components/sections/ReliabilityReports';
 import { ScrollToTopButton } from './components/ui/ScrollToTopButton';
 import { bikeCatalog } from './data/bikes';
+import comparisonHero from './assets/comparison-hero.png';
 import { findBikeComparisonByHash } from './data/comparisons';
 import { getMotorcycles } from './services/motorcycleService';
 import { loadCompareQueue } from './utils/compareQueue';
@@ -103,6 +105,7 @@ function HomePage() {
 export function App() {
   const route = useAppRoute();
   const [motorcycles, setMotorcycles] = useState<readonly Bike[]>(bikeCatalog);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const handleMotorcyclesChange = useCallback((updatedBike: Bike) => {
     setMotorcycles((prev) => {
@@ -164,11 +167,20 @@ export function App() {
   useEffect(() => {
     let isMounted = true;
 
-    getMotorcycles().then((result) => {
-      if (isMounted) {
-        setMotorcycles(result.motorcycles);
-      }
-    });
+    getMotorcycles()
+      .then((result) => {
+        if (isMounted) {
+          setMotorcycles(result.motorcycles);
+        }
+      })
+      .catch(() => {
+        // Keep existing fallback bikeCatalog state.
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
+      });
 
     return () => {
       isMounted = false;
@@ -386,7 +398,19 @@ export function App() {
       ) : bikeDetailId ? (
         <BikeDetailPage bike={detailBike} motorcycles={motorcycles} />
       ) : isSearchPage ? (
-        <SearchPage motorcycles={motorcycles} routeHash={route} />
+        isInitialLoading ? (
+          <LoadingState
+            eyebrow="Buscador técnico"
+            title="Preparando buscador"
+            message="Estamos organizando modelos, filtros y datos técnicos para afinar la búsqueda."
+            icon="manage_search"
+            variant="page"
+            size="lg"
+            backgroundImage={comparisonHero}
+          />
+        ) : (
+          <SearchPage motorcycles={motorcycles} routeHash={route} />
+        )
       ) : staticInfoRouteKey === 'metodologia' ? (
         <DataMethodologyPage />
       ) : staticInfoRouteKey === 'fuentes-datos' ? (
