@@ -1,3 +1,4 @@
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import type { ReportReviewActionProps } from './ReviewCommunityActions.types';
 
 export function ReportReviewAction({
@@ -13,7 +14,7 @@ export function ReportReviewAction({
   if (hasReported) {
     return (
       <span className="motorcycle-community__helpful-action motorcycle-community__helpful-action--reported" aria-label="Review reportada">
-        <span className="material-symbols-outlined" aria-hidden="true">flag</span>
+        <MotoIcon name="flag" />
         Reportada
       </span>
     );
@@ -27,7 +28,7 @@ export function ReportReviewAction({
       disabled={isPending}
       onClick={onOpen}
     >
-      <span className="material-symbols-outlined" aria-hidden="true">flag</span>
+      <MotoIcon name="flag" />
       Reportar
     </button>
   );

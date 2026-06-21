@@ -1,4 +1,5 @@
 import type { MotorcycleReview, MotorcycleReviewRidingStyle } from '../../../services/motorcycleReviewService';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { getInitialsSafe } from '../../../shared/reviews/communityUtils';
 import { getReviewUserName, isReviewVerified } from '../../../shared/reviews/reviewUtils';
 import './MotorcycleReviewCard.scss';
@@ -38,9 +39,7 @@ function RatingStars({ rating }: { rating: number }) {
   return (
     <span className="motorcycle-review-card__stars" aria-label={`${rating} de 5 estrellas`}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <span className="material-symbols-outlined" data-filled={rating >= star ? 'true' : 'false'} key={star} aria-hidden="true">
-          star
-        </span>
+        <MotoIcon className="motorcycle-review-card__star" data-filled={rating >= star ? 'true' : 'false'} key={star} name="star" />
       ))}
     </span>
   );
@@ -92,7 +91,7 @@ export function MotorcycleReviewCard({ review, variant = 'full' }: MotorcycleRev
             </small>
             {isReviewVerified(review) ? (
               <span className="motorcycle-review-card__verified-badge">
-                <span className="material-symbols-outlined" aria-hidden="true">verified</span>
+                <MotoIcon name="verified" />
                 Review verificada
               </span>
             ) : null}

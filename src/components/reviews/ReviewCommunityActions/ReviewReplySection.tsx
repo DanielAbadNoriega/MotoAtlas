@@ -1,3 +1,4 @@
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import type { ReviewReplySectionProps } from './ReviewCommunityActions.types';
 import { ReplyConvivenceNotice } from './ReplyConvivenceNotice';
 
@@ -43,7 +44,7 @@ export function ReviewReplySection({
       onClick={onOpenReply}
       type="button"
     >
-      <span className="material-symbols-outlined" aria-hidden="true">reply</span>
+      <MotoIcon name="reply" />
       Responder
     </button>
   ) : null;
@@ -56,7 +57,7 @@ export function ReviewReplySection({
       aria-controls={repliesListId}
       type="button"
     >
-      <span className="material-symbols-outlined" aria-hidden="true">forum</span>
+      <MotoIcon name="forum" />
       {expanded
         ? `Ocultar ${count} ${count === 1 ? 'respuesta' : 'respuestas'}`
         : `Ver ${count} ${count === 1 ? 'respuesta' : 'respuestas'}`}
@@ -68,7 +69,7 @@ export function ReviewReplySection({
       {visibleReplies.map((reply) => (
         <li key={reply.id} className="motorcycle-community__reply-item">
           <div className="motorcycle-community__reply-header">
-            <span className="material-symbols-outlined" aria-hidden="true">reply</span>
+            <MotoIcon name="reply" />
             <span className="motorcycle-community__reply-author">
               {reply.userId === user?.id ? 'Tú' : reply.userName}
             </span>
