@@ -146,10 +146,10 @@
 
 .radar-state__icon {
   color: rgba($color-surface-bright, 0.72);
-  font-size: clamp(4.75rem, 12vw, 6rem);
-  font-variation-settings: 'FILL' 0, 'wght' 100, 'GRAD' 0, 'opsz' 48;
+  height: clamp(4.75rem, 12vw, 6rem);
   opacity: 0.72;
   position: relative;
+  width: clamp(4.75rem, 12vw, 6rem);
   z-index: 1;
 }
 

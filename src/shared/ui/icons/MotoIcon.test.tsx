@@ -69,6 +69,20 @@ describe('MotoIcon', () => {
     expect(svg).toBeInTheDocument();
   });
 
+  it('renders search_off icon', () => {
+    const { container } = render(<MotoIcon name="search_off" />);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveAttribute('viewBox', '0 -960 960 960');
+  });
+
+  it('renders radar icon', () => {
+    const { container } = render(<MotoIcon name="radar" />);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveAttribute('viewBox', '0 -960 960 960');
+  });
+
   it('renders vibration icon', () => {
     const { container } = render(<MotoIcon name="vibration" />);
     const svg = container.querySelector('svg');
@@ -104,10 +118,12 @@ describe('MotoIcon', () => {
       'oil_barrel',
       'palette',
       'payments',
+      'radar',
       'rate_review',
       'remove',
       'report',
       'route',
+      'search_off',
       'settings',
       'settings_input_component',
       'shield',
