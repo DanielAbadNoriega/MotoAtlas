@@ -9,11 +9,15 @@ export type UseAdminImageManagerReturn = {
   setImageMode: Dispatch<SetStateAction<'url' | 'upload'>>;
   selectUrlMode: () => void;
   selectUploadMode: () => void;
+  galleryInfoCardKeys: ReadonlySet<string>;
+  handleToggleGalleryCardInfo: (cardKey: string) => void;
+  resetGalleryInfoCardKeys: () => void;
 };
 
 export function useAdminImageManager(): UseAdminImageManagerReturn {
   const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
   const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+  const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
 
   const openImageManager = useCallback(() => {
     setIsImageManagerOpen(true);
@@ -31,6 +35,24 @@ export function useAdminImageManager(): UseAdminImageManagerReturn {
     setImageMode('upload');
   }, []);
 
+  const handleToggleGalleryCardInfo = useCallback((cardKey: string) => {
+    setGalleryInfoCardKeys((current) => {
+      const next = new Set(current);
+
+      if (next.has(cardKey)) {
+        next.delete(cardKey);
+      } else {
+        next.add(cardKey);
+      }
+
+      return next;
+    });
+  }, []);
+
+  const resetGalleryInfoCardKeys = useCallback(() => {
+    setGalleryInfoCardKeys(new Set());
+  }, []);
+
   return {
     isImageManagerOpen,
     setIsImageManagerOpen,
@@ -40,5 +62,8 @@ export function useAdminImageManager(): UseAdminImageManagerReturn {
     setImageMode,
     selectUrlMode,
     selectUploadMode,
+    galleryInfoCardKeys,
+    handleToggleGalleryCardInfo,
+    resetGalleryInfoCardKeys,
   };
 }

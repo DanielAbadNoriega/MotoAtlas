@@ -37,4 +37,33 @@ describe('useAdminImageManager', () => {
     act(() => result.current.selectUploadMode());
     expect(result.current.imageMode).toBe('upload');
   });
+
+  it('galleryInfoCardKeys starts as empty set', () => {
+    const { result } = renderHook(() => useAdminImageManager());
+    expect(result.current.galleryInfoCardKeys.size).toBe(0);
+  });
+
+  it('handleToggleGalleryCardInfo adds a key', () => {
+    const { result } = renderHook(() => useAdminImageManager());
+    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
+    expect(result.current.galleryInfoCardKeys.has('card-1')).toBe(true);
+    expect(result.current.galleryInfoCardKeys.size).toBe(1);
+  });
+
+  it('handleToggleGalleryCardInfo removes an existing key', () => {
+    const { result } = renderHook(() => useAdminImageManager());
+    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
+    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
+    expect(result.current.galleryInfoCardKeys.has('card-1')).toBe(false);
+    expect(result.current.galleryInfoCardKeys.size).toBe(0);
+  });
+
+  it('resetGalleryInfoCardKeys clears the set', () => {
+    const { result } = renderHook(() => useAdminImageManager());
+    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
+    act(() => result.current.handleToggleGalleryCardInfo('card-2'));
+    expect(result.current.galleryInfoCardKeys.size).toBe(2);
+    act(() => result.current.resetGalleryInfoCardKeys());
+    expect(result.current.galleryInfoCardKeys.size).toBe(0);
+  });
 });

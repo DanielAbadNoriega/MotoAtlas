@@ -1,0 +1,576 @@
+diff --git a/src/components/pages/AdminPage/AdminPage.tsx b/src/components/pages/AdminPage/AdminPage.tsx
+index e662408..e707297 100644
+--- a/src/components/pages/AdminPage/AdminPage.tsx
++++ b/src/components/pages/AdminPage/AdminPage.tsx
+@@ -696,246 +696,248 @@ export function AdminModelsPage() {
+           <span className="material-symbols-outlined" aria-hidden="true">add_circle</span>
+           <h2>Nuevo modelo</h2>
+           <p>Aquí arrancará el futuro flujo de alta interna del catálogo.</p>
+           <a className="account-page__button account-page__button--glass" href="#/admin/modelos/nuevo">Abrir placeholder</a>
+         </article>
+         <article className="account-page__card admin-page__summary-card">
+           <span className="material-symbols-outlined" aria-hidden="true">edit_note</span>
+           <h2>Editar modelo existente</h2>
+           <p>Busca y selecciona una moto del catálogo para abrir su ficha interna de edición.</p>
+           <a className="account-page__button account-page__button--glass" href="#/admin/modelos/editar">Seleccionar modelo</a>
+         </article>
+       </section>
+     </AdminModelsWorkspace>
+   );
+ }
+ 
+ type AdminModelFormBodyProps = Readonly<{
+   draft: AdminModelDraft;
+   suggestedModelId: string;
+   localStatus: string;
+   persistedImageLocked?: boolean;
+   persistedImageUrl?: string;
+   onDraftFieldChange: (field: AdminModelDraftField, value: string) => void;
+   onDraftCheckboxChange: (field: 'pricePending' | 'imageLocked', value: boolean) => void;
+   onFeatureToggle: (feature: AdminModelFeatureKey, checked: boolean) => void;
+   onDiscardChanges: () => void;
+   onLocalAction: (message: string) => void;
+   onPublish?: (autoUploadedUrl?: string) => void;
+   onUploadImage?: (file: File) => Promise<string>;
+   onCreateGalleryRecord?: (input: {
+     motorcycleId: string;
+     url: string;
+     storagePath: string;
+     isPrimary: boolean;
+     sortOrder: number;
+     source: MotorcycleDataSource;
+   }) => Promise<AdminMotorcycleGalleryImage>;
+   onPersistedImageGalleryStateChange?: (isGalleryBacked: boolean) => void;
+   onDeleteImage?: (objectPath: string) => Promise<void>;
+   galleryImagesRef?: MutableRefObject<readonly AdminMotorcycleGalleryImage[]>;
+   pendingDeleteImageIdsRef?: MutableRefObject<readonly string[]>;
+   saving?: boolean;
+   toolbarKicker: string;
+   workspaceHeading: string;
+   workspaceHeadingId: string;
+   formLabel: string;
+ }>;
+ 
+ function AdminModelFormBody({
+   draft,
+   suggestedModelId,
+   localStatus,
+   persistedImageLocked = false,
+   persistedImageUrl = '',
+   onDraftFieldChange,
+   onDraftCheckboxChange,
+   onFeatureToggle,
+   onDiscardChanges,
+   onLocalAction,
+   onPublish,
+   onUploadImage,
+   onCreateGalleryRecord,
+   onPersistedImageGalleryStateChange,
+   onDeleteImage,
+   galleryImagesRef,
+   pendingDeleteImageIdsRef,
+   saving,
+   toolbarKicker,
+   workspaceHeading,
+   workspaceHeadingId,
+   formLabel,
+ }: AdminModelFormBodyProps) {
+   const {
+     isImageManagerOpen,
+     setIsImageManagerOpen,
+     openImageManager,
+     closeImageManager,
+     imageMode,
+     selectUrlMode,
+     selectUploadMode,
++    galleryInfoCardKeys,
++    handleToggleGalleryCardInfo,
++    resetGalleryInfoCardKeys,
+   } = useAdminImageManager();
+   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+   const [fileError, setFileError] = useState<string | null>(null);
+   const [galleryImages, setGalleryImages] = useState<readonly AdminMotorcycleGalleryImage[]>([]);
+   const [galleryLoading, setGalleryLoading] = useState(false);
+   const [galleryError, setGalleryError] = useState<string | null>(null);
+   const [galleryBackedUploadUrls, setGalleryBackedUploadUrls] = useState<readonly string[]>([]);
+-  const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
+   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'warning'; message: string } | null>(null);
+   const [pendingDeleteImageIds, setPendingDeleteImageIds] = useState<ReadonlySet<string>>(new Set());
+   const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
+   const { session, user } = useAuth();
+   const fileInputRef = useRef<HTMLInputElement | null>(null);
+ 
+   const resetSelectedUploadState = useCallback(() => {
+     setSelectedFile(null);
+     setPreviewBlobUrl(null);
+     setHasUploadedImage(false);
+     if (fileInputRef.current) {
+       fileInputRef.current.value = '';
+     }
+   }, []);
+ 
+   const handleFileSelect = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+     const file = event.target.files?.[0] ?? null;
+     setFileError(null);
+ 
+     if (!file) {
+       setSelectedFile(null);
+       setPreviewBlobUrl(null);
+       return;
+     }
+ 
+     if (!ADMIN_ACCEPTED_MIME_TYPES.includes(file.type)) {
+       setFileError('Tipo de archivo no soportado. Usa: JPEG, PNG o WebP.');
+       setSelectedFile(null);
+       setPreviewBlobUrl(null);
+       setHasUploadedImage(false);
+       return;
+     }
+ 
+     if (file.size > ADMIN_MAX_FILE_SIZE) {
+       setFileError('El archivo supera el límite de 5 MB.');
+       setSelectedFile(null);
+       setPreviewBlobUrl(null);
+       setHasUploadedImage(false);
+       return;
+     }
+ 
+     setHasUploadedImage(false);
+     setUploadStatus(null);
+     const blobUrl = URL.createObjectURL(file);
+     setPreviewBlobUrl(blobUrl);
+     setSelectedFile(file);
+   }, []);
+ 
+   useEffect(() => {
+     const url = previewBlobUrl;
+     return () => {
+       if (url) {
+         URL.revokeObjectURL(url);
+       }
+     };
+   }, [previewBlobUrl]);
+ 
+   // Handle Escape key to close modal
+   useEffect(() => {
+     if (!isImageManagerOpen) return;
+ 
+     const handleKeyDown = (event: KeyboardEvent) => {
+       if (event.key === 'Escape') {
+         setIsImageManagerOpen(false);
+       }
+     };
+ 
+     window.addEventListener('keydown', handleKeyDown);
+     return () => window.removeEventListener('keydown', handleKeyDown);
+   }, [isImageManagerOpen]);
+ 
+   // Fetch gallery images when modal opens in edit mode
+   useEffect(() => {
+     if (!isImageManagerOpen) {
+       setGalleryLoading(false);
+       setGalleryError(null);
+-      setGalleryInfoCardKeys(new Set());
++      resetGalleryInfoCardKeys();
+       stableLibraryKeyRef.current.clear();
+       return;
+     }
+ 
+     if (!draft.modelId.trim()) {
+       return;
+     }
+ 
+     let cancelled = false;
+     setGalleryLoading(true);
+     setGalleryError(null);
+ 
+     getAdminMotorcycleGalleryImages(draft.modelId, session?.access_token)
+       .then((images) => {
+         if (!cancelled) {
+           setGalleryImages(images);
+           setGalleryLoading(false);
+         }
+       })
+       .catch((error) => {
+         if (!cancelled) {
+           setGalleryError(error instanceof Error ? error.message : 'Error al cargar la galería');
+           setGalleryLoading(false);
+         }
+       });
+ 
+     return () => { cancelled = true; };
+   }, [isImageManagerOpen, draft.modelId, session?.access_token]);
+ 
+   const [isUploading, setIsUploading] = useState(false);
+   const [hasUploadedImage, setHasUploadedImage] = useState(false);
+   const [sessionUploadedImageUrl, setSessionUploadedImageUrl] = useState<string | null>(null);
+   const [isDeletingCurrentImage, setIsDeletingCurrentImage] = useState(false);
+ 
+   const maybeCreateGalleryRecordForUpload = useCallback(async (publicUrl: string) => {
+     const trimmedModelId = draft.modelId.trim();
+     const storagePath = getMotorcycleImageObjectPath(publicUrl);
+ 
+     if (!onCreateGalleryRecord || !trimmedModelId || !storagePath) {
+       return { galleryImage: null, warningMessage: null };
+     }
+ 
+     const existingImage = galleryImages.find((image) =>
+       image.url === publicUrl || (image.storagePath && image.storagePath === storagePath),
+     );
+ 
+     if (existingImage) {
+       setGalleryBackedUploadUrls((currentUrls) => (
+         currentUrls.includes(publicUrl) ? currentUrls : [...currentUrls, publicUrl]
+       ));
+ 
+       return { galleryImage: existingImage, warningMessage: null };
+     }
+ 
+     try {
+       const galleryImage = await onCreateGalleryRecord({
+         motorcycleId: trimmedModelId,
+         url: publicUrl,
+         storagePath,
+         isPrimary: false,
+         sortOrder: getNextGallerySortOrder(galleryImages),
+         source: 'manual',
+       });
+ 
+       const nextGalleryImages = appendGalleryImage(galleryImages, galleryImage);
+       setGalleryImages(nextGalleryImages);
+       if (galleryImagesRef) {
+         galleryImagesRef.current = nextGalleryImages;
+       }
+       setGalleryBackedUploadUrls((currentUrls) => (
+         currentUrls.includes(publicUrl) ? currentUrls : [...currentUrls, publicUrl]
+       ));
+ 
+       return { galleryImage, warningMessage: null };
+     } catch (error) {
+       const reason = error instanceof Error ? error.message : 'Error al registrar la imagen en la galería.';
+       return {
+         galleryImage: null,
+         warningMessage: `Imagen subida correctamente, pero no se pudo registrar en la galería. ${reason}`,
+       };
+@@ -1151,172 +1153,160 @@ function AdminModelFormBody({
+     setGalleryBackedUploadUrls([]);
+     setIsDeletingCurrentImage(false);
+     setPendingDeleteImageIds(new Set());
+     resetSelectedUploadState();
+     onDiscardChanges();
+   }, [onDiscardChanges, resetSelectedUploadState]);
+ 
+   function scrollToSection(sectionId: string) {
+     const el = document.getElementById(sectionId);
+     if (!el) return;
+     if (el instanceof HTMLDetailsElement && !el.open) {
+       el.open = true;
+     }
+     requestAnimationFrame(() => {
+       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+     });
+   }
+ 
+   function getSectionProgress(sectionId: string): number {
+     switch (sectionId) {
+       case 'admin-model-section-identity': {
+         const filled = [draft.brand, draft.model, draft.year, draft.description].filter(Boolean).length;
+         return filled / 4;
+       }
+       case 'admin-model-section-classification': {
+         const filled = [draft.segment, draft.license].filter(Boolean).length;
+         return filled / 2;
+       }
+       case 'admin-model-section-engine': {
+         const fields = [draft.engineType, draft.displacementCc, draft.powerHp, draft.torqueNm, draft.wetWeightKg, draft.seatHeightMm, draft.fuelTankLiters];
+         return fields.filter(Boolean).length / fields.length;
+       }
+       case 'admin-model-section-electronics': {
+         const checked = Object.values(draft.features).filter(Boolean).length;
+         return checked / Object.keys(draft.features).length;
+       }
+       case 'admin-model-section-market': {
+         return draft.priceEur ? 1 : 0;
+       }
+       case 'admin-model-section-image': {
+         const hasImage = draft.imageUrl || selectedFile || hasUploadedImage;
+         return hasImage ? 1 : 0;
+       }
+       case 'admin-model-section-sources': {
+         const fields = [draft.officialUrl, draft.sourceNotes, draft.internalNotes];
+         return fields.filter(Boolean).length / fields.length;
+       }
+       default:
+         return 0;
+     }
+   }
+ 
+   const imageModalBadge = [draft.brand.trim(), draft.model.trim(), draft.year.trim()]
+     .filter(Boolean)
+     .join(' · ');
+   const currentImagePreviewUrl = currentImageUrl || '';
+   const currentImageOriginLabel = getCurrentImageOriginLabel(currentImagePreviewUrl);
+   const currentImageStatusLabel = currentImagePreviewUrl
+     ? (draft.imageLocked ? 'Portada bloqueada' : 'Portada activa')
+     : 'Sin portada';
+   const currentImageSupportCopy = currentImagePreviewUrl
+     ? 'Esta imagen sigue siendo la portada activa que usa el modelo en el flujo actual.'
+     : 'Define una imagen principal desde URL manual o archivo local para preparar la portada del modelo.';
+   const libraryImages = useMemo(
+     () => buildGalleryLibraryImages(galleryImages, persistedImageUrlTrimmed, currentImagePreviewUrl, stableLibraryKeyRef.current),
+     [currentImagePreviewUrl, galleryImages, persistedImageUrlTrimmed],
+   );
+ 
+   const handleUseLibraryImageAsCover = useCallback((nextImageUrl: string) => {
+     onDraftFieldChange('imageUrl', nextImageUrl);
+     setFileError(null);
+     setUploadStatus(null);
+     setSelectedFile(null);
+     setPreviewBlobUrl(null);
+     setHasUploadedImage(false);
+     if (fileInputRef.current) {
+       fileInputRef.current.value = '';
+     }
+   }, [onDraftFieldChange]);
+ 
+-  const handleToggleGalleryCardInfo = useCallback((cardKey: string) => {
+-    setGalleryInfoCardKeys((current) => {
+-      const next = new Set(current);
+-      if (next.has(cardKey)) {
+-        next.delete(cardKey);
+-      } else {
+-        next.add(cardKey);
+-      }
+-      return next;
+-    });
+-  }, []);
+-
+   return (
+     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
+       <header className="admin-page__model-toolbar">
+           <span className="admin-page__model-toolbar-kicker">{toolbarKicker}</span>
+           <h2 id={workspaceHeadingId}>{workspaceHeading}</h2>
+       </header>
+ 
+       <AdminModelHeroPreview draft={draft} />
+ 
+       <nav className="admin-page__section-radar" aria-label="Secciones del formulario">
+         <ul className="admin-page__section-radar-list">
+           {sectionNavItems.map((item) => {
+             const progress = getSectionProgress(item.id);
+             const progressPct = Math.round(progress * 100);
+             return (
+               <li key={item.id} className="admin-page__section-radar-item">
+                 <button
+                   type="button"
+                   className="admin-page__section-radar-btn"
+                   aria-label={`${item.label}, ${progressPct}% completado`}
+                   onClick={() => scrollToSection(item.id)}
+                 >
+                   <span className="admin-page__section-radar-index" aria-hidden="true">{item.index}</span>
+                   <span className="admin-page__section-radar-track" aria-hidden="true">
+                     <span className="admin-page__section-radar-fill" style={{ height: `${progressPct}%` }} />
+                   </span>
+                   <span className="admin-page__section-radar-label">{item.label}</span>
+                 </button>
+               </li>
+             );
+           })}
+         </ul>
+       </nav>
+ 
+       <form className="admin-page__model-form" aria-label={formLabel} onSubmit={(event) => event.preventDefault()}>
+         <AdminModelSection
+           id="admin-model-section-identity"
+           technicalTitle="01. MODELO"
+           description="Base de naming y copy inicial para alimentar el preview local antes de decidir persistencia o validación real."
+         >
+           <div className="admin-page__model-field-grid">
+             <label className="admin-page__model-field" htmlFor="admin-model-brand">
+               <span className="admin-page__model-label">
+                 <span className="material-symbols-outlined" aria-hidden="true">branding_watermark</span>
+                 Marca
+               </span>
+               <input id="admin-model-brand" aria-label="Marca" type="text" value={draft.brand} onChange={(event) => onDraftFieldChange('brand', event.target.value)} placeholder="BMW" />
+             </label>
+ 
+             <label className="admin-page__model-field" htmlFor="admin-model-name">
+               <span className="admin-page__model-label">
+                 <span className="material-symbols-outlined" aria-hidden="true">two_wheeler</span>
+                 Modelo
+               </span>
+               <input id="admin-model-name" aria-label="Modelo" type="text" value={draft.model} onChange={(event) => onDraftFieldChange('model', event.target.value)} placeholder="F 900 GS" />
+             </label>
+ 
+             <label className="admin-page__model-field" htmlFor="admin-model-year">
+               <span className="admin-page__model-label">
+                 <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                 Año
+               </span>
+               <input id="admin-model-year" aria-label="Año" type="number" min="1900" max="2100" value={draft.year} onChange={(event) => onDraftFieldChange('year', event.target.value)} placeholder="2026" />
+             </label>
+ 
+             <label className="admin-page__model-field" htmlFor="admin-model-id">
+               <span className="admin-page__model-label">
+                 <span className="material-symbols-outlined" aria-hidden="true">tag</span>
+                 ID sugerido
+                 <AdminModelInfoTooltip
+                   ariaLabel="Más información sobre ID sugerido"
+                   description={`Sugerencia automática: ${suggestedModelId || 'marca-modelo-2026'}`}
+                 />
+               </span>
+               <input id="admin-model-id" aria-label="ID sugerido" type="text" value={draft.modelId} onChange={(event) => onDraftFieldChange('modelId', event.target.value)} placeholder={suggestedModelId || 'marca-modelo-2026'} />
+             </label>
+ 
+             <label className="admin-page__model-field admin-page__model-field--full" htmlFor="admin-model-description">
+               <span className="admin-page__model-label">
+                 <span className="material-symbols-outlined" aria-hidden="true">article</span>
+diff --git a/src/components/pages/AdminPage/useAdminImageManager.test.tsx b/src/components/pages/AdminPage/useAdminImageManager.test.tsx
+index 213e333..1f7de78 100644
+--- a/src/components/pages/AdminPage/useAdminImageManager.test.tsx
++++ b/src/components/pages/AdminPage/useAdminImageManager.test.tsx
+@@ -1,40 +1,69 @@
+ import { act, renderHook } from '@testing-library/react';
+ import { describe, expect, it } from 'vitest';
+ import { useAdminImageManager } from './useAdminImageManager';
+ 
+ describe('useAdminImageManager', () => {
+   it('initial state has modal closed and URL mode', () => {
+     const { result } = renderHook(() => useAdminImageManager());
+     expect(result.current.isImageManagerOpen).toBe(false);
+     expect(result.current.imageMode).toBe('url');
+   });
+ 
+   it('openImageManager sets isImageManagerOpen to true', () => {
+     const { result } = renderHook(() => useAdminImageManager());
+     act(() => result.current.openImageManager());
+     expect(result.current.isImageManagerOpen).toBe(true);
+   });
+ 
+   it('closeImageManager sets isImageManagerOpen to false', () => {
+     const { result } = renderHook(() => useAdminImageManager());
+     act(() => {
+       result.current.openImageManager();
+       result.current.closeImageManager();
+     });
+     expect(result.current.isImageManagerOpen).toBe(false);
+   });
+ 
+   it('selectUrlMode switches imageMode to url', () => {
+     const { result } = renderHook(() => useAdminImageManager());
+     act(() => result.current.selectUploadMode());
+     expect(result.current.imageMode).toBe('upload');
+     act(() => result.current.selectUrlMode());
+     expect(result.current.imageMode).toBe('url');
+   });
+ 
+   it('selectUploadMode switches imageMode to upload', () => {
+     const { result } = renderHook(() => useAdminImageManager());
+     act(() => result.current.selectUploadMode());
+     expect(result.current.imageMode).toBe('upload');
+   });
++
++  it('galleryInfoCardKeys starts as empty set', () => {
++    const { result } = renderHook(() => useAdminImageManager());
++    expect(result.current.galleryInfoCardKeys.size).toBe(0);
++  });
++
++  it('handleToggleGalleryCardInfo adds a key', () => {
++    const { result } = renderHook(() => useAdminImageManager());
++    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
++    expect(result.current.galleryInfoCardKeys.has('card-1')).toBe(true);
++    expect(result.current.galleryInfoCardKeys.size).toBe(1);
++  });
++
++  it('handleToggleGalleryCardInfo removes an existing key', () => {
++    const { result } = renderHook(() => useAdminImageManager());
++    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
++    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
++    expect(result.current.galleryInfoCardKeys.has('card-1')).toBe(false);
++    expect(result.current.galleryInfoCardKeys.size).toBe(0);
++  });
++
++  it('resetGalleryInfoCardKeys clears the set', () => {
++    const { result } = renderHook(() => useAdminImageManager());
++    act(() => result.current.handleToggleGalleryCardInfo('card-1'));
++    act(() => result.current.handleToggleGalleryCardInfo('card-2'));
++    expect(result.current.galleryInfoCardKeys.size).toBe(2);
++    act(() => result.current.resetGalleryInfoCardKeys());
++    expect(result.current.galleryInfoCardKeys.size).toBe(0);
++  });
+ });
+diff --git a/src/components/pages/AdminPage/useAdminImageManager.ts b/src/components/pages/AdminPage/useAdminImageManager.ts
+index 05910d4..efb295c 100644
+--- a/src/components/pages/AdminPage/useAdminImageManager.ts
++++ b/src/components/pages/AdminPage/useAdminImageManager.ts
+@@ -1,44 +1,69 @@
+ import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+ 
+ export type UseAdminImageManagerReturn = {
+   isImageManagerOpen: boolean;
+   setIsImageManagerOpen: Dispatch<SetStateAction<boolean>>;
+   openImageManager: () => void;
+   closeImageManager: () => void;
+   imageMode: 'url' | 'upload';
+   setImageMode: Dispatch<SetStateAction<'url' | 'upload'>>;
+   selectUrlMode: () => void;
+   selectUploadMode: () => void;
++  galleryInfoCardKeys: ReadonlySet<string>;
++  handleToggleGalleryCardInfo: (cardKey: string) => void;
++  resetGalleryInfoCardKeys: () => void;
+ };
+ 
+ export function useAdminImageManager(): UseAdminImageManagerReturn {
+   const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
+   const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
++  const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
+ 
+   const openImageManager = useCallback(() => {
+     setIsImageManagerOpen(true);
+   }, []);
+ 
+   const closeImageManager = useCallback(() => {
+     setIsImageManagerOpen(false);
+   }, []);
+ 
+   const selectUrlMode = useCallback(() => {
+     setImageMode('url');
+   }, []);
+ 
+   const selectUploadMode = useCallback(() => {
+     setImageMode('upload');
+   }, []);
+ 
++  const handleToggleGalleryCardInfo = useCallback((cardKey: string) => {
++    setGalleryInfoCardKeys((current) => {
++      const next = new Set(current);
++
++      if (next.has(cardKey)) {
++        next.delete(cardKey);
++      } else {
++        next.add(cardKey);
++      }
++
++      return next;
++    });
++  }, []);
++
++  const resetGalleryInfoCardKeys = useCallback(() => {
++    setGalleryInfoCardKeys(new Set());
++  }, []);
++
+   return {
+     isImageManagerOpen,
+     setIsImageManagerOpen,
+     openImageManager,
+     closeImageManager,
+     imageMode,
+     setImageMode,
+     selectUrlMode,
+     selectUploadMode,
++    galleryInfoCardKeys,
++    handleToggleGalleryCardInfo,
++    resetGalleryInfoCardKeys,
+   };
+ }

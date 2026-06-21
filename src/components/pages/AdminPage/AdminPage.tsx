@@ -773,6 +773,9 @@ function AdminModelFormBody({
     imageMode,
     selectUrlMode,
     selectUploadMode,
+    galleryInfoCardKeys,
+    handleToggleGalleryCardInfo,
+    resetGalleryInfoCardKeys,
   } = useAdminImageManager();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
@@ -781,7 +784,6 @@ function AdminModelFormBody({
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [galleryBackedUploadUrls, setGalleryBackedUploadUrls] = useState<readonly string[]>([]);
-  const [galleryInfoCardKeys, setGalleryInfoCardKeys] = useState<ReadonlySet<string>>(new Set());
   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'warning'; message: string } | null>(null);
   const [pendingDeleteImageIds, setPendingDeleteImageIds] = useState<ReadonlySet<string>>(new Set());
   const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
@@ -858,7 +860,7 @@ function AdminModelFormBody({
     if (!isImageManagerOpen) {
       setGalleryLoading(false);
       setGalleryError(null);
-      setGalleryInfoCardKeys(new Set());
+      resetGalleryInfoCardKeys();
       stableLibraryKeyRef.current.clear();
       return;
     }
@@ -886,7 +888,7 @@ function AdminModelFormBody({
       });
 
     return () => { cancelled = true; };
-  }, [isImageManagerOpen, draft.modelId, session?.access_token]);
+  }, [isImageManagerOpen, draft.modelId, session?.access_token, resetGalleryInfoCardKeys]);
 
   const [isUploading, setIsUploading] = useState(false);
   const [hasUploadedImage, setHasUploadedImage] = useState(false);
@@ -1227,18 +1229,6 @@ function AdminModelFormBody({
       fileInputRef.current.value = '';
     }
   }, [onDraftFieldChange]);
-
-  const handleToggleGalleryCardInfo = useCallback((cardKey: string) => {
-    setGalleryInfoCardKeys((current) => {
-      const next = new Set(current);
-      if (next.has(cardKey)) {
-        next.delete(cardKey);
-      } else {
-        next.add(cardKey);
-      }
-      return next;
-    });
-  }, []);
 
   return (
     <section className="admin-page__model-studio" aria-labelledby={workspaceHeadingId}>
