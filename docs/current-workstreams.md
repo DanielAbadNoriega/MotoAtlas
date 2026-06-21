@@ -24,19 +24,30 @@ Rama:
 (ninguna — backlog documentado)
 
 Estado:
-* pendiente de implementación
-* auditoría completada
+* implementación parcial completada (extracción helpers + hook)
+* pendiente: eliminación inmediata + galería autónoma
 * decisión de producto documentada
 
+Último bloque validado:
+**AdminPage refactor conservativo — helpers + hook extraídos sin cambios de comportamiento.**
+* helpers puros extraídos a `adminPageUtils.ts` + `adminGalleryImageUtils.ts` + `adminModelPreviewUtils.ts` + `adminPageConstants.ts` + `adminModelDraftUtils.ts` (147 tests nuevos combinados)
+* hook `useAdminImageManager` extraído con estado puramente local: `isImageManagerOpen`, `imageMode`, `galleriaInfoCardKeys` + handlers (9 tests)
+* límite de extracción respetado: no se co-extrajeron service calls, async flows ni refs
+* 13 vars de estado de imagen permanecen en `AdminModelFormBody` (acopladas a upload/delete/gallery/publish)
+* AdminPage tests: 255/255
+* suite completa: all tests passed
+* typecheck: clean
+* `git diff --check`: clean
+
 Objetivo:
-Convertir las acciones de galería de imágenes de Admin Models en operaciones independientes del formulario del modelo, y comenzar el refactor de `AdminPage.tsx` que ha crecido demasiado.
+Convertir las acciones de galería de imágenes de Admin Models en operaciones independientes del formulario del modelo, y continuar el refactor de `AdminPage.tsx`.
 
 Problema actual:
 * El borrado de imágenes de galería usa pending-delete local (`pendingDeleteImageIds` Set).
 * Las imágenes marcadas no se eliminan hasta que el admin publica el formulario completo del modelo.
 * El botón undo reemplaza al botón "Usar como portada" en la misma posición, lo que resulta confuso.
 * La clase `--pending-delete` existe en TSX pero no tiene reglas SCSS — la card no se diferencia visualmente de forma suficiente.
-* `AdminPage.tsx` es demasiado grande y difícil de modificar con seguridad.
+* `AdminPage.tsx` sigue siendo grande — la extracción de helpers/hook redujo la carga cognitiva pero el JSX pesado de galería y modal sigue en `AdminModelFormBody`.
 
 Target behavior:
 * Click `delete_forever` → modal de confirmación → aplicar eliminación inmediata.
@@ -52,30 +63,33 @@ Current-cover safety:
 * Preferir PATCH minimalista a payload completo para no pisar campos no relacionados.
 
 Order de implementación propuesta:
-1. Extraer helpers puros de galería (sin cambios de comportamiento).
+1. ✅ Extraer helpers puros de galería (completado).
 2. Implementar modal de confirmación reutilizable.
 3. Reemplazar pending-delete por eliminación inmediata confirmada.
 4. Asegurar cover fallback en eliminación inmediata.
 5. Remover estado pending-delete + undo + badge + publish logic asociada.
 6. Multi-delete batch (después de single delete estable).
 7. Drag-and-drop reorder como acción independiente.
-8. Refactor extracción de hooks → componentes.
+8. ✅ Refactor extracción de hooks → componentes (helpers + hook completados; JSX pesado pendiente).
 
 Refactor direction:
 * No combinar refactor grande con cambios de comportamiento destructivo.
 * Extracción gradual: helpers puros → hooks → componentes presentacionales.
-* Descomposición propuesta:
+* ✅ Fase 1 completada: helpers puros extraídos (`adminPageUtils`, `adminGalleryImageUtils`, `adminModelPreviewUtils`, `adminPageConstants`, `adminModelDraftUtils`).
+* ✅ Fase 2 completada: hook `useAdminImageManager` con estado local puro extraído.
+* Pendiente: descomposición JSX (galería + modal) en componentes presentacionales:
   - AdminModelImageManagerModal
   - AdminImageGalleryGrid
   - AdminImageGalleryCard
   - AdminImageUploadControls
   - AdminGalleryDeleteConfirmationModal
-  - hooks: useAdminModelDraft, useAdminModelGallery, useAdminModelImageUpload, useAdminModelPrimarySync, useAdminModelGalleryDelete, useAdminModelPublish
+  - hooks adicionales: useAdminModelDraft, useAdminModelGallery, useAdminModelImageUpload, useAdminModelPrimarySync, useAdminModelGalleryDelete, useAdminModelPublish
 
 Archivos o zonas permitidas:
 * AdminPage.tsx
 * AdminPage.scss
 * AdminPage.test.tsx
+* archivos extraídos en `src/components/pages/AdminPage/` (admin*Utils.ts, useAdmin*.ts)
 * docs (solo si se pide explícitamente después)
 
 Zonas prohibidas:
@@ -93,14 +107,14 @@ Zonas prohibidas:
 Riesgos:
 * Fallo parcial si Storage delete falla tras gallery record delete (archivo huérfano aceptable).
 * `updateAdminMotorcycle` puede pisar campos del modelo si se usa para cover update aislado.
-* No iniciar refactor de AdminPage hasta tener los tests de regresión actuales (1415 tests).
+* No iniciar refactor de AdminPage hasta tener los tests de regresión actuales (~1571 tests).
 * No combinar refactor con cambios de comportamiento de galería.
 
 Último resultado:
-* Auditoría completada y documentada.
+* Extracción conservativa completada: helpers + hook useAdminImageManager. 156 tests nuevos. Suite completa en verde.
 
 Siguiente paso:
-* Decidir si implementar helper `updateAdminMotorcycleCover` antes de la eliminación inmediata.
+* Decidir si implementar helper `updateAdminMotorcycleCover` antes de la eliminación inmediata, o pasar directamente a implementar modal de confirmación (step 2).
 
 ---
 

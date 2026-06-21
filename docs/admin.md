@@ -183,16 +183,29 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 8. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 **Deuda técnica — refactor de AdminPage:**
-`AdminPage.tsx` ha crecido hasta ser difícil de modificar con seguridad. Refactor propuesto:
-- Extracción gradual: helpers puros → hooks → componentes presentacionales.
+`AdminPage.tsx` ha crecido hasta ser difícil de modificar con seguridad. Refactor en progreso:
+- Extracción gradual: ✅ helpers puros → ✅ hooks → ⬜ componentes presentacionales.
 - No combinar refactor con cambios de comportamiento destructivo.
-- Descomposición futura:
+
+**✅ Fase 1 completada — Helpers puros extraídos:**
+- `src/components/pages/AdminPage/adminPageUtils.ts` — dateFormatter, formatDate, getTimestamp, formatPendingReviewCount, getDisplayName, getBrandOptions, isRangePresetActive, normalizeTextList, getCurrentImageOriginLabel, formatFileSize (43 tests)
+- `src/components/pages/AdminPage/adminGalleryImageUtils.ts` — appendGalleryImage, getNextGallerySortOrder, buildGalleryLibraryImages, getMotorcycleImageObjectPath, helpers de gallery card (85 tests)
+- `src/components/pages/AdminPage/adminModelPreviewUtils.ts` — preview badges y formateo de preview (19 tests)
+- `src/components/pages/AdminPage/adminPageConstants.ts` — constantes estáticas, option lists y filter presets
+- `src/components/pages/AdminPage/adminModelDraftUtils.ts` — transformación/validación de draft
+
+**✅ Fase 2 completada — Hook extraído (límite conservativo):**
+- `src/components/pages/AdminPage/useAdminImageManager.ts` — estado puramente local (9 tests)
+- `isImageManagerOpen`, `imageMode`, handlers de apertura/cierre/modo, `galleriaInfoCardKeys`, `handleToggleGalleryCardInfo`, `resetGalleryInfoCardKeys`
+- Decisión: detener extracción aquí. Los 13 estados de imagen restantes en `AdminModelFormBody` están acoplados a service calls, async flows, refs, upload/delete/gallery/publish o Storage cleanup.
+
+**⬜ Pendiente — Descomposición JSX en componentes presentacionales:**
   - `AdminModelImageManagerModal`
   - `AdminImageGalleryGrid`
   - `AdminImageGalleryCard`
   - `AdminImageUploadControls`
   - `AdminGalleryDeleteConfirmationModal`
-  - hooks: `useAdminModelDraft`, `useAdminModelGallery`, `useAdminModelImageUpload`, `useAdminModelPrimarySync`, `useAdminModelGalleryDelete`, `useAdminModelPublish`
+  - hooks adicionales: `useAdminModelDraft`, `useAdminModelGallery`, `useAdminModelImageUpload`, `useAdminModelPrimarySync`, `useAdminModelGalleryDelete`, `useAdminModelPublish`
 
 ## `#/admin/reviews`
 
