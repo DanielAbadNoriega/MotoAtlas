@@ -149,6 +149,7 @@ import {
   isRangePresetActive,
   normalizeTextList,
 } from './adminPageUtils';
+import { useAdminImageManager } from './useAdminImageManager';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
 import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButton';
 import { PageHero } from '../../ui/PageHero';
@@ -764,11 +765,18 @@ function AdminModelFormBody({
   workspaceHeadingId,
   formLabel,
 }: AdminModelFormBodyProps) {
-  const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+  const {
+    isImageManagerOpen,
+    setIsImageManagerOpen,
+    openImageManager,
+    closeImageManager,
+    imageMode,
+    selectUrlMode,
+    selectUploadMode,
+  } = useAdminImageManager();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [isImageManagerOpen, setIsImageManagerOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<readonly AdminMotorcycleGalleryImage[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryError, setGalleryError] = useState<string | null>(null);
@@ -1508,7 +1516,7 @@ function AdminModelFormBody({
               <button
                 type="button"
                 className="account-page__button account-page__button--glass admin-page__model-action-button admin-model__image-manager-button"
-                onClick={() => setIsImageManagerOpen(true)}
+                onClick={openImageManager}
               >
                 Gestionar imágenes
               </button>
@@ -1588,7 +1596,7 @@ function AdminModelFormBody({
                 type="button"
                 className="admin-model__image-modal-close"
                 aria-label="Cerrar gestor de imágenes"
-                onClick={() => setIsImageManagerOpen(false)}
+                onClick={closeImageManager}
               >
                 <span className="material-symbols-outlined" aria-hidden="true">close</span>
               </button>
@@ -1875,10 +1883,10 @@ function AdminModelFormBody({
                     </div>
                     <div className="admin-page__model-field admin-page__model-field--full" role="group" aria-label="Modo de selección de imagen">
                       <div className="container-actions admin-model__image-modal-mode-switch" role="radiogroup" aria-label="Modo de selección de imagen">
-                        <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={() => setImageMode('url')}>
+                        <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'url'} onClick={selectUrlMode}>
                           URL manual
                         </button>
-                        <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={() => setImageMode('upload')}>
+                        <button className="account-page__button account-page__button--glass admin-page__model-action-button" type="button" role="radio" aria-checked={imageMode === 'upload'} onClick={selectUploadMode}>
                           Subir archivo
                         </button>
                       </div>
@@ -1985,14 +1993,14 @@ function AdminModelFormBody({
               <button
                 type="button"
                 className="account-page__button account-page__button--glass"
-                onClick={() => setIsImageManagerOpen(false)}
+                onClick={closeImageManager}
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 className="account-page__button"
-                onClick={() => setIsImageManagerOpen(false)}
+                onClick={closeImageManager}
               >
                 Guardar cambios
               </button>
