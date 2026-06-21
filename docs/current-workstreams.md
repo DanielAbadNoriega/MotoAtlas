@@ -120,17 +120,21 @@ Implementado:
 * LoadingState integrado como estado de carga real en #/comparador cuando getMotorcycles() resuelve.
 * isLoading robusto ante fallo de getMotorcycles() vía finally chain.
 * LoadingState libre de dependencia Material Symbols: los 6 iconos del loader (motorcycle, groups, manage_search, compare_arrows, sync, bolt) se renderizan como SVG inline, eliminando raw icon text bajo Slow 4G.
-* MotoIcon shared registry (`src/shared/ui/icons/MotoIcon.tsx`) creado con 44 iconos inline SVG — sin imports de archivos SVG ni dependencia de fuente externa.
+* MotoIcon shared registry (`src/shared/ui/icons/MotoIcon.tsx`) creado con 44 iconos inline SVG — ampliado a 62 iconos durante la migración de reviews — sin imports de archivos SVG ni dependencia de fuente externa.
 * LoadingState migrado de `getIconPath()` helper privado a `<MotoIcon>` component.
 * `compare_arrows` y `sync` reemplazados por paths oficiales de Material Symbols desde archivos SVG locales.
 * API de MotoIcon endurecida: `name` acepta `MotoIconName | string`, atributos controlados (`viewBox`, `fill`, `aria-hidden`, `focusable`, `role`, `aria-label`) no sobrescribibles por consumidores.
-* MotoIcon.test.tsx con 9 tests iniciales, ampliado a 14 tests: text_ad, terminal, vibration, search_off, radar + full-registry actualizado con 44 iconos.
+* MotoIcon.test.tsx con 9 tests iniciales, ampliado a 14 tests: text_ad, terminal, vibration, search_off, radar + full-registry actualizado con 62 iconos.
 * ReviewModal migrado de Material Symbols a MotoIcon: 15 iconos reemplazados (check_circle, close, report, shield, star, comment, add, remove, route, arrow_right_alt, aspect icons, etc.).
 * ReviewAspectSummary migrado de Material Symbols a MotoIcon: 3 iconos reemplazados + chat→comment.
 * ReviewModal usa text_ad para el campo de experiencia/comentario en vez de terminal.
 * ReviewAspectSummary resuelve vibration desde MotoIcon (sin fallback a motorcycle para suspension).
 * RadarState migrado de Material Symbols a MotoIcon: reemplazado `<span class="material-symbols-outlined">{icon}</span>` por `<MotoIcon>` inline SVG, eliminado `.material-symbols-outlined` y `font-variation-settings` del SCSS.
 * `search_off` y `radar` agregados a MotoIcon registry desde SVGs locales oficiales; RadarState por defecto usa `search_off` y consumidores usan `radar` — ambos resuelven sin fallback a motorcycle.
+* Review cards/actions migrados de Material Symbols a MotoIcon: FeaturedReviewCard, AccountReviewCard, MotorcycleReviewCard, HelpfulReviewAction, NotHelpfulReviewAction, ReportReviewAction, ReviewReplySection, ReplyConvivenceNotice.
+* 14 iconos de review agregados al registry: schedule, speed, calendar_month, block, verified, thumb_up, thumb_down, flag, reply, forum, info, expand_more, expand_less + route/star existentes.
+* SCSS de review cards/actions limpiado: selectores `.material-symbols-outlined` reemplazados por reglas `svg` con width/height explícitos y colores restaurados tras QA visual.
+* Tests actualizados: los que afirmaban texto raw de Material Symbols ahora verifican SVG/aria-expanded/estructura estable.
 
 Archivos o zonas permitidas:
 * LoadingState (shared/ui/loading)
@@ -147,8 +151,7 @@ Zonas prohibidas:
 Pendiente (próximas fases de migración SVG):
 * Migrar iconos críticos restantes a MotoIcon por fases:
    1. Filtros de búsqueda/comunidad/cuenta/admin
-   2. Reviews (featured cards, summary cards, summary)
-   3. Botones de acción (Navbar, paginación, etc.)
+   2. Botones de acción (Navbar, paginación, etc.)
 * Material Symbols siguen siendo aceptables para iconos decorativos de bajo riesgo donde el retardo de fuente no causa raw text visible.
 * Optimización de imágenes como bloque futuro separado (no mezclar con migración SVG).
 
@@ -163,10 +166,11 @@ Riesgos:
 * RadarState: 3/3
 * ReviewModal: 34/34
 * ReviewAspectSummary: 14/14
+* Review cards/actions focused: 60 passed (FeaturedReviewCard 41, AccountReviewCard 3, MotorcycleReviewCard 2, MotoIcon 14)
 * git diff --check: clean
 
 Siguiente paso:
-* Decidir próxima fase de migración SVG: filtros, reviews o botones de acción.
+* Decidir próxima fase de migración SVG: filtros o botones de acción.
 
 ---
 
