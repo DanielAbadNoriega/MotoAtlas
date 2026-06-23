@@ -3,11 +3,16 @@
 MotoAtlas debe poder crecer sin romper buscador, comparador, fichas, reviews ni el pipeline de datos. La prioridad es probar comportamiento real de usuario y contratos de datos, no píxeles ni clases CSS.
 
 Estado actual de suite:
-- `1415` tests passing (78 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- `1571` tests passing (82 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
 - Focused checks validados más recientes:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → gallery record creation + read-only connection + gallery card visual polish + stable ordering + pending-delete flow + primary sync hardening + Storage cleanup dedup + upload UX + delete button visual + card back info fix. **255 tests** passing.
   - `src/services/adminMotorcycleGalleryService.test.ts` + `supabase/schema.test.ts` → 2 files / 102 tests passing (gallery schema + service foundation).
-  - suite completa → `1415` tests passing.
+  - **Nuevos archivos extraídos del refactor conservativo:**
+    - `src/components/pages/AdminPage/adminPageUtils.test.ts` → **43 tests** (dateFormatter, formatDate, getTimestamp, formatPendingReviewCount, getDisplayName, getBrandOptions, isRangePresetActive, normalizeTextList, getCurrentImageOriginLabel, formatFileSize).
+    - `src/components/pages/AdminPage/adminGalleryImageUtils.test.ts` → **85 tests** (appendGalleryImage, getNextGallerySortOrder, buildGalleryLibraryImages, getMotorcycleImageObjectPath, gallery card helpers).
+    - `src/components/pages/AdminPage/adminModelPreviewUtils.test.ts` → **19 tests** (preview badges y formatters).
+    - `src/components/pages/AdminPage/useAdminImageManager.test.tsx` → **9 tests** (isImageManagerOpen, imageMode, handlers, galleriaInfoCardKeys).
+  - suite completa → `1571` tests passing (82 files).
 
 ## Stack actual
 
@@ -443,7 +448,7 @@ Cuando se reutilicen acciones comunitarias o cards de reviews, los tests deben v
 
 Cobertura actual relevante:
 
-- Baseline validado actual del proyecto: `1415` tests passing (78 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean.
+- Baseline validado actual del proyecto: `1571` tests passing (82 files). Quality Gate aprobado con `typecheck` clean y `git diff --check` clean. El incremento (+156 tests, +4 files) corresponde a los archivos extraídos del refactor conservativo de AdminPage.
 - Cobertura Admin Models Studio persistencia:
   - `src/components/pages/AdminPage/AdminPage.test.tsx` → cobertura de create publish, edit publish, validation errors (modeloId vacío, modeloId con espacios, sin marca, año inválido, imageUrl local aceptada, potencia inválida en edit), auth guard, acciones locales, service mocks, navegación post-publicación y sync App-level del catálogo en memoria.
   - `src/services/adminMotorcycleService.test.ts` → `19` tests cubriendo create/update success, error handling, payload validation.

@@ -18,10 +18,10 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1415 tests passing` (78 files).
+- Baseline validado actual: `1571 tests passing` (82 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual + card back info overflow fix (Quality Gate aprobado: 1415 tests, typecheck clean).
-  - Workstream detalle: `features/admin-models-studio` — galería multiimagen admin. Ver `docs/current-workstreams.md`.
+- Último bloque estable validado: AdminPage refactor conservativo — helpers + hook extraídos (Quality Gate aprobado: 1571 tests, typecheck clean).
+  - Workstream detalle: `docs/current-workstreams.md` — Workstream C (Admin gallery / AdminPage refactor).
 
 ## 3. Foco inmediato recomendado
 
@@ -176,7 +176,8 @@ Fases propuestas:
    - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` ya participa del cleanup seguro en UI solo para imágenes de sesión no persistidas y para cleanup diferido post-publish de imágenes persistidas reemplazadas.
    - Gallery pending-delete implementado: marcar imágenes para borrado diferido hasta publicar, con undo, badge, primary sync hardening, Storage cleanup de-duplicado, delete button visual (`delete_forever`) y card back info overflow fix.
-   - Quality Gate: 1415 tests, typecheck clean.
+    - **Refactor conservativo completado (rama `feature/admin-gallery-helpers`):** helpers puros extraídos a `adminPageUtils.ts`, `adminGalleryImageUtils.ts`, `adminModelPreviewUtils.ts`, `adminPageConstants.ts`, `adminModelDraftUtils.ts`. Hook `useAdminImageManager.ts` extraído con estado local puro. 156 tests nuevos. Pendiente: descomposición JSX de galería+modal en componentes presentacionales.
+    - Quality Gate: 1571 tests, typecheck clean.
    - Pendiente (galería): migrar pending-delete a eliminación inmediata con modal de confirmación (independiente del formulario). Drag-and-drop reorder con persistencia independiente. Card back info simplificada.
    - Pendiente (general): gestión autónoma de galería (confirmación inmediata, reorden, primary metadata independiente del formulario), WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
 

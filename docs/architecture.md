@@ -438,7 +438,7 @@ Funciones:
 - Publish: (1) sincroniza `isPrimary` (currentPrimary desde lista completa, matchingRecord desde activas, orden: unset → set), (2) itera pending-images: `deleteAdminMotorcycleGalleryImageRecord` + `deleteMotorcycleImage` con de-duplicación de paths.
 - **Decisión de producto:** reemplazar pending-delete por eliminación inmediata con modal de confirmación, independiente del formulario del modelo. La galería debe ser un subsistema autónomo.
 - **Riesgo técnico:** `updateAdminMotorcycle` puede no ser ideal para actualizaciones aisladas de cover. Evaluar helper `updateAdminMotorcycleCover(motorcycleId, { imageUrl, imageLocked }, token)` antes de implementar eliminación inmediata.
-- **Refactor de AdminPage:** el archivo ha crecido demasiado. Se recomienda extraer hooks y componentes (ver `docs/admin.md` para descomposición propuesta).
+- **Refactor de AdminPage:** el archivo sigue siendo grande, pero la fase conservativa está completa. Helpers puros extraídos a `adminPageUtils.ts`, `adminGalleryImageUtils.ts`, `adminModelPreviewUtils.ts`, `adminPageConstants.ts` y `adminModelDraftUtils.ts`. Hook `useAdminImageManager.ts` extraído con estado local puro (sin service calls ni async flows). Pendiente: descomposición JSX de galería + modal en componentes presentacionales (ver `docs/admin.md` para descomposición completa).
 
 **Section Radar en UI:**
 - Barra de navegación sticky entre hero y formulario con marcadores numerados y tracks de progreso por sección.
