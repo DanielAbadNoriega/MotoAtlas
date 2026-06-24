@@ -1,5 +1,6 @@
-import { type ReactNode } from 'react';
+import { useCallback, useState, type ChangeEvent, type ReactNode } from 'react';
 import { useAuth } from '../../../features/auth';
+import { canUseDemoData, isDemoDataToggleAvailable, setDemoDataPreference } from '../../../shared/env/runtimeEnvironment';
 import type { MotorcycleReviewStatus } from '../../../services/motorcycleReviewService';
 import { AccountQuickLinksNav, type AdminQuickLinksModelsItem } from '../AccountPage/AccountQuickLinksNav';
 import { reviewStatusLabels } from './adminPageConstants';
@@ -81,6 +82,41 @@ export function AdminSidebar({
       />
       {children}
     </aside>
+  );
+}
+
+export function AdminDemoDataToggle() {
+  const toggleAvailable = isDemoDataToggleAvailable();
+  const [includeDemoData, setIncludeDemoData] = useState(() => canUseDemoData());
+
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const nextValue = event.target.checked;
+    setDemoDataPreference(nextValue);
+    setIncludeDemoData(nextValue);
+  }, []);
+
+  if (!toggleAvailable) {
+    return null;
+  }
+
+  return (
+    <article className="account-page__notice admin-page__notice admin-page__demo-data-toggle">
+      <span className="material-symbols-outlined" aria-hidden="true">science</span>
+      <div className="admin-page__demo-data-content">
+        <strong>Datos demo</strong>
+        <p>Solo disponible en development/preview. En producción nunca habilita datos demo.</p>
+        <label className="admin-page__demo-data-control" htmlFor="admin-demo-data-toggle">
+          <input
+            id="admin-demo-data-toggle"
+            type="checkbox"
+            checked={includeDemoData}
+            onChange={handleChange}
+          />
+          <span>Incluir datos demo</span>
+        </label>
+        <small className="admin-page__demo-data-caption">El cambio se guarda en este navegador y afecta nuevas consultas o navegación.</small>
+      </div>
+    </article>
   );
 }
 

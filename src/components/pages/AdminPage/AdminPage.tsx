@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import adminHeroImage from '../../../assets/hero-admin.png';
 import { useAuth } from '../../../features/auth';
 import { getBikeDisplayName } from '../../../data/bikes';
@@ -26,7 +26,7 @@ import {
 
 import { BIKE_SEGMENTS, segmentIcons, segmentLabels, MOTORCYCLE_DATA_SOURCES } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { dataQualityLabels, getDataQualityLabel } from '../../../shared/dataQuality/dataQualityLabels';
-import { canUseDemoData, isDemoDataToggleAvailable, setDemoDataPreference } from '../../../shared/env/runtimeEnvironment';
+
 import { getMotorcycleTechnicalIcon } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
 import { normalizeText } from '../../../utils/motorcycleSearch';
 import {
@@ -64,10 +64,11 @@ import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { type AdminQuickLinksModelsItem } from '../AccountPage/AccountQuickLinksNav';
-import { AdminGate, AdminSidebar } from './adminSharedUi';
+import { AdminGate, AdminSidebar, AdminDemoDataToggle } from './adminSharedUi';
 import { AdminModelFormBody } from './AdminModelFormBody';
 import { AdminRequestsPage } from './AdminRequestsPage';
 import { AdminReviewsPage } from './AdminReviewsPage';
+import { AdminDashboardPage } from './AdminDashboardPage';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
 import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../../types/bike';
@@ -105,100 +106,6 @@ const emptyAdminModelDraft: AdminModelDraft = {
     tubelessWheels: false,
   },
 };
-
-
-function AdminDemoDataToggle() {
-  const toggleAvailable = isDemoDataToggleAvailable();
-  const [includeDemoData, setIncludeDemoData] = useState(() => canUseDemoData());
-
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = event.target.checked;
-    setDemoDataPreference(nextValue);
-    setIncludeDemoData(nextValue);
-  }, []);
-
-  if (!toggleAvailable) {
-    return null;
-  }
-
-  return (
-    <article className="account-page__notice admin-page__notice admin-page__demo-data-toggle">
-      <span className="material-symbols-outlined" aria-hidden="true">science</span>
-      <div className="admin-page__demo-data-content">
-        <strong>Datos demo</strong>
-        <p>Solo disponible en development/preview. En producción nunca habilita datos demo.</p>
-        <label className="admin-page__demo-data-control" htmlFor="admin-demo-data-toggle">
-          <input
-            id="admin-demo-data-toggle"
-            type="checkbox"
-            checked={includeDemoData}
-            onChange={handleChange}
-          />
-          <span>Incluir datos demo</span>
-        </label>
-        <small className="admin-page__demo-data-caption">El cambio se guarda en este navegador y afecta nuevas consultas o navegación.</small>
-      </div>
-    </article>
-  );
-}
-
-// Nota: usamos `PageHero` (base normalizada del antiguo `CommunityHero`)
-// para el hero en las páginas admin. El chip de admin se inyecta como
-// `children` cuando se necesita.
-
-export function AdminDashboardPage() {
-  const { profile, user } = useAuth();
-
-  return (
-    <AdminGate>
-      <PageHero
-        className="admin-page__community-hero admin-page__hero"
-        titleId="admin-dashboard-title"
-        imageSrc={adminHeroImage}
-        eyebrow="ADMIN STUDIO"
-        title="Panel de administración"
-        description="Gestiona la actividad crítica de MotoAtlas desde un espacio privado."
-      >
-        <div className="admin-page__hero-meta">
-          <div className="admin-page__admin-chip" aria-label="Administrador activo">
-            <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
-            {getDisplayName(profile?.displayName, user?.email)}
-          </div>
-        </div>
-      </PageHero>
-
-      <main className="account-page admin-page" aria-labelledby="admin-dashboard-title">
-        <section className="account-page__dashboard">
-          <AdminSidebar active="dashboard">
-            <AdminDemoDataToggle />
-          </AdminSidebar>
-          <div className="account-page__main">
-            <section className="admin-page__dashboard-grid" aria-labelledby="admin-dashboard-cards-title">
-              <article className="account-page__card admin-page__summary-card">
-                <span className="material-symbols-outlined" aria-hidden="true">flag</span>
-                <h2 id="admin-dashboard-cards-title">Reportes pendientes</h2>
-                <p>Revisa reportes de reviews, actualiza su estado y actúa sobre la review si corresponde.</p>
-                <a className="account-page__button" href="#/admin/moderacion">Ir a moderación</a>
-              </article>
-              <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
-                <span className="material-symbols-outlined" aria-hidden="true">rate_review</span>
-                <h2>Reviews pendientes</h2>
-                <p>Garaje admin agrupado por moto para revisar reviews de la comunidad.</p>
-                <a className="account-page__button account-page__button--glass" href="#/admin/reviews">Ir a reviews</a>
-              </article>
-              <article className="account-page__card admin-page__summary-card admin-page__summary-card--muted">
-                <span className="material-symbols-outlined" aria-hidden="true">fact_check</span>
-                <h2>Solicitudes pendientes</h2>
-                <p>Gestiona las solicitudes de nuevos modelos enviadas por la comunidad.</p>
-                <a className="account-page__button account-page__button--glass" href="#/admin/solicitudes">Ir a solicitudes</a>
-              </article>
-            </section>
-          </div>
-        </section>
-      </main>
-    </AdminGate>
-  );
-}
 
 function AdminModelsWorkspace({
   activeModelsItem,
@@ -1519,4 +1426,5 @@ function AdminModelEditCard({ bike }: AdminModelEditCardProps) {
 export { AdminModerationPage } from './AdminModerationPage';
 export { AdminRequestsPage } from './AdminRequestsPage';
 export { AdminReviewsPage } from './AdminReviewsPage';
+export { AdminDashboardPage } from './AdminDashboardPage';
 export { AdminSidebar } from './adminSharedUi';
