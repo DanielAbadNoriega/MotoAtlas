@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import adminHeroImage from '../../../assets/hero-admin.png';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../../features/auth';
 import { getBikeDisplayName } from '../../../data/bikes';
 import {
@@ -55,7 +54,6 @@ import {
 } from './adminPageConstants';
 import {
   getBrandOptions,
-  getDisplayName,
   isRangePresetActive,
 } from './adminPageUtils';
 import { FilterGroup } from '../../../shared/ui/filters/FilterGroup';
@@ -63,12 +61,12 @@ import { FilterOptionButton } from '../../../shared/ui/filters/FilterOptionButto
 import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { AccountPagination } from '../AccountPage/AccountPagination';
-import { type AdminQuickLinksModelsItem } from '../AccountPage/AccountQuickLinksNav';
 import { AdminGate, AdminSidebar, AdminDemoDataToggle } from './adminSharedUi';
 import { AdminModelFormBody } from './AdminModelFormBody';
 import { AdminRequestsPage } from './AdminRequestsPage';
 import { AdminReviewsPage } from './AdminReviewsPage';
 import { AdminDashboardPage } from './AdminDashboardPage';
+import { AdminModelsWorkspace } from './AdminModelsWorkspace';
 import '../AccountPage/AccountPage.scss';
 import './AdminPage.scss';
 import type { Bike, BikeEngineType, BikeFeatures, BikeLicense, BikeSegment, BikeUseScores, MotorcycleDataSource } from '../../../types/bike';
@@ -106,54 +104,6 @@ const emptyAdminModelDraft: AdminModelDraft = {
     tubelessWheels: false,
   },
 };
-
-function AdminModelsWorkspace({
-  activeModelsItem,
-  children,
-  description,
-  sidebarContent,
-  title,
-  titleId,
-}: Readonly<{
-  activeModelsItem: AdminQuickLinksModelsItem;
-  children: ReactNode;
-  description: string;
-  sidebarContent?: ReactNode;
-  title: string;
-  titleId: string;
-}>) {
-  const { profile, user } = useAuth();
-
-  return (
-    <AdminGate>
-      <PageHero
-        className="admin-page__community-hero admin-page__hero"
-        titleId={titleId}
-        imageSrc={adminHeroImage}
-        eyebrow="ADMIN STUDIO"
-        title={title}
-        description={description}
-      >
-        <div className="admin-page__hero-meta">
-          <div className="admin-page__admin-chip" aria-label="Administrador activo">
-            <span className="material-symbols-outlined" aria-hidden="true">verified_user</span>
-            {getDisplayName(profile?.displayName, user?.email)}
-          </div>
-        </div>
-      </PageHero>
-
-      <main className="account-page admin-page" aria-labelledby={titleId}>
-        <section className="account-page__dashboard admin-page__layout">
-          <AdminSidebar active="models" activeModelsItem={activeModelsItem}>
-            {sidebarContent}
-            <AdminDemoDataToggle />
-          </AdminSidebar>
-          <div className="account-page__main">{children}</div>
-        </section>
-      </main>
-    </AdminGate>
-  );
-}
 
 export function AdminModelsPage() {
   return (
@@ -1427,4 +1377,5 @@ export { AdminModerationPage } from './AdminModerationPage';
 export { AdminRequestsPage } from './AdminRequestsPage';
 export { AdminReviewsPage } from './AdminReviewsPage';
 export { AdminDashboardPage } from './AdminDashboardPage';
+export { AdminModelsWorkspace } from './AdminModelsWorkspace';
 export { AdminSidebar } from './adminSharedUi';
