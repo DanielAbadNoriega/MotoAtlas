@@ -22,7 +22,7 @@ import {
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import { AccountPagination } from '../AccountPage/AccountPagination';
-import { AdminSidebar } from '../AdminPage';
+import { AdminSidebar } from '../AdminPage/adminSharedUi';
 import '../AccountPage/AccountPage.scss';
 import '../AccountReviewsPage/AccountReviewsPage.scss';
 import '../AdminPage/AdminPage.scss';
