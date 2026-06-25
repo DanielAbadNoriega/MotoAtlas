@@ -18,9 +18,9 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1571 tests passing` (82 files).
+- Baseline validado actual: `1602 tests passing` (82 files).
 - Typecheck: clean.
-- Último bloque estable validado: AdminPage refactor conservativo — helpers + hook extraídos (Quality Gate aprobado: 1571 tests, typecheck clean).
+- Último bloque estable validado: AdminPage decomposition completa (~5900 → 13 líneas, barrel aplanado). Quality Gate aprobado: 1602 tests, typecheck clean.
   - Workstream detalle: `docs/current-workstreams.md` — Workstream C (Admin gallery / AdminPage refactor).
 
 ## 3. Foco inmediato recomendado
@@ -176,10 +176,16 @@ Fases propuestas:
    - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` ya participa del cleanup seguro en UI solo para imágenes de sesión no persistidas y para cleanup diferido post-publish de imágenes persistidas reemplazadas.
    - Gallery pending-delete implementado: marcar imágenes para borrado diferido hasta publicar, con undo, badge, primary sync hardening, Storage cleanup de-duplicado, delete button visual (`delete_forever`) y card back info overflow fix.
-    - **Refactor conservativo completado (rama `feature/admin-gallery-helpers`):** helpers puros extraídos a `adminPageUtils.ts`, `adminGalleryImageUtils.ts`, `adminModelPreviewUtils.ts`, `adminPageConstants.ts`, `adminModelDraftUtils.ts`. Hook `useAdminImageManager.ts` extraído con estado local puro. 156 tests nuevos. Pendiente: descomposición JSX de galería+modal en componentes presentacionales.
-    - Quality Gate: 1571 tests, typecheck clean.
+    - **AdminPage decomposition completa:** `AdminPage.tsx` reducido de ~5900 a 13 líneas. 9 page components extraídos a archivos individuales. `index.ts` barrel aplanado con exports directos, eliminando cadena `index.ts → AdminPage.tsx → archivos`. Zero circular imports.
+    - Para la galería, el JSX pesado de galería+modal sigue en `AdminModelFormBody` y requiere extracción a componentes presentacionales.
+    - Quality Gate: 1602 tests, typecheck clean.
    - Pendiente (galería): migrar pending-delete a eliminación inmediata con modal de confirmación (independiente del formulario). Drag-and-drop reorder con persistencia independiente. Card back info simplificada.
    - Pendiente (general): gestión autónoma de galería (confirmación inmediata, reorden, primary metadata independiente del formulario), WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
+   - Post-gallery technical backlog (después de galería):
+     * La descomposición de AdminPage fue groundwork necesaria, pero no suficiente: `App.tsx` sigue importando eager todas las páginas admin en cada visita.
+     * Fix `AdminSidebar` import en `AdminMotorcycleReviewsPage.tsx` para evitar barrel indirecto.
+     * Audit routing de admin en `App.tsx` e implementar `React.lazy()` solo para rutas admin.
+     * Architecture review: separar UI/hooks/services, evaluar feature-based structure o MVC-inspired boundaries.
 
 Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;

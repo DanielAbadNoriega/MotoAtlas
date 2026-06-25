@@ -2,7 +2,7 @@
 
 ## Estado global
 
-- **Suite de tests**: `1571` tests passing (82 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- **Suite de tests**: `1602` tests passing (82 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
   - Fuente única de verdad para conteos globales: `docs/testing-strategy.md`.
   - No duplicar estos números en otros docs salvo referencia explícita necesaria.
 - **Workstreams activos documentados en**: `docs/current-workstreams.md`.
@@ -11,7 +11,7 @@
 
 ### Workstream C — Admin gallery / AdminPage refactor (backlog)
 
-Último bloque validado: **AdminPage refactor conservativo — helpers + hook extraídos** (rama `feature/admin-gallery-helpers`).
+Último bloque validado: **AdminPage decomposition completa (~5900 → 13 líneas, barrel aplanado)**. 1602 tests, typecheck clean, zero circular imports.
 
 Branch: `feature/admin-models-studio`.
 
@@ -58,12 +58,26 @@ Alcance implementado:
 - typecheck: clean; `git diff --check`: clean
 - Decisión documentada: detener extracción de hooks en este límite. Los 13 estados restantes requieren co-extraer servicios, efectos o refs.
 
-Pendiente (workstream):
+**AdminPage decomposition completa:**
+- `AdminPage.tsx` reducido de ~5900 a 13 líneas. Conservado como barrel de compatibilidad para `AdminPage.test.tsx`.
+- 9 page components extraídos a archivos individuales: `AdminModerationPage`, `AdminRequestsPage`, `AdminReviewsPage`, `AdminDashboardPage`, `AdminModelsWorkspace`, `AdminModelsPage`, `AdminNewModelPage`, `AdminEditModelsPage`, `AdminEditMotorcyclePage`.
+- `AdminModelFormBody` extraído (1462 líneas).
+- UI compartida extraída a `adminSharedUi.tsx`: `AdminGate`, `AdminSidebar`, `ReviewStatusBadge`, `AdminDemoDataToggle`.
+- `index.ts` barrel aplanado: exports directos desde cada archivo, eliminando cadena `index.ts → AdminPage.tsx → archivos`.
+- Zero circular imports verificados.
+- `AdminMotorcycleReviewsPage.tsx` aún importa `AdminSidebar` desde el barrel (post-gallery fix documentado).
+
+Pendiente (galería):
 - Migrar pending-delete a eliminación inmediata con modal de confirmación (independiente del formulario).
 - Drag-and-drop reorder con persistencia independiente.
 - Card back info simplificada.
 - Gestión autónoma de galería (primary metadata como acción independiente del formulario).
-- Refactor de AdminPage (JSX pesado de galería + modal en componentes presentacionales).
+- Descomposición JSX de galería + modal en componentes presentacionales.
+
+Post-gallery technical backlog:
+- Fix import directo de `AdminSidebar` en `AdminMotorcycleReviewsPage.tsx`.
+- Audit routing de admin en `App.tsx` e implementar `React.lazy()` solo para rutas admin.
+- Architecture review: separación UI/hooks/services, feature boundaries.
 
 ### Workstream D — UnderConstructionPage / landings ligeras
 
@@ -89,7 +103,7 @@ Pendiente (workstream):
 
 ## Último Quality Gate global
 
-- **Global**: `1571` tests passing (82 files), typecheck clean, `git diff --check` clean.
+- **Global**: `1602` tests passing (82 files), typecheck clean, `git diff --check` clean.
 - **AdminPage focused**: 255 tests (pending-delete, primary sync, Storage dedup, delete button, card back info).
 - **Nuevos archivos extraídos**: `adminPageUtils.test.ts` (43), `adminGalleryImageUtils.test.ts` (85), `adminModelPreviewUtils.test.ts` (19), `useAdminImageManager.test.tsx` (9).
 - Detalle completo y focused checks en `docs/testing-strategy.md` (fuente única de verdad para conteos).
@@ -393,7 +407,7 @@ Pendiente (workstream):
 
 ## Siguiente paso
 
-- **Admin Models Studio**: Fases 1 a 6C.4 + UI polish + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + **read-only gallery connection + gallery record creation from uploads + gallery card polish + stable ordering + cover fallback + gallery primary sync fallback fetch + upload UX + stale galleryImagesRef fix + edit publish cleanup order fix + gallery-backed detection hardening** cerrados. **Refactor conservativo completado**: helpers puros extraídos (5 archivos) + hook `useAdminImageManager` (9 tests). Siguientes fases recomendadas: eliminación inmediata de galería con modal de confirmación, selección de primaria desde galería, reorden drag-and-drop, descomposición JSX de galería+modal en componentes presentacionales, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
+- **Admin Models Studio**: Fases 1 a 6C.4 + UI polish + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + **read-only gallery connection + gallery record creation from uploads + gallery card polish + stable ordering + cover fallback + gallery primary sync fallback fetch + upload UX + stale galleryImagesRef fix + edit publish cleanup order fix + gallery-backed detection hardening** cerrados. **AdminPage decomposition completa** (~5900 → 13 líneas, barrel aplanado). Siguientes fases recomendadas (galería): eliminación inmediata con modal de confirmación, reorden drag-and-drop, descomposición JSX de galería+modal. Post-gallery technical backlog: fix imports barrel, lazy loading admin routes, architecture review.
 
 ## Decisiones importantes
 

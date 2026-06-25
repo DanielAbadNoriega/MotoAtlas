@@ -29,15 +29,24 @@ Estado:
 * decisión de producto documentada
 
 Último bloque validado:
-**AdminPage refactor conservativo — helpers + hook extraídos sin cambios de comportamiento.**
+
+**Bloque A — AdminPage refactor conservativo (helpers + hook extraídos).**
 * helpers puros extraídos a `adminPageUtils.ts` + `adminGalleryImageUtils.ts` + `adminModelPreviewUtils.ts` + `adminPageConstants.ts` + `adminModelDraftUtils.ts` (147 tests nuevos combinados)
-* hook `useAdminImageManager` extraído con estado puramente local: `isImageManagerOpen`, `imageMode`, `galleriaInfoCardKeys` + handlers (9 tests)
-* límite de extracción respetado: no se co-extrajeron service calls, async flows ni refs
-* 13 vars de estado de imagen permanecen en `AdminModelFormBody` (acopladas a upload/delete/gallery/publish)
+* hook `useAdminImageManager` extraído con estado puramente local (9 tests)
 * AdminPage tests: 255/255
-* suite completa: all tests passed
+* typecheck: clean, `git diff --check`: clean
+
+**Bloque B — AdminPage decomposition completa (~5900 → 13 líneas).**
+* 9 page components extraídos a archivos individuales (AdminModerationPage, AdminRequestsPage, AdminReviewsPage, AdminDashboardPage, AdminModelsWorkspace, AdminModelsPage, AdminNewModelPage, AdminEditModelsPage, AdminEditMotorcyclePage)
+* `AdminModelFormBody` extraído (1462 líneas)
+* `AdminGate`, `AdminSidebar`, `ReviewStatusBadge`, `AdminDemoDataToggle` → `adminSharedUi.tsx`
+* 5 utility modules extraídos (adminPageUtils, adminPageConstants, adminGalleryImageUtils, adminModelDraftUtils, adminModelPreviewUtils)
+* hook `useAdminImageManager` extraído
+* `index.ts` barrel aplanado: exports directos desde archivos individuales, eliminando cadena `index.ts → AdminPage.tsx → archivos`
+* `AdminPage.tsx` reducido a 13 líneas (compatibilidad barrel para `AdminPage.test.tsx`)
+* sin imports circulares
+* suite completa: 1602 tests passing
 * typecheck: clean
-* `git diff --check`: clean
 
 Objetivo:
 Convertir las acciones de galería de imágenes de Admin Models en operaciones independientes del formulario del modelo, y continuar el refactor de `AdminPage.tsx`.
@@ -47,7 +56,7 @@ Problema actual:
 * Las imágenes marcadas no se eliminan hasta que el admin publica el formulario completo del modelo.
 * El botón undo reemplaza al botón "Usar como portada" en la misma posición, lo que resulta confuso.
 * La clase `--pending-delete` existe en TSX pero no tiene reglas SCSS — la card no se diferencia visualmente de forma suficiente.
-* `AdminPage.tsx` sigue siendo grande — la extracción de helpers/hook redujo la carga cognitiva pero el JSX pesado de galería y modal sigue en `AdminModelFormBody`.
+* `AdminPage.tsx` ya está descompuesto (~5900 → 13 líneas), pero el JSX pesado de galería y modal sigue en `AdminModelFormBody`.
 
 Target behavior:
 * Click `delete_forever` → modal de confirmación → aplicar eliminación inmediata.
@@ -70,20 +79,42 @@ Order de implementación propuesta:
 5. Remover estado pending-delete + undo + badge + publish logic asociada.
 6. Multi-delete batch (después de single delete estable).
 7. Drag-and-drop reorder como acción independiente.
-8. ✅ Refactor extracción de hooks → componentes (helpers + hook completados; JSX pesado pendiente).
+8. ✅ AdminPage decomposition completa (~5900→13 líneas, barrel aplanado). JSX pesado de galería+modal sigue en `AdminModelFormBody`.
 
 Refactor direction:
 * No combinar refactor grande con cambios de comportamiento destructivo.
 * Extracción gradual: helpers puros → hooks → componentes presentacionales.
 * ✅ Fase 1 completada: helpers puros extraídos (`adminPageUtils`, `adminGalleryImageUtils`, `adminModelPreviewUtils`, `adminPageConstants`, `adminModelDraftUtils`).
 * ✅ Fase 2 completada: hook `useAdminImageManager` con estado local puro extraído.
-* Pendiente: descomposición JSX (galería + modal) en componentes presentacionales:
+* ✅ Fase 3 completada: AdminPage decomposition completa (~5900→13 líneas). 9 page components extraídos, barrel aplanado, zero circular imports.
+* Pendiente (galería): descomposición JSX de galería + modal en componentes presentacionales:
   - AdminModelImageManagerModal
   - AdminImageGalleryGrid
   - AdminImageGalleryCard
-  - AdminImageUploadControls
+  - AdminModelImageUploadControls
   - AdminGalleryDeleteConfirmationModal
   - hooks adicionales: useAdminModelDraft, useAdminModelGallery, useAdminModelImageUpload, useAdminModelPrimarySync, useAdminModelGalleryDelete, useAdminModelPublish
+
+### Post-gallery technical backlog
+
+La descomposición de AdminPage fue groundwork necesaria, pero no suficiente por sí sola para reducir el eager loading de admin. `App.tsx` sigue importando de forma eager todas las páginas admin (9 páginas + shared UI + utilidades + servicios) en cada visita, incluso si el usuario no es admin. Además, `AdminMotorcycleReviewsPage.tsx` importa `AdminSidebar` desde `../AdminPage` (barrel indirecto) en vez de desde la fuente directa `./adminSharedUi`.
+
+Orden de implementación propuesto (post-galería, no incluir en la tarea actual de galería):
+1. Fix imports directos de `AdminSidebar` en `AdminMotorcycleReviewsPage.tsx` para que no pase por el barrel de `AdminPage`.
+2. Audit routing en `App.tsx` y renderizado de rutas admin.
+3. Implementar `React.lazy()` / dynamic imports solo para rutas admin, diferir carga de todo el bloque admin hasta navegar a `#/admin`.
+4. Quality Gate completo (typecheck + test).
+5. Architecture review más amplio:
+   - separar presentation de logic donde corresponda;
+   - revisar feature/module boundaries;
+   - reducir responsabilidades mezcladas en page components;
+   - evaluar estructura feature-based, boundaries MVC-inspired o clean separation UI/hooks/services;
+   - usar Codex para el trabajo de arquitectura serio.
+
+Riesgos del backlog:
+* El eager import de admin en `App.tsx` afecta tanto dev (más transforms ESM en cada cambio) como producción (admin code en bundle base).
+* `React.lazy()` introduce un split point que requiere test de carga asíncrona.
+* El architecture review post-lazy-loading debe ser deliberado y no mezclarse con la implementación de lazy loading.
 
 Archivos o zonas permitidas:
 * AdminPage.tsx
@@ -107,14 +138,16 @@ Zonas prohibidas:
 Riesgos:
 * Fallo parcial si Storage delete falla tras gallery record delete (archivo huérfano aceptable).
 * `updateAdminMotorcycle` puede pisar campos del modelo si se usa para cover update aislado.
-* No iniciar refactor de AdminPage hasta tener los tests de regresión actuales (~1571 tests).
 * No combinar refactor con cambios de comportamiento de galería.
 
 Último resultado:
-* Extracción conservativa completada: helpers + hook useAdminImageManager. 156 tests nuevos. Suite completa en verde.
+* AdminPage decomposition completa (~5900→13 líneas, barrel aplanado). 1602 tests, typecheck clean, zero circular imports.
 
-Siguiente paso:
+Siguiente paso (galería):
 * Decidir si implementar helper `updateAdminMotorcycleCover` antes de la eliminación inmediata, o pasar directamente a implementar modal de confirmación (step 2).
+
+Siguiente paso (post-gallery backlog):
+* Abordar los 5 items del post-gallery technical backlog (ver sección arriba) una vez completada la galería autónoma.
 
 ---
 
