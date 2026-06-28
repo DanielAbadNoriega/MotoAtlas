@@ -6,7 +6,7 @@
 
 - **`docs/current-workstreams.md`** — fuente de verdad operativa live. Alcances, riesgos y resultados de workstreams activos viven ahí. **No se sustituye.**
 - **`AGENTS.md`** — adaptador de ejecución actual para OpenCode/agentes. **Sin cambios hasta migración posterior.**
-- **`.agents/`** — no existe todavía. **No se crea hasta que exista al menos una carpeta de feature real con `context.md` válido.** `.agents/` viene después de SDD sólida y después de la primera feature real. `AGENTS.md` permanece como adaptador de ejecución hasta esa migración.
+- **`.agents/`** — ya existe como biblioteca de agentes específicos de MotoAtlas. Los agentes participan en handovers SDD y deben respetar `spec/` y las carpetas de feature activas. Durante el trabajo de fundación SDD no se crean agentes nuevos por defecto.
 
 ## Constitución SDD
 
@@ -38,32 +38,59 @@ Solo reciben carpetas `spec/features/NNN-*` el trabajo:
 
 El trabajo completado **no recibe carpetas de feature**. Queda como baseline histórico en `spec/constitution/roadmap.md`.
 
-## Flujo para una feature nueva
+## Flujo multiagente para una feature SDD
 
-**Fase 1 — Spec y plan**
+Este flujo no utiliza orquestadores genéricos externos. MotoAtlas emplea su propia capa SDD en `spec/` y agentes especializados en `.agents/`. La revisión humana y el commit manual forman parte del flujo.
 
-1. Verificar que la feature pertenece a `spec/features/NNN-*` según las reglas de roadmap.
-2. Crear la carpeta con los 4 archivos obligatorios: `context.md`, `spec.md`, `plan.md`, `tasks.md`.
-3. `context.md` debe preservar: source docs, historia de implementación, decisiones, baseline de validación, riesgos, zonas prohibidas, próximo paso seguro.
-4. Escribir `spec.md`: qué hace, por qué y criterios de aceptación medibles.
-5. Escribir `plan.md`: enfoque técnico y decisiones, respetando `constitution/tech-stack.md` y `hard-limits.md`.
-6. Desglosar en `tasks.md` y marcar el progreso.
+### Fase 1 — SDD / Spec y plan
 
-**Fase 2 — Implementación**
+Carpeta de feature con los 4 archivos obligatorios:
 
-7. Implementar la feature según `plan.md` y `tasks.md`.
+1. `context.md` — source docs, historia de implementación, decisiones, baseline de validación, riesgos, zonas prohibidas, próximo paso seguro.
+2. `spec.md` — qué hace, por qué y criterios de aceptación medibles.
+3. `plan.md` — enfoque técnico y decisiones, respetando `constitution/tech-stack.md` y `hard-limits.md`.
+4. `tasks.md` — checklist de implementación con fases.
 
-**Fase 3 — Quality Gate**
+### Fase 2 — Implementación
 
-8. Validar: `npm run typecheck` + `npm run test`. La feature no se considera terminada sin ambos passing.
+- **Agente:** `.agents/MotoAtlas-Safe-Builder.md`
+- Implementa solo el alcance definido en la carpeta de feature.
+- Por defecto no cierra la feature de forma completa.
+- Feedback rápido: `npm run typecheck`, `npm run test`, `git diff --check`.
+- No actualiza documentación, tasks ni roadmap salvo que el prompt lo pida de forma explícita.
 
-**Fase 4 — Docs Sync y roadmap**
+### Fase 3 — Quality Gate
 
-9. Actualizar `spec/constitution/roadmap.md` (mover la feature a "Hecho"). Sincronizar docs si corresponde según las reglas del proyecto.
+- **Agente:** `.agents/MotoAtlas-Quality-Gate.md`
+- Verificaciones obligatorias: `npm run typecheck`, `npm run test`, `git diff --check`.
+- Valida contra `spec.md` y `tasks.md` cuando existe una feature SDD activa.
+- Modifica archivos solo si falla typecheck/test o hay un bug evidente directamente relacionado.
+- No actualiza documentación, tasks ni roadmap.
+
+### Fase 4 — Docs Sync
+
+- **Agente:** `.agents/MotoAtlas-Docs-Sync.md`
+- Ocurre después de un Quality Gate aprobado.
+- Marca tasks como completadas solo cuando están respaldadas por resultados reales.
+- Actualiza `spec/constitution/roadmap.md` solo tras validación completa.
+- No inventa resultados de validación.
+
+### Revisión humana
+
+- Revisión del bloque cerrado.
+- Commit manual.
+- Coordinación con `docs/current-workstreams.md` según regla de coordinación.
 
 > Implementación, Quality Gate y Docs Sync son fases separadas por defecto. No combinarlas salvo solicitud explícita.
 
 > La constitución manda: si una feature choca con `mission.md`, `tech-stack.md` o `hard-limits.md`, se replantea la feature, no la constitución.
+
+## Agentes de soporte
+
+No participan en todo handover de feature por defecto. Se invocan según el tipo de cambio:
+
+- **`.agents/MotoAtlas-Page-Auditor.md`** — auditoría y propuesta de mejora de rutas. Audit/proposal only. No implementa.
+- **`.agents/MotoAtlas-Supabase-Guard.md`** — guard de Supabase/RLS/auth/roles cuando el cambio toca zonas sensibles del backend. Especializado. No se convierte en agente de implementación general.
 
 ## Arquitectura de proyecto
 
