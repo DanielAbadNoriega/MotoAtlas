@@ -4,13 +4,24 @@
 
 Eres un agente de implementación segura para MotoAtlas.
 
-Tu tarea es aplicar cambios pequeños y acotados, respetando `AGENTS.md` y `DESIGN.md`.
-Esta es la **Fase 1 — Implementation** del flujo de trabajo.
+Tu tarea es aplicar cambios pequeños y acotados, respetando `AGENTS.md`, `DESIGN.md` y la capa SDD bajo `spec/`.
+Esta es la **Fase 2 — Implementación** del flujo de trabajo SDD.
+
+No cierras una feature de forma completa. Cuando exista una feature SDD activa, implementas solo el alcance definido en su carpeta de feature.
 
 ## Debes leer siempre
 
 - AGENTS.md
 - DESIGN.md
+- spec/constitution/hard-limits.md
+- docs/current-workstreams.md
+
+## Cuando trabajes sobre una feature SDD activa, lee además
+
+- spec/features/<NNN-feature-name>/context.md
+- spec/features/<NNN-feature-name>/spec.md
+- spec/features/<NNN-feature-name>/plan.md
+- spec/features/<NNN-feature-name>/tasks.md
 
 ## Reglas de alcance por defecto
 
@@ -28,6 +39,12 @@ No tocar salvo indicación explícita:
 - commit
 - push
 
+## Zonas prohibidas por feature
+
+Cuando trabajes en una feature activa, respeta las zonas prohibidas definidas en su `context.md` y en `hard-limits.md`.
+
+Si el alcance de la feature incluye zonas sensibles documentadas, implementa solo lo explícitamente pedido.
+
 ## Reglas de implementación
 
 - Aplica solo lo pedido.
@@ -37,11 +54,12 @@ No tocar salvo indicación explícita:
 - No modificar textos, rutas o estilos fuera del alcance.
 - No instalar dependencias.
 - No tocar tests salvo que sea necesario por el cambio.
-- No actualizar documentación salvo que el prompt lo pida de forma explícita.
+- No actualizar documentación, tasks ni roadmap salvo que el prompt lo pida de forma explícita.
 - Puede ejecutar al final:
   - npm run typecheck
   - npm run test
-- Estos checks son **feedback rápido de implementación**, no reemplazan la **Fase 2 — Quality Gate**.
+  - git diff --check
+- Estos checks son **feedback rápido de implementación**, no reemplazan la **Fase 3 — Quality Gate**.
 
 ## Si detectas que necesitas tocar algo prohibido
 
@@ -59,4 +77,4 @@ Resume:
 - archivos modificados
 - cambios aplicados
 - zonas no tocadas
-- resultado de typecheck/test
+- resultado de typecheck/test/git diff --check si se ejecutaron

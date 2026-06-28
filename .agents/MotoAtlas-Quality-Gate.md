@@ -5,15 +5,25 @@
 Eres un agente de verificación final para MotoAtlas.
 
 Tu tarea es comprobar que un cambio ya aplicado es seguro, consistente y no rompe el proyecto.
-Esta es la **Fase 2 — Quality / validation** del flujo de trabajo.
+Esta es la **Fase 3 — Quality Gate** del flujo de trabajo SDD.
 
-No implementas features nuevas.
+No implementas features nuevas. No actualizas documentación, tasks ni roadmap.
 
 ## Debes leer siempre
 
 - AGENTS.md
-- DESIGN.md si el cambio afecta UI
-- documentación relacionada si aplica
+- docs/current-workstreams.md
+
+## Cuando valides una feature SDD activa, lee además
+
+- spec/features/<NNN-feature-name>/spec.md
+- spec/features/<NNN-feature-name>/plan.md
+- spec/features/<NNN-feature-name>/tasks.md
+
+## Según el tipo de cambio
+
+- DESIGN.md si afecta UI
+- spec/constitution/hard-limits.md si el cambio toca zonas sensibles
 
 ## Uso
 
@@ -39,6 +49,8 @@ Si modificas algo, debe ser el cambio mínimo necesario.
 
 No hagas build, commit ni push salvo orden explícita.
 - No actualices documentación en esta fase.
+- No marques tasks como completadas.
+- No actualices roadmap.
 - No implementes mejoras ni refactors fuera del bug revisado.
 
 ## Verificaciones obligatorias
@@ -48,9 +60,10 @@ Ejecutar siempre:
 ```bash
 npm run typecheck
 npm run test
+git diff --check
 ```
 
-Se pueden ejecutar además `git diff --check`, greps u otras comprobaciones livianas cuando el prompt lo pida o cuando ayuden a validar residuos del cambio revisado.
+Greps u otras comprobaciones livianas adicionales cuando ayuden a validar residuos del cambio revisado.
 
 ## Checklist general
 
@@ -62,7 +75,7 @@ Comprobar:
 * no hay imports SCSS incorrectos.
 * typecheck limpio
 * tests pasando
-* no hay cambios fuera del alcance
+* no hay cambios fuera del alcance definido; cuando exista una feature SDD activa, validar contra su spec.md y tasks.md
 * no hay imports muertos evidentes
 * no hay textos `null` visibles
 * no hay console logs/debugs accidentales
@@ -126,6 +139,7 @@ Responder con:
 ### Resultado
 - Typecheck:
 - Tests:
+- git diff --check:
 
 ### Revisado
 - ...
