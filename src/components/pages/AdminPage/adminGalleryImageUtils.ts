@@ -132,33 +132,6 @@ export function isImageBackedByGalleryRecord(
   );
 }
 
-export function getActiveGalleryImages(
-  galleryImages: readonly AdminMotorcycleGalleryImage[],
-  pendingDeleteIds: readonly string[],
-): readonly AdminMotorcycleGalleryImage[] {
-  if (pendingDeleteIds.length === 0) {
-    return galleryImages;
-  }
-
-  return galleryImages.filter((img) => !pendingDeleteIds.includes(img.id));
-}
-
-export function getGalleryImageCleanupObjectPath(
-  galleryImage: AdminMotorcycleGalleryImage,
-): string | null {
-  return galleryImage.storagePath || getMotorcycleImageObjectPath(galleryImage.url);
-}
-
-export function isCleanupPathSharedWithActiveImage(
-  objectPath: string,
-  activeGalleryImages: readonly AdminMotorcycleGalleryImage[],
-): boolean {
-  return activeGalleryImages.some(
-    (img) => (img.storagePath && img.storagePath === objectPath)
-      || getMotorcycleImageObjectPath(img.url) === objectPath,
-  );
-}
-
 export function getGalleryImageSourceLabel(source: MotorcycleDataSource): string {
   switch (source) {
     case 'api':

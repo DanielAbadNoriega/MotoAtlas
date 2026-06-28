@@ -2,18 +2,18 @@
 
 ## Estado global
 
-- **Suite de tests**: `1602` tests passing (82 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
+- **Suite de tests**: `1588` tests passing (83 files). Quality Gate vigente: `typecheck` clean + `git diff --check` clean.
   - Fuente única de verdad para conteos globales: `docs/testing-strategy.md`.
   - No duplicar estos números en otros docs salvo referencia explícita necesaria.
 - **Workstreams activos documentados en**: `docs/current-workstreams.md`.
 
 ## Estado por workstream activo
 
-### Workstream C — Admin gallery / AdminPage refactor (backlog)
+### Workstream C — Admin gallery / AdminPage refactor (completado)
 
-Último bloque validado: **AdminPage decomposition completa (~5900 → 13 líneas, barrel aplanado)**. 1602 tests, typecheck clean, zero circular imports.
+Último bloque validado: **AdminPage decomposition completa + gallery confirmed delete**. 1588 tests, typecheck clean, zero circular imports.
 
-Branch: `feature/admin-models-studio`.
+Branch: `refactor/admin-gallery-helpers`.
 
 Alcance implementado:
 - **Fase 6A**: Supabase Storage bucket `motorcycle-images` con public read + admin-only insert/update/delete policies. 5 MB max. Allow MIME types: `image/jpeg`, `image/png`, `image/webp`.
@@ -36,10 +36,10 @@ Alcance implementado:
 - **Gallery card visual polish**: cards más minimalistas con icon-only/current-cover indicators, tooltips accesibles, info panel controlado por botón (no hover), múltiples cards con info abierta simultáneamente, header de galería compacto, metadata compacta. Flip card con `rotateY` para efecto revolving-door. `prefers-reduced-motion` respetado.
 - **Stable library ordering**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Seleccionar portada ya no mueve ni reordena las cards de galería. El cambio es puramente React reconciliation (no muta gallery state ni `sortOrder`). `persisted` registrado antes que `draft` para que URLs coincidentes muestren label correcto (`Portada guardada` vs `Portada en edición`).
 - **Cover fallback seguro**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback si `draft.imageUrl` quedaría vacío.
-- **Pending-delete + primary sync hardening**: estado local `pendingDeleteImageIds` (Set), sincronizado a ref. Primary sync: `currentPrimary` desde lista completa (incl. pending-delete), orden estricto unset→set→delete. Storage cleanup de-duplicado con `processedCleanupPaths` Set.
+- **Confirmed immediate-delete**: botón `delete_forever` → `GalleryConfirmDeleteModal` → eliminación inmediata del gallery record + Storage cleanup best-effort con guard de path compartido. Cover fallback: si se elimina portada, se aplica placeholder automáticamente.
 - **Delete button visual**: icono `delete_forever`, estilo stage button con hint destructivo (`$color-error`). Posicionado left-bottom.
 - **Card back info overflow fix**: `overflow-y: auto` en back face y card-info, `overflow-wrap: break-word` en valores `dd`, gap reducido a 0.65rem.
-- Tests: 255 tests en focused `AdminPage.test.tsx` (pending-delete flow, primary sync hardening, Storage dedup, upload UX, gallery card polish, stable ordering, cover fallback, delete button visual, card back info fix).
+- Tests: 252 tests en focused `AdminPage.test.tsx` (confirmed-delete flow, Storage dedup, upload UX, gallery card polish, stable ordering, cover fallback, delete button visual, card back info fix).
 
 **Refactor completado (helpers + hook):**
 - Helpers puros extraídos a:
@@ -65,19 +65,37 @@ Alcance implementado:
 - UI compartida extraída a `adminSharedUi.tsx`: `AdminGate`, `AdminSidebar`, `ReviewStatusBadge`, `AdminDemoDataToggle`.
 - `index.ts` barrel aplanado: exports directos desde cada archivo, eliminando cadena `index.ts → AdminPage.tsx → archivos`.
 - Zero circular imports verificados.
-- `AdminMotorcycleReviewsPage.tsx` aún importa `AdminSidebar` desde el barrel (post-gallery fix documentado).
+- `AdminSidebar` import directo fijado en `AdminMotorcycleReviewsPage.tsx`.
 
 Pendiente (galería):
-- Migrar pending-delete a eliminación inmediata con modal de confirmación (independiente del formulario).
 - Drag-and-drop reorder con persistencia independiente.
 - Card back info simplificada.
 - Gestión autónoma de galería (primary metadata como acción independiente del formulario).
 - Descomposición JSX de galería + modal en componentes presentacionales.
 
-Post-gallery technical backlog:
-- Fix import directo de `AdminSidebar` en `AdminMotorcycleReviewsPage.tsx`.
-- Audit routing de admin en `App.tsx` e implementar `React.lazy()` solo para rutas admin.
+### Workstream C — branch closure
+
+La rama `refactor/admin-gallery-helpers` está completa desde el punto de vista de implementación:
+
+- **AdminPage decomposition**: ~5900 → 13 líneas, 9 page components extraídos, `AdminModelFormBody` extraído (1462 líneas), `adminSharedUi` extraído, barrel aplanado, zero circular imports.
+- **Gallery confirmed delete**: `GalleryConfirmDeleteModal`, eliminación inmediata al confirmar, Storage cleanup best-effort con guard de path compartido, cover fallback automático.
+- **`AdminSidebar` import directo** fijado en `AdminMotorcycleReviewsPage.tsx`.
+- **Quality Gate final de la rama**: 1588 tests / 83 files, typecheck clean, `git diff --check` clean.
+- **No incluye** trabajo de landings ni capa SDD/spec/features.
+
+La rama está lista para merge/sincronización con landings.
+La capa SDD/spec/features se construirá después del merge, sobre el estado real combinado.
+
+**Guardrails para futuras tareas:**
+- No refactorizar, revertir, reorganizar ni tocar `src/components/pages/AdminPage/` salvo necesidad explícita y aprobada.
+- No reintroducir imports desde páginas extraídas de vuelta a través de `./AdminPage` (barrel). Las páginas extraídas se importan desde su archivo directo; `AdminPage.tsx` es solo barrel de compatibilidad para `AdminPage.test.tsx`.
+- Los helpers/constantes/hooks extraídos viven en `src/components/pages/AdminPage/admin*` y `useAdmin*`; no moverlos fuera de ese directorio.
+- Esta rama no incluye landings/MotoIcon. No mezclar.
+
+Backlog diferido (post-merge, no parte de esta rama):
+- `App.tsx`: audit routing admin + `React.lazy()` para rutas admin.
 - Architecture review: separación UI/hooks/services, feature boundaries.
+- Quality Gate completo post-merge.
 
 ### Workstream D — UnderConstructionPage / landings ligeras
 
@@ -103,8 +121,8 @@ Pendiente (workstream):
 
 ## Último Quality Gate global
 
-- **Global**: `1602` tests passing (82 files), typecheck clean, `git diff --check` clean.
-- **AdminPage focused**: 255 tests (pending-delete, primary sync, Storage dedup, delete button, card back info).
+- **Global**: `1588` tests passing (83 files), typecheck clean, `git diff --check` clean.
+- **AdminPage focused**: 252 tests (confirmed-delete, Storage dedup, delete button, card back info, cover fallback).
 - **Nuevos archivos extraídos**: `adminPageUtils.test.ts` (43), `adminGalleryImageUtils.test.ts` (85), `adminModelPreviewUtils.test.ts` (19), `useAdminImageManager.test.tsx` (9).
 - Detalle completo y focused checks en `docs/testing-strategy.md` (fuente única de verdad para conteos).
 
@@ -148,7 +166,7 @@ Pendiente (workstream):
 - Base de Fase 2.5 mayoritariamente cerrada: rutas `#/admin`, `#/admin/moderacion`, `#/admin/reviews`, `#/admin/reviews/[motorcycleId]` y separación respecto de `#/cuenta`.
 - Admin protegido por sesión + rol (`user_profiles.role = admin`).
 - quick links de cuenta/admin ya no se documentan como listas planas aisladas: `.account-page__quick-links` soporta grupos `Mi cuenta` y `Panel Admin`, con disclosure nativo `<details>/<summary>`, anchors semánticos y el mismo orden en superficies de cuenta y admin. El plumbing extra de `isAdmin` en páginas de cuenta solo habilita la visibilidad del grupo compartido, sin cambiar guards ni acceso a datos.
-- Admin Models Studio — **Fases 1 a 5C.1 + 6A-6C.4 + file input UI + Section Radar + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + read-only gallery connection + gallery record creation from uploads + gallery card visual polish + stable library ordering + cover fallback + pending-delete + primary sync hardening + Storage cleanup de-duplicado + delete button visual (delete_forever) + card back info overflow fix implementadas**. Persistencia operativa via `createAdminMotorcycle` / `updateAdminMotorcycle` con validación cliente compartida (`validateAdminModelDraftForPublish`). Image upload via Supabase Storage `motorcycle-images` bucket con `uploadMotorcycleImage`. Modos `URL manual` y `Subir archivo` con preview local, MIME/size validation, explicit upload y auto-upload antes de publicar. File input nativo reemplazado por control custom MotoAtlas-styled con filename visible. Sticky Section Radar con marcadores numerados, tracks de progreso verticales y scroll horizontal en mobile. `imageLocked` se activa automáticamente al subir. La preview actual funciona en create/edit; imágenes persistidas de Storage se quitan del formulario sin borrado inmediato, las subidas en la sesión sí pueden eliminarse antes del publish, y la limpieza del objeto persistido viejo ocurre solo tras replacement publish exitoso. Tras publish exitoso, create navega a `#/motos/{createdBike.id}`, edit navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh. Las gallery cards recibieron polish visual: flip con `rotateY`, info controlado por botón no hover, multi-info simultáneo, header compacto. El bug de reorden visual al seleccionar portada se corrigió con keys estables por URL via `useRef<Map<string, string>>`. El pending-delete usa estado local `pendingDeleteImageIds` (Set) y se aplica al publicar. Primary sync: `currentPrimary` desde lista completa (incl. pending-delete), orden estricto unset→set→delete. Storage cleanup de-duplicado con `processedCleanupPaths` Set. Delete button con `delete_forever` y estilo stage button con hint destructivo. Card back info: `overflow-y: auto`, `overflow-wrap: break-word`. Quedan pendientes: migrar pending-delete a eliminación inmediata independiente del formulario, drag-and-drop reorder, selección de primaria desde galería, card back info simplificada, WebP conversion opcional, A2 fields en draft si aplica e IntersectionObserver active section tracking.
+- Admin Models Studio — **Fases 1 a 5C.1 + 6A-6C.4 + file input UI + Section Radar + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + read-only gallery connection + gallery record creation from uploads + gallery card visual polish + stable library ordering + cover fallback + confirmed immediate-delete + Storage cleanup best-effort + delete button visual (delete_forever) + card back info overflow fix implementadas**. Persistencia operativa via `createAdminMotorcycle` / `updateAdminMotorcycle` con validación cliente compartida (`validateAdminModelDraftForPublish`). Image upload via Supabase Storage `motorcycle-images` bucket con `uploadMotorcycleImage`. Modos `URL manual` y `Subir archivo` con preview local, MIME/size validation, explicit upload y auto-upload antes de publicar. File input nativo reemplazado por control custom MotoAtlas-styled con filename visible. Sticky Section Radar con marcadores numerados, tracks de progreso verticales y scroll horizontal en mobile. `imageLocked` se activa automáticamente al subir. La preview actual funciona en create/edit; imágenes persistidas de Storage se quitan del formulario sin borrado inmediato, las subidas en la sesión sí pueden eliminarse antes del publish, y la limpieza del objeto persistido viejo ocurre solo tras replacement publish exitoso. Tras publish exitoso, create navega a `#/motos/{createdBike.id}`, edit navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh. Las gallery cards recibieron polish visual: flip con `rotateY`, info controlado por botón no hover, multi-info simultáneo, header compacto. El bug de reorden visual al seleccionar portada se corrigió con keys estables por URL via `useRef<Map<string, string>>`. La eliminación usa confirmación inmediata con `GalleryConfirmDeleteModal` y Storage cleanup best-effort. Primary sync eliminado (ya no aplica). Storage cleanup best-effort con guard de path compartido. Delete button con `delete_forever` y estilo stage button con hint destructivo. Card back info: `overflow-y: auto`, `overflow-wrap: break-word`. Quedan pendientes: drag-and-drop reorder, selección de primaria desde galería, card back info simplificada, WebP conversion opcional, A2 fields en draft si aplica e IntersectionObserver active section tracking.
 - **Refactor conservativo de AdminPage completado (rama `feature/admin-gallery-helpers`):** se extrajeron helpers puros (`adminPageUtils`, `adminGalleryImageUtils`, `adminModelPreviewUtils`, `adminPageConstants`, `adminModelDraftUtils`) y el hook `useAdminImageManager` con estado local puro. 156 tests nuevos, AdminPage conserva 255 tests. La extracción se detuvo en el límite donde los 13 estados de imagen restantes requieren co-extraer service calls o async flows. Pendiente: descomposición JSX pesado (galería + modal) en componentes presentacionales.
 - Moderación con reportes, filtros/paginación y acciones sobre review; al actuar sobre review desde reporte se marca `action_taken`.
 - Tab de respuestas pendientes de moderación implementado con acciones aprobar/ocultar/rechazar.
@@ -383,7 +401,7 @@ Pendiente (workstream):
 - Backlog P1 Auth (cerrado a nivel UI): la rama `feature/review-auth-only-contract` cerró el contrato de `Escribir review` con auth-only + hint no-auth. La fase de producto queda abierta si en el futuro se decide habilitar reviews anónimas (requeriría RPC y RLS anónimos revisados).
 - Backlog P2 Auth: repetir opcionalmente el smoke del signup público directo cuando se libere el rate limit `429` de Supabase email y mantener auditorías periódicas si en el futuro aparecen nuevas funciones `security definer`.
 - Backlog P2: auditoría residual de admin/moderación (avisos al autor y cierre de contratos de respuestas). `#/admin/solicitudes` ya fue auditado y la **Fase 1** quedó implementada en rama `feature/admin-requests-phase-1` (multi-select, date range, paginación, summary, validación defensiva de `segment`) sin cambios de schema.
-- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fases 1 a 5C.1 + 6A-6C.4 + file input UI + Section Radar + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + read-only gallery connection + gallery record creation + gallery card polish + stable ordering + cover fallback + pending-delete (diferido hasta publicar) + primary sync hardening + Storage cleanup de-duplicado + delete button visual + card back info fix implementadas**. Quedan pendientes: migrar pending-delete a eliminación inmediata independiente del formulario, selección de primaria, reorden drag-and-drop, card back info simplificada, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
+- Backlog P2/P3 Admin catálogo: `Admin Models Studio / Estudio de modelos` tiene **Fases 1 a 5C.1 + 6A-6C.4 + file input UI + Section Radar + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + read-only gallery connection + gallery record creation + gallery card polish + stable ordering + cover fallback + confirmed immediate-delete (GalleryConfirmDeleteModal) + Storage cleanup best-effort + delete button visual + card back info fix implementadas**. Quedan pendientes: selección de primaria, reorden drag-and-drop, card back info simplificada, A2 fields en draft si aplica, WebP conversion opcional e IntersectionObserver active section tracking.
 - Backlog P2: completar saneo puntual de clasificación de datos actuales por segmento (casos dudosos restantes) tras auditoría.
 - Backlog P2/P3: unificar criterio cross-page para evitar drift entre vistas compactas y vistas con 16 categorías explícitas.
 - Backlog P2/P3: definir thresholds de catálogo para exponer categorías explícitas en UI pública sin saturación mobile.
@@ -407,7 +425,7 @@ Pendiente (workstream):
 
 ## Siguiente paso
 
-- **Admin Models Studio**: Fases 1 a 6C.4 + UI polish + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + **read-only gallery connection + gallery record creation from uploads + gallery card polish + stable ordering + cover fallback + gallery primary sync fallback fetch + upload UX + stale galleryImagesRef fix + edit publish cleanup order fix + gallery-backed detection hardening** cerrados. **AdminPage decomposition completa** (~5900 → 13 líneas, barrel aplanado). Siguientes fases recomendadas (galería): eliminación inmediata con modal de confirmación, reorden drag-and-drop, descomposición JSX de galería+modal. Post-gallery technical backlog: fix imports barrel, lazy loading admin routes, architecture review.
+- **Admin Models Studio**: Fases 1 a 6C.4 + UI polish + post-publish navigation + catalog sync + image cleanup hardening + modal refactor + **read-only gallery connection + gallery record creation from uploads + gallery card polish + stable ordering + cover fallback + gallery primary sync fallback fetch + upload UX + stale galleryImagesRef fix + edit publish cleanup order fix + gallery-backed detection hardening + confirmed immediate-delete + GalleryConfirmDeleteModal + Storage cleanup best-effort** cerrados. **AdminPage decomposition completa** (~5900 → 13 líneas, barrel aplanado, `AdminSidebar` import directo fijado). Pendientes (galería): reorden drag-and-drop, descomposición JSX de galería+modal. Backlog diferido (post-merge): `React.lazy()` admin routes, architecture review.
 
 ## Decisiones importantes
 

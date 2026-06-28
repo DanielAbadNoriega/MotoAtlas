@@ -41,6 +41,7 @@ import {
   getCurrentImageOriginLabel,
 } from './adminPageUtils';
 import { useAdminImageManager } from './useAdminImageManager';
+import { GalleryConfirmDeleteModal } from './GalleryConfirmDeleteModal';
 import { getMotorcycleTechnicalIcon } from '../../../shared/motorcycles/motorcycleTechnicalIcons';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { BIKE_LICENSES, BIKE_SEGMENTS, segmentLabels } from '../../../shared/motorcycles/motorcycleTaxonomy';
@@ -191,8 +192,8 @@ type AdminModelFormBodyProps = Readonly<{
   }) => Promise<AdminMotorcycleGalleryImage>;
   onPersistedImageGalleryStateChange?: (isGalleryBacked: boolean) => void;
   onDeleteImage?: (objectPath: string) => Promise<void>;
+  onDeleteGalleryImage?: (galleryImage: AdminMotorcycleGalleryImage) => Promise<void>;
   galleryImagesRef?: MutableRefObject<readonly AdminMotorcycleGalleryImage[]>;
-  pendingDeleteImageIdsRef?: MutableRefObject<readonly string[]>;
   saving?: boolean;
   toolbarKicker: string;
   workspaceHeading: string;
@@ -216,8 +217,8 @@ export function AdminModelFormBody({
   onCreateGalleryRecord,
   onPersistedImageGalleryStateChange,
   onDeleteImage,
+  onDeleteGalleryImage,
   galleryImagesRef,
-  pendingDeleteImageIdsRef,
   saving,
   toolbarKicker,
   workspaceHeading,
@@ -244,7 +245,8 @@ export function AdminModelFormBody({
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const [galleryBackedUploadUrls, setGalleryBackedUploadUrls] = useState<readonly string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'warning'; message: string } | null>(null);
-  const [pendingDeleteImageIds, setPendingDeleteImageIds] = useState<ReadonlySet<string>>(new Set());
+  const [confirmDeleteImage, setConfirmDeleteImage] = useState<AdminMotorcycleGalleryImage | null>(null);
+  const [isDeletingGalleryImage, setIsDeletingGalleryImage] = useState(false);
   const stableLibraryKeyRef = useRef<Map<string, string>>(new Map());
   const { session, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -300,19 +302,24 @@ export function AdminModelFormBody({
     };
   }, [previewBlobUrl]);
 
-  // Handle Escape key to close modal
+  // Handle Escape key: confirmation modal cancels first, then image manager
   useEffect(() => {
     if (!isImageManagerOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsImageManagerOpen(false);
+        if (confirmDeleteImage) {
+          setConfirmDeleteImage(null);
+          setGalleryError(null);
+        } else {
+          setIsImageManagerOpen(false);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isImageManagerOpen]);
+  }, [isImageManagerOpen, confirmDeleteImage]);
 
   // Fetch gallery images when modal opens in edit mode
   useEffect(() => {
@@ -526,12 +533,6 @@ export function AdminModelFormBody({
     }
   }, [galleryImages, galleryImagesRef]);
 
-  useEffect(() => {
-    if (pendingDeleteImageIdsRef) {
-      pendingDeleteImageIdsRef.current = [...pendingDeleteImageIds];
-    }
-  }, [pendingDeleteImageIds, pendingDeleteImageIdsRef]);
-
   const currentImageIsSessionUpload = Boolean(
     currentImageObjectPath
     && sessionUploadedImageUrl
@@ -585,25 +586,33 @@ export function AdminModelFormBody({
     resetSelectedUploadState,
   ]);
 
-  const handlePendingDeleteGalleryImage = useCallback((galleryImage: AdminMotorcycleGalleryImage) => {
-    setPendingDeleteImageIds((current) => {
-      const next = new Set(current);
-      next.add(galleryImage.id);
-      return next;
-    });
+  const handleConfirmDelete = useCallback(async (targetImage: AdminMotorcycleGalleryImage) => {
+    if (!onDeleteGalleryImage) return;
 
-    if (isGalleryImageCurrentCover(galleryImage, currentImageUrl, currentImageObjectPath)) {
-      onDraftFieldChange('imageUrl', adminModelTechnicalPlaceholderImage);
-      onDraftCheckboxChange('imageLocked', false);
+    setIsDeletingGalleryImage(true);
+
+    try {
+      await onDeleteGalleryImage(targetImage);
+
+      if (isGalleryImageCurrentCover(targetImage, currentImageUrl, currentImageObjectPath)) {
+        onDraftFieldChange('imageUrl', adminModelTechnicalPlaceholderImage);
+        onDraftCheckboxChange('imageLocked', false);
+      }
+
+      setGalleryImages((current) => current.filter((img) => img.id !== targetImage.id));
+      setConfirmDeleteImage(null);
+      setGalleryError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error al eliminar la imagen.';
+      setGalleryError(message);
+    } finally {
+      setIsDeletingGalleryImage(false);
     }
-  }, [currentImageObjectPath, currentImageUrl, onDraftCheckboxChange, onDraftFieldChange]);
+  }, [onDeleteGalleryImage, currentImageUrl, currentImageObjectPath, onDraftFieldChange, onDraftCheckboxChange]);
 
-  const handleUndoPendingDelete = useCallback((imageId: string) => {
-    setPendingDeleteImageIds((current) => {
-      const next = new Set(current);
-      next.delete(imageId);
-      return next;
-    });
+  const handleCancelDelete = useCallback(() => {
+    setConfirmDeleteImage(null);
+    setGalleryError(null);
   }, []);
 
   const handleDiscardChangesClick = useCallback(() => {
@@ -611,7 +620,6 @@ export function AdminModelFormBody({
     setSessionUploadedImageUrl(null);
     setGalleryBackedUploadUrls([]);
     setIsDeletingCurrentImage(false);
-    setPendingDeleteImageIds(new Set());
     resetSelectedUploadState();
     onDiscardChanges();
   }, [onDiscardChanges, resetSelectedUploadState]);
@@ -1156,7 +1164,6 @@ export function AdminModelFormBody({
                           const isOriginalPersisted = persistedImageUrlTrimmed === image.url;
                           const isPlaceholderOption = adminModelTechnicalPlaceholderImage === image.url;
                           const isGalleryRecord = Boolean(galleryImage);
-                          const isPendingDelete = Boolean(galleryImage && pendingDeleteImageIds.has(galleryImage.id));
                           const isInfoOpen = galleryInfoCardKeys.has(image.key);
                           const assetName = getGalleryImageAssetName(galleryImage?.storagePath || image.url);
                           const cardTitle = getGalleryImageCardTitle(galleryImage?.altText ?? null, isPlaceholderOption, image.kind, assetName);
@@ -1164,9 +1171,8 @@ export function AdminModelFormBody({
                           const cardFacts = getGalleryImageCardFacts(assetName, galleryImage);
                           const actionLabel = isCurrentCover ? `Portada actual: ${cardTitle}` : `Usar como portada: ${cardTitle}`;
 
-                          let cardClassName = 'admin-model__image-modal-gallery-card';
-                          if (isInfoOpen) cardClassName += ' admin-model__image-modal-gallery-card--info-open';
-                          if (isPendingDelete) cardClassName += ' admin-model__image-modal-gallery-card--pending-delete';
+                          const cardClassName = 'admin-model__image-modal-gallery-card'
+                            + (isInfoOpen ? ' admin-model__image-modal-gallery-card--info-open' : '');
 
                           return (
                             <article
@@ -1175,30 +1181,18 @@ export function AdminModelFormBody({
                               aria-label={cardTitle}
                               data-library-image-url={image.url}
                             >
-                              {isPendingDelete && galleryImage ? (
-                                <button
-                                  type="button"
-                                  className="admin-model__image-modal-gallery-card-action admin-model__image-modal-gallery-card-action--undo"
-                                  aria-label={`Deshacer eliminación de ${cardTitle}`}
-                                  title="Deshacer"
-                                  onClick={() => handleUndoPendingDelete(galleryImage.id)}
-                                >
-                                  <span className="material-symbols-outlined" aria-hidden="true">undo</span>
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="admin-model__image-modal-gallery-card-action"
-                                  aria-label={actionLabel}
-                                  title={isCurrentCover ? 'Portada actual' : 'Usar como portada'}
-                                  disabled={isCurrentCover}
-                                  onClick={() => handleUseLibraryImageAsCover(image.url)}
-                                >
-                                  <span className="material-symbols-outlined" aria-hidden="true">
-                                    {isCurrentCover ? 'check_circle' : 'wallpaper'}
-                                  </span>
-                                </button>
-                              )}
+                              <button
+                                type="button"
+                                className="admin-model__image-modal-gallery-card-action"
+                                aria-label={actionLabel}
+                                title={isCurrentCover ? 'Portada actual' : 'Usar como portada'}
+                                disabled={isCurrentCover}
+                                onClick={() => handleUseLibraryImageAsCover(image.url)}
+                              >
+                                <span className="material-symbols-outlined" aria-hidden="true">
+                                  {isCurrentCover ? 'check_circle' : 'wallpaper'}
+                                </span>
+                              </button>
                               <div className="admin-model__image-modal-gallery-card-stage">
                                 <div className="admin-model__image-modal-gallery-card-face admin-model__image-modal-gallery-card-face--front">
                                   <div className="admin-model__image-modal-gallery-card-media">
@@ -1207,16 +1201,6 @@ export function AdminModelFormBody({
                                       <div className="admin-model__image-modal-gallery-card-badge-column">
                                         <span className="admin-model__image-modal-gallery-card-handle-slot material-symbols-outlined" aria-hidden="true">drag_indicator</span>
                                         <div className="admin-model__image-modal-gallery-card-badges">
-                                          {isPendingDelete ? (
-                                            <span
-                                              className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--pending-delete"
-                                              role="img"
-                                              aria-label="Pendiente de eliminación"
-                                              title="Pendiente de eliminación"
-                                            >
-                                              <span className="material-symbols-outlined" aria-hidden="true">delete_outline</span>
-                                            </span>
-                                          ) : null}
                                           {isCurrentCover ? (
                                             <span
                                               className="admin-model__image-modal-gallery-card-badge admin-model__image-modal-gallery-card-badge--current"
@@ -1262,13 +1246,13 @@ export function AdminModelFormBody({
                                     </div>
                                   </div>
                                   <div className="admin-model__image-modal-gallery-card-actions-row">
-                                    {isGalleryRecord && !isPendingDelete && !isPlaceholderOption ? (
+                                    {isGalleryRecord && !isPlaceholderOption ? (
                                       <button
                                         type="button"
                                         className="admin-model__image-modal-gallery-card-delete-btn"
                                         aria-label={`Eliminar imagen de la galería: ${cardTitle}`}
                                         title="Eliminar imagen de la galería"
-                                        onClick={() => handlePendingDeleteGalleryImage(galleryImage!)}
+                                        onClick={() => setConfirmDeleteImage(galleryImage!)}
                                       >
                                         <span className="material-symbols-outlined" aria-hidden="true">delete_forever</span>
                                       </button>
@@ -1456,6 +1440,22 @@ export function AdminModelFormBody({
             </footer>
           </div>
         </div>
+      )}
+      {confirmDeleteImage && (
+        <GalleryConfirmDeleteModal
+          imageUrl={confirmDeleteImage.url}
+          imageTitle={getGalleryImageCardTitle(
+            confirmDeleteImage.altText,
+            false,
+            'gallery',
+            getGalleryImageAssetName(confirmDeleteImage.storagePath || confirmDeleteImage.url),
+          )}
+          isProcessing={isDeletingGalleryImage}
+          onConfirm={() => handleConfirmDelete(confirmDeleteImage)}
+          onCancel={handleCancelDelete}
+        >
+          Eliminar imagen de galería
+        </GalleryConfirmDeleteModal>
       )}
     </section>
   );

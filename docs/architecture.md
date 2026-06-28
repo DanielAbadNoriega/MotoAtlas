@@ -429,15 +429,13 @@ Funciones:
 - **Gallery card visual polish + stable ordering**: las cards usan flip `rotateY`, info por botón no hover, multi-info simultáneo, header compacto. El orden de librería es estable vía keys URL-based con `useRef<Map<string, string>>` — seleccionar portada no reordena las cards. Cover fallback seguro a `motorcycle-technical-pending.jpg`.
 - El **contrato backend single-image** (`motorcycles.image_url`, `image_locked`, `image_source`) sigue siendo el dueño de la imagen primaria que usan cards, buscador, ficha y fallbacks. `motorcycle_images` es una capa paralela de galería adicional.
 
-**Galería — flujo de eliminación (pending-delete):**
-- Estado local `pendingDeleteImageIds: ReadonlySet<string>` en `AdminEditMotorcycleSection`.
-- Reflejado a `pendingDeleteImageIdsRef` para consumo desde `handlePublish`.
-- `handlePendingDeleteGalleryImage`: agrega ID al Set. Si coincide con portada actual (por URL exacta, storagePath o path derivado), resetea `draft.imageUrl` al placeholder y desbloquea la imagen.
-- `handleUndoPendingDelete`: quita ID del Set. No restaura cover automáticamente.
-- UI: card con clase `--pending-delete`, badge `delete_outline`, botón undo reemplaza al botón "Usar como portada".
-- Publish: (1) sincroniza `isPrimary` (currentPrimary desde lista completa, matchingRecord desde activas, orden: unset → set), (2) itera pending-images: `deleteAdminMotorcycleGalleryImageRecord` + `deleteMotorcycleImage` con de-duplicación de paths.
-- **Decisión de producto:** reemplazar pending-delete por eliminación inmediata con modal de confirmación, independiente del formulario del modelo. La galería debe ser un subsistema autónomo.
-- **Riesgo técnico:** `updateAdminMotorcycle` puede no ser ideal para actualizaciones aisladas de cover. Evaluar helper `updateAdminMotorcycleCover(motorcycleId, { imageUrl, imageLocked }, token)` antes de implementar eliminación inmediata.
+**Galería — flujo de eliminación (confirmed immediate-delete):**
+- Botón `delete_forever` en la gallery card → abre `GalleryConfirmDeleteModal` (backdrop + preview + warning copy + Cancelar/Eliminar).
+- Confirmación: (1) `deleteAdminMotorcycleGalleryImageRecord(id, token)` elimina el registro de `motorcycle_images`. (2) Si la `storagePath` no es compartida con otro registro activo, `deleteMotorcycleImage(path, token)` elimina el objeto de Storage (envuelto en try/catch — best-effort). (3) Si la imagen eliminada era la portada actual (`draft.imageUrl` coincide), se resetea a `/images/placeholders/motorcycle-technical-pending.jpg` con `imageLocked = false`.
+- Escape: si el modal de confirmación está abierto, Escape cierra el modal primero (no el image manager).
+- **Prop pattern**: `onDeleteGalleryImage: (motorcycleId, galleryImageId, storagePath) ⇒ void` recibido desde `AdminEditMotorcyclePage` → `AdminModelFormBody`.
+- **State**: no hay estado diferido ni pending-delete. La eliminación es inmediata.
+- **Riesgo técnico resuelto:** `deleteMotorcycleImage` envuelto en try/catch — si Storage falla, el gallery record se eliminó igual y la UI queda consistente. Path compartido protegido: no se borra Storage si otro registro activo referencia el mismo path.
 - **AdminPage decomposition:** `AdminPage.tsx` reducido de ~5900 a 13 líneas. 9 page components extraídos a archivos individuales. `index.ts` barrel aplanado con exports directos. Zero circular imports. Pendiente (galería): descomposición JSX de galería + modal en componentes presentacionales (ver `docs/admin.md` para descomposición completa).
 - **Eager loading de admin:** pese a la descomposición, `App.tsx` sigue importando eager todas las páginas admin en cada visita. La descomposición fue groundwork necesaria pero no suficiente — el backlog post-gallery incluye `React.lazy()` para rutas admin y un architecture review más amplio.
 
