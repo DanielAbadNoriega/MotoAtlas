@@ -18,19 +18,23 @@ Controlar las tareas activas en paralelo para evitar conflictos entre ramas, pé
 
 ## Workstreams activos
 
-### Workstream C — Gallery independent actions + AdminPage refactor (backlog)
+### Workstream C — Gallery independent actions + AdminPage refactor (completado)
 
 Rama:
-(ninguna — backlog documentado)
+`refactor/admin-gallery-helpers` (cerrado — funcionalidad implementada)
 
 Estado:
-* implementación parcial completada (extracción helpers + hook)
-* pendiente: eliminación inmediata + galería autónoma
-* decisión de producto documentada
+* **Bloque C (confirmed immediate delete)** completado.
+* GalleryConfirmDeleteModal implementado.
+* Confirmed-delete flow reemplazó pending-delete.
+* Cover fallback automático.
+* Storage hardening (try/catch best-effort + path shared guard).
+* Dead code eliminado: `pendingDeleteImageIds` Set/ref, pending-delete handlers, undo UI, badge/clase `--pending-delete`, publish loop de gallery cleanup, 3 utilidades (`getActiveGalleryImages`, `getGalleryImageCleanupObjectPath`, `isCleanupPathSharedWithActiveImage`) + 11 tests.
+* Queda fuera del alcance de esta rama (diferido post-merge): drag-and-drop reorder, multi-delete batch, JSX decomposition de galería+modal.
 
 Último bloque validado:
 
-**Bloque A — AdminPage refactor conservativo (helpers + hook extraídos).**
+**Bloque A — Extracción inicial de helpers + hook de AdminPage.**
 * helpers puros extraídos a `adminPageUtils.ts` + `adminGalleryImageUtils.ts` + `adminModelPreviewUtils.ts` + `adminPageConstants.ts` + `adminModelDraftUtils.ts` (147 tests nuevos combinados)
 * hook `useAdminImageManager` extraído con estado puramente local (9 tests)
 * AdminPage tests: 255/255
@@ -45,66 +49,58 @@ Estado:
 * `index.ts` barrel aplanado: exports directos desde archivos individuales, eliminando cadena `index.ts → AdminPage.tsx → archivos`
 * `AdminPage.tsx` reducido a 13 líneas (compatibilidad barrel para `AdminPage.test.tsx`)
 * sin imports circulares
-* suite completa: 1602 tests passing
+* suite completa: 1602 tests passing (hito intermedio — antes de confirmed-delete y +14 tests)
 * typecheck: clean
+
+**Bloque C — Confirmed immediate delete.**
+* Botón `delete_forever` → `GalleryConfirmDeleteModal` (backdrop + header + image preview + warning copy + Cancelar/Eliminar).
+* Confirmación: (1) `deleteAdminMotorcycleGalleryImageRecord(id, token)` elimina el registro. (2) `deleteMotorcycleImage(path, token)` best-effort con try/catch — si Storage falla, el gallery record se eliminó igual y la UI queda consistente. (3) Path compartido: si otro gallery record activo referencia el mismo Storage path, no se borra.
+* Cover fallback: si la imagen eliminada era la portada actual, `draft.imageUrl` se resetea a placeholder con `imageLocked = false`.
+* Escape: si el modal está abierto, Escape cierra el modal primero (no el image manager).
+* Prop pattern: `onDeleteGalleryImage: (motorcycleId, galleryImageId, storagePath) ⇒ void`.
+* Sin estado diferido ni pending-delete. Eliminación inmediata.
+* Dead code removido: estado `pendingDeleteImageIds` (Set + ref), `handlePendingDeleteGalleryImage`, `handleUndoPendingDelete`, badge/clase `--pending-delete`, publish gallery deletion loop, 3 utilidades (`getActiveGalleryImages`, `getGalleryImageCleanupObjectPath`, `isCleanupPathSharedWithActiveImage`), 11 tests asociados.
+* AdminPage tests: 252/252.
+* Suite completa: 1588 tests / 83 files.
+* `GalleryConfirmDeleteModal` componente creado.
+* typecheck: clean, `git diff --check`: clean.
 
 Objetivo:
 Convertir las acciones de galería de imágenes de Admin Models en operaciones independientes del formulario del modelo, y continuar el refactor de `AdminPage.tsx`.
 
-Problema actual:
-* El borrado de imágenes de galería usa pending-delete local (`pendingDeleteImageIds` Set).
-* Las imágenes marcadas no se eliminan hasta que el admin publica el formulario completo del modelo.
-* El botón undo reemplaza al botón "Usar como portada" en la misma posición, lo que resulta confuso.
-* La clase `--pending-delete` existe en TSX pero no tiene reglas SCSS — la card no se diferencia visualmente de forma suficiente.
-* `AdminPage.tsx` ya está descompuesto (~5900 → 13 líneas), pero el JSX pesado de galería y modal sigue en `AdminModelFormBody`.
+Target behavior (alcanzado):
+* Click `delete_forever` → `GalleryConfirmDeleteModal` → eliminación inmediata.
+* Cover actual: si se elimina la imagen que es portada, el modal advierte y aplica placeholder al confirmar.
+* `motorcycles.image_url` / `draft.imageUrl` nunca queda apuntando a una imagen eliminada.
+* Drag-and-drop reorder debe persistir independientemente (pendiente).
 
-Target behavior:
-* Click `delete_forever` → modal de confirmación → aplicar eliminación inmediata.
-* No más "pending hasta publicar".
-* Cover actual: si se elimina la imagen que es portada, el modal debe advertir y aplicar placeholder al confirmar.
-* `motorcycles.image_url` / `draft.imageUrl` nunca debe quedar apuntando a una imagen eliminada.
-* Drag-and-drop reorder debe persistir independientemente.
-* La galería debe ser un subsistema autónomo, no un side-effect del formulario.
+Order de implementación (implementado en esta rama):
+1. ✅ Extraer helpers puros de galería.
+2. ✅ Implementar modal de confirmación reutilizable.
+3. ✅ Reemplazar pending-delete por eliminación inmediata confirmada.
+4. ✅ Asegurar cover fallback en eliminación inmediata.
+5. ✅ Remover estado pending-delete + undo + badge + publish logic asociada.
+6. ✅ AdminPage decomposition completa (~5900→13 líneas, barrel aplanado).
+7. ⬜ Multi-delete batch (diferido post-merge).
+8. ⬜ Drag-and-drop reorder (diferido post-merge).
 
-Current-cover safety:
-* `updateAdminMotorcycle` existe pero puede no ser ideal para updates aislados de cover.
-* Antes de implementar, verificar si se necesita un helper `updateAdminMotorcycleCover(motorcycleId, { imageUrl, imageLocked }, token)`.
-* Preferir PATCH minimalista a payload completo para no pisar campos no relacionados.
-
-Order de implementación propuesta:
-1. ✅ Extraer helpers puros de galería (completado).
-2. Implementar modal de confirmación reutilizable.
-3. Reemplazar pending-delete por eliminación inmediata confirmada.
-4. Asegurar cover fallback en eliminación inmediata.
-5. Remover estado pending-delete + undo + badge + publish logic asociada.
-6. Multi-delete batch (después de single delete estable).
-7. Drag-and-drop reorder como acción independiente.
-8. ✅ AdminPage decomposition completa (~5900→13 líneas, barrel aplanado). JSX pesado de galería+modal sigue en `AdminModelFormBody`.
-
-Refactor direction:
+Refactor direction (implementado en esta rama):
 * No combinar refactor grande con cambios de comportamiento destructivo.
 * Extracción gradual: helpers puros → hooks → componentes presentacionales.
 * ✅ Fase 1 completada: helpers puros extraídos (`adminPageUtils`, `adminGalleryImageUtils`, `adminModelPreviewUtils`, `adminPageConstants`, `adminModelDraftUtils`).
 * ✅ Fase 2 completada: hook `useAdminImageManager` con estado local puro extraído.
 * ✅ Fase 3 completada: AdminPage decomposition completa (~5900→13 líneas). 9 page components extraídos, barrel aplanado, zero circular imports.
-* Pendiente (galería): descomposición JSX de galería + modal en componentes presentacionales:
-  - AdminModelImageManagerModal
-  - AdminImageGalleryGrid
-  - AdminImageGalleryCard
-  - AdminModelImageUploadControls
-  - AdminGalleryDeleteConfirmationModal
-  - hooks adicionales: useAdminModelDraft, useAdminModelGallery, useAdminModelImageUpload, useAdminModelPrimarySync, useAdminModelGalleryDelete, useAdminModelPublish
+* Descomposición JSX de galería+modal en componentes presentacionales queda como trabajo diferido (post-merge), no implementado en esta rama.
 
-### Post-gallery technical backlog
+### Backlog diferido (post-merge)
 
-La descomposición de AdminPage fue groundwork necesaria, pero no suficiente por sí sola para reducir el eager loading de admin. `App.tsx` sigue importando de forma eager todas las páginas admin (9 páginas + shared UI + utilidades + servicios) en cada visita, incluso si el usuario no es admin. Además, `AdminMotorcycleReviewsPage.tsx` importa `AdminSidebar` desde `../AdminPage` (barrel indirecto) en vez de desde la fuente directa `./adminSharedUi`.
+La descomposición de AdminPage fue groundwork necesaria, pero no suficiente por sí sola para reducir el eager loading de admin. `App.tsx` sigue importando de forma eager todas las páginas admin (9 páginas + shared UI + utilidades + servicios) en cada visita, incluso si el usuario no es admin. Nota: `AdminMotorcycleReviewsPage.tsx` ya importa `AdminSidebar` directamente desde `../AdminPage/adminSharedUi`, no a través del barrel de `AdminPage` (fix aplicado en esta rama).
 
-Orden de implementación propuesto (post-galería, no incluir en la tarea actual de galería):
-1. Fix imports directos de `AdminSidebar` en `AdminMotorcycleReviewsPage.tsx` para que no pase por el barrel de `AdminPage`.
-2. Audit routing en `App.tsx` y renderizado de rutas admin.
-3. Implementar `React.lazy()` / dynamic imports solo para rutas admin, diferir carga de todo el bloque admin hasta navegar a `#/admin`.
-4. Quality Gate completo (typecheck + test).
-5. Architecture review más amplio:
+Orden de implementación propuesto (post-merge con landings):
+1. Audit routing en `App.tsx` y renderizado de rutas admin.
+2. Implementar `React.lazy()` / dynamic imports solo para rutas admin, diferir carga de todo el bloque admin hasta navegar a `#/admin`.
+3. Quality Gate completo (typecheck + test).
+4. Architecture review más amplio:
    - separar presentation de logic donde corresponda;
    - revisar feature/module boundaries;
    - reducir responsabilidades mezcladas en page components;
@@ -140,14 +136,17 @@ Riesgos:
 * `updateAdminMotorcycle` puede pisar campos del modelo si se usa para cover update aislado.
 * No combinar refactor con cambios de comportamiento de galería.
 
-Último resultado:
-* AdminPage decomposition completa (~5900→13 líneas, barrel aplanado). 1602 tests, typecheck clean, zero circular imports.
+Último resultado (branch closure):
+* AdminPage decomposition completa (~5900→13 líneas, barrel aplanado). Gallery confirmed delete implementado con `GalleryConfirmDeleteModal`. `AdminSidebar` import directo fijado.
+* Quality Gate final de rama: 1588 tests / 83 files, typecheck clean, `git diff --check` clean.
+* Rama `refactor/admin-gallery-helpers` implementation-complete, lista para merge/sincronización con landings.
+* No incluye landings ni capa SDD/spec/features.
+* **Guardrails:** no refactorizar/revertir/reorganizar `src/components/pages/AdminPage/` salvo necesidad explícita. No reintroducir imports desde páginas extraídas de vuelta a través de `./AdminPage` (barrel). Los helpers extraídos viven en `admin*`/`useAdmin*` dentro del mismo directorio.
 
-Siguiente paso (galería):
-* Decidir si implementar helper `updateAdminMotorcycleCover` antes de la eliminación inmediata, o pasar directamente a implementar modal de confirmación (step 2).
-
-Siguiente paso (post-gallery backlog):
-* Abordar los 5 items del post-gallery technical backlog (ver sección arriba) una vez completada la galería autónoma.
+Siguiente paso:
+* Merge/sync con landings.
+* Construir capa SDD/spec/features sobre el estado real combinado post-merge.
+* Luego abordar backlog diferido: `React.lazy()` admin routes, architecture review, Quality Gate post-merge.
 
 ---
 
