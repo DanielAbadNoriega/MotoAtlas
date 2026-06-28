@@ -10,10 +10,7 @@ import {
   type AdminMotorcycleGalleryImage,
 } from '../../../services/adminMotorcycleGalleryService';
 import {
-  getActiveGalleryImages,
-  getGalleryImageCleanupObjectPath,
   getMotorcycleImageObjectPath,
-  isCleanupPathSharedWithActiveImage,
   isImageBackedByGalleryRecord,
 } from './adminGalleryImageUtils';
 import {
@@ -48,7 +45,6 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
   const [publishError, setPublishError] = useState('');
   const [persistedImageHasGalleryRecord, setPersistedImageHasGalleryRecord] = useState(false);
   const galleryImagesRef = useRef<readonly AdminMotorcycleGalleryImage[]>([]);
-  const pendingDeleteImageIdsRef = useRef<readonly string[]>([]);
   const initializedMotorcycleIdRef = useRef<string | undefined>(motorcycleId);
 
   const { session, user } = useAuth();
@@ -162,8 +158,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         galleryImagesRef.current = galleryImageList;
       }
 
-      const pendingDeleteIds = pendingDeleteImageIdsRef?.current ?? [];
-      const activeGalleryImages = getActiveGalleryImages(galleryImageList, pendingDeleteIds);
+      const activeGalleryImages = galleryImageList;
 
       const originalIsGalleryBacked = persistedImageHasGalleryRecord
         || (galleryImageList.length > 0
@@ -198,29 +193,6 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         }
       }
 
-      if (pendingDeleteIds.length > 0) {
-        const pendingImages = galleryImageList.filter((img) => pendingDeleteIds.includes(img.id));
-        const processedCleanupPaths = new Set<string>();
-
-        for (const pendingImage of pendingImages) {
-          await deleteAdminMotorcycleGalleryImageRecord(pendingImage.id, accessToken);
-
-          const pendingObjectPath = getGalleryImageCleanupObjectPath(pendingImage);
-
-          if (pendingObjectPath && !processedCleanupPaths.has(pendingObjectPath)) {
-            processedCleanupPaths.add(pendingObjectPath);
-
-            const isSharedWithActiveImage = isCleanupPathSharedWithActiveImage(pendingObjectPath, activeGalleryImages);
-
-            const isUsedByCurrentCover = nextImageObjectPath === pendingObjectPath;
-
-            if (!isSharedWithActiveImage && !isUsedByCurrentCover) {
-              await deleteMotorcycleImage(pendingObjectPath, accessToken);
-            }
-          }
-        }
-      }
-
       setLocalStatus('Modelo actualizado correctamente.');
       onMotorcyclesChangeProp?.(updatedBike);
       window.location.hash = `#/motos/${motorcycleId}`;
@@ -231,7 +203,7 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
     } finally {
       setSaving(false);
     }
-  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, pendingDeleteImageIdsRef, persistedImageHasGalleryRecord, session?.access_token, updateAdminMotorcycleGalleryImage]);
+  }, [draft, motorcycleId, onMotorcyclesChangeProp, originalDraft?.imageUrl, persistedImageHasGalleryRecord, session?.access_token, updateAdminMotorcycleGalleryImage]);
 
   const handleUploadImage = useCallback(async (file: File) => {
     const accessToken = session?.access_token;
@@ -284,6 +256,34 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
 
     await deleteMotorcycleImage(objectPath, accessToken);
   }, [session?.access_token]);
+
+  const handleDeleteGalleryImage = useCallback(async (galleryImage: AdminMotorcycleGalleryImage) => {
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      throw new Error('No hay sesión activa para eliminar la imagen.');
+    }
+
+    await deleteAdminMotorcycleGalleryImageRecord(galleryImage.id, accessToken);
+
+    const storagePath = galleryImage.storagePath || getMotorcycleImageObjectPath(galleryImage.url);
+    if (storagePath) {
+      const remainingImages = galleryImagesRef.current.filter((img) => img.id !== galleryImage.id);
+      const isSharedWithOtherImage = remainingImages.some(
+        (img) => img.storagePath === storagePath || getMotorcycleImageObjectPath(img.url) === storagePath,
+      );
+
+      if (!isSharedWithOtherImage) {
+        try {
+          await deleteMotorcycleImage(storagePath, accessToken);
+        } catch {
+          // Storage cleanup is best-effort. Gallery record deletion is the primary operation.
+          // If remote storage cleanup fails, the image is still removed from the gallery UI
+          // and the record is gone. The orphaned storage object can be cleaned up later.
+        }
+      }
+    }
+  }, [session?.access_token, galleryImagesRef]);
 
   const isDraftLoading = Boolean(
     motorcycleId
@@ -372,8 +372,8 @@ export function AdminEditMotorcyclePage({ motorcycleId, motorcycles, onMotorcycl
         onCreateGalleryRecord={handleCreateGalleryRecord}
         onPersistedImageGalleryStateChange={setPersistedImageHasGalleryRecord}
         onDeleteImage={handleDeleteImage}
+        onDeleteGalleryImage={handleDeleteGalleryImage}
         galleryImagesRef={galleryImagesRef}
-        pendingDeleteImageIdsRef={pendingDeleteImageIdsRef}
         saving={saving}
         toolbarKicker={kickerText}
         workspaceHeading="Workspace de edición"

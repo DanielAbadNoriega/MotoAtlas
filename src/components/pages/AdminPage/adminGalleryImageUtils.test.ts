@@ -8,9 +8,6 @@ import {
   getNextGallerySortOrder,
   isGalleryImageCurrentCover,
   isImageBackedByGalleryRecord,
-  getActiveGalleryImages,
-  getGalleryImageCleanupObjectPath,
-  isCleanupPathSharedWithActiveImage,
   formatGalleryImageDate,
   getGalleryImageAssetName,
   getGalleryImageSourceLabel,
@@ -169,77 +166,6 @@ describe('isImageBackedByGalleryRecord', () => {
       storagePath: 'moto-1/abc.jpg',
     })];
     expect(isImageBackedByGalleryRecord('/images/local/placeholder.jpg', images)).toBe(false);
-  });
-});
-
-describe('getActiveGalleryImages', () => {
-  it('returns all images when no pending deletes', () => {
-    const images = [mockGalleryImage({ id: 'a' }), mockGalleryImage({ id: 'b' })];
-    expect(getActiveGalleryImages(images, [])).toEqual(images);
-  });
-
-  it('filters out pending-delete images', () => {
-    const images = [
-      mockGalleryImage({ id: 'a' }),
-      mockGalleryImage({ id: 'b' }),
-      mockGalleryImage({ id: 'c' }),
-    ];
-    const result = getActiveGalleryImages(images, ['a', 'c']);
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('b');
-  });
-
-  it('returns empty array when all images pending delete', () => {
-    const images = [mockGalleryImage({ id: 'a' })];
-    expect(getActiveGalleryImages(images, ['a'])).toHaveLength(0);
-  });
-
-  it('returns empty array for empty input', () => {
-    expect(getActiveGalleryImages([], [])).toHaveLength(0);
-  });
-});
-
-describe('getGalleryImageCleanupObjectPath', () => {
-  it('returns storagePath when present', () => {
-    const image = mockGalleryImage({ storagePath: 'moto-1/cleanup.jpg' });
-    expect(getGalleryImageCleanupObjectPath(image)).toBe('moto-1/cleanup.jpg');
-  });
-
-  it('returns derived object path when storagePath is null', () => {
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://project.supabase.co');
-    const image = mockGalleryImage({
-      url: 'https://project.supabase.co/storage/v1/object/public/motorcycle-images/moto-1/derived.jpg',
-      storagePath: null,
-    });
-    expect(getGalleryImageCleanupObjectPath(image)).toBe('moto-1/derived.jpg');
-  });
-
-  it('returns null when no storagePath and URL yields no object path', () => {
-    const image = mockGalleryImage({ url: '/images/local/manual.jpg', storagePath: null });
-    expect(getGalleryImageCleanupObjectPath(image)).toBeNull();
-  });
-});
-
-describe('isCleanupPathSharedWithActiveImage', () => {
-  it('returns true when active image has matching storagePath', () => {
-    const activeImages = [mockGalleryImage({ storagePath: 'moto-1/shared.jpg' })];
-    expect(isCleanupPathSharedWithActiveImage('moto-1/shared.jpg', activeImages)).toBe(true);
-  });
-
-  it('returns true when active image URL matches via derived path', () => {
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://project.supabase.co');
-    const url = 'https://project.supabase.co/storage/v1/object/public/motorcycle-images/moto-1/shared.jpg';
-    const activeImages = [mockGalleryImage({ url, storagePath: null })];
-    expect(isCleanupPathSharedWithActiveImage('moto-1/shared.jpg', activeImages)).toBe(true);
-  });
-
-  it('returns false when no active image matches', () => {
-    const activeImages = [mockGalleryImage({ storagePath: 'moto-1/different.jpg' })];
-    expect(isCleanupPathSharedWithActiveImage('moto-1/other.jpg', activeImages)).toBe(false);
-  });
-
-  it('returns false for empty active list', () => {
-    expect(isCleanupPathSharedWithActiveImage('moto-1/some.jpg', [])).toBe(false);
   });
 });
 
