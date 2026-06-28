@@ -31,6 +31,7 @@ import {
 import { ReviewModal } from '../../reviews/ReviewModal';
 import { ReviewAspectSummary } from '../../reviews/ReviewAspectSummary';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { AccountPagination } from '../AccountPage/AccountPagination';
 import { AccountQuickLinksNav } from '../AccountPage/AccountQuickLinksNav';
 import '../AccountPage/AccountPage.scss';
@@ -392,7 +393,7 @@ function AccountPrivateSidebar({
         </dl>
         <div className="account-page__profile-actions">
           <button className="account-page__button account-page__button--glass" type="button" onClick={onSignOut}>
-            <span className="material-symbols-outlined" aria-hidden="true">logout</span>
+            <MotoIcon name="logout" width="1.18rem" height="1.18rem" />
             Cerrar sesión
           </button>
         </div>

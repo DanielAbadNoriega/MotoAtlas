@@ -1,0 +1,82 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.loading-preview {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading-preview__toolbar {
+  background: $color-surface-lowest;
+  border-bottom: 1px solid rgba($color-outline-variant, 0.28);
+  padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 3vw, 2rem);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.loading-preview__title {
+  @include headline-md;
+
+  color: $color-on-surface;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+}
+
+.loading-preview__note {
+  @include mono-label;
+
+  color: rgba($color-on-surface-variant, 0.72);
+  margin: 0 0 1rem;
+}
+
+.loading-preview__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.loading-preview__button {
+  @include mono-label;
+
+  background: rgba($color-surface-container, 0.62);
+  border: 1px solid rgba($color-outline-variant, 0.32);
+  border-radius: $radius-md;
+  color: rgba($color-on-surface-variant, 0.88);
+  cursor: pointer;
+  padding: 0.5rem 0.85rem;
+  transition:
+    background $transition-fast,
+    border-color $transition-fast,
+    color $transition-fast;
+
+  &:hover {
+    background: rgba($color-surface-container-high, 0.62);
+    border-color: rgba($color-accent, 0.32);
+    color: $color-on-surface;
+  }
+
+  &--active {
+    background: rgba($color-accent, 0.14);
+    border-color: rgba($color-accent, 0.52);
+    color: $color-on-surface;
+  }
+}
+
+.loading-preview__divider {
+  align-self: stretch;
+  background: rgba($color-outline-variant, 0.28);
+  margin: 0 0.125rem;
+  width: 1px;
+}
+
+.loading-preview__stage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  > .loading-state {
+    flex: 1;
+  }
+}

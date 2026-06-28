@@ -119,10 +119,10 @@
   position: absolute;
   right: 0.75rem;
 
-  .material-symbols-outlined {
+  svg {
     color: $color-on-surface;
-    font-size: 3rem;
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    width: 3rem;
+    height: 3rem;
   }
 }
 
@@ -138,8 +138,9 @@
   gap: 0.75rem;
   padding: 0.85rem 1rem;
 
-  .material-symbols-outlined {
-    font-size: 1.25rem;
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   span {
@@ -220,9 +221,10 @@
   gap: 0.35rem;
   padding: 0.3rem 0.7rem;
 
-  .material-symbols-outlined {
+  svg {
     color: $color-accent-container;
-    font-size: 0.85rem;
+    width: 0.85rem;
+    height: 0.85rem;
   }
 }
 
@@ -279,12 +281,10 @@
     color $transition-fast,
     transform $transition-fast;
 
-  .material-symbols-outlined {
-    font-size: 1.6rem;
-    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
-    transition:
-      font-variation-settings $transition-fast,
-      color $transition-fast;
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    transition: color $transition-fast;
   }
 
   &:hover,
@@ -292,18 +292,10 @@
     color: rgba($color-outline-variant, 0.8);
     outline: 0;
     transform: scale(1.1);
-
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
   }
 
   &--active {
     color: $color-accent-container;
-
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
-    }
 
     &:hover,
     &:focus-visible {
@@ -523,8 +515,9 @@
     color: $color-on-surface;
   }
 
-  .material-symbols-outlined {
-    font-size: 17px;
+  svg {
+    width: 17px;
+    height: 17px;
   }
 }
 
@@ -544,8 +537,9 @@
   display: flex;
   margin-left: auto;
 
-  .material-symbols-outlined {
-    font-size: 0.75rem;
+  svg {
+    width: 0.75rem;
+    height: 0.75rem;
   }
 }
 
@@ -561,10 +555,10 @@
     opacity: 0.06;
   }
 
-  .material-symbols-outlined {
+  svg {
     color: $color-on-surface;
-    font-size: 3.5rem;
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    width: 3.5rem;
+    height: 3.5rem;
   }
 }
 
@@ -629,9 +623,10 @@
   justify-content: center;
   width: 24px;
 
-  .material-symbols-outlined {
+  svg {
     color: $color-outline;
-    font-size: 0.875rem;
+    width: 0.875rem;
+    height: 0.875rem;
   }
 
   &:hover {
@@ -647,7 +642,7 @@
     border-color: #22c55e;
     color: #000;
 
-    .material-symbols-outlined {
+    svg {
       color: #000;
     }
   }
@@ -657,7 +652,7 @@
     border-color: $color-accent-container;
     color: #fff;
 
-    .material-symbols-outlined {
+    svg {
       color: #fff;
     }
   }
@@ -676,8 +671,9 @@
   opacity: 0.45;
   width: 24px;
 
-  .material-symbols-outlined {
-    font-size: 0.875rem;
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
   }
 
   &--enabled {
@@ -832,7 +828,8 @@
 
 .review-modal__summary-notes-icon {
   color: $color-outline;
-  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .review-modal__summary-notes-title {
@@ -932,8 +929,9 @@
   }
 }
 
-.review-modal__submit-icon.material-symbols-outlined {
-  font-size: 1.1rem;
+.review-modal__submit-icon {
+  width: 1.1rem;
+  height: 1.1rem;
   transition: transform $transition-fast;
 
   .review-modal__submit-btn:hover & {
@@ -1006,9 +1004,10 @@
   justify-content: center;
   width: 5.5rem;
 
-  .material-symbols-outlined {
+  svg {
     color: $color-positive;
-    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
   }
 }
 

@@ -1,3 +1,5 @@
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
+
 type AccountPaginationProps = Readonly<{
   ariaLabel: string;
   className: string;
@@ -38,10 +40,10 @@ export function AccountPagination({
   return (
     <nav className={className} aria-label={ariaLabel}>
       <button type="button" aria-label="Primera página" disabled={currentPage === 1} onClick={() => onPageChange(1)}>
-        <span className="material-symbols-outlined" aria-hidden="true">keyboard_double_arrow_left</span>
+        <MotoIcon name="keyboard_double_arrow_left" width="1.18rem" height="1.18rem" />
       </button>
       <button type="button" aria-label="Página anterior" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
-        <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+        <MotoIcon name="chevron_left" width="1.18rem" height="1.18rem" />
       </button>
       {visiblePages.map((page) => (
         <button
@@ -56,10 +58,10 @@ export function AccountPagination({
         </button>
       ))}
       <button type="button" aria-label="Página siguiente" disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>
-        <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+        <MotoIcon name="chevron_right" width="1.18rem" height="1.18rem" />
       </button>
       <button type="button" aria-label="Última página" disabled={currentPage === totalPages} onClick={() => onPageChange(totalPages)}>
-        <span className="material-symbols-outlined" aria-hidden="true">keyboard_double_arrow_right</span>
+        <MotoIcon name="keyboard_double_arrow_right" width="1.18rem" height="1.18rem" />
       </button>
     </nav>
   );

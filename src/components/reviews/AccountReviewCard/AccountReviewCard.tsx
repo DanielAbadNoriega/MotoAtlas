@@ -1,4 +1,5 @@
 import type { MotorcycleReview } from '../../../services/motorcycleReviewService';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import {
   accountReviewRidingStyleLabels,
@@ -59,19 +60,19 @@ function ReviewMetadata({ review }: Readonly<{ review: MotorcycleReview }>) {
   return (
     <ul className="account-review-card__meta" aria-label="Metadatos de la review">
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">speed</span>
+        <MotoIcon name="speed" />
         {formatAccountReviewKilometers(review.kilometers)}
       </li>
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
+        <MotoIcon name="schedule" />
         {formatAccountReviewOwnershipMonths(review.ownershipMonths)}
       </li>
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">route</span>
+        <MotoIcon name="route" />
         {accountReviewRidingStyleLabels[review.ridingStyle]}
       </li>
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+        <MotoIcon name="calendar_month" />
         <time dateTime={review.createdAt}>{formatAccountReviewDate(review.createdAt)}</time>
       </li>
     </ul>

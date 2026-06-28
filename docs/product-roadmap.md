@@ -18,10 +18,10 @@ Implementado (baseline actual):
 - `Útil N` como contador público visible siempre.
 - `RadarState` extraído como estado vacío compartido base desde `AccountReviewsEmptyState`, con wrapper de compatibilidad conservado y sin migración masiva de consumidores.
 - quick links de cuenta/admin agrupados implementados como polish de navegación interna independiente (`Mi cuenta` + `Panel Admin` con `<details>/<summary>` nativo y orden compartido).
-- Baseline validado actual: `1415 tests passing` (78 files).
+- Baseline validado actual: `1588 tests passing` (83 files).
 - Typecheck: clean.
-- Último bloque estable validado: Admin Models gallery pending-delete + primary sync hardening + Storage dedup + delete button visual + card back info overflow fix (Quality Gate aprobado: 1415 tests, typecheck clean).
-  - Workstream detalle: `features/admin-models-studio` — galería multiimagen admin. Ver `docs/current-workstreams.md`.
+- Último bloque estable validado: AdminPage decomposition completa + gallery confirmed delete. Quality Gate final de rama: 1588 tests, typecheck clean.
+  - Workstream detalle: `docs/current-workstreams.md` — Workstream C (Admin gallery / AdminPage refactor).
 
 ## 3. Foco inmediato recomendado
 
@@ -68,7 +68,7 @@ Implementado:
 
 ### Admin Models Studio / Estudio de modelos
 
-Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection + gallery record creation + gallery card visual polish + stable library ordering + cover fallback + pending-delete + primary sync hardening + Storage cleanup + delete button visual + card back info fix implementadas / gestión autónoma de galería (confirmación inmediata, reorden, primary metadata independiente del formulario) + WebP conversion + IntersectionObserver pendientes**.
+Estado: **Fases 1, 2, 3, 4 (UI) + Fase 5A-5C.1 (persistencia/validación) + Fase 6A-6C.4 (image upload) + file input UI polish + Section Radar + post-publish navigation + App-level catalog sync + image replace/delete cleanup hardening + image manager modal refactor + schema/RLS/service foundation + read-only gallery connection + gallery record creation + gallery card visual polish + stable library ordering + cover fallback + confirmed immediate-delete + Storage cleanup best-effort + delete button visual + card back info fix implementadas / gestión autónoma de galería (reorden, primary metadata independiente del formulario) + WebP conversion + IntersectionObserver pendientes**.
 
 Nota de estado:
 - `#/admin/modelos` funciona como hub de navegación admin-protegido;
@@ -85,12 +85,11 @@ Nota de estado:
 - **Gallery card visual polish**: cards más minimalistas, icon-only/current-cover indicators con tooltips, info panel por botón (no hover), multi-info simultáneo, flip `rotateY` con efecto revolving-door, header compacto, metadata compacta. `prefers-reduced-motion` respetado.
 - **Stable library ordering**: bug de reorden visual al seleccionar portada corregido con keys estables por URL via `useRef<Map<string, string>>`. Seleccionar portada no mueve ni reordena cards de galería. El cambio es React reconciliation únicamente — no muta gallery state. `persisted` registrado antes que `draft` para label semántico correcto (`Portada guardada`).
 - **Cover fallback**: al eliminar la portada actual se aplica `/images/placeholders/motorcycle-technical-pending.jpg` como fallback seguro.
-- **Pending-delete flow**: las imágenes de galería se marcan para eliminación diferida hasta publicar el formulario. Estado local `pendingDeleteImageIds` (Set), sincronizado a ref. Undo y badge pending-delete renderizados.
-- **Primary sync hardening**: al publicar, `currentPrimary` se busca en la lista completa (incluyendo pending-delete), no solo en las activas. Orden estricto: unset primaria → set nueva → delete pending.
-- **Storage cleanup de-duplicado**: dos registros pending-delete con el mismo `storagePath` solo llaman `deleteMotorcycleImage` una vez via `processedCleanupPaths` Set.
+- **Confirmed immediate-delete**: botón `delete_forever` → modal de confirmación → eliminación inmediata del gallery record + Storage cleanup best-effort con guard de path compartido. Cover fallback automático.
+- **Storage cleanup best-effort**: `deleteMotorcycleImage` envuelto en try/catch. Guard de path compartido: si otro registro activo usa el mismo Storage path, no se borra.
 - **Delete button visual**: icono `delete_forever`, estilo stage button (`backdrop-filter`, `border-radius: 999px`) con hint destructivo (`$color-error`). Posicionado left-bottom.
 - **Card back info overflow fix**: `overflow-y: auto` en back face y card-info, `overflow-wrap: break-word` en valores `dd`, gap reducido a 0.65rem.
-- **Sin**: gestión autónoma de galería (confirmación inmediata, reorden, primary metadata como acción independiente del formulario), WebP conversion, IntersectionObserver.
+- **Sin**: gestión autónoma de galería (reorden, primary metadata como acción independiente del formulario), WebP conversion, IntersectionObserver.
   - Nota: `motorcycles.image_url` / `draft.imageUrl` es la fuente de portada activa. `motorcycle_images.isPrimary` es metadata sincronizada. Las cards ya tienen acción "Usar como portada". Lo pendiente es decidir si la galería necesita gestionar primary como acción autónoma separada del formulario.
 - **Post-publish cerrado**: create publish success navega a `#/motos/{createdBike.id}`, edit publish success navega a `#/motos/{motorcycleId}` y `App.tsx` actualiza el catálogo en memoria sin refresh completo, reemplazando por `id` o haciendo append si la moto es nueva.
 - la navegación agrupada de quick links expone un submenú `Modelos` dentro de `Panel Admin`;
@@ -175,10 +174,16 @@ Fases propuestas:
    - Section progress indicators: cada sección muestra completitud según campos requeridos del draft.
    - Manual browser smoke completado con éxito.
    - `deleteMotorcycleImage` ya participa del cleanup seguro en UI solo para imágenes de sesión no persistidas y para cleanup diferido post-publish de imágenes persistidas reemplazadas.
-   - Gallery pending-delete implementado: marcar imágenes para borrado diferido hasta publicar, con undo, badge, primary sync hardening, Storage cleanup de-duplicado, delete button visual (`delete_forever`) y card back info overflow fix.
-   - Quality Gate: 1415 tests, typecheck clean.
-   - Pendiente (galería): migrar pending-delete a eliminación inmediata con modal de confirmación (independiente del formulario). Drag-and-drop reorder con persistencia independiente. Card back info simplificada.
-   - Pendiente (general): gestión autónoma de galería (confirmación inmediata, reorden, primary metadata independiente del formulario), WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
+   - Gallery confirmed immediate-delete implementado: botón `delete_forever` → `GalleryConfirmDeleteModal` → eliminación inmediata con Storage cleanup best-effort, guard de path compartido y cover fallback automático.
+    - **AdminPage decomposition completa:** `AdminPage.tsx` reducido de ~5900 a 13 líneas. 9 page components extraídos a archivos individuales. `index.ts` barrel aplanado con exports directos, eliminando cadena `index.ts → AdminPage.tsx → archivos`. Zero circular imports.
+    - Para la galería, el JSX pesado de galería+modal sigue en `AdminModelFormBody` y requiere extracción a componentes presentacionales.
+    - Quality Gate de rama: 1588 tests (83 files), typecheck clean.
+    - Pendiente (galería): Drag-and-drop reorder con persistencia independiente. Card back info simplificada.
+    - Pendiente (general): gestión autónoma de galería (reorden, primary metadata independiente del formulario), WebP conversion opcional, A2 fields en draft si aplica, IntersectionObserver active section tracking.
+    - Backlog diferido (post-merge con landings):
+      * La descomposición de AdminPage fue groundwork necesaria, pero no suficiente: `App.tsx` sigue importando eager todas las páginas admin en cada visita. (Nota: `AdminSidebar` import directo ya fijado en esta rama.)
+      * Audit routing de admin en `App.tsx` e implementar `React.lazy()` solo para rutas admin.
+      * Architecture review: separar UI/hooks/services, evaluar feature-based structure o MVC-inspired boundaries.
 
 Nota sobre el set de filtros de Fase 3:
 - el set definitivo de filtros puede refinarse tras uso real;
@@ -1545,6 +1550,7 @@ Estado actual:
 Pendiente / futuro:
 - `FullPageLoading` para auth/profile/account/admin loading de página completa.
 - `ErrorState` para errores recuperables de carga.
+- **Optimización de iconos Material Symbols en UI crítica**: sustituir dependencia de fuente externa por presets SVG locales en estados de carga, filtros, reviews, ReviewModal, RadarState y botones de acción donde el retardo de Material Symbols cause raw text visible. LoadingState completado como caso piloto.
 - migrar consumidores adicionales de empty state a `RadarState` de forma deliberada, una página por vez, sin asumir que `CommunityReviewsPage`, `AccountMotorcycleReviewsPage`, rankings, garaje u otras vistas ya quedaron cubiertas.
 
 Regla: `RadarState` ya forma parte de la base UI compartida, pero `FullPageLoading`, `ErrorState` y las migraciones adicionales siguen siendo dirección futura; no forman parte del hardening actual de `AuthProvider`.

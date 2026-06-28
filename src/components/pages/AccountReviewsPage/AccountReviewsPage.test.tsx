@@ -330,7 +330,6 @@ describe('AccountReviewsPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Aún no has valorado ninguna moto' })).toBeInTheDocument();
     expect(screen.getByText('Cuando compartas una experiencia, aparecerá aquí agrupada por modelo.')).toBeInTheDocument();
-    expect(screen.getByText('search_off')).toBeInTheDocument();
 
     cleanup();
     mockAuth();

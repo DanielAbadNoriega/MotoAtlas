@@ -86,10 +86,8 @@
 .review-aspect-summary__chip-icon {
   opacity: 0.55;
   color: $color-outline;
-
-  &.material-symbols-outlined {
-    font-size: 0.85rem;
-  }
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 .review-aspect-summary__chip-label {
@@ -117,10 +115,8 @@
   margin-left: 0.1rem;
   opacity: 0.6;
   color: $color-primary;
-
-  &.material-symbols-outlined {
-    font-size: 0.75rem;
-  }
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 .review-aspect-summary__tooltip {

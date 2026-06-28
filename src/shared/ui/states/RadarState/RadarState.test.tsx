@@ -9,7 +9,6 @@ describe('RadarState', () => {
 
     expect(screen.getByRole('heading', { name: 'No hay reviews con estos filtros' })).toBeInTheDocument();
     expect(screen.getByText('Prueba a cambiar los filtros para encontrar lo que necesitas.')).toBeInTheDocument();
-    expect(screen.getByText('search_off')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument();
     expect(screen.getByTestId('reviews-empty-radar')).toBeInTheDocument();
     expect(screen.getAllByTestId('reviews-empty-radar-ring')).toHaveLength(2);
@@ -33,7 +32,6 @@ describe('RadarState', () => {
 
     expect(screen.getByRole('heading', { name: 'Custom title' })).toBeInTheDocument();
     expect(screen.getByText('Custom description')).toBeInTheDocument();
-    expect(screen.getByText('radar')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Volver a intentar' }));
 

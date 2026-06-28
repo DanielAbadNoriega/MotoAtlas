@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import type { MotorcycleReviewAspectCategory, MotorcycleReviewAspectSentiment } from '../../../services/motorcycleReviewService';
 import './ReviewAspectSummary.scss';
 
@@ -83,16 +84,12 @@ function AspectChipWithComment({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
       >
-        <span className="review-aspect-summary__chip-icon material-symbols-outlined" aria-hidden="true">
-          {icon}
-        </span>
+        <MotoIcon name={icon} className="review-aspect-summary__chip-icon" />
         <span className="review-aspect-summary__chip-label">{label}</span>
         <span className={`review-aspect-summary__chip-sentiment ${isPositive ? 'review-aspect-summary__chip-sentiment--positive' : 'review-aspect-summary__chip-sentiment--negative'}`} aria-hidden="true">
           {isPositive ? '+' : '−'}
         </span>
-        <span className="review-aspect-summary__chip-comment material-symbols-outlined" aria-hidden="true">
-          chat
-        </span>
+        <MotoIcon name="comment" className="review-aspect-summary__chip-comment" />
       </button>
       {isOpen && (
         <span
@@ -125,9 +122,7 @@ function AspectChip({ aspect }: { aspect: ReviewAspectSummaryAspect }) {
 
   return (
     <span className={`review-aspect-summary__chip-item ${isPositive ? 'review-aspect-summary__chip-item--positive' : 'review-aspect-summary__chip-item--negative'}`}>
-      <span className="review-aspect-summary__chip-icon material-symbols-outlined" aria-hidden="true">
-        {icon}
-      </span>
+      <MotoIcon name={icon} className="review-aspect-summary__chip-icon" />
       <span className="review-aspect-summary__chip-label">{label}</span>
       <span className={`review-aspect-summary__chip-sentiment ${isPositive ? 'review-aspect-summary__chip-sentiment--positive' : 'review-aspect-summary__chip-sentiment--negative'}`} aria-hidden="true">
         {isPositive ? '+' : '−'}

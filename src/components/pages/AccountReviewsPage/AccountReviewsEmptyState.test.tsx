@@ -9,7 +9,6 @@ describe('AccountReviewsEmptyState', () => {
 
     expect(screen.getByRole('heading', { name: 'No hay reviews con estos filtros' })).toBeInTheDocument();
     expect(screen.getByText('Prueba a cambiar los filtros para encontrar lo que necesitas.')).toBeInTheDocument();
-    expect(screen.getByText('search_off')).toBeInTheDocument();
     expect(screen.getByTestId('reviews-empty-radar')).toBeInTheDocument();
     expect(screen.getAllByTestId('reviews-empty-radar-ring')).toHaveLength(2);
     expect(screen.getByTestId('reviews-empty-radar-sweep')).toBeInTheDocument();
