@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { AccountQuickLinksNav } from './AccountQuickLinksNav';
 
 export type AccountSidebarActiveItem = 'overview' | 'reviews' | 'requests';
@@ -37,7 +38,7 @@ export function AccountSidebar({ activeItem, beforeNotice, displayName, email, i
         </dl>
         <div className="account-page__profile-actions">
           <button className="account-page__button account-page__button--glass" type="button" onClick={onSignOut}>
-            <span className="material-symbols-outlined" aria-hidden="true">logout</span>
+            <MotoIcon name="logout" width="1.18rem" height="1.18rem" />
             Cerrar sesión
           </button>
         </div>

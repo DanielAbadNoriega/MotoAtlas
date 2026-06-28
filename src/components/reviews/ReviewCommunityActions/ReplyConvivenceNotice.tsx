@@ -1,3 +1,5 @@
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
+
 export function ReplyConvivenceNotice() {
   const tooltipId = 'reply-convivence-tooltip';
 
@@ -13,7 +15,7 @@ export function ReplyConvivenceNotice() {
         aria-label="Normas rápidas de convivencia"
         aria-describedby={tooltipId}
       >
-        <span className="material-symbols-outlined" aria-hidden="true">info</span>
+        <MotoIcon name="info" />
       </button>
       <span className="motorcycle-community__convivence-text">
         Disfrutemos de la comunidad con respeto.

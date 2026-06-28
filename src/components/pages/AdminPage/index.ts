@@ -1,1 +1,9 @@
-export { AdminDashboardPage, AdminEditModelsPage, AdminEditMotorcyclePage, AdminModelsPage, AdminModerationPage, AdminNewModelPage, AdminRequestsPage, AdminReviewsPage, AdminSidebar } from './AdminPage';
+export { AdminDashboardPage } from './AdminDashboardPage';
+export { AdminEditModelsPage } from './AdminEditModelsPage';
+export { AdminEditMotorcyclePage } from './AdminEditMotorcyclePage';
+export { AdminModelsPage } from './AdminModelsPage';
+export { AdminModerationPage } from './AdminModerationPage';
+export { AdminNewModelPage } from './AdminNewModelPage';
+export { AdminRequestsPage } from './AdminRequestsPage';
+export { AdminReviewsPage } from './AdminReviewsPage';
+export { AdminSidebar } from './adminSharedUi';

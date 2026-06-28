@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { MotoIcon } from '../../icons/MotoIcon';
 import './RadarState.scss';
 
 type RadarStateProps = Readonly<{
@@ -36,7 +37,7 @@ export function RadarState({
           <span className="radar-state__marker radar-state__marker--bottom" data-testid="reviews-empty-radar-marker" />
           <span className="radar-state__marker radar-state__marker--left" data-testid="reviews-empty-radar-marker" />
           <span className="radar-state__marker radar-state__marker--right" data-testid="reviews-empty-radar-marker" />
-          <span className="radar-state__icon material-symbols-outlined">{icon}</span>
+          <MotoIcon name={icon} className="radar-state__icon" />
         </div>
       </div>
 

@@ -294,7 +294,7 @@ La gestión de imágenes del formulario admin de modelos se ha refactorizado mov
 **Contrato actual:**
 - **Galería conectada con creación de records**: el modal carga imágenes reales y los uploads en edit mode crean `motorcycle_images` records; create mode los crea tras publish
 - No hay datos falsos de galería, thumbnails demo, arrays demo, mock gallery cards
-- El borrado está implementado como pending-delete diferido (depende de publicación del formulario). Decisión de producto: migrar a eliminación inmediata con modal de confirmación.
+- El borrado usa confirmación inmediata con `GalleryConfirmDeleteModal`. Storage cleanup best-effort con guard de path compartido.
 - Reorden drag-and-drop queda para fase posterior
 - `motorcycles.image_url` sigue siendo el contrato single-image para cards, buscador, ficha y fallbacks
 
@@ -309,9 +309,8 @@ La gestión de imágenes del formulario admin de modelos se ha refactorizado mov
   - visible para imágenes backed por gallery record;
   - NO visible para el placeholder técnico (`motorcycle-technical-pending.jpg`);
   - NO visible para entradas manuales/locales persistidas sin gallery record;
-  - NO visible para entradas en pending-delete.
 - **Card back info scroll**: back face con `overflow-y: auto`, card-info con `overflow-y: auto` y `min-height: 0`. Los valores `dd` usan `overflow-wrap: break-word` en vez de `white-space: nowrap` para que rutas largas no se corten. Gap reducido a 0.65rem.
-- **Pending-delete flow**: estado local `pendingDeleteImageIds` (Set). Al marcar, la card muestra badge `delete_outline`, clase `--pending-delete`, y el botón undo reemplaza a "Usar como portada". La eliminación real ocurre al publicar el formulario. Decisión de producto: migrar a eliminación inmediata con modal de confirmación.
+- **Confirmed immediate-delete**: botón `delete_forever` → modal de confirmación → gallery record eliminado + Storage cleanup best-effort con guard de path compartido. Cover fallback automático.
 
 ## Admin Models Studio — Section Radar (Stitch-inspired)
 

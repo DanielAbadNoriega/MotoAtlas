@@ -154,11 +154,10 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - No hay tracking activo de sección actual (sin IntersectionObserver por ahora).
 
 **Implementado (gallery actions):**
-- **Pending-delete local state**: marcar imágenes de galería para eliminación diferida hasta publicar el formulario. Estado local en `pendingDeleteImageIds` (Set), sincronizado a ref para publish.
-- **Undo**: deshacer pending-delete por imagen. Reemplaza el botón "Usar como portada" en la misma posición.
-- **Badge pending-delete**: badge `delete_outline` + clase `--pending-delete` en la card.
-- **Primary sync**: al publicar, se unsetea `isPrimary` de la imagen eliminada (si era primaria) antes de setear la nueva, y se borra el pending-delete en orden correcto.
-- **Storage cleanup seguro**: borrado de Storage con de-duplicación de paths y guards (otro registro activo comparte el path, portada actual lo usa).
+- **Confirmed immediate-delete**: botón `delete_forever` → `GalleryConfirmDeleteModal` de confirmación → eliminación inmediata del gallery record + Storage cleanup best-effort.
+- **Cover fallback**: si se elimina la portada actual, el modal advierte y aplica placeholder al confirmar. `draft.imageUrl` nunca queda apuntando a imagen eliminada.
+- **Storage cleanup seguro**: `deleteMotorcycleImage` envuelto en try/catch (best-effort). Guard de path compartido: si otro gallery record activo referencia el mismo Storage path, no se borra.
+- **GalleryConfirmDeleteModal**: backdrop + header + image preview + warning copy + actions (Cancelar / Eliminar).
 - **Delete button visual style**: icono `delete_forever`, posicionado left-bottom, estilo stage button con hint destructivo sutil (`$color-error`).
 - **Card back info scroll/wrapping**: `overflow-y: auto` en back face y card-info, `overflow-wrap: break-word` en valores de metadata.
 
@@ -166,33 +165,43 @@ El formulario tiene una sección `Imagen` con modo de selección (`role="radiogr
 - A2 fields en draft
 - selección de primaria desde la galería (solo desde card action button)
 - reorden drag-and-drop
-- eliminación inmediata independiente del formulario
 - WebP conversion opcional
 - IntersectionObserver active section tracking
 
-**Decisión de producto:** la galería de imágenes debe independizarse del formulario del modelo. Las acciones de galería (eliminar, reordenar) no deben depender de "Publicar modelo". El pending-delete actual es un paso intermedio que será reemplazado por confirmación inmediata con modal. Ver `docs/current-workstreams.md` — Workstream C.
+**Decisión de producto:** la galería de imágenes debe independizarse del formulario del modelo. Las acciones de galería (eliminar, reordenar) no deben depender de "Publicar modelo". El pending-delete fue reemplazado por confirmación inmediata con modal (`GalleryConfirmDeleteModal`). El borrado es inmediato, el Storage cleanup es best-effort. Ver `docs/current-workstreams.md` — Workstream C.
 
 **Futuro:**
-1. Reemplazar pending-delete por eliminación inmediata con modal de confirmación.
-2. Drag-and-drop reorder con persistencia independiente.
-3. Multi-delete batch desde selección múltiple.
-4. Card back info simplificada (solo nombre, fecha; remover source y orden de la card normal).
-5. Refactor de AdminPage en componentes más pequeños (ver debajo).
-6. Elección de primaria desde la galería.
-7. WebP conversion opcional, IntersectionObserver active section tracking.
-8. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
+1. Drag-and-drop reorder con persistencia independiente.
+2. Multi-delete batch desde selección múltiple.
+3. Card back info simplificada (solo nombre, fecha; remover source y orden de la card normal).
+4. Elección de primaria desde la galería.
+5. WebP conversion opcional, IntersectionObserver active section tracking.
+6. El set de filtros de `#/admin/modelos/editar` puede refinarse tras uso real; `Calidad de datos` es candidato a eliminación.
 
 **Deuda técnica — refactor de AdminPage:**
-`AdminPage.tsx` ha crecido hasta ser difícil de modificar con seguridad. Refactor propuesto:
-- Extracción gradual: helpers puros → hooks → componentes presentacionales.
+`AdminPage.tsx` fue reducido de ~5900 a 13 líneas. Descomposición completa con 9 page components extraídos, `AdminModelFormBody` extraído (1462 líneas), y shared UI en `adminSharedUi.tsx`. Barrel aplanado, zero circular imports.
+Pendiente: descomposición JSX de galería + modal en componentes presentacionales (ver Futuro arriba).
 - No combinar refactor con cambios de comportamiento destructivo.
-- Descomposición futura:
+
+**✅ Fase 1 completada — Helpers puros extraídos:**
+- `src/components/pages/AdminPage/adminPageUtils.ts` — dateFormatter, formatDate, getTimestamp, formatPendingReviewCount, getDisplayName, getBrandOptions, isRangePresetActive, normalizeTextList, getCurrentImageOriginLabel, formatFileSize (43 tests)
+- `src/components/pages/AdminPage/adminGalleryImageUtils.ts` — appendGalleryImage, getNextGallerySortOrder, buildGalleryLibraryImages, getMotorcycleImageObjectPath, helpers de gallery card (85 tests)
+- `src/components/pages/AdminPage/adminModelPreviewUtils.ts` — preview badges y formateo de preview (19 tests)
+- `src/components/pages/AdminPage/adminPageConstants.ts` — constantes estáticas, option lists y filter presets
+- `src/components/pages/AdminPage/adminModelDraftUtils.ts` — transformación/validación de draft
+
+**✅ Fase 2 completada — Hook extraído (límite conservativo):**
+- `src/components/pages/AdminPage/useAdminImageManager.ts` — estado puramente local (9 tests)
+- `isImageManagerOpen`, `imageMode`, handlers de apertura/cierre/modo, `galleriaInfoCardKeys`, `handleToggleGalleryCardInfo`, `resetGalleryInfoCardKeys`
+- Decisión: detener extracción aquí. Los 13 estados de imagen restantes en `AdminModelFormBody` están acoplados a service calls, async flows, refs, upload/delete/gallery/publish o Storage cleanup.
+
+**⬜ Pendiente — Descomposición JSX en componentes presentacionales:**
   - `AdminModelImageManagerModal`
   - `AdminImageGalleryGrid`
   - `AdminImageGalleryCard`
   - `AdminImageUploadControls`
   - `AdminGalleryDeleteConfirmationModal`
-  - hooks: `useAdminModelDraft`, `useAdminModelGallery`, `useAdminModelImageUpload`, `useAdminModelPrimarySync`, `useAdminModelGalleryDelete`, `useAdminModelPublish`
+  - hooks adicionales: `useAdminModelDraft`, `useAdminModelGallery`, `useAdminModelImageUpload`, `useAdminModelPrimarySync`, `useAdminModelGalleryDelete`, `useAdminModelPublish`
 
 ## `#/admin/reviews`
 
@@ -237,5 +246,5 @@ Sobre respuestas:
 
 - Notificaciones/avisos automáticos al autor de la review cuando se actúe sobre su review.
 - Añadir pruebas E2E para flujos críticos de administración.
-- Galería multi-imagen completa: la lectura está conectada, los records se crean desde uploads admin, las gallery cards tienen polish visual y el orden es estable. El borrado está implementado como pending-delete diferido (depende de publicación del formulario). La decisión de producto es migrar a eliminación inmediata con modal de confirmación (ver Workstream C en `docs/current-workstreams.md`).
-- Refactor de `AdminPage.tsx`: el archivo ha crecido demasiado. Se recomienda extracción gradual de helpers → hooks → componentes antes de agregar más lógica de galería.
+- Galería multi-imagen completa: lectura conectada, records desde uploads admin, gallery cards con polish visual, orden estable. El borrado es inmediato con modal de confirmación (`GalleryConfirmDeleteModal`). Storage cleanup best-effort con guard de path compartido.
+- `AdminPage.tsx` ya fue reducido de ~5900 a 13 líneas. Descomposición completa: 9 page components extraídos, `AdminModelFormBody` extraído, `adminSharedUi` extraído, barrel aplanado, zero circular imports.

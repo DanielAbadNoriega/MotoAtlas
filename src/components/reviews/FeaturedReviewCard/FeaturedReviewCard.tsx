@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { MotorcycleReview, MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { ReviewAspectSummary } from '../ReviewAspectSummary';
 import {
@@ -50,19 +51,19 @@ function ReviewMetadata({ review }: Readonly<{ review: MotorcycleReview }>) {
   return (
     <ul className="featured-review-card__meta" aria-label="Metadatos de la review">
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">route</span>
+        <MotoIcon name="route" />
         {accountReviewRidingStyleLabels[review.ridingStyle]}
       </li>
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">schedule</span>
+        <MotoIcon name="schedule" />
         {formatAccountReviewOwnershipMonths(review.ownershipMonths)}
       </li>
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">speed</span>
+        <MotoIcon name="speed" />
         {formatAccountReviewKilometers(review.kilometers)}
       </li>
       <li>
-        <span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+        <MotoIcon name="calendar_month" />
         <time dateTime={review.createdAt}>{formatAccountReviewDate(review.createdAt)}</time>
       </li>
     </ul>
@@ -126,9 +127,7 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
             </div>
             <ReviewMetadata review={review} />
           </div>
-          <span className="material-symbols-outlined featured-review-card__expand-icon" aria-hidden="true">
-            {isExpanded ? 'expand_less' : 'expand_more'}
-          </span>
+          <MotoIcon className="featured-review-card__expand-icon" name={isExpanded ? 'expand_less' : 'expand_more'} />
         </button>
 
         <div
@@ -163,7 +162,7 @@ export function FeaturedReviewCard({ headingLevel = 3, review, aspects, actionsS
               <div className="featured-review-card__actions">
                 {actionsSlot}
                 {isOwnReview && <span className="featured-review-card__own-action motorcycle-community__helpful-action motorcycle-community__helpful-action--passive" aria-label="Review propia">
-                  <span className="material-symbols-outlined" aria-hidden="true">block</span>
+                  <MotoIcon name="block" />
                   Propia
                 </span>}
               </div>

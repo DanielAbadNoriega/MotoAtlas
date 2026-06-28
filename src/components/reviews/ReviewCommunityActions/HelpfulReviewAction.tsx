@@ -1,3 +1,4 @@
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import type { HelpfulReviewActionProps } from './ReviewCommunityActions.types';
 
 const numberFormatter = new Intl.NumberFormat('es-ES');
@@ -15,7 +16,7 @@ export function HelpfulReviewAction({
   if (isOwnReview || isBlocked) {
     return (
       <span className="motorcycle-community__helpful-action motorcycle-community__helpful-action--passive" aria-label={`Útil ${count}`}>
-        <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
+        <MotoIcon name="thumb_up" />
         Útil {count}
       </span>
     );
@@ -31,7 +32,7 @@ export function HelpfulReviewAction({
       disabled={disabled || isPending}
       onClick={onToggle}
     >
-      <span className="material-symbols-outlined" aria-hidden="true">thumb_up</span>
+      <MotoIcon name="thumb_up" />
       Útil {count}
     </button>
   );

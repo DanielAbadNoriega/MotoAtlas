@@ -241,24 +241,25 @@ describe('FeaturedReviewCard', () => {
     expect(screen.getByText('Calor, Frenos mejores')).toBeInTheDocument();
   });
 
-  it('el icono de expansión tiene clase material-symbols-outlined', async () => {
+  it('el icono de expansión se renderiza como SVG', async () => {
     const review = createReview();
-    render(<FeaturedReviewCard review={review} />);
+    const { container } = render(<FeaturedReviewCard review={review} />);
 
-    const icon = screen.getByText('expand_more');
-    expect(icon).toHaveClass('material-symbols-outlined');
+    const header = screen.getByRole('button');
+    const svg = header.querySelector('svg.featured-review-card__expand-icon');
+    expect(svg).toBeInTheDocument();
   });
 
-  it('al abrir cambia a expand_less', async () => {
+  it('al abrir cambia el estado de expansión', async () => {
     const review = createReview();
     render(<FeaturedReviewCard review={review} />);
 
     const header = screen.getByRole('button');
-    expect(screen.getByText('expand_more')).toBeInTheDocument();
+    expect(header).toHaveAttribute('aria-expanded', 'false');
 
     await user.click(header);
 
-    expect(screen.getByText('expand_less')).toBeInTheDocument();
+    expect(header).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('footer muestra autor', async () => {
@@ -342,8 +343,8 @@ describe('FeaturedReviewCard', () => {
     const review = createReview({ id: 'icon-test-1', userId: 'user-1' });
     render(<FeaturedReviewCard review={review} isOwnReview={true} />);
     const chip = screen.getByLabelText('Review propia');
-    const icon = within(chip).getByText('block');
-    expect(icon).toHaveAttribute('aria-hidden', 'true');
+    const svg = chip.querySelector('svg[aria-hidden="true"]');
+    expect(svg).toBeInTheDocument();
   });
 
   it('Propia no es elemento interactivo (no button, no link)', async () => {
