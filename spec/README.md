@@ -6,20 +6,20 @@
 
 - **`docs/current-workstreams.md`** — fuente de verdad operativa live. Alcances, riesgos y resultados de workstreams activos viven ahí. **No se sustituye.**
 - **`AGENTS.md`** — adaptador de ejecución actual para OpenCode/agentes. **Sin cambios hasta migración posterior.**
-- **`.agents/`** — ya existe como biblioteca de agentes específicos de MotoAtlas. Los agentes participan en handovers SDD y deben respetar `spec/` y las carpetas de feature activas. Durante el trabajo de fundación SDD no se crean agentes nuevos por defecto.
+- **`.agents/`** — ya existe como biblioteca de agentes específicos de MotoAtlas. Los agentes participan en traspasos SDD y deben respetar `spec/` y las carpetas de feature activas. Durante el trabajo de fundación SDD no se crean agentes nuevos por defecto.
 
 ## Constitución SDD
 
 ```
 spec/
 ├── constitution/              ← reglas estables del proyecto
-│   ├── hard-limits.md       ← límites no negociables (zona sensitive)
+│   ├── hard-limits.md       ← límites no negociables (zona sensible)
 │   ├── mission.md           ← qué construimos y para quién
 │   ├── tech-stack.md        ← tecnologías, convenciones, límites técnicos
 │   └── roadmap.md           ← índice de features (baseline, next, backlog)
 └── features/                 ← carpetas de features activas/pendientes/futuras
     └── <NNN-feature-name>/   ← reemplazar con número y nombre real
-        ├── context.md       ← traceability (OBLIGATORIO)
+        ├── context.md       ← trazabilidad (OBLIGATORIO)
         ├── spec.md          ← comportamiento + criterios de aceptación
         ├── plan.md          ← enfoque técnico + fases
         └── tasks.md         ← checklist de implementación
@@ -46,7 +46,7 @@ Este flujo no utiliza orquestadores genéricos externos. MotoAtlas emplea su pro
 
 Carpeta de feature con los 4 archivos obligatorios:
 
-1. `context.md` — source docs, historia de implementación, decisiones, baseline de validación, riesgos, zonas prohibidas, próximo paso seguro.
+1. `context.md` — documentos fuente, historia de implementación, decisiones, baseline de validación, riesgos, zonas prohibidas, próximo paso seguro.
 2. `spec.md` — qué hace, por qué y criterios de aceptación medibles.
 3. `plan.md` — enfoque técnico y decisiones, respetando `constitution/tech-stack.md` y `hard-limits.md`.
 4. `tasks.md` — checklist de implementación con fases.
@@ -54,7 +54,7 @@ Carpeta de feature con los 4 archivos obligatorios:
 ### Fase 2 — Implementación
 
 - **Agente:** `.agents/MotoAtlas-Safe-Builder.md`
-- Implementa solo el alcance definido en la carpeta de feature.
+- Implementa solo el alcance definido en la carpeta de feature activa.
 - Por defecto no cierra la feature de forma completa.
 - Feedback rápido: `npm run typecheck`, `npm run test`, `git diff --check`.
 - No actualiza documentación, tasks ni roadmap salvo que el prompt lo pida de forma explícita.
@@ -89,7 +89,7 @@ Carpeta de feature con los 4 archivos obligatorios:
 
 No participan en todo handover de feature por defecto. Se invocan según el tipo de cambio:
 
-- **`.agents/MotoAtlas-Page-Auditor.md`** — auditoría y propuesta de mejora de rutas. Audit/proposal only. No implementa.
+- **`.agents/MotoAtlas-Page-Auditor.md`** — auditoría y propuesta de mejora de rutas. solo auditoría/propuesta. No implementa.
 - **`.agents/MotoAtlas-Supabase-Guard.md`** — guard de Supabase/RLS/auth/roles cuando el cambio toca zonas sensibles del backend. Especializado. No se convierte en agente de implementación general.
 
 ## Arquitectura de proyecto
