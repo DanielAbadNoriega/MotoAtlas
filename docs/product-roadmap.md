@@ -1550,6 +1550,7 @@ Estado actual:
 Pendiente / futuro:
 - `FullPageLoading` para auth/profile/account/admin loading de página completa.
 - `ErrorState` para errores recuperables de carga.
+- **Optimización de iconos Material Symbols en UI crítica**: sustituir dependencia de fuente externa por presets SVG locales en estados de carga, filtros, reviews, ReviewModal, RadarState y botones de acción donde el retardo de Material Symbols cause raw text visible. LoadingState completado como caso piloto.
 - migrar consumidores adicionales de empty state a `RadarState` de forma deliberada, una página por vez, sin asumir que `CommunityReviewsPage`, `AccountMotorcycleReviewsPage`, rankings, garaje u otras vistas ya quedaron cubiertas.
 
 Regla: `RadarState` ya forma parte de la base UI compartida, pero `FullPageLoading`, `ErrorState` y las migraciones adicionales siguen siendo dirección futura; no forman parte del hardening actual de `AuthProvider`.

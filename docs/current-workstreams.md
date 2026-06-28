@@ -150,6 +150,96 @@ Siguiente paso:
 
 ---
 
+### Workstream E — Landings / Loading / image performance
+
+Rama:
+`feature/landings-loading-image-audit`
+
+Estado:
+* en implementación activa
+
+Objetivo:
+Optimizar la carga inicial de landings clave (Buscador, Comparador, Loading preview) eliminando artefactos visuales bajo redes lentas y dependencias de iconos de fuente externa en componentes críticos de carga.
+
+Implementado:
+* LoadingState integrado como estado de carga real en #/buscador cuando getMotorcycles() resuelve.
+* LoadingState integrado como estado de carga real en #/comparador cuando getMotorcycles() resuelve.
+* isLoading robusto ante fallo de getMotorcycles() vía finally chain.
+* LoadingState libre de dependencia Material Symbols: los 6 iconos del loader (motorcycle, groups, manage_search, compare_arrows, sync, bolt) se renderizan como SVG inline, eliminando raw icon text bajo Slow 4G.
+* MotoIcon shared registry (`src/shared/ui/icons/MotoIcon.tsx`) creado con 44 iconos inline SVG — ampliado a 71 iconos durante las migraciones de reviews, account/navigation y Navbar/global navigation — sin imports de archivos SVG ni dependencia de fuente externa.
+* LoadingState migrado de `getIconPath()` helper privado a `<MotoIcon>` component.
+* `compare_arrows` y `sync` reemplazados por paths oficiales de Material Symbols desde archivos SVG locales.
+* API de MotoIcon endurecida: `name` acepta `MotoIconName | string`, atributos controlados (`viewBox`, `fill`, `aria-hidden`, `focusable`, `role`, `aria-label`) no sobrescribibles por consumidores.
+* MotoIcon.test.tsx con 9 tests iniciales, ampliado a 14 tests que cubren el registry completo de 71 iconos.
+* ReviewModal migrado de Material Symbols a MotoIcon: 15 iconos reemplazados (check_circle, close, report, shield, star, comment, add, remove, route, arrow_right_alt, aspect icons, etc.).
+* ReviewAspectSummary migrado de Material Symbols a MotoIcon: 3 iconos reemplazados + chat→comment.
+* ReviewModal usa text_ad para el campo de experiencia/comentario en vez de terminal.
+* ReviewAspectSummary resuelve vibration desde MotoIcon (sin fallback a motorcycle para suspension).
+* RadarState migrado de Material Symbols a MotoIcon: reemplazado `<span class="material-symbols-outlined">{icon}</span>` por `<MotoIcon>` inline SVG, eliminado `.material-symbols-outlined` y `font-variation-settings` del SCSS.
+* `search_off` y `radar` agregados a MotoIcon registry desde SVGs locales oficiales; RadarState por defecto usa `search_off` y consumidores usan `radar` — ambos resuelven sin fallback a motorcycle.
+* Review cards/actions migrados de Material Symbols a MotoIcon: FeaturedReviewCard, AccountReviewCard, MotorcycleReviewCard, HelpfulReviewAction, NotHelpfulReviewAction, ReportReviewAction, ReviewReplySection, ReplyConvivenceNotice.
+* 14 iconos de review agregados al registry: schedule, speed, calendar_month, block, verified, thumb_up, thumb_down, flag, reply, forum, info, expand_more, expand_less + route/star existentes.
+* SCSS de review cards/actions limpiado: selectores `.material-symbols-outlined` reemplazados por reglas `svg` con width/height explícitos y colores restaurados tras QA visual.
+* Tests actualizados: los que afirmaban texto raw de Material Symbols ahora verifican SVG/aria-expanded/estructura estable.
+* Account action/navigation icons migrados de Material Symbols a MotoIcon:
+  * `logout` en AccountSidebar y AccountMotorcycleReviewsPage sidebar.
+  * `chevron_left`, `chevron_right`, `keyboard_double_arrow_left`, `keyboard_double_arrow_right` en AccountPagination.
+* `search` agregado a MotoIcon registry (sin migrar consumidores — pendiente para fase de filters/search).
+* 6 iconos de action/navigation/search agregados al registry: search, logout, chevron_left, chevron_right, keyboard_double_arrow_left, keyboard_double_arrow_right.
+* AccountPage.scss actualizado con sizing SVG-friendly para iconos de botones de cuenta.
+* Navbar/global navigation icons migrados de Material Symbols a MotoIcon: NavIcon helper migrado a `<MotoIcon>` para todos los iconos scoped (`account_circle`, `person`, `menu`, `hub`, `article`, `home`, `compare_arrows`, `chevron_right`, `close`, `expand_more`, `logout`). `search` y `explore` quedan intencionalmente como Material Symbols.
+* ScrollToTopButton migrado de Material Symbols a `<MotoIcon name="arrow_upward">`.
+* 7 iconos agregados al registry para Navbar/global navigation: account_circle, arrow_upward, article, home, hub, menu, person.
+* Navbar.scss actualizado con selectores SVG duales (`.material-symbols-outlined` + `svg`) para mantener apariencia visual en signin button, drawer links, hover/focus/aria-current states y mobile bottom nav.
+* SCSS de ScrollToTopButton no requirió cambios (sizing vía props de componente).
+
+Archivos o zonas permitidas:
+* MotoIcon (shared/ui/icons)
+* LoadingState (shared/ui/loading)
+* App.tsx (solo isInitialLoading + SearchPage + ComparatorPage wrapping)
+* LoadingPreviewPage (si el tipo lo requiere)
+* AccountPage (AccountSidebar, AccountPagination, AccountPage.scss)
+* AccountMotorcycleReviewsPage (solo sidebar/logout icon)
+* Navbar (Navbar.tsx, Navbar.scss, Navbar.test.tsx)
+* ScrollToTopButton (ScrollToTopButton.tsx, ScrollToTopButton.scss)
+
+Zonas prohibidas:
+* schema/RLS/Supabase
+* admin/auth
+* services
+* SearchPage (filtros/resultados/empty states)
+* package files
+
+Pendiente (próximas fases de migración SVG):
+* MotoIcon `search` consumers pendientes: SearchControl, AccountReviewsPage, CommunityRankingsPage, CommunityReviewsPage, AdminPage search usage.
+* Filtros de búsqueda/comunidad/cuenta/admin.
+* Iconos decorativos de bajo riesgo (Footer social links, etc.) — opcional, aceptan Material Symbols.
+* Material Symbols siguen siendo aceptables para iconos decorativos de bajo riesgo donde el retardo de fuente no causa raw text visible.
+* Optimización de imágenes como bloque futuro separado (no mezclar con migración SVG).
+
+Riesgos:
+* LoadingState SCSS debe mantener `width`/`height` (no `font-size`) para sizing de iconos SVG.
+* No migrar Material Symbols globalmente sin auditoría de impacto visual por componente.
+
+Último resultado:
+* typecheck: clean
+* test: 84 files, 1616 passed
+* MotoIcon: 14/14
+* Navbar: 13/13
+* ScrollToTopButton: sin test enfocado (comportamiento preservado)
+* AccountPage: 17/17
+* AccountMotorcycleReviewsPage: 12/12
+* RadarState: 3/3
+* ReviewModal: 34/34
+* ReviewAspectSummary: 14/14
+* Review cards/actions focused: 60 passed (FeaturedReviewCard 41, AccountReviewCard 3, MotorcycleReviewCard 2, MotoIcon 14)
+* git diff --check: clean
+
+Siguiente paso:
+* Decidir próxima fase de migración SVG: search consumers o filtros.
+
+---
+
 ### Workstream A — Rediseñar Insights en vivo
 
 Rama:

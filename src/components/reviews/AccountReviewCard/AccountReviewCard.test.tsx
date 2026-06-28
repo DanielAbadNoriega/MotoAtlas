@@ -33,10 +33,8 @@ describe('AccountReviewCard', () => {
     expect(within(header as HTMLElement).getByText('5')).toBeInTheDocument();
     expect(within(card).queryByText(/5\/5 Rating/i)).not.toBeInTheDocument();
     expect(within(card).getByText('8500 km')).toBeInTheDocument();
-    expect(within(card).getByText('speed')).toBeInTheDocument();
-    expect(within(card).getByText('schedule')).toBeInTheDocument();
-    expect(within(card).getByText('route')).toBeInTheDocument();
-    expect(within(card).getByText('calendar_month')).toBeInTheDocument();
+    const meta = within(card).getByLabelText('Metadatos de la review');
+    expect(meta.querySelectorAll('svg').length).toBeGreaterThanOrEqual(4);
     expect(within(card).getByText('+ Motor lleno')).toBeInTheDocument();
     expect(within(card).getByText('- Precio alto')).toBeInTheDocument();
     expect(within(footer as HTMLElement).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');
@@ -69,10 +67,8 @@ describe('AccountReviewCard', () => {
     expect(card.querySelector('.account-review-card__author-name')).toBeInTheDocument();
     expect(card.querySelector('.account-review-card__author-badge')).not.toBeInTheDocument();
     expect(within(card).getByLabelText('Rating 5 de 5')).toBeInTheDocument();
-    expect(within(card).getByText('speed')).toBeInTheDocument();
-    expect(within(card).getByText('schedule')).toBeInTheDocument();
-    expect(within(card).getByText('route')).toBeInTheDocument();
-    expect(within(card).getByText('calendar_month')).toBeInTheDocument();
+    const meta = within(card).getByLabelText('Metadatos de la review');
+    expect(meta.querySelectorAll('svg').length).toBeGreaterThanOrEqual(4);
     expect(footer).toBeInTheDocument();
     expect(within(footer as HTMLElement).getByText('@Apex_Rider')).toBeInTheDocument();
     expect(within(footer as HTMLElement).getByRole('link', { name: /Ver ficha/i })).toHaveAttribute('href', '#/motos/bmw-f-900-gs-2024');

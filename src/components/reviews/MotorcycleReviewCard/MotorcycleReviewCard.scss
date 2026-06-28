@@ -134,9 +134,10 @@
   display: inline-flex;
   gap: 0.1rem;
 
-  .material-symbols-outlined {
+  .motorcycle-review-card__star {
     color: rgba($color-on-surface-variant, 0.32);
-    font-size: 1rem;
+    height: 1rem;
+    width: 1rem;
   }
 
   [data-filled='true'] {
@@ -154,8 +155,9 @@
   gap: 0.25rem;
   margin-top: 0.35rem;
 
-  .material-symbols-outlined {
-    font-size: 0.95rem;
+  svg {
+    height: 0.95rem;
+    width: 0.95rem;
   }
 }
 

@@ -1,3 +1,4 @@
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import type { NotHelpfulReviewActionProps } from './ReviewCommunityActions.types';
 
 export function NotHelpfulReviewAction({
@@ -21,7 +22,7 @@ export function NotHelpfulReviewAction({
       disabled={isPending}
       onClick={onToggle}
     >
-      <span className="material-symbols-outlined" aria-hidden="true">thumb_down</span>
+      <MotoIcon name="thumb_down" />
       No útil
     </button>
   );

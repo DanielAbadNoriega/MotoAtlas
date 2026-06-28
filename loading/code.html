@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>MotoAtlas - Preparando tu espacio</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@700;800&amp;family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#181a1b",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface": "#141313",
+                        "background": "#141313",
+                        "primary-container": "#1a1a1b",
+                        "primary-fixed": "#e5e2e3",
+                        "on-secondary-fixed-variant": "#92001d",
+                        "surface-dim": "#141313",
+                        "surface-container": "#201f1f",
+                        "inverse-primary": "#5f5e5f",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#1a1c1d",
+                        "secondary-container": "#d6042f",
+                        "tertiary-fixed": "#e2e2e3",
+                        "surface-tint": "#c8c6c7",
+                        "surface-container-highest": "#353434",
+                        "outline": "#909094",
+                        "on-primary-container": "#848283",
+                        "on-background": "#e5e2e1",
+                        "surface-bright": "#3a3939",
+                        "outline-variant": "#46474a",
+                        "on-error": "#690005",
+                        "tertiary": "#c6c6c7",
+                        "on-secondary": "#680011",
+                        "on-primary-fixed-variant": "#474647",
+                        "secondary": "#ffb3b1",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "inverse-surface": "#e5e2e1",
+                        "on-primary-fixed": "#1b1b1c",
+                        "on-tertiary": "#2f3132",
+                        "on-surface": "#e5e2e1",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "surface-container-high": "#2b2a2a",
+                        "on-tertiary-container": "#818284",
+                        "surface-variant": "#353434",
+                        "primary": "#c8c6c7",
+                        "error": "#ffb4ab",
+                        "on-secondary-container": "#ffe7e5",
+                        "secondary-fixed": "#ffdad8",
+                        "on-secondary-fixed": "#410007",
+                        "primary-fixed-dim": "#c8c6c7",
+                        "surface-container-low": "#1c1b1b",
+                        "secondary-fixed-dim": "#ffb3b1",
+                        "on-surface-variant": "#c7c6ca",
+                        "on-primary": "#303031",
+                        "inverse-on-surface": "#313030"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Hanken Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["JetBrains Mono"]
+                    },
+                    "animation": {
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    },
+                    "keyframes": {
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: 1, backgroundColor: '#201f1f', boxShadow: '0 0 0 0 rgba(227, 24, 55, 0)' },
+                            '50%': { opacity: .7, backgroundColor: '#2b2a2a', boxShadow: '0 0 8px 0 rgba(227, 24, 55, 0.1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            font-family: theme('fontFamily.body');
+            /* Subtle carbon fiber pattern overlay */
+            background-image: radial-gradient(theme('colors.surface-container') 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .hud-blur {
+            backdrop-filter: blur(20px);
+            background-color: rgba(26, 26, 27, 0.6);
+        }
+
+        /* Material Icons setup */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen flex flex-col pt-24">
+    <main class="flex-grow flex flex-col items-center justify-center p-8 max-w-4xl mx-auto w-full">
+        <!-- Loading Header -->
+        <div class="text-center mb-16 w-full flex flex-col items-center">
+            <div class="relative w-24 h-24 mb-8 flex items-center justify-center">
+                <!-- Technical Loader SVG -->
+                <svg class="animate-spin-slow w-full h-full text-outline-variant absolute inset-0" fill="none"
+                    viewbox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-dasharray="10 20"
+                        stroke-width="2"></circle>
+                    <circle cx="50" cy="50" opacity="0.5" r="35" stroke="currentColor" stroke-dasharray="5 15"
+                        stroke-width="1"></circle>
+                </svg>
+                <svg class="animate-spin w-full h-full text-secondary absolute inset-0" fill="none"
+                    style="animation-duration: 1.5s;" viewbox="0 0 100 100">
+                    <path d="M 50 5 A 45 45 0 0 1 95 50" stroke="currentColor" stroke-linecap="round"
+                        stroke-width="3"></path>
+                </svg>
+                <span class="material-symbols-outlined text-4xl text-on-surface">motorcycle</span>
+            </div>
+            <h1 class="font-headline font-bold text-4xl md:text-5xl text-on-surface mb-4 tracking-tight">
+                Preparando tu espacio personal</h1>
+            <p class="font-body text-on-surface-variant text-lg max-w-lg">Un momento, estamos organizando tu
+                historial de piloto y sincronizando telemetría.</p>
+        </div>
+    </main>
+</body>
+
+</html>

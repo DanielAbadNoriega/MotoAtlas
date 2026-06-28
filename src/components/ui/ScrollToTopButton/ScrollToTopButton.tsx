@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import './ScrollToTopButton.scss';
 
 const showAfterPx = 420;
@@ -26,9 +27,7 @@ export function ScrollToTopButton() {
       aria-label="Volver arriba"
       onClick={() => window.scrollTo({ behavior: 'smooth', left: 0, top: 0 })}
     >
-      <span className="material-symbols-outlined" aria-hidden="true">
-        arrow_upward
-      </span>
+      <MotoIcon name="arrow_upward" width="1.5rem" height="1.5rem" />
     </button>
   );
 }
