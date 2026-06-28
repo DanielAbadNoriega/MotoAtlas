@@ -2,6 +2,16 @@
 
 Lee esto completo. No adivines.
 
+## Capa SDD y adaptadores
+
+`AGENTS.md` es el adaptador de ejecución actual para OpenCode/agentes.
+
+- **`spec/README.md`** y **`spec/constitution/`** definen la base SDD: qué hacer, por qué y dentro de qué límites.
+- **`.agents/MotoAtlas-*.md`** contienen los contratos especializados de cada agente.
+- **`docs/current-workstreams.md`** es la fuente de verdad operativa live para workstreams activos.
+- Para features SDD activas, los agentes deben leer la carpeta correspondiente bajo `spec/features/<NNN-feature-name>/`.
+- La revisión humana y el commit manual forman parte del flujo.
+
 ## Quality gate
 
 ```bash
@@ -28,7 +38,7 @@ Salvo indicación explícita, ninguna tarea debe tocar zonas no relacionadas con
 - servicios, rutas, UI no relacionados
 - refactors, renombrados, nuevas dependencias, cambios de arquitectura
 
-Si necesitás tocar una zona prohibida, explicá antes qué archivo, por qué, riesgo y alternativa más segura.
+Si necesitas tocar una zona prohibida, explica antes qué archivo, por qué, riesgo y alternativa más segura.
 
 ## Architecture essentials
 
@@ -36,7 +46,7 @@ Si necesitás tocar una zona prohibida, explicá antes qué archivo, por qué, r
 - **Routing**: custom hash routing (`#/ruta`). NO React Router. `src/shared/routing/routeUtils.ts` + `useAppRoute()` in `App.tsx`.
 - **Auth**: Supabase Auth (email/password). `AuthProvider` → `useAuth()`: `user`, `session`, `profile`, `isAdmin`.
 - **SCSS**: `@use` imports from `_variables.scss`, `_mixins.scss`, `_placeholders.scss`, `_typography.scss`, `_components.scss`. No `@import`.
-- **Icons**: Material Symbols via `<span class="material-symbols-outlined">icon_name</span>`.
+- **Icons**: MotoIcon registry en `src/shared/ui/icons/MotoIcon.tsx` (71 iconos). Consultar `spec/constitution/tech-stack.md` y `spec/constitution/roadmap.md` para el estado actual de migración. Material Symbols puede remainer donde la migración aún no haya llegado, siguiendo el alcance definido en la carpeta de feature activa.
 - **Data service**: `src/services/motorcycleService.ts` fetches Supabase REST with raw `fetch()` (NOT supabase-js client), maps snake_case→camelCase, falls back to `src/data/bikes.ts`. All services (`motorcycleReviewService`, `reviewReactionService`, etc.) follow the same fetch-to-REST pattern.
 - **Supabase client** (`@supabase/supabase-js`) only used for auth operations in `authService.ts`.
 - **Env vars**: `VITE_SUPABASE_*` in `.env.local` for client. `SUPABASE_*` in `.env.import` for scripts. Both gitignored.
@@ -154,6 +164,7 @@ Regla crítica: scripts usan `SUPABASE_SERVICE_ROLE_KEY` de `.env.import`, NUNCA
 
 ## Referencias rápidas
 
+- `spec/README.md` — entrada a la capa SDD de MotoAtlas
 - `docs/architecture.md` — arquitectura, routing, data model (620 líneas, lo más completo)
 - `docs/testing-strategy.md` — mocking, edge cases, convenciones
 - `docs/auth.md` — auth, RLS, admin role
@@ -191,40 +202,27 @@ No hagas build, commit ni push.
 
 ## Agentes internos
 
-### `MotoAtlas-Page-Auditor`
-
-Auditorías de páginas en modo plan. Debe leer AGENTS.md + DESIGN.md + `docs/current-workstreams.md`, no modificar archivos, devolver informe P0/P1/P2 con archivos afectados, problema, cambio recomendado y riesgo. Skills preferentes: accessibility, seo, frontend-design, react-best-practices, typescript-advanced-types, vitest. No usar hyperframes/gsap/animejs/lottie/three/typegpu/supabase-postgres-best-practices sin orden explícita.
+> Los agentes especializados viven en `.agents/MotoAtlas-*.md`. Las descripciones siguientes son solo referencia rápida. Las reglas completas y lecturas obligatorias están en cada archivo `.agents/`.
 
 ### `MotoAtlas-Safe-Builder`
 
-Aplica cambios pequeños aprobados. Lee AGENTS.md + DESIGN.md + `docs/current-workstreams.md`, respeta alcance por defecto y zonas permitidas/prohibidas del workstream. Ejecuta typecheck + test. No crear patrones nuevos si existe uno reutilizable.
-
-### `MotoAtlas-Supabase-Guard`
-
-Cambios explícitos de schema/RLS. Debe leer AGENTS.md + `supabase/schema.sql` + `supabase/schema.test.ts`. Mantener RLS estricta, grants mínimos, update/delete solo admin. Actualizar tests de schema. No tocar UI.
+Fase 2 — Implementación. Lee `.agents/MotoAtlas-Safe-Builder.md` para reglas completas, lecturas obligatorias y zonas prohibidas. Implementa solo el alcance definido en la carpeta de feature activa.
 
 ### `MotoAtlas-Quality-Gate`
 
-Verificación final después de cambios ya aplicados. Debe leer AGENTS.md, leer DESIGN.md si afecta UI, leer `docs/current-workstreams.md` como contexto de coordinación, ejecutar `npm run typecheck` y `npm run test`, y no modificar archivos salvo fallo de typecheck/test o bug evidente directamente relacionado con el cambio revisado.
-
-Debe revisar:
-- alcance del cambio
-- permisos/RLS si aplica
-- servicios si aplica
-- UI si aplica
-- tests
-
-Se usa para confirmar que un bloque queda cerrado antes de seguir.
+Fase 3 — Quality Gate. Lee `.agents/MotoAtlas-Quality-Gate.md` para reglas completas. Verificaciones obligatorias: `npm run typecheck`, `npm run test`, `git diff --check`. No actualiza docs ni roadmap.
 
 ### `MotoAtlas-Docs-Sync`
 
-Sincronización documental tras cambios ya aprobados. Se usa **después** de un `MotoAtlas-Quality-Gate` aprobado para alinear docs con el estado real implementado. Puede actualizar `docs/current-workstreams.md` cuando el prompt lo pida expresamente (abrir/cerrar workstream, registrar resultados, actualizar riesgos o siguiente paso).
+Fase 4 — Docs Sync. Lee `.agents/MotoAtlas-Docs-Sync.md` para reglas completas. Ocurre tras Quality Gate aprobado. Usa los resultados reales de Quality Gate; no ejecuta validación por su cuenta.
 
-Reglas de uso:
-- cuándo usarlo: cambios funcionales aprobados que afectan comportamiento, arquitectura, testing o flujos.
-- cuándo NO usarlo: para implementar features, corregir bugs de app o tocar schema/RLS.
-- modelo recomendado: `MiniMax M2.7` para actualización mecánica de docs; `GPT-5.3 Codex` cuando haya contradicciones o decisiones documentales más delicadas.
-- no tocar: código fuente, tests, estilos, schema/RLS/Supabase.
+### `MotoAtlas-Page-Auditor`
+
+Solo auditoría/propuesta. Lee `.agents/MotoAtlas-Page-Auditor.md` para reglas completas. No implementa. Audita una ruta por ejecución.
+
+### `MotoAtlas-Supabase-Guard`
+
+Especializado en Supabase/RLS/auth/roles. Lee `.agents/MotoAtlas-Supabase-Guard.md` para reglas completas y límites de `spec/constitution/hard-limits.md` que reforza.
 
 ## Runbook operativo (agentes/skills/modelos)
 
@@ -271,6 +269,8 @@ Ejecuta typecheck y test.
 No hagas build, commit ni push.
 ```
 
+> Cuando trabajes sobre una feature SDD activa, lee antes `.agents/MotoAtlas-Safe-Builder.md` y la carpeta de feature `spec/features/<NNN-feature-name>/`.
+
 ### Supabase/RLS
 ```text
 @MotoAtlas-Supabase-Guard
@@ -299,7 +299,7 @@ No hagas build, commit ni push.
 Sincroniza docs tras Quality Gate aprobado.
 No toques código/tests/estilos/schema.
 Si el prompt lo pide expresamente, puede actualizar docs/current-workstreams.md.
-Ejecuta typecheck y test.
+Usa los resultados reales de Quality Gate; no inventes resultados de validación.
 No hagas build, commit ni push.
 ```
 
