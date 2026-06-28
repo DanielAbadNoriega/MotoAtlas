@@ -4,7 +4,7 @@
 
 MotoAtlas es una plataforma de descubrimiento, comparación y comunidad motera. Permite a los usuarios explorar fichas técnicas reales, comparar modelos lado a lado y acceder a reviews verificadas de la comunidad. El catálogo prioriza datos técnicos precisos y transparencia sobre el origen de cada información.
 
-Las piezas centrales del producto son: buscador y comparador de motos, fichas técnicas detalladas con specs y ratings comunitarios, comunidad de reviews con reacciones y reportes, y gestión de modelos y herramientas internas para operadores para operadores internos.
+Las piezas centrales del producto son: buscador y comparador de motos, fichas técnicas detalladas con specs y ratings comunitarios, comunidad de reviews con reacciones y reportes, y gestión de modelos y herramientas internas para operadores internos.
 
 ## Para quién
 
@@ -29,5 +29,5 @@ Las piezas centrales del producto son: buscador y comparador de motos, fichas t�
 - **No es un marketplace genérico de vehículos.** MotoAtlas no procesa ventas ni transacciones.
 - **No es un producto donde mock/demo-data reemplace datos reales.** El fallback existe; no es el objetivo.
 - **No es una red social sin valor técnico.** Reviews con aspectos técnicos, no likes vacíos.
-- **No es un lugar para cambios descontrolados de schema, auth o admin.**Estas áreas requieren flujo dedicado con guard explícito (ver `spec/constitution/hard-limits.md`).
+- **No es un lugar para cambios descontrolados de schema, auth o admin.** Estas áreas requieren flujo dedicado con guard explícito (ver `spec/constitution/hard-limits.md`).
 - **No es un proyecto donde refactors no relacionados se mezclen en trabajo de feature.** Cada tarea tiene alcance; lo que está fuera, no se toca.

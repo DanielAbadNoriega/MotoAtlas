@@ -15,7 +15,7 @@ Este archivo resume el baseline técnico que toda feature SDD debe respetar. No 
 - **Servicios:** raw `fetch()` a Supabase REST (no supabase-js client en frontend). `@supabase/supabase-js` solo en `authService.ts`
 - **Iconos:** MotoIcon (inline SVG registry para iconos críticos); Material Symbols puede existir aún en zonas de bajo riesgo o pendientes
 
-Versiones exactas: consultar `package.json`, no adivinar.
+Versiones exactas: ver `package.json`, no adivinar.
 
 ## Archivos y módulos clave
 
