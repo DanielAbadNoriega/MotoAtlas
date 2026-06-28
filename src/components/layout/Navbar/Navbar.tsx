@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { brand, navActions, siteA11y } from '../../../data/site';
 import { useAuth } from '../../../features/auth';
 import { getCurrentAppRoute, routeToPathAndSearch } from '../../../shared/routing/routeUtils';
@@ -99,11 +100,11 @@ function isRouteActive(route: string, itemId: NavigationItem['id']) {
 }
 
 function NavIcon({ icon }: { icon: string }) {
-  return (
-    <span className="material-symbols-outlined" aria-hidden="true">
-      {icon}
-    </span>
-  );
+  if (icon === 'search' || icon === 'explore') {
+    return <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>;
+  }
+
+  return <MotoIcon name={icon} width="1.18rem" height="1.18rem" />;
 }
 
 function getAriaCurrent(route: string, itemId: NavigationItem['id']) {

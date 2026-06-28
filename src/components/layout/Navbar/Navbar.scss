@@ -96,6 +96,11 @@ $navbar-desktop-min: 991px;
       font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
+    svg {
+      width: 1.18rem;
+      height: 1.18rem;
+    }
+
     &:hover,
     &:focus-visible {
       filter: brightness(1.1);
@@ -299,7 +304,8 @@ $navbar-desktop-min: 991px;
       font-weight: 800;
     }
 
-    .material-symbols-outlined:last-child {
+    .material-symbols-outlined:last-child,
+    svg:last-child {
       opacity: 0;
       transform: translateX(-4px);
       transition:
@@ -318,7 +324,10 @@ $navbar-desktop-min: 991px;
 
     &:hover .material-symbols-outlined:last-child,
     &:focus-visible .material-symbols-outlined:last-child,
-    &[aria-current='page'] .material-symbols-outlined:last-child {
+    &[aria-current='page'] .material-symbols-outlined:last-child,
+    &:hover svg:last-child,
+    &:focus-visible svg:last-child,
+    &[aria-current='page'] svg:last-child {
       opacity: 1;
       transform: translateX(0);
     }
@@ -371,6 +380,11 @@ $navbar-desktop-min: 991px;
 
       .material-symbols-outlined {
         font-size: 1.35rem;
+      }
+
+      svg {
+        width: 1.35rem;
+        height: 1.35rem;
       }
 
       &:hover,
