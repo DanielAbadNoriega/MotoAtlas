@@ -167,11 +167,11 @@ Implementado:
 * LoadingState integrado como estado de carga real en #/comparador cuando getMotorcycles() resuelve.
 * isLoading robusto ante fallo de getMotorcycles() vía finally chain.
 * LoadingState libre de dependencia Material Symbols: los 6 iconos del loader (motorcycle, groups, manage_search, compare_arrows, sync, bolt) se renderizan como SVG inline, eliminando raw icon text bajo Slow 4G.
-* MotoIcon shared registry (`src/shared/ui/icons/MotoIcon.tsx`) creado con 44 iconos inline SVG — ampliado a 64 iconos durante las migraciones de reviews y account/navigation — sin imports de archivos SVG ni dependencia de fuente externa.
+* MotoIcon shared registry (`src/shared/ui/icons/MotoIcon.tsx`) creado con 44 iconos inline SVG — ampliado a 71 iconos durante las migraciones de reviews, account/navigation y Navbar/global navigation — sin imports de archivos SVG ni dependencia de fuente externa.
 * LoadingState migrado de `getIconPath()` helper privado a `<MotoIcon>` component.
 * `compare_arrows` y `sync` reemplazados por paths oficiales de Material Symbols desde archivos SVG locales.
 * API de MotoIcon endurecida: `name` acepta `MotoIconName | string`, atributos controlados (`viewBox`, `fill`, `aria-hidden`, `focusable`, `role`, `aria-label`) no sobrescribibles por consumidores.
-* MotoIcon.test.tsx con 9 tests iniciales, ampliado a 14 tests que cubren el registry completo de 64 iconos.
+* MotoIcon.test.tsx con 9 tests iniciales, ampliado a 14 tests que cubren el registry completo de 71 iconos.
 * ReviewModal migrado de Material Symbols a MotoIcon: 15 iconos reemplazados (check_circle, close, report, shield, star, comment, add, remove, route, arrow_right_alt, aspect icons, etc.).
 * ReviewAspectSummary migrado de Material Symbols a MotoIcon: 3 iconos reemplazados + chat→comment.
 * ReviewModal usa text_ad para el campo de experiencia/comentario en vez de terminal.
@@ -188,6 +188,11 @@ Implementado:
 * `search` agregado a MotoIcon registry (sin migrar consumidores — pendiente para fase de filters/search).
 * 6 iconos de action/navigation/search agregados al registry: search, logout, chevron_left, chevron_right, keyboard_double_arrow_left, keyboard_double_arrow_right.
 * AccountPage.scss actualizado con sizing SVG-friendly para iconos de botones de cuenta.
+* Navbar/global navigation icons migrados de Material Symbols a MotoIcon: NavIcon helper migrado a `<MotoIcon>` para todos los iconos scoped (`account_circle`, `person`, `menu`, `hub`, `article`, `home`, `compare_arrows`, `chevron_right`, `close`, `expand_more`, `logout`). `search` y `explore` quedan intencionalmente como Material Symbols.
+* ScrollToTopButton migrado de Material Symbols a `<MotoIcon name="arrow_upward">`.
+* 7 iconos agregados al registry para Navbar/global navigation: account_circle, arrow_upward, article, home, hub, menu, person.
+* Navbar.scss actualizado con selectores SVG duales (`.material-symbols-outlined` + `svg`) para mantener apariencia visual en signin button, drawer links, hover/focus/aria-current states y mobile bottom nav.
+* SCSS de ScrollToTopButton no requirió cambios (sizing vía props de componente).
 
 Archivos o zonas permitidas:
 * MotoIcon (shared/ui/icons)
@@ -196,6 +201,8 @@ Archivos o zonas permitidas:
 * LoadingPreviewPage (si el tipo lo requiere)
 * AccountPage (AccountSidebar, AccountPagination, AccountPage.scss)
 * AccountMotorcycleReviewsPage (solo sidebar/logout icon)
+* Navbar (Navbar.tsx, Navbar.scss, Navbar.test.tsx)
+* ScrollToTopButton (ScrollToTopButton.tsx, ScrollToTopButton.scss)
 
 Zonas prohibidas:
 * schema/RLS/Supabase
@@ -207,8 +214,7 @@ Zonas prohibidas:
 Pendiente (próximas fases de migración SVG):
 * MotoIcon `search` consumers pendientes: SearchControl, AccountReviewsPage, CommunityRankingsPage, CommunityReviewsPage, AdminPage search usage.
 * Filtros de búsqueda/comunidad/cuenta/admin.
-* Botones de acción restantes (Navbar, etc.).
-* Account action/navigation icons (logout, chevron pagination, double-arrow keyboard nav) completados en esta fase.
+* Iconos decorativos de bajo riesgo (Footer social links, etc.) — opcional, aceptan Material Symbols.
 * Material Symbols siguen siendo aceptables para iconos decorativos de bajo riesgo donde el retardo de fuente no causa raw text visible.
 * Optimización de imágenes como bloque futuro separado (no mezclar con migración SVG).
 
@@ -220,6 +226,8 @@ Riesgos:
 * typecheck: clean
 * test: 84 files, 1616 passed
 * MotoIcon: 14/14
+* Navbar: 13/13
+* ScrollToTopButton: sin test enfocado (comportamiento preservado)
 * AccountPage: 17/17
 * AccountMotorcycleReviewsPage: 12/12
 * RadarState: 3/3
@@ -229,7 +237,7 @@ Riesgos:
 * git diff --check: clean
 
 Siguiente paso:
-* Decidir próxima fase de migración SVG: search consumers, filtros o botones de acción restantes.
+* Decidir próxima fase de migración SVG: search consumers o filtros.
 
 ---
 
