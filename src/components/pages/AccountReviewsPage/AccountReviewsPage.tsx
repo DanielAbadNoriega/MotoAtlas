@@ -22,6 +22,7 @@ import {
 import type { BikeA2Status } from '../../../shared/motorcycles/motorcycleTaxonomy';
 import { formatReviewRating, getReviewAggregate } from '../../../shared/reviews/reviewUtils';
 import { AccountReviewsEmptyState } from './AccountReviewsEmptyState';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import './AccountReviewsPage.scss';
 
 type AccountReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -365,7 +366,7 @@ function AccountReviewsFiltersPanel({
         <div className="account-reviews-page__filters-body">
           <label className="account-reviews-page__search" htmlFor="account-reviews-search">
             Buscar por marca o modelo
-            <span className="material-symbols-outlined" aria-hidden="true">search</span>
+            <MotoIcon name="search" aria-hidden="true" />
             <input
               id="account-reviews-search"
               type="search"

@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes } from 'react';
+import { MotoIcon } from '../icons/MotoIcon';
 import './SearchControl.scss';
 
 export type SearchControlProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
@@ -19,9 +20,7 @@ export function SearchControl({
     <label className={['search-control', className].filter(Boolean).join(' ')} htmlFor={id}>
       <span className="search-control__label">{label}</span>
       <span className="search-control__field">
-        <span className="material-symbols-outlined search-control__icon" aria-hidden="true">
-          {icon}
-        </span>
+        <MotoIcon name={icon} className="search-control__icon" aria-hidden="true" />
         <input {...inputProps} className="search-control__input" id={id} type="search" />
       </span>
     </label>

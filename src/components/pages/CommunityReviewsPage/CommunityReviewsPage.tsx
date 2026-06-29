@@ -53,6 +53,7 @@ import {
 import { useReviewReports, type ReviewReportFormState } from '../../../shared/reviews/useReviewReports';
 import { useReviewReactions } from '../../../shared/reviews/useReviewReactions';
 import { getReviewAggregate } from '../../../shared/reviews/reviewUtils';
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import './CommunityReviewsPage.scss';
 
 type ReviewsStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -981,7 +982,7 @@ function CommunityReviewFiltersPanel({
         <div className="community-reviews-page__filters-body">
           <label className="community-reviews-page__search" htmlFor="community-reviews-search">
             Buscar por marca o modelo
-            <span className="material-symbols-outlined" aria-hidden="true">search</span>
+            <MotoIcon name="search" aria-hidden="true" />
             <input
               id="community-reviews-search"
               type="search"

@@ -19,6 +19,7 @@ import { getApprovedCommunityReviews, getReviewAspectsByReviewIds } from '../../
 import type { MotorcycleReview, MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
 import type { Bike, BikeSegment } from '../../../types/bike';
 
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
@@ -403,7 +404,7 @@ export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProp
           </div>
           <div className="rankings__filters-right">
             <div className="rankings__search">
-              <span className="material-symbols-outlined" aria-hidden="true">search</span>
+              <MotoIcon name="search" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="BUSCAR MODELO..."
