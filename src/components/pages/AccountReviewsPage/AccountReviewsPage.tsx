@@ -365,15 +365,17 @@ function AccountReviewsFiltersPanel({
 
         <div className="account-reviews-page__filters-body">
           <label className="account-reviews-page__search" htmlFor="account-reviews-search">
-            Buscar por marca o modelo
-            <MotoIcon name="search" aria-hidden="true" />
-            <input
-              id="account-reviews-search"
-              type="search"
-              value={filters.search}
-              onChange={(event) => onChange({ search: event.target.value })}
-              placeholder="BMW, Tuareg, MT-09..."
-            />
+            <span className="account-reviews-page__search-label">Buscar por marca o modelo</span>
+            <div className="account-reviews-page__search-control">
+              <MotoIcon name="search" className="account-reviews-page__search-icon" aria-hidden="true" />
+              <input
+                id="account-reviews-search"
+                type="search"
+                value={filters.search}
+                onChange={(event) => onChange({ search: event.target.value })}
+                placeholder="BMW, Tuareg, MT-09..."
+              />
+            </div>
           </label>
 
           <FilterGroup title="Segmento">

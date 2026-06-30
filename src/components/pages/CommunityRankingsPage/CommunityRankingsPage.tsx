@@ -404,14 +404,16 @@ export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProp
           </div>
           <div className="rankings__filters-right">
             <div className="rankings__search">
-              <MotoIcon name="search" aria-hidden="true" />
-              <input
-                type="text"
-                placeholder="BUSCAR MODELO..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                aria-label="Buscar modelo"
-              />
+              <div className="rankings__search-control">
+                <MotoIcon name="search" className="rankings__search-icon" aria-hidden="true" />
+                <input
+                  type="text"
+                  placeholder="BUSCAR MODELO..."
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                  aria-label="Buscar modelo"
+                />
+              </div>
             </div>
             <div className="rankings__filters-divider" aria-hidden="true" />
             <button
