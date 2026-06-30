@@ -12,6 +12,7 @@ Solo índice breve. No copiar contenido completo de workstreams.
 
 - **MotoIcon registry** — 71 iconos inline SVG, registry centralizado en `src/shared/ui/icons/MotoIcon.tsx`
 - **Migraciones críticas de iconos** — LoadingState, ReviewModal, ReviewAspectSummary, RadarState, review cards/actions (FeaturedReviewCard, AccountReviewCard, MotorcycleReviewCard, HelpfulReviewAction, NotHelpfulReviewAction, ReportReviewAction, ReviewReplySection, ReplyConvivenceNotice), account action/navigation (logout, pagination), Navbar, ScrollToTopButton
+- **Search consumer icons** — SearchControl, AccountReviewsPage, CommunityReviewsPage, CommunityRankingsPage migrados a MotoIcon; wrapper/control structure para preservación de estilos visuales (21px, alineado izquierda, sin solapamiento)
 - **AdminPage decomposition** — reducida de ~5900 líneas a ~13 líneas; 9 page components extraídos; barrel aplanado; zero circular imports
 - **Auth fixtures** — factories centralizadas de auth/perfiles/sesión para tests
 - **Community Pulse / live insights** — signals accionables, ratings veraces, sin tendencias falsas
@@ -20,20 +21,11 @@ Solo índice breve. No copiar contenido completo de workstreams.
 - **FeaturedMachines** — sección Home sin legacy FeaturedBikes/BikeCard
 - **Taxonomy base** — 16 segmentos canónicos, bucket UI `other`, guardrails de validación
 
-*Baseline operativo actual: 1616 tests, 84 archivos. Fuente: `docs/current-workstreams.md` Workstream E.*
+*Baseline operativo actual: 1602 tests, 84 archivos.*
 
 ## Siguiente 🔜
 
 Trabajo inmediato que merece carpetas `spec/features/NNN-*` futuras.
-
-`001-search-consumer-motoicon-migration` — P1
-
-- Continuación Workstream E
-- Migrar consumidores pendientes de `search` a MotoIcon: SearchControl, AccountReviewsPage, CommunityRankingsPage, CommunityReviewsPage
-- `search` y `explore` en Navbar intencionalmente pendientes
-- AdminPage search usage es sensible y requiere alcance separado
-- Depende del baseline MotoIcon registry (71 iconos)
-- Requiere context.md antes de implementar
 
 `002-admin-gallery-autonomous-actions` — P1
 
@@ -58,7 +50,7 @@ Trabajo futuro que debe recibir SDD framing cuando se active.
 
 - Smoke tests, responsive checks, flujos admin contra staging
 - No reemplaza baseline Vitest/RTL
-- Covered en `docs/testing-strategy.md`
+- Cubierto en `docs/testing-strategy.md`
 
 `006-mobile-first-premium-redesign` — P3
 
@@ -83,7 +75,7 @@ Trabajo completado queda como baseline/historia salvo que una feature nueva lo n
 
 Toda carpeta `spec/features/NNN-*` futura debe incluir:
 
-- `context.md` — source docs, historia de implementación, decisiones, baseline de validación, riesgos, zonas prohibidas, próximo paso seguro
+- `context.md` — documentos fuente, historia de implementación, decisiones, baseline de validación, riesgos, zonas prohibidas, próximo paso seguro
 - `spec.md` — comportamiento y criterios de aceptación
 - `plan.md` — enfoque técnico y fases
 - `tasks.md` — checklist de implementación

@@ -221,7 +221,7 @@
     border-radius: 999px;
   }
 
-  > label {
+  > label:not(.account-reviews-page__search) {
     @include label-caps;
 
     border-top: 1px solid rgba($color-outline-variant, 0.24);
@@ -405,16 +405,31 @@
 }
 
 .account-reviews-page__search {
-  position: relative;
+  display: block;
+  padding-block: 1.25rem;
 
-  .material-symbols-outlined {
-    bottom: 0.83rem;
+  &-label {
+    @include label-caps;
+
+    border-top: 1px solid rgba($color-outline-variant, 0.24);
+    color: rgba($color-on-surface-variant, 0.82);
+    display: block;
+    padding-top: 0.25rem;
+  }
+
+  &-control {
+    position: relative;
+  }
+
+  &-icon {
     color: rgba($color-outline, 0.82);
-    font-size: 1.1rem;
+    height: 21px;
     left: 0.8rem;
     pointer-events: none;
     position: absolute;
     top: 50%;
+    transform: translateY(-50%);
+    width: 21px;
   }
 
   input {

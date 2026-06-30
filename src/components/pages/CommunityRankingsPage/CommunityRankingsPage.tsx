@@ -19,6 +19,7 @@ import { getApprovedCommunityReviews, getReviewAspectsByReviewIds } from '../../
 import type { MotorcycleReview, MotorcycleReviewAspect } from '../../../services/motorcycleReviewService';
 import type { Bike, BikeSegment } from '../../../types/bike';
 
+import { MotoIcon } from '../../../shared/ui/icons/MotoIcon';
 import { PageHero } from '../../ui/PageHero';
 import { MotorcycleImage } from '../../ui/MotorcycleImage';
 import { PodiumCard } from '../../rankings/PodiumCard/PodiumCard';
@@ -403,14 +404,16 @@ export function CommunityRankingsPage({ motorcycles }: CommunityRankingsPageProp
           </div>
           <div className="rankings__filters-right">
             <div className="rankings__search">
-              <span className="material-symbols-outlined" aria-hidden="true">search</span>
-              <input
-                type="text"
-                placeholder="BUSCAR MODELO..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                aria-label="Buscar modelo"
-              />
+              <div className="rankings__search-control">
+                <MotoIcon name="search" className="rankings__search-icon" aria-hidden="true" />
+                <input
+                  type="text"
+                  placeholder="BUSCAR MODELO..."
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                  aria-label="Buscar modelo"
+                />
+              </div>
             </div>
             <div className="rankings__filters-divider" aria-hidden="true" />
             <button

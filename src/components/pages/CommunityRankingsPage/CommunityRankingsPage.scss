@@ -215,11 +215,19 @@
   gap: 0.5rem;
   position: relative;
 
-  > .material-symbols-outlined {
+  &-control {
+    position: relative;
+  }
+
+  &-icon {
     color: $color-on-surface-variant;
-    font-size: 1rem;
+    height: 21px;
     left: 0.75rem;
+    pointer-events: none;
     position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 21px;
   }
 
   input {
